@@ -387,3 +387,186 @@ WHERE [u].[RoleId] = @__role_Id_0"
 01/29/2021 15:30:04 Executed endpoint '"/_blazor"'
 01/29/2021 15:30:04 Request finished HTTP/1.1 GET https://localhost:44314/_blazor?id=CuuKhkmM2X24TkRWh_55NQ - - - 101 - - 4601.9919ms
 01/29/2021 15:30:04 Request finished HTTP/2 POST https://localhost:44314/_blazor/disconnect multipart/form-data;+boundary=----WebKitFormBoundary75XsSSwgKM5HPy3D 359 - 200 - - 28.6649ms
+01/29/2021 16:06:15 [INF] User profile is available. Using '"C:\Users\Henryk Wiśniewski\AppData\Local\ASP.NET\DataProtection-Keys"' as key repository and Windows DPAPI to encrypt keys at rest.
+01/29/2021 16:06:15 [INF] Application started. Press Ctrl+C to shut down.
+01/29/2021 16:06:15 [INF] Hosting environment: "Development"
+01/29/2021 16:06:15 [INF] Content root path: "C:\_share_local\ScanApp\ScanApp"
+01/29/2021 16:06:15 [INF] Request starting HTTP/2 GET https://localhost:44314/ - -
+01/29/2021 16:06:15 [INF] Authorization failed. "These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user."
+01/29/2021 16:06:15 [INF] AuthenticationScheme: "Identity.Application" was challenged.
+01/29/2021 16:06:15 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/Account/Login?ReturnUrl=%2F - -
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/ - - - 302 - - 237.2822ms
+01/29/2021 16:06:16 [INF] Executing endpoint '"/Account/Login"'
+01/29/2021 16:06:16 [INF] Route matched with "{page = \"/Account/Login\", area = \"Identity\"}". Executing page "/Account/Login"
+01/29/2021 16:06:16 [INF] Executing handler method "ScanApp.Areas.Identity.Pages.Account.LoginModel.OnGetAsync" - ModelState is Valid
+01/29/2021 16:06:16 [INF] AuthenticationScheme: "Identity.External" signed out.
+01/29/2021 16:06:16 [INF] Executed handler method "OnGetAsync", returned result "".
+01/29/2021 16:06:16 [INF] Executing an implicit handler method - ModelState is Valid
+01/29/2021 16:06:16 [INF] Executed an implicit handler method, returned result "Microsoft.AspNetCore.Mvc.RazorPages.PageResult".
+01/29/2021 16:06:16 [INF] Executed page "/Account/Login" in 434.6653ms
+01/29/2021 16:06:16 [INF] Executed endpoint '"/Account/Login"'
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/Account/Login?ReturnUrl=%2F - - - 200 - text/html;+charset=utf-8 653.1976ms
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/css/site.css - -
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/lib/bootstrap/dist/css/bootstrap.min.css - -
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/lib/jquery/dist/jquery.min.js - -
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js - -
+01/29/2021 16:06:16 [INF] The file "/Identity/lib/bootstrap/dist/css/bootstrap.min.css" was not modified
+01/29/2021 16:06:16 [INF] The file "/Identity/css/site.css" was not modified
+01/29/2021 16:06:16 [INF] The file "/Identity/lib/jquery/dist/jquery.min.js" was not modified
+01/29/2021 16:06:16 [INF] The file "/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js" was not modified
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/lib/jquery/dist/jquery.min.js - - - 304 - application/javascript 4.6728ms
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/lib/bootstrap/dist/css/bootstrap.min.css - - - 304 - text/css 4.8147ms
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/css/site.css - - - 304 - text/css 8.4644ms
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/lib/jquery-validation/dist/jquery.validate.js - -
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/js/site.js?v=4q1jwFhaPaZgr8WAUSrux6hAuh0XDg9kPS3xIVq36I0 - -
+01/29/2021 16:06:16 [INF] Request starting HTTP/2 GET https://localhost:44314/Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js - -
+01/29/2021 16:06:16 [INF] The file "/Identity/lib/jquery-validation/dist/jquery.validate.js" was not modified
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/lib/jquery-validation/dist/jquery.validate.js - - - 304 - application/javascript 1.2468ms
+01/29/2021 16:06:16 [INF] The file "/Identity/js/site.js" was not modified
+01/29/2021 16:06:16 [INF] The file "/Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js" was not modified
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/js/site.js?v=4q1jwFhaPaZgr8WAUSrux6hAuh0XDg9kPS3xIVq36I0 - - - 304 - application/javascript 1.6522ms
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js - - - 304 - application/javascript 1.6058ms
+01/29/2021 16:06:16 [INF] Request finished HTTP/2 GET https://localhost:44314/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js - - - 304 - application/javascript 5.6962ms
+01/29/2021 16:13:08 [INF] Starting up...
+01/29/2021 16:13:09 [INF] Application started. Press Ctrl+C to shut down.
+01/29/2021 16:13:09 [INF] Hosting environment: "Development"
+01/29/2021 16:13:09 [INF] Content root path: "C:\_share_local\ScanApp\ScanApp"
+01/29/2021 16:13:26 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:13:28 [INF] Executed DbCommand ("47"ms) [Parameters=["@__normalizedUserName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[NormalizedUserName] = @__normalizedUserName_0"
+01/29/2021 16:13:28 [INF] Executed DbCommand ("6"ms) [Parameters=["@__user_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[Id], [u].[ClaimType], [u].[ClaimValue], [u].[UserId]
+FROM [sca].[UserClaims] AS [u]
+WHERE [u].[UserId] = @__user_Id_0"
+01/29/2021 16:13:28 [INF] Executed DbCommand ("6"ms) [Parameters=["@__userId_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [r].[Name]
+FROM [sca].[UserRoles] AS [u]
+INNER JOIN [sca].[Roles] AS [r] ON [u].[RoleId] = [r].[Id]
+WHERE [u].[UserId] = @__userId_0"
+01/29/2021 16:13:28 [INF] Executed DbCommand ("5"ms) [Parameters=["@__normalizedName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [r].[Id], [r].[ConcurrencyStamp], [r].[Name], [r].[NormalizedName]
+FROM [sca].[Roles] AS [r]
+WHERE [r].[NormalizedName] = @__normalizedName_0"
+01/29/2021 16:13:28 [INF] Executed DbCommand ("4"ms) [Parameters=["@__role_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[ClaimType], [u].[ClaimValue]
+FROM [sca].[UserRoleClaims] AS [u]
+WHERE [u].[RoleId] = @__role_Id_0"
+01/29/2021 16:13:28 [INF] User logged in.
+01/29/2021 16:16:09 [INF] Starting up...
+01/29/2021 16:16:10 [INF] Application started. Press Ctrl+C to shut down.
+01/29/2021 16:16:10 [INF] Hosting environment: "Development"
+01/29/2021 16:16:10 [INF] Content root path: "C:\_share_local\ScanApp\ScanApp"
+01/29/2021 16:16:24 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:16:25 [INF] Executed DbCommand ("43"ms) [Parameters=["@__normalizedUserName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[NormalizedUserName] = @__normalizedUserName_0"
+01/29/2021 16:16:25 [INF] Executed DbCommand ("7"ms) [Parameters=["@__user_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[Id], [u].[ClaimType], [u].[ClaimValue], [u].[UserId]
+FROM [sca].[UserClaims] AS [u]
+WHERE [u].[UserId] = @__user_Id_0"
+01/29/2021 16:16:25 [INF] Executed DbCommand ("6"ms) [Parameters=["@__userId_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [r].[Name]
+FROM [sca].[UserRoles] AS [u]
+INNER JOIN [sca].[Roles] AS [r] ON [u].[RoleId] = [r].[Id]
+WHERE [u].[UserId] = @__userId_0"
+01/29/2021 16:16:25 [INF] Executed DbCommand ("4"ms) [Parameters=["@__normalizedName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [r].[Id], [r].[ConcurrencyStamp], [r].[Name], [r].[NormalizedName]
+FROM [sca].[Roles] AS [r]
+WHERE [r].[NormalizedName] = @__normalizedName_0"
+01/29/2021 16:16:25 [INF] Executed DbCommand ("4"ms) [Parameters=["@__role_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[ClaimType], [u].[ClaimValue]
+FROM [sca].[UserRoleClaims] AS [u]
+WHERE [u].[RoleId] = @__role_Id_0"
+01/29/2021 16:16:25 [INF] User logged in.
+01/29/2021 16:17:20 [INF] Starting up...
+01/29/2021 16:17:21 [INF] Application started. Press Ctrl+C to shut down.
+01/29/2021 16:17:21 [INF] Hosting environment: "Development"
+01/29/2021 16:17:21 [INF] Content root path: "C:\_share_local\ScanApp\ScanApp"
+01/29/2021 16:17:22 [INF] HTTP "GET" "/" responded 302 in 63.8705 ms
+01/29/2021 16:17:22 [INF] HTTP "GET" "/Identity/Account/Login?ReturnUrl=%2F" responded 200 in 486.5574 ms
+01/29/2021 16:18:21 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:18:21 [INF] Executed DbCommand ("44"ms) [Parameters=["@__normalizedUserName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[NormalizedUserName] = @__normalizedUserName_0"
+01/29/2021 16:18:22 [INF] Executed DbCommand ("6"ms) [Parameters=["@__user_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[Id], [u].[ClaimType], [u].[ClaimValue], [u].[UserId]
+FROM [sca].[UserClaims] AS [u]
+WHERE [u].[UserId] = @__user_Id_0"
+01/29/2021 16:18:22 [INF] Executed DbCommand ("6"ms) [Parameters=["@__userId_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [r].[Name]
+FROM [sca].[UserRoles] AS [u]
+INNER JOIN [sca].[Roles] AS [r] ON [u].[RoleId] = [r].[Id]
+WHERE [u].[UserId] = @__userId_0"
+01/29/2021 16:18:22 [INF] Executed DbCommand ("5"ms) [Parameters=["@__normalizedName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [r].[Id], [r].[ConcurrencyStamp], [r].[Name], [r].[NormalizedName]
+FROM [sca].[Roles] AS [r]
+WHERE [r].[NormalizedName] = @__normalizedName_0"
+01/29/2021 16:18:22 [INF] Executed DbCommand ("5"ms) [Parameters=["@__role_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[ClaimType], [u].[ClaimValue]
+FROM [sca].[UserRoleClaims] AS [u]
+WHERE [u].[RoleId] = @__role_Id_0"
+01/29/2021 16:18:22 [INF] User logged in.
+01/29/2021 16:18:22 [INF] HTTP "POST" "/Identity/Account/Login?ReturnUrl=%2F" responded 302 in 1298.8336 ms
+01/29/2021 16:18:22 [INF] HTTP "GET" "/" responded 200 in 113.1570 ms
+01/29/2021 16:18:22 [INF] HTTP "POST" "/_blazor/negotiate?negotiateVersion=1" responded 200 in 13.3045 ms
+01/29/2021 16:20:10 [INF] Starting up...
+01/29/2021 16:20:12 [INF] Application started. Press Ctrl+C to shut down.
+01/29/2021 16:20:12 [INF] Hosting environment: "Development"
+01/29/2021 16:20:12 [INF] Content root path: "C:\_share_local\ScanApp\ScanApp"
+01/29/2021 16:20:12 [INF] HTTP "GET" "/" responded 302 in 65.1581 ms
+01/29/2021 16:20:12 [INF] HTTP "GET" "/Identity/Account/Login?ReturnUrl=%2F" responded 200 in 512.0743 ms
+01/29/2021 16:20:18 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:20:18 [INF] Executed DbCommand ("45"ms) [Parameters=["@__normalizedUserName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[NormalizedUserName] = @__normalizedUserName_0"
+01/29/2021 16:20:18 [INF] Executed DbCommand ("7"ms) [Parameters=["@__user_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[Id], [u].[ClaimType], [u].[ClaimValue], [u].[UserId]
+FROM [sca].[UserClaims] AS [u]
+WHERE [u].[UserId] = @__user_Id_0"
+01/29/2021 16:20:18 [INF] Executed DbCommand ("6"ms) [Parameters=["@__userId_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [r].[Name]
+FROM [sca].[UserRoles] AS [u]
+INNER JOIN [sca].[Roles] AS [r] ON [u].[RoleId] = [r].[Id]
+WHERE [u].[UserId] = @__userId_0"
+01/29/2021 16:20:18 [INF] Executed DbCommand ("5"ms) [Parameters=["@__normalizedName_0='?' (Size = 256)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [r].[Id], [r].[ConcurrencyStamp], [r].[Name], [r].[NormalizedName]
+FROM [sca].[Roles] AS [r]
+WHERE [r].[NormalizedName] = @__normalizedName_0"
+01/29/2021 16:20:18 [INF] Executed DbCommand ("4"ms) [Parameters=["@__role_Id_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [u].[ClaimType], [u].[ClaimValue]
+FROM [sca].[UserRoleClaims] AS [u]
+WHERE [u].[RoleId] = @__role_Id_0"
+01/29/2021 16:20:18 [INF] User logged in.
+01/29/2021 16:20:18 [INF] HTTP "POST" "/Identity/Account/Login?ReturnUrl=%2F" responded 302 in 1327.8932 ms
+01/29/2021 16:20:18 [INF] HTTP "GET" "/" responded 200 in 101.8397 ms
+01/29/2021 16:20:19 [INF] HTTP "POST" "/_blazor/negotiate?negotiateVersion=1" responded 200 in 23.1707 ms
+01/29/2021 16:20:40 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:20:40 [INF] Executed DbCommand ("5"ms) [Parameters=["@__p_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[Id] = @__p_0"
+01/29/2021 16:20:40 [INF] HTTP "GET" "/Identity/Account/Manage" responded 200 in 78.1515 ms
+01/29/2021 16:20:41 [INF] HTTP "GET" "/_blazor?id=01sB48OdfpsbbrK-rwFsXQ" responded 101 in 21843.0115 ms
+01/29/2021 16:20:41 [INF] HTTP "POST" "/_blazor/disconnect" responded 200 in 25.4978 ms
+01/29/2021 16:20:48 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:20:48 [INF] Executed DbCommand ("4"ms) [Parameters=["@__p_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[Id] = @__p_0"
+01/29/2021 16:20:48 [INF] HTTP "GET" "/Identity/Account/Manage/Email" responded 200 in 37.3858 ms
+01/29/2021 16:20:49 [INF] Entity Framework Core "5.0.2" initialized '"ApplicationDbContext"' using provider '"Microsoft.EntityFrameworkCore.SqlServer"' with options: "None"
+01/29/2021 16:20:49 [INF] Executed DbCommand ("5"ms) [Parameters=["@__p_0='?' (Size = 450)"], CommandType='Text', CommandTimeout='30']"
+""SELECT TOP(1) [u].[Id], [u].[AccessFailedCount], [u].[ConcurrencyStamp], [u].[Email], [u].[EmailConfirmed], [u].[LockoutEnabled], [u].[LockoutEnd], [u].[NormalizedEmail], [u].[NormalizedUserName], [u].[PasswordHash], [u].[PhoneNumber], [u].[PhoneNumberConfirmed], [u].[SecurityStamp], [u].[TwoFactorEnabled], [u].[UserName]
+FROM [sca].[Users] AS [u]
+WHERE [u].[Id] = @__p_0"
+01/29/2021 16:20:49 [INF] HTTP "GET" "/Identity/Account/Manage/ChangePassword" responded 200 in 30.5109 ms
+01/29/2021 16:20:58 [INF] HTTP "GET" "/" responded 200 in 10.5007 ms
+01/29/2021 16:20:58 [INF] HTTP "POST" "/_blazor/negotiate?negotiateVersion=1" responded 200 in 1.3535 ms
+01/29/2021 16:21:06 [INF] HTTP "GET" "/_blazor?id=-sxLHfIX__BdbcHIa6y9fQ" responded 101 in 7940.4104 ms
+01/29/2021 16:21:06 [INF] HTTP "POST" "/_blazor/disconnect" responded 200 in 7.9283 ms

@@ -15,7 +15,19 @@ namespace ScanApp
                 .ReadFrom.Configuration(BuildConfig())
                 .CreateLogger();
 
-            CreateHostBuilder(args).Build().Run();
+            try
+            {
+                Log.Information("Starting up...");
+                CreateHostBuilder(args).Build().Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application start-up failed");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

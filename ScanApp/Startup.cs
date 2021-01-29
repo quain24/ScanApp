@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ScanApp.Areas.Identity;
 using ScanApp.Data;
+using Serilog;
 
 namespace ScanApp
 {
@@ -60,6 +61,7 @@ namespace ScanApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseBrowserLink();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -72,9 +74,9 @@ namespace ScanApp
                 app.UseHsts();
             }
 
-            app.UseBrowserLink();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseSerilogRequestLogging();
 
             app.UseRouting();
 
