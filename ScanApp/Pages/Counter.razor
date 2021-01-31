@@ -1,4 +1,8 @@
 ﻿@page "/counter"
+@using Microsoft.AspNetCore.Identity;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject RoleManager<IdentityRole> roleManager
+@inject UserManager<IdentityUser> userManager
 
 <h1>Counter</h1>
 
@@ -12,12 +16,51 @@
         <button class="btn btn-primary" @onclick="IncrementCount">Not auth click</button>
     </NotAuthorized>
 </AuthorizeView>
+@name
+<AuthorizeView Roles="new_role">
+    <Authorized>
+        <button class="btn btn-primary" @onclick="IncrementCount">Authorized</button>
+    </Authorized>
+    <NotAuthorized>
+        <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
     private int currentCount = 0;
+    private string name;
+
+    private async Task<string> GetName()
+    {
+        var t = await authenticationStateTask;
+        return t.User.Identity.Name;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        name = await GetName();
+    }
 
     private void IncrementCount()
     {
         currentCount++;
+        name = name + "A";
+    }
+
+    private async Task AddRole()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var currentUser = await userManager.GetUserAsync(user);
+        var role = await roleManager.CreateAsync(new IdentityRole()
+        {
+            Name = "new_role"
+        });
+
+        var t = await userManager.AddToRoleAsync(currentUser, "new_role");
     }
 }

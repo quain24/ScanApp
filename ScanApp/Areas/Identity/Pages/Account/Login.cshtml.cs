@@ -27,9 +27,7 @@ namespace ScanApp.Areas.Identity.Pages.Account
 
         [BindProperty]
         public InputModel Input { get; set; }
-
-        //public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
+        
         public string ReturnUrl { get; set; }
 
         [TempData]
@@ -73,10 +71,10 @@ namespace ScanApp.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
+                    _logger.LogInformation("User {user} logged in", Input.UserName);
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -91,6 +89,8 @@ namespace ScanApp.Areas.Identity.Pages.Account
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, _userManager.Options.Lockout.MaxFailedAccessAttempts.ToString());
+                    ModelState.AddModelError(string.Empty, (await _userManager.FindByNameAsync(Input.UserName))?.AccessFailedCount.ToString() ?? "0");
                     return Page();
                 }
             }

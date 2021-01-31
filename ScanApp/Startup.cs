@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -47,9 +48,16 @@ namespace ScanApp
                     options.Password.RequireUppercase = false;
                     options.Password.RequireLowercase = false;
                     options.Password.RequiredLength = 3;
+
+                    // lockout setup
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
+                    options.Lockout.MaxFailedAccessAttempts = 2;
+                    options.Lockout.AllowedForNewUsers = true;
                 })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddRoleManager<RoleManager<IdentityRole>>()
+                .AddUserManager<UserManager<IdentityUser>>();
 
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddRazorPages();
@@ -75,8 +83,8 @@ namespace ScanApp
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
             app.UseSerilogRequestLogging();
+            app.UseStaticFiles();
 
             app.UseRouting();
 
