@@ -1,8 +1,9 @@
 ﻿@page "/counter"
 @using Microsoft.AspNetCore.Identity;
+@using ScanApp.Application.Models
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject RoleManager<IdentityRole> roleManager
-@inject UserManager<IdentityUser> userManager
+@inject UserManager<ApplicationUser> userManager
 
 <h1>Counter</h1>
 
