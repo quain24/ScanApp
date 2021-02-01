@@ -1,4 +1,5 @@
 using System;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -11,14 +12,18 @@ using Microsoft.Extensions.Hosting;
 using ScanApp.Application.Models;
 using ScanApp.Areas.Identity;
 using ScanApp.Data;
+using ScanApp.Infrastructure.Persistence;
 using Serilog;
 
 namespace ScanApp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
+            _env = env;
             Configuration = configuration;
         }
 
@@ -60,10 +65,17 @@ namespace ScanApp
                 .AddRoleManager<RoleManager<IdentityRole>>()
                 .AddUserManager<UserManager<ApplicationUser>>();
 
+            services.AddMediatR(typeof(ApplicationUser));
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddRazorPages();
-            services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            services.AddServerSideBlazor().AddCircuitOptions(o =>
+            {
+                if (_env.IsDevelopment()) //only add details when debugging
+                {
+                    o.DetailedErrors = true;
+                }
+            });
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
             services.AddSingleton<WeatherForecastService>();
         }
 
