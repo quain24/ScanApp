@@ -11,8 +11,12 @@ namespace ScanApp
     {
         public static void Main(string[] args)
         {
+            var builder = new ConfigurationBuilder();
+            BuildConfig(builder);
+
+            // Default logger
             Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(BuildConfig())
+                .ReadFrom.Configuration(builder.Build())
                 .CreateLogger();
 
             try
@@ -30,26 +34,26 @@ namespace ScanApp
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(BuildConfig)
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
                 });
 
-        private static IConfigurationRoot BuildConfig()
+        private static void BuildConfig(IConfigurationBuilder builder)
         {
             var pcWideAppsettingsLocation = $"{Environment.GetEnvironmentVariable("APPSETT_FILE_LOCATION")}\\";
             var currentEnvAppSettingsFileName = $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIROMENT") ?? "Production"}.json";
 
-            return new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+            builder.SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile(pcWideAppsettingsLocation + currentEnvAppSettingsFileName, optional: true)
                 .AddJsonFile(currentEnvAppSettingsFileName, optional: true)
                 .AddEnvironmentVariables()
-                .AddUserSecrets(typeof(Program).Assembly, optional: true)
-                .Build();
+                .AddUserSecrets(typeof(Program).Assembly, optional: true);
         }
     }
 }
