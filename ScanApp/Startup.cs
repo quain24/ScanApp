@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ScanApp.Application.Models;
 using ScanApp.Areas.Identity;
 using ScanApp.Data;
 using Serilog;
@@ -40,7 +41,7 @@ namespace ScanApp
                         .Build();
                 });
 
-            services.AddDefaultIdentity<IdentityUser>(options =>
+            services.AddDefaultIdentity<ApplicationUser>(options =>
                 {
                     options.SignIn.RequireConfirmedAccount = false;
                     options.Password.RequireDigit = false;
@@ -57,7 +58,7 @@ namespace ScanApp
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddRoleManager<RoleManager<IdentityRole>>()
-                .AddUserManager<UserManager<IdentityUser>>();
+                .AddUserManager<UserManager<ApplicationUser>>();
 
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddRazorPages();

@@ -19,4 +19,8 @@
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
+  </ItemGroup>
+
 </Project>
