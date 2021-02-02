@@ -1,18 +1,16 @@
-using System;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ScanApp.Application.Models;
-using ScanApp.Areas.Identity;
+using ScanApp.Application.Common.Entities;
+using ScanApp.Application.Common.Installers;
+using ScanApp.Common.Installers;
 using ScanApp.Data;
-using ScanApp.Infrastructure.Persistence;
+using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
 
 namespace ScanApp
@@ -27,17 +25,12 @@ namespace ScanApp
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                {
-                    options.UseSqlServer(Configuration.GetConnectionString("TestConnection"));
-                });
-
             // login page is displayed if user is not authorized - also on startup
             services.AddAuthorization(options =>
                 {
@@ -46,36 +39,17 @@ namespace ScanApp
                         .Build();
                 });
 
-            services.AddDefaultIdentity<ApplicationUser>(options =>
-                {
-                    options.SignIn.RequireConfirmedAccount = false;
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequiredLength = 3;
-
-                    // lockout setup
-                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
-                    options.Lockout.MaxFailedAccessAttempts = 2;
-                    options.Lockout.AllowedForNewUsers = true;
-                })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddRoleManager<RoleManager<IdentityRole>>()
-                .AddUserManager<UserManager<ApplicationUser>>();
-
-            services.AddMediatR(typeof(ApplicationUser));
+            services.AddSecurityConfiguration();
+            services.AddMediatR();
+            services.AddDatabases(Configuration);
             services.AddDatabaseDeveloperPageExceptionFilter();
+
             services.AddRazorPages();
-            services.AddServerSideBlazor().AddCircuitOptions(o =>
-            {
-                if (_env.IsDevelopment()) //only add details when debugging
-                {
-                    o.DetailedErrors = true;
-                }
-            });
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
+
+            // Only add details for Signal circuit when debugging
+            services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = _env.IsDevelopment());
+            services.AddValidatorsFromAssembly(typeof(ApplicationUser).Assembly);
+
             services.AddSingleton<WeatherForecastService>();
         }
 

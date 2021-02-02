@@ -1,9 +1,14 @@
 ﻿@page "/counter"
 @using Microsoft.AspNetCore.Identity;
-@using ScanApp.Application.Models
+@using Microsoft.EntityFrameworkCore
+@using ScanApp.Application.Common.Entities
+@using ScanApp.Infrastructure.Persistence
+@using System.Net
+@using ScanApp.Application.Common.Interfaces
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject RoleManager<IdentityRole> roleManager
 @inject UserManager<ApplicationUser> userManager
+@inject IApplicationDbContext AppDbContext
 
 <h1>Counter</h1>
 
@@ -26,6 +31,12 @@
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
     </NotAuthorized>
 </AuthorizeView>
+@foreach (var usr in users)
+{
+    <tr>
+        <td>@usr</td>
+    </tr>
+}
 
 @code {
     [CascadingParameter]
@@ -33,6 +44,26 @@
 
     private int currentCount = 0;
     private string name;
+    private List<string> users = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await GetUsers();
+    }
+
+    private async Task<List<string>> GetUsers()
+    {
+        var users = await AppDbContext.Users.ToListAsync();
+        await AppDbContext.SaveChangesAsync();
+        List<string> a = new List<string>();
+
+        foreach (var applicationUser in users)
+        {
+            a.Add(applicationUser.UserName);
+            await Task.Delay(250);
+        }
+        return a;
+    }
 
     private async Task<string> GetName()
     {

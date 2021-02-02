@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ScanApp.Application.Models;
+using ScanApp.Application.Common.Entities;
+using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Infrastructure.Persistence
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -15,8 +18,9 @@ namespace ScanApp.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-            builder.Entity<ApplicationUser>().ToTable("Users", "sca");
+            // small configurations here - no point in extracting one liners to separate files
             builder.Entity<IdentityRole>().ToTable("Roles", "sca");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "sca");
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "sca");
