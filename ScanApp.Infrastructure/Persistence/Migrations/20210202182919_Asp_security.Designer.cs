@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ScanApp.Infrastructure.Persistence;
 
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210201184944_Asp_security")]
+    [Migration("20210202182919_Asp_security")]
     partial class Asp_security
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -175,7 +176,8 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
