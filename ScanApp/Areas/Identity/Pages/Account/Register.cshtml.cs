@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using ScanApp.Application.Models;
+using ScanApp.Application.Common.Entities;
 
 namespace ScanApp.Areas.Identity.Pages.Account
 {

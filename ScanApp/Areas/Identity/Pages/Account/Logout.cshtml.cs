@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
-using ScanApp.Application.Models;
+using ScanApp.Application.Common.Entities;
 
 namespace ScanApp.Areas.Identity.Pages.Account
 {
