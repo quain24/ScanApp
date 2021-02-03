@@ -1,8 +1,28 @@
 {
   "dependencies": {
     "mssql1": {
-      "type": "mssql.local",
-      "connectionId": "DefaultConnection"
+      "type": "mssql",
+      "connectionId": "DilosReadOnly",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "mssql3": {
+      "type": "mssql",
+      "connectionId": "DilosDEV",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "mssql4": {
+      "type": "mssql",
+      "connectionId": "DefaultConnection",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "mssql5": {
+      "type": "mssql",
+      "connectionId": "HomeBlaz",
+      "suggestion": "true",
+      "ignored": "true"
     }
   }
 }

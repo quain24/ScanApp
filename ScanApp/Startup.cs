@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -42,6 +41,7 @@ namespace ScanApp
             services.AddSecurityConfiguration();
             services.AddMediatR();
             services.AddDatabases(Configuration);
+            services.AddRadzenConfiguration();
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddRazorPages();

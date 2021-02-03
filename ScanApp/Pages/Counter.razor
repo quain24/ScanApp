@@ -16,16 +16,16 @@
 
 <AuthorizeView Roles="admin">
     <Authorized>
-        <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+        <RadzenButton Click="@IncrementCount">Click me</RadzenButton>
     </Authorized>
     <NotAuthorized>
-        <button class="btn btn-primary" @onclick="IncrementCount">Not auth click</button>
+        <RadzenButton Click="@IncrementCount">Unauthorized click</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 @name
 <AuthorizeView Roles="new_role">
     <Authorized>
-        <button class="btn btn-primary" @onclick="IncrementCount">Authorized</button>
+        <button class="btn btn-primary" @onclick="IncrementCount" onmouseover="null">Authorized</button>
     </Authorized>
     <NotAuthorized>
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
