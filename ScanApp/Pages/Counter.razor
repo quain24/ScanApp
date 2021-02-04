@@ -1,4 +1,5 @@
-﻿@page "/counter"
+﻿@attribute [Authorize]
+@page "/counter"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Application.Common.Entities
@@ -28,9 +29,13 @@
         <button class="btn btn-primary" @onclick="IncrementCount" onmouseover="null">Authorized</button>
     </Authorized>
     <NotAuthorized>
+        @context.User.Identity.IsAuthenticated
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
+        <button class="btn btn-primary" @onclick="TestLogoff" onmouseover="null">Update logoff</button>
     </NotAuthorized>
 </AuthorizeView>
+
+@userAuthenticated
 @foreach (var usr in users)
 {
     <tr>
@@ -45,11 +50,29 @@
     private int currentCount = 0;
     private string name;
     private List<string> users = new List<string>();
+    string userAuthenticated;
 
-    protected override async Task OnInitializedAsync()
+    public async Task TestLogoff()
     {
-        users = await GetUsers();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var currentUser = await userManager.GetUserAsync(user);
+        await userManager.UpdateSecurityStampAsync(currentUser);
+
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userAuthenticated = $"{ user.Identity.Name} is authenticated.";
+        }
+        else
+        {
+            userAuthenticated = "The user is NOT authenticated.";
+        }
     }
+
 
     private async Task<List<string>> GetUsers()
     {
@@ -74,6 +97,18 @@
     protected override async Task OnParametersSetAsync()
     {
         name = await GetName();
+
+        users = await GetUsers();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            userAuthenticated = $"{ user.Identity.Name} is authenticated.";
+        }
+        else
+        {
+            userAuthenticated = "The user is NOT authenticated.";
+        }
     }
 
     private void IncrementCount()

@@ -23,6 +23,15 @@
       "connectionId": "HomeBlaz",
       "suggestion": "true",
       "ignored": "true"
+    },
+    "secrets1": {
+      "type": "secrets.user"
+    },
+    "mssql2": {
+      "resourceId": null,
+      "type": "mssql.onprem",
+      "connectionId": "TestConnection",
+      "secretStore": "LocalSecretsFile"
     }
   }
 }
