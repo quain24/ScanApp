@@ -10,7 +10,7 @@ using ScanApp.Infrastructure.Persistence;
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210202182919_Asp_security")]
+    [Migration("20210203154410_Asp_security")]
     partial class Asp_security
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,7 +156,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.ToTable("UserTokens", "sca");
                 });
 
-            modelBuilder.Entity("ScanApp.Application.Models.ApplicationUser", b =>
+            modelBuilder.Entity("ScanApp.Application.Common.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -236,7 +236,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ScanApp.Application.Models.ApplicationUser", null)
+                    b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -245,7 +245,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ScanApp.Application.Models.ApplicationUser", null)
+                    b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -260,7 +260,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ScanApp.Application.Models.ApplicationUser", null)
+                    b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -269,7 +269,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ScanApp.Application.Models.ApplicationUser", null)
+                    b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
