@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -30,24 +29,15 @@ namespace ScanApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // login page is displayed if user is not authorized - also on startup
-            services.AddAuthorization(options =>
-                {
-                    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                        .RequireAuthenticatedUser()
-                        .Build();
-                });
+            services.AddRazorPages();
+            services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = _env.IsDevelopment());
 
             services.AddSecurityConfiguration();
             services.AddMediatR();
-            services.AddDatabases(Configuration);
             services.AddRadzenConfiguration();
+            services.AddDatabases(Configuration);
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddRazorPages();
-
-            // Only add details for Signal circuit when debugging
-            services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = _env.IsDevelopment());
             services.AddValidatorsFromAssembly(typeof(ApplicationUser).Assembly);
 
             services.AddSingleton<WeatherForecastService>();
