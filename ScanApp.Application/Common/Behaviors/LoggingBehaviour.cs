@@ -1,7 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Reflection;
+using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,28 +10,46 @@ namespace ScanApp.Application.Common.Behaviors
 {
     public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
+        private static string NoData = "{}";
         private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
+        private readonly IHttpContextAccessor _accessor;
 
-        public LoggingBehaviour(ILogger<LoggingBehaviour<TRequest, TResponse>> logger)
+        public LoggingBehaviour(ILogger<LoggingBehaviour<TRequest, TResponse>> logger, IHttpContextAccessor accessor)
         {
             _logger = logger;
+            _accessor = accessor;
         }
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
-            //Request
-            _logger.LogInformation("Handling {request}", typeof(TRequest).Name);
-            var myType = request.GetType();
-            var props = new List<PropertyInfo>(myType.GetProperties());
-            foreach (var prop in props)
+            var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
+            var requestName = typeof(TRequest).Name;
+            _logger.LogInformation("[START] [{name}] {request}", userName, requestName);
+
+            try
             {
-                object propValue = prop.GetValue(request, null);
-                _logger.LogInformation("{Property} : {@Value}", prop.Name, propValue);
+                if (TryGetDataFrom(request, out var data))
+                    _logger.LogInformation("[DATA] [{name}] {requestName}: {props}", userName, requestName, data);
             }
+            catch (NotSupportedException)
+            {
+                _logger.LogInformation("[Serialization ERROR] [{name}] {requestName} - Could not serialize the request data.", userName, requestName);
+            }
+
             var response = await next();
-            //Response
-            _logger.LogInformation("Handled {request} with response of {@response}", typeof(TRequest).Name, typeof(TResponse).Name);
+
+            _logger.LogInformation("[FINISHED] [{name}] {request} with response of type {response}", userName, requestName, typeof(TResponse).Name);
             return response;
+        }
+
+        private static bool TryGetDataFrom(TRequest request, out string data)
+        {
+            data = string.Empty;
+            var deserializedData = JsonSerializer.Serialize(request);
+            if (deserializedData.Equals(NoData, StringComparison.OrdinalIgnoreCase))
+                return false;
+            data = deserializedData;
+            return true;
         }
     }
 }

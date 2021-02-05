@@ -18,10 +18,18 @@ namespace ScanApp.Application.Common.Behaviors
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
             var timer = Stopwatch.StartNew();
-            var response = await next();
-            timer.Stop();
+            TResponse response;
 
-            _logger.LogInformation("Handled {request} in {time} milliseconds", typeof(TRequest).Name, timer.ElapsedMilliseconds);
+            try
+            {
+                response = await next();
+            }
+            finally
+            {
+                timer.Stop();
+                _logger.LogInformation("[EXECUTION TIME] {request} {time} milliseconds", typeof(TRequest).Name, timer.ElapsedMilliseconds);
+            }
+
             return response;
         }
     }

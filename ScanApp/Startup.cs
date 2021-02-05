@@ -37,6 +37,7 @@ namespace ScanApp
             services.AddRadzenConfiguration();
             services.AddDatabases(Configuration);
             services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddHttpContextAccessor();
 
             services.AddValidatorsFromAssembly(typeof(ApplicationUser).Assembly);
 
