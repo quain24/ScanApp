@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using ScanApp.Application.Common.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Entities;
 
 namespace ScanApp.Areas.Identity.Pages.Account
 {
@@ -68,9 +68,10 @@ namespace ScanApp.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
+            return Task.CompletedTask;
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
