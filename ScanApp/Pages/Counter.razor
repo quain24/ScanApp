@@ -4,23 +4,18 @@
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Application.Common.Entities
 @using ScanApp.Infrastructure.Persistence
-@using System.Net
 @using MediatR
-@using Microsoft.Extensions.DependencyInjection
 @using ScanApp.Application.Admin.Commands
 @using ScanApp.Application.Admin.Queries
-@using ScanApp.Application.Common.Interfaces
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
-@inject IServiceScopeFactory ScopeFactory
 @inject IMediator Mediator
-@inject IApplicationDbContext context
 
 @inherits OwningComponentBase
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<p>Current count: @_currentCount</p>
 
 <AuthorizeView Roles="admin">
     <Authorized>
@@ -30,7 +25,7 @@
         <RadzenButton Click="@IncrementCount">Unauthorized click</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
-@name
+@_name
 <AuthorizeView Roles="new_role">
     <Authorized>
         <button class="btn btn-primary" @onclick="IncrementCount" onmouseover="null">Authorized</button>
@@ -38,13 +33,13 @@
     <NotAuthorized>
         @context.User.Identity.IsAuthenticated
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
-        <RadzenButton Click="@TestLogoff" Disabled="MayRender">Sign out user "Test"</RadzenButton>
-        <RadzenButton Click="@TestLogoffUm" Disabled="disabled">Sign out user "Test" user manager way</RadzenButton>
+        <RadzenButton Click="@TestLogoff" Disabled="_mayRender">Sign out user "Test"</RadzenButton>
+        <RadzenButton Click="@TestLogoffUm" Disabled="_disabled">Sign out user "Test" user manager way</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 
-@userAuthenticated
-@foreach (var usr in users)
+@_userAuthenticated
+@foreach (var usr in _users)
 {
     <tr>
         <td>@usr</td>
@@ -53,15 +48,14 @@
 
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
-    bool disabled = false;
-    private int currentCount = 0;
-    private string name;
-    private List<string> users = new List<string>();
-    string userAuthenticated;
-    bool MayRender = false;
-    //protected override bool ShouldRender() => MayRender;
+    bool _disabled = false;
+    private int _currentCount = 0;
+    private string _name;
+    private List<string> _users = new List<string>();
+    string _userAuthenticated;
+    bool _mayRender = false;
     UserManager<ApplicationUser> userManager;
     RoleManager<IdentityRole> roleManager;
 
@@ -69,20 +63,19 @@
     {
         base.OnInitializedAsync();
         userManager = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
-        roleManager = (RoleManager<IdentityRole>) ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
+        roleManager = (RoleManager<IdentityRole>)ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
     }
 
     public async Task TestLogoffUm()
     {
-        disabled = true;
+        _disabled = true;
         var res = await Mediator.Send(new ChangeUserSecurityStampCommand("test"));
-        disabled = false;
+        _disabled = false;
     }
 
     public async Task TestLogoff()
     {
-        MayRender = true;
-        int saved = 0;
+        _mayRender = true;
         await using (var context = AppDbContextFactory.CreateDbContext())
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -90,9 +83,9 @@
 
             var mod = await context.Users.FirstAsync(u => u.UserName == "test");
             mod.SecurityStamp = Guid.NewGuid().ToString();
-            saved = await context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
-        MayRender = false;
+        _mayRender = false;
     }
 
     private async Task<List<string>> GetUsers()
@@ -103,31 +96,24 @@
 
     private async Task<string> GetName()
     {
-        var t = await authenticationStateTask;
+        var t = await AuthenticationStateTask;
         return t.User.Identity.Name;
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        name = await GetName();
+        _name = await GetName();
 
-        users = await GetUsers();
+        _users = await GetUsers();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        if (user.Identity.IsAuthenticated)
-        {
-            userAuthenticated = $"{ user.Identity.Name} is authenticated.";
-        }
-        else
-        {
-            userAuthenticated = "The user is NOT authenticated.";
-        }
+        _userAuthenticated = user.Identity.IsAuthenticated ? $"{ user.Identity.Name} is authenticated." : "The user is NOT authenticated.";
     }
 
     private void IncrementCount()
     {
-        currentCount++;
-        name = name + "A";
+        _currentCount++;
+        _name += "A";
     }
 
     private async Task AddRole()
