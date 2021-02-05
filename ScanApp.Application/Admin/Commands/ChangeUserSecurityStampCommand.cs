@@ -9,11 +9,11 @@ namespace ScanApp.Application.Admin.Commands
 {
     public class ChangeUserSecurityStampCommand : IRequest<bool>
     {
-        public string User { get; }
+        public string UserName { get; }
 
         public ChangeUserSecurityStampCommand(string userName)
         {
-            User = userName;
+            UserName = userName;
         }
     }
 
@@ -31,8 +31,8 @@ namespace ScanApp.Application.Admin.Commands
             using (var scope = _factory.CreateScope())
             {
                 var manager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var user = await manager.FindByNameAsync("test");
-                var result = await manager.UpdateSecurityStampAsync(user);
+                var user = await manager.FindByNameAsync(request.UserName).ConfigureAwait(false);
+                var result = await manager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
                 return result.Succeeded;
             }
         }
