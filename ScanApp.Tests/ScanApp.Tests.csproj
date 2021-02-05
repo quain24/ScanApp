@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
+    <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
     <ProjectReference Include="..\ScanApp.Domain\ScanApp.Domain.csproj" />
     <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
   </ItemGroup>

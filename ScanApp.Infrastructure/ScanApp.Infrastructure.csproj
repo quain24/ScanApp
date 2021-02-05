@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
+    <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
   </ItemGroup>
 
 </Project>
