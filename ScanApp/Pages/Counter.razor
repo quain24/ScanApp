@@ -5,11 +5,18 @@
 @using ScanApp.Application.Common.Entities
 @using ScanApp.Infrastructure.Persistence
 @using System.Net
+@using MediatR
+@using Microsoft.Extensions.DependencyInjection
+@using ScanApp.Application.Admin.Commands
+@using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject RoleManager<IdentityRole> roleManager
-@inject UserManager<ApplicationUser> userManager
-@inject IApplicationDbContext AppDbContext
+@inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
+@inject IServiceScopeFactory ScopeFactory
+@inject IMediator Mediator
+@inject IApplicationDbContext context
+
+@inherits OwningComponentBase
 
 <h1>Counter</h1>
 
@@ -31,7 +38,8 @@
     <NotAuthorized>
         @context.User.Identity.IsAuthenticated
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
-        <button class="btn btn-primary" @onclick="TestLogoff" onmouseover="null">Update logoff</button>
+        <RadzenButton Click="@TestLogoff" Disabled="MayRender">Sign out user "Test"</RadzenButton>
+        <RadzenButton Click="@TestLogoffUm" Disabled="disabled">Sign out user "Test" user manager way</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -47,45 +55,50 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
+    bool disabled = false;
     private int currentCount = 0;
     private string name;
     private List<string> users = new List<string>();
     string userAuthenticated;
+    bool MayRender = false;
+    //protected override bool ShouldRender() => MayRender;
+    UserManager<ApplicationUser> userManager;
+    RoleManager<IdentityRole> roleManager;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitializedAsync();
+        userManager = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
+        roleManager = (RoleManager<IdentityRole>) ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
+    }
+
+    public async Task TestLogoffUm()
+    {
+        disabled = true;
+        var res = await Mediator.Send(new ChangeUserSecurityStampCommand("test"));
+        disabled = false;
+    }
 
     public async Task TestLogoff()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        var currentUser = await userManager.GetUserAsync(user);
-        await userManager.UpdateSecurityStampAsync(currentUser);
-
-        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
-
-        if (user.Identity.IsAuthenticated)
+        MayRender = true;
+        int saved = 0;
+        await using (var context = AppDbContextFactory.CreateDbContext())
         {
-            userAuthenticated = $"{ user.Identity.Name} is authenticated.";
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            var mod = await context.Users.FirstAsync(u => u.UserName == "test");
+            mod.SecurityStamp = Guid.NewGuid().ToString();
+            saved = await context.SaveChangesAsync();
         }
-        else
-        {
-            userAuthenticated = "The user is NOT authenticated.";
-        }
+        MayRender = false;
     }
-
 
     private async Task<List<string>> GetUsers()
     {
-        var users = await AppDbContext.Users.ToListAsync();
-        await AppDbContext.SaveChangesAsync();
-        List<string> a = new List<string>();
-
-        foreach (var applicationUser in users)
-        {
-            a.Add(applicationUser.UserName);
-            await Task.Delay(250);
-        }
-        return a;
+        var result = await Mediator.Send(new GetAllUsersQuery());
+        return result.Select(u => u.UserName).ToList();
     }
 
     private async Task<string> GetName()

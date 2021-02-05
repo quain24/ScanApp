@@ -1,7 +1,13 @@
 ﻿@page "/fetchdata"
+@inherits OwningComponentBase
 
 @using ScanApp.Data
+@using ScanApp.Application.Common.Entities
+@using Microsoft.AspNetCore.Server.HttpSys
+@using Microsoft.AspNetCore.Identity;
+@using ScanApp.Application.Common.Interfaces
 @inject WeatherForecastService ForecastService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h1>Weather forecast</h1>
 
@@ -43,4 +49,34 @@ else
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var appdb = (IApplicationDbContext)ScopedServices.GetService(typeof(IApplicationDbContext));
+        var mana = (UserManager<ApplicationUser>) ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        //var ty = appdb.Users.Single(u => u.UserName == user.Identity.Name);
+        //ty.PhoneNumber = Guid.NewGuid().ToString();
+        //int uu = 0;
+        //while (uu == 0)
+        //{
+        //    try
+        //    {
+        //        uu = await appdb.SaveChangesAsync();
+        //    }
+        //    catch { }
+        //}
+
+
+        var currentUser = await mana.FindByNameAsync(user.Identity.Name);
+        if (currentUser is not null)
+        {
+            await mana.UpdateSecurityStampAsync(currentUser);
+        }
+        await base.OnParametersSetAsync();
+        mana.Dispose();
+    }
+
 }

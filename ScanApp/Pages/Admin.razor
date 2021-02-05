@@ -1,0 +1,48 @@
+﻿@attribute [Authorize]
+@page "/admin"
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.EntityFrameworkCore
+@using ScanApp.Application.Common.Entities
+@using ScanApp.Infrastructure.Persistence
+@using System.Net
+@using MediatR
+@using Microsoft.Extensions.DependencyInjection
+@using ScanApp.Application.Admin.Commands
+@using ScanApp.Application.Admin.Queries
+@using ScanApp.Application.Common.Interfaces
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
+@inject IServiceScopeFactory ScopeFactory
+@inject IMediator Mediator
+@inject IApplicationDbContext context
+
+@inherits OwningComponentBase
+
+<h1>Admin page</h1>
+
+<RadzenGrid Count="@Count" Data="@Users" LoadData="@LoadData" TItem="ApplicationUser" ColumnWidth="150px" AllowPaging="true" PageSize="4">
+    <Columns>
+        <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
+        <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
+        <RadzenGridColumn TItem="ApplicationUser" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
+    </Columns>
+</RadzenGrid>
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    int Count;
+    List<ApplicationUser> Users;
+
+
+    async Task LoadData(LoadDataArgs args)
+    {
+        var result = await Mediator.Send(new GetAllUsersQuery());
+        Users = result.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
+        Count = result.Count;
+
+        await InvokeAsync(StateHasChanged);
+    }
+}
