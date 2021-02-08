@@ -27,7 +27,7 @@ namespace ScanApp.Application.Admin.Queries
             using (var scope = _factory.CreateScope())
             {
                 var manager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var user = await manager.Users.ToListAsync(cancellationToken);
+                var user = await manager.Users.ToListAsync(cancellationToken).ConfigureAwait(false);
                 return user;
             }
         }
