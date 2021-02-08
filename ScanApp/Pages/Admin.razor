@@ -11,6 +11,7 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
 @using System.Linq.Dynamic.Core
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
@@ -22,42 +23,45 @@
 @inherits OwningComponentBase
 
 <h1>Admin page</h1>
-<div class="d-flex flex-wrap">
-    <div class="p-2 flex-grow-1">
-        <RadzenGrid Data="@Users" Count="@Count" LoadData="@LoadData" TItem="ApplicationUser" AllowFiltering="true" RowSelect="@(args => SelectedUser = args)" ColumnWidth="150px" AllowPaging="true" PageSize="4">
-            <Columns>
-                <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
-                <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
-                <RadzenGridColumn TItem="ApplicationUser" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
-            </Columns>
-        </RadzenGrid>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-8">
+            <RadzenGrid Responsive="false" Data="@_users" Count="@_count" LoadData="@LoadData" TItem="ApplicationUser" AllowFiltering="true" RowSelect="@(args => _selectedUser = args)" AllowColumnResize="true" AllowPaging="true" PageSize="4">
+                <Columns>
+                    <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
+                    <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
+                    <RadzenGridColumn TItem="ApplicationUser" Property="ConcurrencyStamp" Title="CStamp" ></RadzenGridColumn>
+                </Columns>
+            </RadzenGrid>
+        </div>
+        <div class="col-sm-4">
+            <RadzenGrid @ref="_rolesGrid" Count="@_roleCount" Data="@_roles" LoadData="@LoadRoles" TItem="IdentityRole" RowUpdate="@DatabaseSaveCallback" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single">
+                <Columns>
+                    <RadzenGridColumn TItem="IdentityRole" Property="Id" Title="ID"></RadzenGridColumn>
+                    <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
+                        <EditTemplate Context="identityRole">
+                            <RadzenTextBox @bind-value="identityRole.Name" Placeholder="@identityRole.Name"></RadzenTextBox>
+                        </EditTemplate>
+                    </RadzenGridColumn>
+                    <RadzenGridColumn TItem="IdentityRole" Property="ConcurrencyStamp" Title="CStamp">
+                    </RadzenGridColumn>
+                    <RadzenGridColumn TItem="IdentityRole" Context="SampleEditContext" Bubble="false" Property="ConcurrencyStamp">
+                        <Template Context="identityRole">
+                            <RadzenButton Icon="edit" Size="ButtonSize.Medium" Click="@(args => EditRow(identityRole))">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="identityRole">
+                            <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
+                            </RadzenButton>
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(identityRole))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenGridColumn>
+                </Columns>
+            </RadzenGrid>
+        </div>
     </div>
-    <div class="p-2">
-        <RadzenGrid @ref="ordersGrid" Count="@RoleCount" Data="@Roles" LoadData="@LoadRoles" TItem="IdentityRole" ColumnWidth="150px" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single" RowUpdate="@(aa => DatabaseSaveCallback(aa))">
-            <Columns>
-                <RadzenGridColumn TItem="IdentityRole" Property="Id" Title="ID"></RadzenGridColumn>
-                <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
-                    <EditTemplate Context="identityRole">
-                        <RadzenTextBox @bind-value="identityRole.Name" Placeholder="@identityRole.Name"></RadzenTextBox>
-                    </EditTemplate>
-                </RadzenGridColumn>
-                <RadzenGridColumn TItem="IdentityRole" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
-                <RadzenGridColumn TItem="IdentityRole" Context="SampleEditContext" Bubble="false" Property="ConcurrencyStamp">
-                    <Template Context="identityRole">
-                        <RadzenButton Icon="edit" Size="ButtonSize.Medium" Click="@(args => EditRow(identityRole))">
-                        </RadzenButton>
-                    </Template>
-                    <EditTemplate Context="identityRole">
-                        <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
-                        </RadzenButton>
-                        <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(identityRole))">
-                        </RadzenButton>
-                    </EditTemplate>
-                </RadzenGridColumn>
-            </Columns>
-        </RadzenGrid>
-    </div>
-    <RadzenButton Click=@(args => ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Duration = 2000, Detail = $"User {SelectedUser?.UserName} was clicked"}))>@SelectedUser?.UserName</RadzenButton>
+    <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="Add"  />
 </div>
 
 @code {
@@ -65,13 +69,12 @@
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
     private IApplicationDbContext _applicationDbContext { get; set; }
 
-    int Count;
-    int RoleCount;
-    IEnumerable<ApplicationUser> Users;
-    List<IdentityRole> Roles;
-    ApplicationUser SelectedUser;
-    RadzenGrid<IdentityRole> ordersGrid;
-    bool MayRender = true;
+    int _count;
+    int _roleCount;
+    IEnumerable<ApplicationUser> _users;
+    IList<IdentityRole> _roles;
+    ApplicationUser _selectedUser;
+    RadzenGrid<IdentityRole> _rolesGrid;
     //protected override bool ShouldRender() => MayRender;
 
     protected override void OnInitialized()
@@ -84,17 +87,17 @@
 
     void EditRow(IdentityRole order)
     {
-        ordersGrid.EditRow(order);
+        _rolesGrid.EditRow(order);
     }
 
     void SaveRow(IdentityRole order)
     {
-        ordersGrid.UpdateRow(order);
+        _rolesGrid.UpdateRow(order);
     }
 
     void CancelEdit(IdentityRole order)
     {
-        ordersGrid.CancelEditRow(order);
+        _rolesGrid.CancelEditRow(order);
 
         var orderEntry = _applicationDbContext.Entry(order);
         if (orderEntry.State == EntityState.Modified)
@@ -118,8 +121,8 @@
         if (!string.IsNullOrEmpty(args.Filter))
             query = query.Where(args.Filter);
 
-        Users = await query.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName).ToListAsync();
-        Count = _applicationDbContext.Users.Count();
+        _users = await query.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName).ToListAsync();
+        _count = _applicationDbContext.Users.Count();
 
         //var result = await Mediator.Send(new GetAllUsersQuery());
         //Users = result.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
@@ -130,12 +133,25 @@
 
     async Task LoadRoles(LoadDataArgs args)
     {
-        MayRender = false;
         var result = await Mediator.Send(new GetAllUserRolesQuery());
-        Roles = result.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(r => r.Name).ToList();
-        RoleCount = result.Count;
-        MayRender = true;
-        await InvokeAsync(StateHasChanged);
+
+        if (result.Conclusion)
+        {
+            _roles = result.Output.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(r => r.Name).ToList();
+            _roleCount = result.Output.Count;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            ShowNotification(new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Error,
+                Duration = 5000, 
+                Summary = "Could not load roles",
+                Detail = $"Something happened, roles could not be loaded:\n{result.ErrorDescription.ErrorMessage}"
+            });
+        }
+
     }
 
     protected override void Dispose(bool disposing)
