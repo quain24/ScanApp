@@ -22,6 +22,7 @@ namespace ScanApp
         {
             _env = env;
             Configuration = configuration;
+            ValidatorOptions.Global.LanguageManager.Enabled = false;
         }
 
         private IConfiguration Configuration { get; }

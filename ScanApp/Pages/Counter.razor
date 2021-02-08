@@ -6,7 +6,9 @@
 @using ScanApp.Infrastructure.Persistence
 @using MediatR
 @using ScanApp.Application.Admin.Commands
+@using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
 @using ScanApp.Application.Admin.Queries
+@using ScanApp.Application.Admin.Queries.GetAllUsers
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IMediator Mediator
@@ -91,7 +93,14 @@
     private async Task<List<string>> GetUsers()
     {
         var result = await Mediator.Send(new GetAllUsersQuery());
-        return result.Select(u => u.UserName).ToList();
+
+        if (result.Conclusion)
+        {
+            return result.Output.Select(u => u.UserName).ToList();
+        }
+
+
+        return new List<string>(0);
     }
 
     private async Task<string> GetName()
@@ -126,7 +135,7 @@
         {
             Name = "new_role"
         });
-        
+
 
         var t = await userManager.AddToRoleAsync(currentUser, "new_role");
     }
