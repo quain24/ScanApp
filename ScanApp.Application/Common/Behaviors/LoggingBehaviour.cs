@@ -8,9 +8,13 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.Behaviors
 {
+    /// <summary>
+    /// Logs every MediatR request made - Provide user name of user that executed this request and<br/>
+    /// data included in request, if any
+    /// </summary>
     public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
     {
-        private static string NoData = "{}";
+        private const string NoData = "{}";
         private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
         private readonly IHttpContextAccessor _accessor;
 
@@ -24,6 +28,7 @@ namespace ScanApp.Application.Common.Behaviors
         {
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
             var requestName = typeof(TRequest).Name;
+
             _logger.LogInformation("[START] [{name}] {request}", userName, requestName);
 
             try

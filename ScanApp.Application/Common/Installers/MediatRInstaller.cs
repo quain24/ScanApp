@@ -15,6 +15,7 @@ namespace ScanApp.Application.Common.Installers
             services.AddMediatR(typeof(MediatRInstaller));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TimingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
             return services;
         }
