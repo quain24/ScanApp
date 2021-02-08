@@ -1,4 +1,5 @@
 using FluentValidation;
+using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +27,7 @@ namespace ScanApp
         private IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        // Try to create installers to keep this method as clean as possible.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
@@ -37,6 +38,7 @@ namespace ScanApp
             services.AddRadzenConfiguration();
             services.AddDatabases(Configuration);
             services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
 
             services.AddValidatorsFromAssembly(typeof(ApplicationUser).Assembly);
