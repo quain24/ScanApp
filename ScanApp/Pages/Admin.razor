@@ -10,39 +10,145 @@
 @using ScanApp.Application.Admin.Commands
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
+@using System.Linq.Dynamic.Core
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
 @inject IMediator Mediator
 @inject IApplicationDbContext context
+@inject NotificationService NotificationService
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 
 @inherits OwningComponentBase
 
 <h1>Admin page</h1>
-
-<RadzenGrid Count="@Count" Data="@Users" LoadData="@LoadData" TItem="ApplicationUser" ColumnWidth="150px" AllowPaging="true" PageSize="4">
-    <Columns>
-        <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
-        <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
-        <RadzenGridColumn TItem="ApplicationUser" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
-    </Columns>
-</RadzenGrid>
-
+<div class="d-flex flex-wrap">
+    <div class="p-2 flex-grow-1">
+        <RadzenGrid Data="@Users" Count="@Count" LoadData="@LoadData" TItem="ApplicationUser" AllowFiltering="true" RowSelect="@(args => SelectedUser = args)" ColumnWidth="150px" AllowPaging="true" PageSize="4">
+            <Columns>
+                <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
+                <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
+                <RadzenGridColumn TItem="ApplicationUser" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
+            </Columns>
+        </RadzenGrid>
+    </div>
+    <div class="p-2">
+        <RadzenGrid @ref="ordersGrid" Count="@RoleCount" Data="@Roles" LoadData="@LoadRoles" TItem="IdentityRole" ColumnWidth="150px" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single" RowUpdate="@(aa => DatabaseSaveCallback(aa))">
+            <Columns>
+                <RadzenGridColumn TItem="IdentityRole" Property="Id" Title="ID"></RadzenGridColumn>
+                <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
+                    <EditTemplate Context="identityRole">
+                        <RadzenTextBox @bind-value="identityRole.Name" Placeholder="@identityRole.Name"></RadzenTextBox>
+                    </EditTemplate>
+                </RadzenGridColumn>
+                <RadzenGridColumn TItem="IdentityRole" Property="ConcurrencyStamp" Title="CStamp"></RadzenGridColumn>
+                <RadzenGridColumn TItem="IdentityRole" Context="SampleEditContext" Bubble="false" Property="ConcurrencyStamp">
+                    <Template Context="identityRole">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Medium" Click="@(args => EditRow(identityRole))">
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="identityRole">
+                        <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
+                        </RadzenButton>
+                        <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(identityRole))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenGridColumn>
+            </Columns>
+        </RadzenGrid>
+    </div>
+    <RadzenButton Click=@(args => ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Duration = 2000, Detail = $"User {SelectedUser?.UserName} was clicked"}))>@SelectedUser?.UserName</RadzenButton>
+</div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private IApplicationDbContext _applicationDbContext { get; set; }
 
     int Count;
-    List<ApplicationUser> Users;
+    int RoleCount;
+    IEnumerable<ApplicationUser> Users;
+    List<IdentityRole> Roles;
+    ApplicationUser SelectedUser;
+    RadzenGrid<IdentityRole> ordersGrid;
+    bool MayRender = true;
+    //protected override bool ShouldRender() => MayRender;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitializedAsync();
+        _applicationDbContext = ContextFactory.CreateDbContext();
+        //Users = _applicationDbContext.Users;
+
+    }
+
+    void EditRow(IdentityRole order)
+    {
+        ordersGrid.EditRow(order);
+    }
+
+    void SaveRow(IdentityRole order)
+    {
+        ordersGrid.UpdateRow(order);
+    }
+
+    void CancelEdit(IdentityRole order)
+    {
+        ordersGrid.CancelEditRow(order);
+
+        var orderEntry = _applicationDbContext.Entry(order);
+        if (orderEntry.State == EntityState.Modified)
+        {
+            orderEntry.CurrentValues.SetValues(orderEntry.OriginalValues);
+            orderEntry.State = EntityState.Unchanged;
+        }
+    }
+
+
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+
+        //console.Log($"{message.Severity} notification");
+    }
 
     async Task LoadData(LoadDataArgs args)
     {
-        var result = await Mediator.Send(new GetAllUsersQuery());
-        Users = result.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
-        Count = result.Count;
+        var query = _applicationDbContext.Users.AsQueryable();
+        if (!string.IsNullOrEmpty(args.Filter))
+            query = query.Where(args.Filter);
+
+        Users = await query.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName).ToListAsync();
+        Count = _applicationDbContext.Users.Count();
+
+        //var result = await Mediator.Send(new GetAllUsersQuery());
+        //Users = result.Skip(args.Skip.Value).Take(args.Top.Value).ToList();
+        //Count = result.Count;
 
         await InvokeAsync(StateHasChanged);
     }
+
+    async Task LoadRoles(LoadDataArgs args)
+    {
+        MayRender = false;
+        var result = await Mediator.Send(new GetAllUserRolesQuery());
+        Roles = result.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(r => r.Name).ToList();
+        RoleCount = result.Count;
+        MayRender = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        _applicationDbContext.Dispose();
+    }
+
+    private async Task DatabaseSaveCallback(IdentityRole obj)
+    {
+        obj.NormalizedName = obj.Name.ToUpperInvariant();
+        var edited = _applicationDbContext.Roles.Update(obj);
+        await _applicationDbContext.SaveChangesAsync();
+    }
+
 }
