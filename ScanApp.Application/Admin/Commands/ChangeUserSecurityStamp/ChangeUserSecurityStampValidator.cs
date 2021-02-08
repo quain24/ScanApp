@@ -1,0 +1,14 @@
+﻿using FluentValidation;
+
+namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
+{
+    public class ChangeUserSecurityStampValidator : AbstractValidator<ChangeUserSecurityStampCommand>
+    {
+        public ChangeUserSecurityStampValidator()
+        {
+            RuleFor(c => c.UserName)
+                .NotEmpty()
+                .Length(3, 50);
+        }
+    }
+}
