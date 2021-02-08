@@ -19,7 +19,12 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<IdentityUserToken<string>> UserTokens { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken());
+        EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
         int SaveChanges();
+
+        ValueTask DisposeAsync();
+        void Dispose();
+
 
         ChangeTracker ChangeTracker { get; }
         event EventHandler<SavingChangesEventArgs> SavingChanges;
