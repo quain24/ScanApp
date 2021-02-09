@@ -7,8 +7,7 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
         public ChangeUserSecurityStampValidator()
         {
             RuleFor(c => c.UserName)
-                .NotEmpty()
-                .Length(3, 50);
+                .NotEmpty();
         }
     }
 }

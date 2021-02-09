@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Helpers;
+using ScanApp.Application.Common.Helpers.Result;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
 {
@@ -34,8 +34,11 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
             {
                 var manager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
                 var user = await manager.FindByNameAsync(request.UserName).ConfigureAwait(false);
+                if (user is null)
+                    return new Result(ErrorType.NotFound);
+
                 var result = await manager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
-                return result.Succeeded ? new Result(ResultType.Ok) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
+                return result.Succeeded ? new Result(ResultType.Updated) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
             }
         }
     }
