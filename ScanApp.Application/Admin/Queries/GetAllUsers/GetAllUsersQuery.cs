@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers;
+using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsers
 {

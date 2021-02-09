@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Helpers;
+using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 {

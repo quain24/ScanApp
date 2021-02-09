@@ -9,8 +9,10 @@
 @using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Admin.Queries.GetAllUsers
+@using ScanApp.Application.Admin.Commands.AddNewUserRole
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
+@inject NotificationService NotificationService
 @inject IMediator Mediator
 
 @inherits OwningComponentBase
@@ -71,7 +73,14 @@
     public async Task TestLogoffUm()
     {
         _disabled = true;
-        var res = await Mediator.Send(new ChangeUserSecurityStampCommand("test"));
+        var res = await Mediator.Send(new ChangeUserSecurityStampCommand("12"));
+
+        var message = new NotificationMessage()
+        {
+            Severity = res.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Warning,
+            Detail = res.ErrorDescription.ErrorMessage ?? "none"
+        };
+        NotificationService.Notify(message);
         _disabled = false;
     }
 
@@ -84,6 +93,7 @@
             var user = authState.User;
 
             var mod = await context.Users.FirstAsync(u => u.UserName == "test");
+            var u = Mediator.Send(new AddNewUserRoleCommand("&* ll"));
             mod.SecurityStamp = Guid.NewGuid().ToString();
             await context.SaveChangesAsync();
         }

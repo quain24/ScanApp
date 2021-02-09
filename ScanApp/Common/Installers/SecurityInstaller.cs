@@ -45,6 +45,7 @@ namespace ScanApp.Common.Installers
                     .RequireAuthenticatedUser()
                     .Build();
             });
+
             // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
             services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 
