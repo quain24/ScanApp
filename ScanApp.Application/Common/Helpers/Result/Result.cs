@@ -1,33 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ScanApp.Application.Common.Helpers
+namespace ScanApp.Application.Common.Helpers.Result
 {
     public enum ResultType
     {
         Ok,
-
         Created,
-
         Updated,
-        Upserted,
+        Inserted,
         Replaced,
-
         Deleted
     }
 
     public enum ErrorType
     {
         // User related
+
         NotFound,
         WrongArguments,
         NotValid,
 
         // Auth
+
         NoAuthentication,
         NotAuthorized,
 
         // Logic related
+
         Unknown,
         ConfigurationError,
         NetworkError,
@@ -36,7 +36,6 @@ namespace ScanApp.Application.Common.Helpers
         ///// Specific error code
         ///// </summary>
         //E311 = 311,
-
     }
 
     /// <summary>
@@ -49,7 +48,6 @@ namespace ScanApp.Application.Common.Helpers
         /// </summary>
         public bool Conclusion { get; private set; }
 
-
         /// <summary>
         /// ResultType of the method.
         /// </summary>
@@ -60,16 +58,13 @@ namespace ScanApp.Application.Common.Helpers
         /// </summary>
         public ErrorDescription ErrorDescription { get; private set; }
 
-
-        #region Constructors
-
         /// <summary>
         /// Positive result. Conclusion is true and result type is Ok.
         /// </summary>
         public Result()
         {
             Conclusion = true;
-            this.ResultType = Helpers.ResultType.Ok;
+            this.ResultType = Helpers.Result.ResultType.Ok;
         }
 
         /// <summary>
@@ -81,8 +76,6 @@ namespace ScanApp.Application.Common.Helpers
             Conclusion = true;
             this.ResultType = resultType;
         }
-
-
 
         /// <summary>
         /// Negative result. Conclusion is false.
@@ -122,21 +115,6 @@ namespace ScanApp.Application.Common.Helpers
             ErrorDescription.ErrorType = errorType;
         }
 
-
-
-        #endregion
-
-        /// <summary>
-        /// Will throw SafeRunException if Conclusion is false.
-        /// </summary>
-        public Result EnsureSuccess()
-        {
-            if (!Conclusion)
-                throw ErrorDescription.AsException();
-
-            return this;
-        }
-
         public void Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
@@ -148,9 +126,9 @@ namespace ScanApp.Application.Common.Helpers
     }
 
     /// <summary>
-    /// Generic Result, which is able to return the desired object. So instead of return typ "Customer", it would be Result<Customer>
+    /// Generic Result, which is able to return the desired object. So instead of return typ "Customer", it would be Result &lt;Customer>
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type that this <see cref="Result{T}"/> will try to deliver in <seealso cref="Output"/> property</typeparam>
     public class Result<T> : Result
     {
         /// <summary>
@@ -158,17 +136,33 @@ namespace ScanApp.Application.Common.Helpers
         /// </summary>
         public T Output { get; private set; }
 
+        public Result() : base()
+        {
+        }
 
-        public Result() : base() { }
-        public Result(ResultType resultType) : base(resultType) { }
+        public Result(T value) : base() => Output = value;
 
+        public Result(ResultType resultType) : base(resultType)
+        {
+        }
 
-        public Result(ErrorType errorType) : base(errorType) { }
-        public Result(ErrorType errorType, Exception exception) : base(errorType, exception) { }
-        public Result(ErrorType errorType, string errorMessage, Exception exception = null) : base(errorType, errorMessage, exception) { }
+        public Result(ResultType resultType, T value) : base(resultType) => Output = value;
 
-        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exception) { }
+        public Result(ErrorType errorType) : base(errorType)
+        {
+        }
 
+        public Result(ErrorType errorType, Exception exception) : base(errorType, exception)
+        {
+        }
+
+        public Result(ErrorType errorType, string errorMessage, Exception exception = null) : base(errorType, errorMessage, exception)
+        {
+        }
+
+        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exception)
+        {
+        }
 
         public Result<T> AddMethodInfo(params string[] infos)
         {
@@ -177,83 +171,11 @@ namespace ScanApp.Application.Common.Helpers
             return this;
         }
 
-
         public Result<T> SetOutput(T value)
         {
+            var t = new Result<string>("aaa");
             Output = value;
             return this;
         }
-
-        /// <summary>
-        /// Makes sure that Result is positive and the Output is not null. Otherwise Exception is thrown.
-        /// Not null Output is returned.
-        /// </summary>
-        /// <returns></returns>
-        public T EnsureOutput()
-        {
-            if (Conclusion && Output != null)
-                return Output;
-
-            throw ErrorDescription.AsException();
-        }
-    }
-
-    /// <summary>
-    /// Detailed error description.
-    /// </summary>
-    public class ErrorDescription
-    {
-
-        //[JsonConverter(typeof(StringEnumConverter))]
-        public ErrorType ErrorType { get; set; }
-        public string ErrorMessage { get; set; }
-        public string StackTrace { get; set; }
-
-        private Exception exception;
-        internal Exception Exception
-        {
-            get => exception;
-            set
-            {
-                exception = value;
-                StackTrace = exception?.StackTrace;
-            }
-        }
-
-        public Guid Guid { get; private set; }
-
-        public ErrorDescription()
-        {
-            Guid = Guid.NewGuid();
-        }
-
-        public AppException AsException()
-        {
-            return new AppException(ErrorType, ErrorMessage, Exception);
-        }
-    }
-
-    /// <summary>
-    /// The exception which is able to hold informations about the Result.
-    /// </summary>
-    public class AppException : Exception
-    {
-        public ErrorType ErrorType { get; private set; }
-
-        public AppException(ErrorType errorType) : base(errorType.ToString())
-        {
-            ErrorType = errorType;
-        }
-
-        public AppException(ErrorType errorType, string errorMessage, Exception exception) : base(errorMessage, exception)
-        {
-            ErrorType = errorType;
-        }
-
-        public Result AsResultObject()
-        {
-            return new Result(ErrorType, Message, InnerException);
-        }
-
     }
 }
