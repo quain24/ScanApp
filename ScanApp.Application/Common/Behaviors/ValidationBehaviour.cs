@@ -2,7 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using ScanApp.Application.Common.Helpers;
+using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -32,10 +32,7 @@ namespace ScanApp.Application.Common.Behaviors
         public Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
             if (!_validators.Any())
-            {
-                _logger.LogInformation("[NO VALIDATORS]");
                 return next();
-            }
 
             var failures = _validators
                 .Select(v => v.Validate(request))
@@ -44,18 +41,15 @@ namespace ScanApp.Application.Common.Behaviors
                 .ToList();
 
             if (failures.Count == 0)
-            {
-                _logger.LogInformation("[VALID]");
                 return next();
-            }
 
-            var errors = failures.Select(f => f.ErrorCode + " | " + f.ErrorMessage).ToArray();
             var response = new TResponse();
+            var errors = failures.Select(f => $"\"{f.PropertyName}\" | {f.ErrorCode} | {f.ErrorMessage}").ToArray();
             response.Set(ErrorType.NotValid, errors);
 
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
-            _logger.LogWarning("[VALIDATION ERROR] [{name}] {request} - {errors} ", userName, typeof(TRequest).Name, JsonSerializer.Serialize(errors));
-            
+            _logger.LogWarning("[VALIDATION ERROR] [{name}] {request} - {errors} ", userName, typeof(TRequest).Name, response.ErrorDescription.ErrorMessage);
+
             return Task.FromResult(response);
         }
     }
