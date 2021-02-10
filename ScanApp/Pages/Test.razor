@@ -1,5 +1,5 @@
 ﻿@attribute [Authorize]
-@page "/admin"
+@page "/Test"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Application.Common.Entities
@@ -14,8 +14,10 @@
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
 @inject IMediator Mediator
+@inject IApplicationDbContext context
 @inject NotificationService NotificationService
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 
@@ -25,25 +27,15 @@
 <div class="container-fluid m-0">
     <div class="row">
         <div class="col-sm-6 m-0 p-1">
-            <RadzenGrid Responsive="false" Data="@_users" Count="@_count" LoadData="@LoadData" TItem="ApplicationUser"
-                        AllowFiltering="true" RowSelect="@(args => _selectedUser = args)"
-                        AllowColumnResize="true" AllowPaging="true" PageSize="4">
-                <Columns>
-                    <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
-                    <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
-                </Columns>
-            </RadzenGrid>
-        </div>
-        <div class="col-sm-6 m-0 p-1">
-            <RadzenGrid TItem="IdentityRole" @ref="_rolesGrid" Count="@_roleCount" Data="@_roles" RowCreate="@OnCreateRow" RowSelect="@(args => _selectedRole = args)"
-                         LoadData="@(async args => await LoadRoles(args))"  RowUpdate="@OnUpdate" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single">
+            <RadzenGrid @ref="_rolesGrid" AllowFiltering="true" AllowPaging="true" PageSize="3" AllowSorting="true" EditMode="DataGridEditMode.Single"
+                        Data="@_roles" TItem="IdentityRole" RowUpdate="@(async  (args) => await OnUpdateRow(args))" RowCreate="@OnCreateRow" Count="@_roleCount">
                 <Columns>
                     <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
                         <EditTemplate Context="identityRole">
                             <RadzenTextBox @bind-value="identityRole.Name" Placeholder="@identityRole.Name"></RadzenTextBox>
                         </EditTemplate>
                     </RadzenGridColumn>
-                    <RadzenGridColumn TItem="IdentityRole" Property="ConcurrencyStamp" Title="CStamp">
+                    <RadzenGridColumn TItem="IdentityRole" Property="Id" Title="Id">
                     </RadzenGridColumn>
                     <RadzenGridColumn TItem="IdentityRole" Context="SampleEditContext" Bubble="false" Width="150px">
                         <Template Context="identityRole">
@@ -51,62 +43,51 @@
                             </RadzenButton>
                         </Template>
                         <EditTemplate Context="identityRole">
-                            <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
+                            <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@(args => SaveRow(identityRole))">
                             </RadzenButton>
-                            <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(identityRole))">
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CancelEdit(identityRole))">
                             </RadzenButton>
                         </EditTemplate>
                     </RadzenGridColumn>
                 </Columns>
             </RadzenGrid>
         </div>
+        <RadzenButton Icon="add_circle_outline" Text="Add" Click="@InsertRow" />
     </div>
-    <RadzenTextBox Change="@(args => _text = args)"></RadzenTextBox>
-    <RadzenButton Icon="add_circle_outline" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
-    <RadzenButton Icon="add_circle_outline" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
 </div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
-    private IApplicationDbContext _applicationDbContext { get; set; }
+    private IApplicationDbContext ApplicationDbCtx { get; set; }
 
-    int _count;
     int _roleCount;
-    IEnumerable<ApplicationUser> _users;
-    IList<IdentityRole> _roles;
-    ApplicationUser _selectedUser;
-    RadzenGrid<IdentityRole> _rolesGrid;
-    string _text;
+    IEnumerable<IdentityRole> _roles;
     IdentityRole _selectedRole;
-    //protected override bool ShouldRender() => MayRender;
+    RadzenGrid<IdentityRole> _rolesGrid;
+    bool render = true;
 
-    async Task AddNewClaimToSelectedRole()
-    {
-        if (_selectedRole is null)
-            return;
-        var result = await Mediator.Send(new AddClaimToRoleCommand(_selectedRole.Id, _text));
-        var notification = new NotificationMessage()
-        {
-            Detail = result.ErrorDescription?.ErrorMessage ?? "All was OK",
-            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
-        };
-        ShowNotification(notification);
-    }
+    protected override bool ShouldRender() => render;
 
     protected override void OnInitialized()
     {
         base.OnInitializedAsync();
-        _applicationDbContext = ContextFactory.CreateDbContext();
-        //Users = _applicationDbContext.Users;
+        ApplicationDbCtx = ContextFactory.CreateDbContext();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _roles = ApplicationDbCtx.Roles;
 
     }
 
     async Task InsertRow()
     {
-        await _rolesGrid.InsertRow(new IdentityRole());
+        var role = new IdentityRole();
+        await _rolesGrid.EditRow(role);
     }
-    
+
     void EditRow(IdentityRole order)
     {
         _rolesGrid.EditRow(order);
@@ -119,15 +100,16 @@
 
     async Task OnCreateRow(IdentityRole role)
     {
-        _applicationDbContext.Roles.Add(role);
-        await _applicationDbContext.SaveChangesAsync();
+        role.NormalizedName = role.Name.ToUpperInvariant();
+        await ApplicationDbCtx.Roles.AddAsync(role);
+        await ApplicationDbCtx.SaveChangesAsync();
+        
     }
-
     void CancelEdit(IdentityRole order)
     {
         _rolesGrid.CancelEditRow(order);
 
-        var orderEntry = _applicationDbContext.Entry(order);
+        var orderEntry = ApplicationDbCtx.Entry(order);
         if (orderEntry.State == EntityState.Modified)
         {
             orderEntry.CurrentValues.SetValues(orderEntry.OriginalValues);
@@ -135,24 +117,17 @@
         }
     }
 
+    async Task OnUpdateRow(IdentityRole obj)
+    {
+        obj.NormalizedName = obj.Name.ToUpperInvariant();
+        ApplicationDbCtx.Roles.Update(obj);
+        var s = await ApplicationDbCtx.SaveChangesAsync();
+        Console.WriteLine(s);
+    }
 
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
-
-        //console.Log($"{message.Severity} notification");
-    }
-
-    async Task LoadData(LoadDataArgs args)
-    {
-        var query = _applicationDbContext.Users.AsQueryable();
-        if (!string.IsNullOrEmpty(args.Filter))
-            query = query.Where(args.Filter);
-
-        _users = await query.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName).ToListAsync();
-        _count = _applicationDbContext.Users.Count();
-
-        await InvokeAsync(StateHasChanged);
     }
 
     async Task LoadRoles(LoadDataArgs args)
@@ -181,14 +156,6 @@
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        _applicationDbContext.Dispose();
+        ApplicationDbCtx.Dispose();
     }
-
-    private async Task OnUpdate(IdentityRole obj)
-    {
-        obj.NormalizedName = obj.Name.ToUpperInvariant();
-        var edited = _applicationDbContext.Roles.Update(obj);
-        await _applicationDbContext.SaveChangesAsync();
-    }
-
 }
