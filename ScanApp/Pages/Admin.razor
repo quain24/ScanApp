@@ -15,7 +15,7 @@
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceScopeFactory ScopeFactory
-@inject IMediator Mediator
+@inject IScopedMediator Mediator
 @inject NotificationService NotificationService
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 
@@ -36,7 +36,7 @@
         </div>
         <div class="col-sm-6 m-0 p-1">
             <RadzenGrid TItem="IdentityRole" @ref="_rolesGrid" Count="@_roleCount" Data="@_roles" RowCreate="@OnCreateRow" RowSelect="@(args => _selectedRole = args)"
-                         LoadData="@(async args => await LoadRoles(args))"  RowUpdate="@OnUpdate" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single">
+                        LoadData="@(async args => await LoadRoles(args))" RowUpdate="@OnUpdate" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single">
                 <Columns>
                     <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
                         <EditTemplate Context="identityRole">
@@ -61,7 +61,8 @@
             </RadzenGrid>
         </div>
     </div>
-    <RadzenTextBox Change="@(args => _text = args)"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => _claimName = args)"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => _claimValue = args)"></RadzenTextBox>
     <RadzenButton Icon="add_circle_outline" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
     <RadzenButton Icon="add_circle_outline" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
 </div>
@@ -77,7 +78,8 @@
     IList<IdentityRole> _roles;
     ApplicationUser _selectedUser;
     RadzenGrid<IdentityRole> _rolesGrid;
-    string _text;
+    string _claimName;
+    string _claimValue;
     IdentityRole _selectedRole;
     //protected override bool ShouldRender() => MayRender;
 
@@ -85,7 +87,7 @@
     {
         if (_selectedRole is null)
             return;
-        var result = await Mediator.Send(new AddClaimToRoleCommand(_selectedRole.Id, _text));
+        var result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole.Id, _claimName, _claimValue));
         var notification = new NotificationMessage()
         {
             Detail = result.ErrorDescription?.ErrorMessage ?? "All was OK",
@@ -157,7 +159,7 @@
 
     async Task LoadRoles(LoadDataArgs args)
     {
-        var result = await Mediator.Send(new GetAllUserRolesQuery());
+        var result = await Mediator.SendScoped(new GetAllUserRolesQuery());
 
         if (result.Conclusion)
         {

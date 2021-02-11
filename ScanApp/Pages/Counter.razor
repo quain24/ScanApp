@@ -10,10 +10,11 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using ScanApp.Application.Common.Interfaces
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject NotificationService NotificationService
-@inject IMediator Mediator
+@inject IScopedMediator Mediator
 
 @inherits OwningComponentBase
 
@@ -73,12 +74,12 @@
     public async Task TestLogoffUm()
     {
         _disabled = true;
-        var res = await Mediator.Send(new ChangeUserSecurityStampCommand("12"));
+        var res = await Mediator.SendScoped(new ChangeUserSecurityStampCommand("test"));
 
         var message = new NotificationMessage()
         {
             Severity = res.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Warning,
-            Detail = res.ErrorDescription.ErrorMessage ?? "none"
+            Detail = res.ErrorDescription?.ErrorMessage ?? "none"
         };
         NotificationService.Notify(message);
         _disabled = false;
@@ -102,7 +103,7 @@
 
     private async Task<List<string>> GetUsers()
     {
-        var result = await Mediator.Send(new GetAllUsersQuery());
+        var result = await Mediator.SendScoped(new GetAllUsersQuery());
 
         if (result.Conclusion)
         {
