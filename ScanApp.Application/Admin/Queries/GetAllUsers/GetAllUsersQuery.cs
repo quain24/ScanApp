@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Helpers;
 using ScanApp.Application.Common.Helpers.Result;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsers
 {
@@ -17,21 +15,17 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsers
 
     public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<List<ApplicationUser>>>
     {
-        private readonly IServiceScopeFactory _factory;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public GetAllUsersQueryHandler(IServiceScopeFactory factory)
+        public GetAllUsersQueryHandler(UserManager<ApplicationUser> userManager)
         {
-            _factory = factory;
+            _userManager = userManager;
         }
 
         public async Task<Result<List<ApplicationUser>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            using (var scope = _factory.CreateScope())
-            {
-                var manager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var users = await manager.Users.ToListAsync(cancellationToken).ConfigureAwait(false);
-                return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
-            }
+            var users = await _userManager.Users.ToListAsync(cancellationToken).ConfigureAwait(false);
+            return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
         }
     }
 }

@@ -110,7 +110,6 @@
             return result.Output.Select(u => u.UserName).ToList();
         }
 
-
         return new List<string>(0);
     }
 
@@ -146,7 +145,6 @@
         {
             Name = "new_role"
         });
-
 
         var t = await userManager.AddToRoleAsync(currentUser, "new_role");
     }

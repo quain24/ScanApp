@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading;
@@ -15,22 +14,17 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 
     public class GetAllUserRolesQueryHandler : IRequestHandler<GetAllUserRolesQuery, Result<List<IdentityRole>>>
     {
-        private readonly IServiceScopeFactory _factory;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public GetAllUserRolesQueryHandler(IServiceScopeFactory factory)
+        public GetAllUserRolesQueryHandler(RoleManager<IdentityRole> roleManager)
         {
-            _factory = factory;
+            _roleManager = roleManager;
         }
 
         public async Task<Result<List<IdentityRole>>> Handle(GetAllUserRolesQuery request, CancellationToken cancellationToken)
         {
-            using (var scope = _factory.CreateScope())
-            {
-                var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-
-                var result = await roleManager.Roles.ToListAsync(cancellationToken);
-                return new Result<List<IdentityRole>>(ResultType.Ok).SetOutput(result);
-            }
+            var result = await _roleManager.Roles.ToListAsync(cancellationToken);
+            return new Result<List<IdentityRole>>(ResultType.Ok).SetOutput(result);
         }
     }
 }
