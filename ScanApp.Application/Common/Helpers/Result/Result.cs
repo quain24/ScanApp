@@ -20,6 +20,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         NotFound,
         WrongArguments,
         NotValid,
+        Duplicated,
 
         // Auth
 

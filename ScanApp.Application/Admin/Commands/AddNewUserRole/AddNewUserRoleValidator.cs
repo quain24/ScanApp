@@ -5,7 +5,7 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
     public class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
     {
-        private Regex roleNameRegex = new Regex(@"^[\p{L}0-9\s\\.\\-\\_]+$");
+        private readonly Regex _roleNameRegex = new Regex(@"^[\p{L}0-9\s\\.\-\\_]+$");
 
         public AddNewUserRoleValidator()
         {
@@ -13,8 +13,8 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
                 .NotEmpty()
                 .Must(c => !c.StartsWith(' ') && !c.EndsWith(' '))
                 .WithMessage("Role name cannot begin or end with whitespace")
-                .Matches(roleNameRegex)
-                .WithMessage("Role name format is not valid");
+                .Matches(_roleNameRegex)
+                .WithMessage("Role name contained not allowed characters");
         }
     }
 }

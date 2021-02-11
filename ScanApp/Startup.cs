@@ -36,6 +36,7 @@ namespace ScanApp
 
             services.AddSecurityConfiguration();
             services.AddMediatR();
+            services.AddScopedMediator();
             services.AddRadzenConfiguration();
             services.AddDatabases(Configuration);
             services.AddDatabaseDeveloperPageExceptionFilter();

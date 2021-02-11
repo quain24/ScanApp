@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Linq;
 using System.Threading;
@@ -20,21 +19,17 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 
     public class AddNewUserRoleHandler : IRequestHandler<AddNewUserRoleCommand, Result>
     {
-        private readonly IServiceScopeFactory _factory;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AddNewUserRoleHandler(IServiceScopeFactory factory)
+        public AddNewUserRoleHandler(RoleManager<IdentityRole> roleManager)
         {
-            _factory = factory;
+            _roleManager = roleManager;
         }
 
         public async Task<Result> Handle(AddNewUserRoleCommand request, CancellationToken cancellationToken)
         {
-            using (var scope = _factory.CreateScope())
-            {
-                var roleManager = scope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-                var result = await roleManager.CreateAsync(new IdentityRole(request.RoleName));
-                return result.Succeeded ? new Result(ResultType.Created) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
-            }
+            var result = await _roleManager.CreateAsync(new IdentityRole(request.RoleName)).ConfigureAwait(false);
+            return result.Succeeded ? new Result(ResultType.Created) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
         }
     }
 }

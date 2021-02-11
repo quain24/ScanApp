@@ -13,6 +13,7 @@ namespace ScanApp.Application.Common.Installers
         public static IServiceCollection AddMediatR(this IServiceCollection services)
         {
             services.AddMediatR(typeof(MediatRInstaller));
+
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TimingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
