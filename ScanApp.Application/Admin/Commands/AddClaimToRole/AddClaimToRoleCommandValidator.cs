@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
-using System.Text.RegularExpressions;
+using FluentValidation.Validators;
+using ScanApp.Application.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
     public class AddClaimToRoleCommandValidator : AbstractValidator<AddClaimToRoleCommand>
     {
-        private readonly Regex _allowedCharsRegex = new Regex(@"^[\p{L}0-9\s\\.\-\\_]+$");
+        private readonly PropertyValidator _allowedCharsValidator = new MustContainOnlyLettersOrAllowedSymbolsValidator();
 
         public AddClaimToRoleCommandValidator()
         {
@@ -13,13 +14,11 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
                 .NotEmpty()
                 .Must(c => !c.StartsWith(' ') && !c.EndsWith(' '))
                 .WithMessage("Role name cannot begin or end with whitespace")
-                .Matches(_allowedCharsRegex)
-                .WithMessage("Role name format is not valid");
+                .SetValidator(_allowedCharsValidator);
 
             RuleFor(c => c.RoleId)
                 .NotEmpty()
-                .Matches(_allowedCharsRegex)
-                .WithMessage("Role ID format is not valid");
+                .SetValidator(_allowedCharsValidator);
         }
     }
 }
