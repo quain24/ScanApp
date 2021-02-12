@@ -24,7 +24,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsers
 
         public async Task<Result<List<ApplicationUser>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            var users = await _userManager.Users.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var users = await _userManager.Users.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
             return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
         }
     }

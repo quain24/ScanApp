@@ -23,7 +23,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 
         public async Task<Result<List<IdentityRole>>> Handle(GetAllUserRolesQuery request, CancellationToken cancellationToken)
         {
-            var result = await _roleManager.Roles.ToListAsync(cancellationToken);
+            var result = await _roleManager.Roles.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
             return new Result<List<IdentityRole>>(ResultType.Ok).SetOutput(result);
         }
     }

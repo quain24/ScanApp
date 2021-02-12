@@ -11,8 +11,13 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
 @using System.Linq.Dynamic.Core
+@using System.Threading
+@using Microsoft.AspNetCore.Identity.UI.V4.Pages.Internal.Account.Manage
+@using Microsoft.VisualBasic
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
+@using ScanApp.Application.Admin.Commands.AddNewUserRole
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.Admin.Queries.GetAllUsers
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceScopeFactory ScopeFactory
 @inject IScopedMediator Mediator
@@ -35,7 +40,8 @@
             </RadzenGrid>
         </div>
         <div class="col-sm-6 m-0 p-1">
-            <RadzenGrid TItem="IdentityRole" @ref="_rolesGrid" Count="@_roleCount" Data="@_roles" RowCreate="@OnCreateRow" RowSelect="@(args => _selectedRole = args)"
+            <RadzenGrid Responsive="false" TItem="IdentityRole" @ref="_rolesGrid" Count="@_roleCount" Data="@_roles" RowCreate="@OnCreateRow"
+                        RowSelect="@( args => _selectedRole = args)"
                         LoadData="@(async args => await LoadRoles(args))" RowUpdate="@OnUpdate" AllowPaging="true" PageSize="4" EditMode="DataGridEditMode.Single">
                 <Columns>
                     <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
@@ -51,7 +57,7 @@
                             </RadzenButton>
                         </Template>
                         <EditTemplate Context="identityRole">
-                            <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
+                            <RadzenButton Icon="save" Disabled="string.IsNullOrWhiteSpace(identityRole.Name)" Size="ButtonSize.Medium" Click="@((args) => SaveRow(identityRole))">
                             </RadzenButton>
                             <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(identityRole))">
                             </RadzenButton>
@@ -61,16 +67,17 @@
             </RadzenGrid>
         </div>
     </div>
-    <RadzenTextBox Change="@(args => _claimName = args)"></RadzenTextBox>
-    <RadzenTextBox Change="@(args => _claimValue = args)"></RadzenTextBox>
-    <RadzenButton Icon="add_circle_outline" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
-    <RadzenButton Icon="add_circle_outline" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
+    <RadzenTextBox Change="@(args => _claimName = args)" Placeholder="Claim name"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => _claimValue = args)" Placeholder="Claim value"></RadzenTextBox>
+    <RadzenButton Icon="add_circle_outline" Disabled="@(_selectedRole is null)" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
+    <RadzenButton Icon="add_circle_outline" Disabled="@(_rolesGrid?.IsRowInEditMode(_selectedRole ?? new IdentityRole()) ?? false)" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
 </div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
     private IApplicationDbContext _applicationDbContext { get; set; }
+    private IApplicationDbContext _roleContext { get; set; }
 
     int _count;
     int _roleCount;
@@ -98,17 +105,24 @@
 
     protected override void OnInitialized()
     {
-        base.OnInitializedAsync();
+
         _applicationDbContext = ContextFactory.CreateDbContext();
+        _roleContext = ContextFactory.CreateDbContext();
+
+        base.OnInitializedAsync();
+
         //Users = _applicationDbContext.Users;
 
     }
 
     async Task InsertRow()
     {
-        await _rolesGrid.InsertRow(new IdentityRole());
+        var role = new IdentityRole();
+        _roles.Add(role);
+        await _rolesGrid.SelectRow(role);
+        await _rolesGrid.EditRow(role);
     }
-    
+
     void EditRow(IdentityRole order)
     {
         _rolesGrid.EditRow(order);
@@ -121,38 +135,36 @@
 
     async Task OnCreateRow(IdentityRole role)
     {
-        _applicationDbContext.Roles.Add(role);
-        await _applicationDbContext.SaveChangesAsync();
+        await Mediator.SendScoped(new AddNewUserRoleCommand(role.Name));
     }
 
-    void CancelEdit(IdentityRole order)
+    async Task CancelEdit(IdentityRole order)
     {
         _rolesGrid.CancelEditRow(order);
 
-        var orderEntry = _applicationDbContext.Entry(order);
+        var orderEntry = _roleContext.Entry(order);
         if (orderEntry.State == EntityState.Modified)
         {
             orderEntry.CurrentValues.SetValues(orderEntry.OriginalValues);
             orderEntry.State = EntityState.Unchanged;
         }
+        await InvokeAsync(StateHasChanged);
     }
-
 
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
-
-        //console.Log($"{message.Severity} notification");
     }
 
     async Task LoadData(LoadDataArgs args)
     {
-        var query = _applicationDbContext.Users.AsQueryable();
+        var query = await Mediator.SendScoped(new GetAllUsersQuery());
+        var result = query.Output;
         if (!string.IsNullOrEmpty(args.Filter))
-            query = query.Where(args.Filter);
+            result = result.AsQueryable().Where(args.Filter).ToList();
 
-        _users = await query.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName).ToListAsync();
-        _count = _applicationDbContext.Users.Count();
+        _users = result.Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(a => a.UserName);
+        _count = query.Output.Count;
 
         await InvokeAsync(StateHasChanged);
     }
@@ -177,20 +189,47 @@
                 Detail = $"Something happened, roles could not be loaded:\n{result.ErrorDescription.ErrorMessage}"
             });
         }
+    }
 
+    private async Task OnUpdate(IdentityRole obj)
+    {
+        try
+        {
+
+            obj.NormalizedName = obj.Name.ToUpperInvariant();
+
+            if (await _roleContext.Roles.AnyAsync(r => r.Id == obj.Id))
+            {
+                var edited = _roleContext.Roles.Update(obj);
+                var u = await _roleContext.SaveChangesAsync();
+                await _roleContext.SaveChangesAsync();
+            }
+            else
+            {
+                var edited = await _roleContext.Roles.AddAsync(obj);
+                var u = await _roleContext.SaveChangesAsync();
+            }
+        }
+        catch (DbUpdateConcurrencyException dbex)
+        {
+            Console.WriteLine("ContextFactory exc");
+            var a = dbex.Entries.First().CurrentValues;
+            Console.WriteLine("new values");
+            foreach (var aProperty in a.Properties)
+            {
+                Console.WriteLine(aProperty.PropertyInfo);
+            }
+
+            Console.WriteLine("update");
+            dbex.Entries.First().OriginalValues.SetValues(obj);
+            await _roleContext.SaveChangesAsync();
+        }
     }
 
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
+        _roleContext.Dispose();
         _applicationDbContext.Dispose();
     }
-
-    private async Task OnUpdate(IdentityRole obj)
-    {
-        obj.NormalizedName = obj.Name.ToUpperInvariant();
-        var edited = _applicationDbContext.Roles.Update(obj);
-        await _applicationDbContext.SaveChangesAsync();
-    }
-
 }
