@@ -11,6 +11,7 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
 @using System.Linq.Dynamic.Core
+@using System.Reflection
 @using System.Threading
 @using Microsoft.AspNetCore.Identity.UI.V4.Pages.Internal.Account.Manage
 @using Microsoft.VisualBasic
@@ -195,34 +196,38 @@
     {
         try
         {
-
             obj.NormalizedName = obj.Name.ToUpperInvariant();
 
-            if (await _roleContext.Roles.AnyAsync(r => r.Id == obj.Id))
+            var r = _roleContext.Roles.FirstOrDefault(r => r.Id == obj.Id);
+            if (r is not null)
             {
-                var edited = _roleContext.Roles.Update(obj);
-                var u = await _roleContext.SaveChangesAsync();
-                await _roleContext.SaveChangesAsync();
+                r.Name = obj.Name;
+                r.NormalizedName = obj.NormalizedName;
             }
             else
             {
-                var edited = await _roleContext.Roles.AddAsync(obj);
-                var u = await _roleContext.SaveChangesAsync();
+                _roleContext.Add(obj);
             }
+
+            var update = await _roleContext.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException dbex)
         {
             Console.WriteLine("ContextFactory exc");
-            var a = dbex.Entries.First().CurrentValues;
-            Console.WriteLine("new values");
-            foreach (var aProperty in a.Properties)
-            {
-                Console.WriteLine(aProperty.PropertyInfo);
-            }
+            var conflictingEntry = (IdentityRole) dbex.Entries.First().Entity;
 
-            Console.WriteLine("update");
-            dbex.Entries.First().OriginalValues.SetValues(obj);
-            await _roleContext.SaveChangesAsync();
+            var originalValues = (IdentityRole) dbex.Entries.First().GetDatabaseValues().ToObject();
+
+            Console.WriteLine("Original entry value -- New entry value");
+            Console.WriteLine($"{originalValues.Id} -- {conflictingEntry.Id}");
+            Console.WriteLine($"{originalValues.ConcurrencyStamp} -- {conflictingEntry.ConcurrencyStamp}");
+            Console.WriteLine($"{originalValues.Name} -- {conflictingEntry.Name}");
+            Console.WriteLine($"{originalValues.NormalizedName} -- {conflictingEntry.NormalizedName}");
+
+            var data = dbex.Entries.Single();
+            data.OriginalValues.SetValues(data.GetDatabaseValues());
+
+            var u = await _roleContext.SaveChangesAsync();
         }
     }
 
