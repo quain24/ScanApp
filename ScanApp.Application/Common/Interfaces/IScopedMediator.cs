@@ -22,5 +22,16 @@ namespace ScanApp.Application.Common.Interfaces
         /// This request will be executed in new short-lived scope
         /// </summary>
         Task<object?> SendScoped(object request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// <inheritdoc cref="IPublisher.Publish"/><br/>
+        /// This event will be published from new short-lived scope
+        /// </summary>
+        Task PublishScoped(object notification, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// <inheritdoc cref="PublishScoped"/>
+        /// </summary>
+        Task PublishScoped<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification;
     }
 }
