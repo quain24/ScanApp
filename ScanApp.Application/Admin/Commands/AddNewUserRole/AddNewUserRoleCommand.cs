@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
+using ScanApp.Application.Common.Extensions;
 using ScanApp.Application.Common.Helpers.Result;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +31,15 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
         public async Task<Result> Handle(AddNewUserRoleCommand request, CancellationToken cancellationToken)
         {
             var result = await _roleManager.CreateAsync(new IdentityRole(request.RoleName)).ConfigureAwait(false);
-            return result.Succeeded ? new Result(ResultType.Created) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
+
+            if (result.IsConcurrencyFailure())
+            {
+                return new Result(ErrorType.ConcurrencyFailure, result.CombineErrors());
+            }
+
+            return result.Succeeded
+                ? new Result(ResultType.Created)
+                : new Result(ErrorType.NotValid, result.CombineErrors());
         }
     }
 }
