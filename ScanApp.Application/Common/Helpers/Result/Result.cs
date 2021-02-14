@@ -32,6 +32,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         Unknown,
         ConfigurationError,
         NetworkError,
+        ConcurrencyFailure,
 
         ///// <summary>
         ///// Specific error code
@@ -58,6 +59,8 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// Description of the error. Can be null.
         /// </summary>
         public ErrorDescription ErrorDescription { get; private set; }
+
+        public object Output { get; private set; }
 
         /// <summary>
         /// Positive result. Conclusion is true and result type is Ok.
@@ -124,6 +127,12 @@ namespace ScanApp.Application.Common.Helpers.Result
             ErrorDescription.Exception = exception;
             ErrorDescription.ErrorType = errorType;
         }
+
+        public Result SetOutput(object value)
+        {
+            Output = value;
+            return this;
+        }
     }
 
     /// <summary>
@@ -135,7 +144,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// <summary>
         /// The desired output.
         /// </summary>
-        public T Output { get; private set; }
+        public new T Output { get; private set; }
 
         public Result() : base()
         {
@@ -174,7 +183,6 @@ namespace ScanApp.Application.Common.Helpers.Result
 
         public Result<T> SetOutput(T value)
         {
-            var t = new Result<string>("aaa");
             Output = value;
             return this;
         }
