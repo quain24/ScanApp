@@ -38,7 +38,7 @@ namespace ScanApp
             services.AddMediatR();
             services.AddScopedMediator();
             services.AddRadzenConfiguration();
-            services.AddDatabases(Configuration);
+            services.AddDatabases(Configuration, _env.IsDevelopment());
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
@@ -49,10 +49,10 @@ namespace ScanApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseBrowserLink();
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
