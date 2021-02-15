@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using ScanApp.Application.Common.Validators;
+using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {

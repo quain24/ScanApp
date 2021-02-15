@@ -1,14 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Common.Extensions;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Extensions;
 
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
@@ -62,16 +60,8 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
                 ClaimValue = request.ClaimValue
             };
 
-            var result = await _roleManager.AddClaimAsync(role, claim.ToClaim()).ConfigureAwait(false);
-
-            if (result.IsConcurrencyFailure())
-            {
-                return new Result(ErrorType.ConcurrencyFailure, result.CombineErrors());
-            }
-
-            return result.Succeeded
-                ? new Result(ResultType.Created)
-                : new Result(ErrorType.NotValid, result.CombineErrors());
+            var identityResult = await _roleManager.AddClaimAsync(role, claim.ToClaim()).ConfigureAwait(false);
+            return identityResult.AsResult();
         }
     }
 }

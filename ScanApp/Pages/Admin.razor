@@ -1,4 +1,4 @@
-﻿@attribute [Authorize]
+﻿@attribute [Authorize(Roles = "Admin")]
 @page "/admin"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
@@ -15,8 +15,10 @@
 @using System.Threading
 @using Microsoft.AspNetCore.Identity.UI.V4.Pages.Internal.Account.Manage
 @using Microsoft.VisualBasic
+@using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Razor
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using ScanApp.Application.Admin.Commands.AddUser
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -33,7 +35,7 @@
         <div class="col-sm-6 m-0 p-1">
             <RadzenGrid Responsive="false" Data="@_users" Count="@_count" LoadData="@LoadData" TItem="ApplicationUser"
                         AllowFiltering="true" RowSelect="@(args => _selectedUser = args)"
-                        AllowColumnResize="true" AllowPaging="true" PageSize="4">
+                        AllowColumnResize="true" AllowPaging="true" PageSize="4" @ref="_usersGrid" >
                 <Columns>
                     <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
                     <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
@@ -70,8 +72,12 @@
     </div>
     <RadzenTextBox Change="@(args => _claimName = args)" Placeholder="Claim name"></RadzenTextBox>
     <RadzenTextBox Change="@(args => _claimValue = args)" Placeholder="Claim value"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => newUser.Name = args)" Placeholder="New user name"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => newUser.Email = args)" Placeholder="Email"></RadzenTextBox>
+    <RadzenTextBox  Change="@(args => newUser.Password = args)"></RadzenTextBox>
     <RadzenButton Icon="add_circle_outline" Disabled="@(_selectedRole is null)" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
     <RadzenButton Icon="add_circle_outline" Disabled="@(_rolesGrid?.IsRowInEditMode(_selectedRole ?? new IdentityRole()) ?? false)" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
+    <RadzenButton Icon="add_circle_outline" Disabled="@(string.IsNullOrWhiteSpace(newUser.Name) || string.IsNullOrWhiteSpace(newUser.Password) || string.IsNullOrWhiteSpace(newUser.Email))" Click="@(async args => await AddNewUser())" style="margin-bottom: 10px" Text="Add new User" />
 </div>
 
 @code {
@@ -86,10 +92,25 @@
     IList<IdentityRole> _roles;
     ApplicationUser _selectedUser;
     RadzenGrid<IdentityRole> _rolesGrid;
+    RadzenGrid<ApplicationUser> _usersGrid;
     string _claimName;
     string _claimValue;
     IdentityRole _selectedRole;
     //protected override bool ShouldRender() => MayRender;
+
+    AddUserDto newUser = new AddUserDto();
+
+    async Task AddNewUser()
+    {
+        var result = await Mediator.SendScoped(new AddUserCommand(newUser));
+        var notification = new NotificationMessage()
+        {
+            Detail = result.ErrorDescription?.ErrorMessage ?? $"All was OK, {result.Output ?? "No id?"}",
+            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
+        };
+        ShowNotification(notification);
+        await _usersGrid.Reload();
+    }
 
     async Task AddNewClaimToSelectedRole()
     {
@@ -214,9 +235,9 @@
         catch (DbUpdateConcurrencyException dbex)
         {
             Console.WriteLine("ContextFactory exc");
-            var conflictingEntry = (IdentityRole) dbex.Entries.First().Entity;
+            var conflictingEntry = (IdentityRole)dbex.Entries.First().Entity;
 
-            var originalValues = (IdentityRole) dbex.Entries.First().GetDatabaseValues().ToObject();
+            var originalValues = (IdentityRole)dbex.Entries.First().GetDatabaseValues().ToObject();
 
             Console.WriteLine("Original entry value -- New entry value");
             Console.WriteLine($"{originalValues.Id} -- {conflictingEntry.Id}");
