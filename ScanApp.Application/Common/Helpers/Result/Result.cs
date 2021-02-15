@@ -119,13 +119,14 @@ namespace ScanApp.Application.Common.Helpers.Result
             ErrorDescription.ErrorType = errorType;
         }
 
-        public void Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
+        public Result Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
             ErrorDescription = new ErrorDescription();
             ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
             ErrorDescription.Exception = exception;
             ErrorDescription.ErrorType = errorType;
+            return this;
         }
 
         public Result SetOutput(object value)
@@ -178,6 +179,12 @@ namespace ScanApp.Application.Common.Helpers.Result
         {
             // Prepend error message with additional info
             base.ErrorDescription.ErrorMessage = $"{typeof(T).Name} {string.Join(", ", infos)}, {ErrorDescription.ErrorMessage}";
+            return this;
+        }
+
+        public new Result<T> Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
+        {
+            base.Set(errorType, errorMessages, exception);
             return this;
         }
 
