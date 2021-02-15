@@ -1,7 +1,7 @@
-﻿using FluentValidation.Validators;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using FluentValidation.Validators;
 
-namespace ScanApp.Application.Common.Validators
+namespace ScanApp.Common.Validators
 {
     /// <summary>
     /// Validates if given string contains only letters, white spaces, dots, dashes or underscores
