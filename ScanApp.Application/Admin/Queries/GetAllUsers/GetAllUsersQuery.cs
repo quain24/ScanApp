@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsers
 
         public async Task<Result<List<ApplicationUser>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            var users = await _userManager.Users.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+            var users = await _userManager.Users.AsNoTracking().OrderBy(u => u.UserName).ToListAsync(cancellationToken).ConfigureAwait(false);
             return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
         }
     }
