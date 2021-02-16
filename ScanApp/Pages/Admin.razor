@@ -19,6 +19,7 @@
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
 @using ScanApp.Application.Admin.Commands.AddUser
+@using ScanApp.Application.Admin.Commands.EditUserData
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -35,7 +36,7 @@
         <div class="col-sm-6 m-0 p-1">
             <RadzenGrid Responsive="false" Data="@_users" Count="@_count" LoadData="@LoadData" TItem="ApplicationUser"
                         AllowFiltering="true" RowSelect="@(args => _selectedUser = args)"
-                        AllowColumnResize="true" AllowPaging="true" PageSize="4" @ref="_usersGrid" >
+                        AllowColumnResize="true" AllowPaging="true" PageSize="4" @ref="_usersGrid">
                 <Columns>
                     <RadzenGridColumn TItem="ApplicationUser" Property="UserName" Title="Name"></RadzenGridColumn>
                     <RadzenGridColumn TItem="ApplicationUser" Property="Location" Title="Location"></RadzenGridColumn>
@@ -74,10 +75,18 @@
     <RadzenTextBox Change="@(args => _claimValue = args)" Placeholder="Claim value"></RadzenTextBox>
     <RadzenTextBox Change="@(args => newUser.Name = args)" Placeholder="New user name"></RadzenTextBox>
     <RadzenTextBox Change="@(args => newUser.Email = args)" Placeholder="Email"></RadzenTextBox>
-    <RadzenTextBox  Change="@(args => newUser.Password = args)"></RadzenTextBox>
+    <RadzenTextBox Change="@(args => newUser.Password = args)"></RadzenTextBox>
     <RadzenButton Icon="add_circle_outline" Disabled="@(_selectedRole is null)" Click="@(async args => await AddNewClaimToSelectedRole())" style="margin-bottom: 10px" Text="Add new claim to role" />
     <RadzenButton Icon="add_circle_outline" Disabled="@(_rolesGrid?.IsRowInEditMode(_selectedRole ?? new IdentityRole()) ?? false)" Click="@InsertRow" style="margin-bottom: 10px" Text="Add new role" />
     <RadzenButton Icon="add_circle_outline" Disabled="@(string.IsNullOrWhiteSpace(newUser.Name) || string.IsNullOrWhiteSpace(newUser.Password) || string.IsNullOrWhiteSpace(newUser.Email))" Click="@(async args => await AddNewUser())" style="margin-bottom: 10px" Text="Add new User" />
+
+    <div>
+        <RadzenTextBox Value="@(_selectedUser?.UserName)" @ref="nname" Placeholder="New name"></RadzenTextBox>
+        <RadzenTextBox Value="@(_selectedUser?.PhoneNumber)"@ref="nphone" Placeholder="New phone"></RadzenTextBox>
+        <RadzenTextBox Value="@(_selectedUser?.Email)" @ref="nemail" Placeholder="New email"></RadzenTextBox>
+        <RadzenTextBox Value="@(_selectedUser?.Location)" @ref="nlocation" Placeholder="New Location"></RadzenTextBox>
+        <RadzenButton Icon="add_circle_outline" Disabled="@(_selectedUser is null)" Click="@(async args => await EditUserData())" style="margin-bottom: 10px" Text="Modify selected user" />
+    </div>
 </div>
 
 @code {
@@ -91,14 +100,40 @@
     IEnumerable<ApplicationUser> _users;
     IList<IdentityRole> _roles;
     ApplicationUser _selectedUser;
+    EditUserDto _editUser;
     RadzenGrid<IdentityRole> _rolesGrid;
     RadzenGrid<ApplicationUser> _usersGrid;
     string _claimName;
     string _claimValue;
     IdentityRole _selectedRole;
+    RadzenTextBox nname;
+    RadzenTextBox nphone;
+    RadzenTextBox nemail;
+    RadzenTextBox nlocation;
+
     //protected override bool ShouldRender() => MayRender;
 
     AddUserDto newUser = new AddUserDto();
+
+    async Task EditUserData()
+    {
+        var edit = new EditUserDto(_selectedUser.UserName)
+        {
+            Email = nemail.Value,
+            Location = nlocation.Value,
+            NewName = string.IsNullOrWhiteSpace(nname.Value) ? null : nname.Value,
+            Phone = nphone.Value
+        };
+
+        var result = await Mediator.SendScoped(new EditUserDataCommand(edit));
+        var notification = new NotificationMessage()
+        {
+            Detail = result.ErrorDescription?.ErrorMessage ?? $"All was OK, {result.Output ?? "No id?"}",
+            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
+        };
+        ShowNotification(notification);
+        await _usersGrid.Reload();
+    }
 
     async Task AddNewUser()
     {
@@ -224,13 +259,14 @@
             {
                 r.Name = obj.Name;
                 r.NormalizedName = obj.NormalizedName;
+                var update = await _roleContext.SaveChangesAsync();
             }
             else
             {
-                _roleContext.Add(obj);
+                await Mediator.SendScoped(new AddNewUserRoleCommand(obj.Name));
             }
+            await _rolesGrid.Reload();
 
-            var update = await _roleContext.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException dbex)
         {
@@ -249,6 +285,10 @@
             data.OriginalValues.SetValues(data.GetDatabaseValues());
 
             var u = await _roleContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+
         }
     }
 

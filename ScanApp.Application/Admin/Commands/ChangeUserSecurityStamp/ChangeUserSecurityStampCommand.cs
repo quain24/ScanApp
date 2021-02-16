@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ScanApp.Application.Common.Entities;
+using ScanApp.Application.Common.Extensions;
 using ScanApp.Application.Common.Helpers.Result;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,8 +33,8 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
             if (user is null)
                 return new Result(ErrorType.NotFound);
 
-            var result = await _userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
-            return result.Succeeded ? new Result(ResultType.Updated) : new Result(ErrorType.NotValid, result.Errors.Select(e => e.Code + " | " + e.Description).ToArray());
+            var identityResult = await _userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
+            return identityResult.AsResult();
         }
     }
 }
