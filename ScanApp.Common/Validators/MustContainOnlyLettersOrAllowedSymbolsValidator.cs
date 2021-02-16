@@ -22,7 +22,7 @@ namespace ScanApp.Common.Validators
 
         protected override string GetDefaultMessageTemplate()
         {
-            return "{PropertyName} contains illegal symbols.";
+            return "\"{PropertyName}\" field contains illegal symbols.";
         }
     }
 }

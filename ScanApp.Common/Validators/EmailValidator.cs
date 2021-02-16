@@ -19,7 +19,7 @@ namespace ScanApp.Common.Validators
 
         protected override string GetDefaultMessageTemplate()
         {
-            return "{PropertyName} is not a valid email address.";
+            return "{PropertyValue} is not a valid email address.";
         }
     }
 }

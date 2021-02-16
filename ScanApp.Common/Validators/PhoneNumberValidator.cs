@@ -10,19 +10,19 @@ namespace ScanApp.Common.Validators
             if (context.PropertyValue is not string phone)
                 return false;
 
-            if (phone.Length < 9 && phone.Length > 14)
+            if (phone.Length < 6 || phone.Length > 25)
                 return false;
 
             if (char.IsNumber(phone[0]) || phone[0].Equals('+'))
             {
-                return phone[1..].Any(c => char.IsNumber(c) is false);
+                return phone[1..].All(char.IsDigit);
             }
             return false;
         }
 
         protected override string GetDefaultMessageTemplate()
         {
-            return "{PropertyName} is not a valid phone number.";
+            return "\"{PropertyValue}\" is not a valid phone number.";
         }
     }
 }
