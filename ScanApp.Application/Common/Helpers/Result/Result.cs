@@ -10,7 +10,8 @@ namespace ScanApp.Application.Common.Helpers.Result
         Updated,
         Inserted,
         Replaced,
-        Deleted
+        Deleted,
+        NotChanged
     }
 
     public enum ErrorType
