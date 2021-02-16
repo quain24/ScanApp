@@ -4,13 +4,15 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Application.Common.Behaviors
 {
     /// <summary>
     /// Measure and log execution time of each MediatR request
     /// </summary>
-    public class TimingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public class TimingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
         private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
         private readonly IHttpContextAccessor _accessor;

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using ScanApp.Application.Common.Helpers.Result;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -12,7 +13,8 @@ namespace ScanApp.Application.Common.Behaviors
     /// Logs every MediatR request made - Provide user name of user that executed this request and<br/>
     /// data included in request, if any
     /// </summary>
-    public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+    public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
     {
         private const string NoData = "{}";
         private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
@@ -43,7 +45,18 @@ namespace ScanApp.Application.Common.Behaviors
 
             var response = await next();
 
-            _logger.LogInformation("[FINISHED] [{name}] {request} with response of type {response}", userName, requestName, typeof(TResponse).Name);
+            var message = typeof(TResponse).Name;
+            if (response is Result result)
+            {
+                var info = result.Conclusion
+                    ? result.ResultType?.ToString()
+                    : result.ErrorDescription?.ErrorType.ToString()
+                    ?? "Unknown";
+
+                message += $" {result.Conclusion} - {info}";
+            }
+
+            _logger.LogInformation("[FINISHED] [{name}] {request} with response of type {response}", userName, requestName, message);
             return response;
         }
 

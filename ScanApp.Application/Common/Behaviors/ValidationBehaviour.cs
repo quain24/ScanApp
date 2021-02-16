@@ -44,7 +44,7 @@ namespace ScanApp.Application.Common.Behaviors
                 return next();
 
             var response = new TResponse();
-            var errors = failures.Select(f => $"\"{f.PropertyName}\" | {f.ErrorCode} | {f.ErrorMessage}").ToArray();
+            var errors = failures.Select(f => $"{f.ErrorMessage}").ToArray();
             response.Set(ErrorType.NotValid, errors);
 
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
