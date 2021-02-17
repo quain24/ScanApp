@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using ScanApp.Application.Common.Entities;
 using ScanApp.Areas.Identity;
 using ScanApp.Infrastructure.Persistence;
 using System;
+using ScanApp.Application.Common.Entities;
+using ScanApp.Application.Common.Interfaces;
+using ScanApp.Infrastructure.Identity;
 
 namespace ScanApp.Common.Installers
 {
@@ -34,7 +36,7 @@ namespace ScanApp.Common.Installers
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddRoleManager<RoleManager<IdentityRole>>()
                 .AddUserManager<UserManager<ApplicationUser>>();
-
+            
             // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
             services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 

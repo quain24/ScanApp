@@ -54,7 +54,7 @@ else
     protected override async Task OnParametersSetAsync()
     {
         var appdb = (IApplicationDbContext)ScopedServices.GetService(typeof(IApplicationDbContext));
-        var mana = (UserManager<ApplicationUser>) ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
+        var mana = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
@@ -69,7 +69,6 @@ else
         //    }
         //    catch { }
         //}
-
 
         var currentUser = await mana.FindByNameAsync(user.Identity.Name);
         if (currentUser is not null)

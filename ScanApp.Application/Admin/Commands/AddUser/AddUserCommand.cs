@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MediatR;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.AspNetCore.Identity;
-using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Extensions;
-using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
@@ -24,24 +18,17 @@ namespace ScanApp.Application.Admin.Commands.AddUser
 
     public class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<string>>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserManager _userManager;
 
-        public AddUserCommandHandler(UserManager<ApplicationUser> userManager)
+        public AddUserCommandHandler(IUserManager userManager)
         {
             _userManager = userManager;
         }
+
         public async Task<Result<string>> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
-            var newUser = new ApplicationUser()
-            {
-                Email = request.NewUser.Email,
-                Location = request.NewUser.Location,
-                PhoneNumber = request.NewUser.Phone,
-                UserName = request.NewUser.Name
-            };
-
-            var identityResult = await _userManager.CreateAsync(newUser, request.NewUser.Password);
-            return identityResult.AsResult(newUser.Id);
+            var data = request.NewUser;
+            return await _userManager.AddNewUser(data.Name, data.Password, data.Email, data.Location, data.Phone).ConfigureAwait(false);
         }
     }
 }
