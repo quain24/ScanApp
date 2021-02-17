@@ -2,7 +2,6 @@
 @page "/counter"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
-@using ScanApp.Application.Common.Entities
 @using ScanApp.Infrastructure.Persistence
 @using MediatR
 @using ScanApp.Application.Admin.Commands
@@ -10,7 +9,9 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Interfaces
+@using ScanApp.Infrastructure.Identity
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject NotificationService NotificationService
@@ -74,14 +75,14 @@
     public async Task TestLogoffUm()
     {
         _disabled = true;
-        var res = await Mediator.SendScoped(new ChangeUserSecurityStampCommand("test"));
+        var result = await Mediator.SendScoped(new ChangeUserSecurityStampCommand("test"));
 
-        var message = new NotificationMessage()
+        var notification = new NotificationMessage()
         {
-            Severity = res.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Warning,
-            Detail = res.ErrorDescription?.ErrorMessage ?? "none"
+            Detail = result.Conclusion ? $"All OK, {result.Output ?? "No additional output"}" : $"{result.ErrorDescription?.ErrorMessage ?? "Unknown error"}, {result.Output ?? "No additional output"}",
+            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
         };
-        NotificationService.Notify(message);
+        NotificationService.Notify(notification);
         _disabled = false;
     }
 
