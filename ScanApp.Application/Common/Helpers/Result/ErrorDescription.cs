@@ -9,8 +9,8 @@ namespace ScanApp.Application.Common.Helpers.Result
     {
         public ErrorType ErrorType { get; set; }
 
-        public string ErrorMessage { get; set; } = string.Empty;
-        public string StackTrace { get; set; } = string.Empty;
+        public string ErrorMessage { get; set; }
+        public string StackTrace { get; set; }
 
         private Exception _exception;
 
