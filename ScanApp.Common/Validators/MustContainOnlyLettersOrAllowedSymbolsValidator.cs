@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using FluentValidation.Validators;
+﻿using FluentValidation.Validators;
+using System.Text.RegularExpressions;
 
 namespace ScanApp.Common.Validators
 {
@@ -8,7 +8,7 @@ namespace ScanApp.Common.Validators
     /// </summary>
     public class MustContainOnlyLettersOrAllowedSymbolsValidator : PropertyValidator
     {
-        private readonly Regex _allowedCharsRegex = new Regex(@"^[\p{L}0-9\s\\.\-\\_]+$");
+        private readonly Regex _allowedCharsRegex = new(@"^[\p{L}0-9\s\\.\-\\_]+$");
 
         protected override bool IsValid(PropertyValidatorContext context)
         {
