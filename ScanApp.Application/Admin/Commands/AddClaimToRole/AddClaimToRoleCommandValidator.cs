@@ -6,18 +6,18 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
     public class AddClaimToRoleCommandValidator : AbstractValidator<AddClaimToRoleCommand>
     {
-        private readonly PropertyValidator _allowedCharsValidator = new MustContainOnlyLettersOrAllowedSymbolsValidator();
+        private readonly PropertyValidator _allowedCharsValidator = new IdentityNamingValidator();
 
         public AddClaimToRoleCommandValidator()
         {
-            RuleFor(c => c.NewClaimName)
-                .NotEmpty()
-                .Must(c => !c.StartsWith(' ') && !c.EndsWith(' '))
-                .WithMessage("Role name cannot begin or end with whitespace")
+            RuleFor(c => c.ClaimType)
                 .SetValidator(_allowedCharsValidator);
 
-            RuleFor(c => c.RoleId)
-                .NotEmpty()
+            RuleFor(c => c.ClaimValue)
+                .SetValidator(_allowedCharsValidator)
+                .When(c => c.ClaimValue is not null);
+
+            RuleFor(c => c.RoleName)
                 .SetValidator(_allowedCharsValidator);
         }
     }
