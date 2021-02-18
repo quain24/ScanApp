@@ -5,6 +5,7 @@ using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 {
@@ -14,16 +15,16 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 
     public class GetAllUserRolesQueryHandler : IRequestHandler<GetAllUserRolesQuery, Result<List<IdentityRole>>>
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IApplicationDbContext _context;
 
-        public GetAllUserRolesQueryHandler(RoleManager<IdentityRole> roleManager)
+        public GetAllUserRolesQueryHandler(IApplicationDbContext context)
         {
-            _roleManager = roleManager;
+            _context = context;
         }
 
         public async Task<Result<List<IdentityRole>>> Handle(GetAllUserRolesQuery request, CancellationToken cancellationToken)
         {
-            var result = await _roleManager.Roles.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+            var result = await _context.Roles.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
             return new Result<List<IdentityRole>>(ResultType.Ok).SetOutput(result);
         }
     }

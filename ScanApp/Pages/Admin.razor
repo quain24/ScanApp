@@ -153,7 +153,7 @@
     {
         if (_selectedRole is null)
             return;
-        var result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole.Id, _claimName, _claimValue));
+        var result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole.Name, _claimName, _claimValue));
         var notification = new NotificationMessage()
         {
             Detail = result.Conclusion ? $"All OK, {result.Output ?? "No additional output"}" : $"{result.ErrorDescription?.ErrorMessage ?? "Unknown error"}, {result.Output ?? "No additional output"}",
@@ -169,8 +169,6 @@
         _roleContext = ContextFactory.CreateDbContext();
 
         base.OnInitializedAsync();
-
-        //Users = _applicationDbContext.Users;
 
     }
 

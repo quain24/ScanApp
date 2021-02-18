@@ -9,6 +9,7 @@
 @using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using ScanApp.Application.Admin.Queries.GetUserRoles
 @using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Infrastructure.Identity
@@ -41,6 +42,7 @@
         <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
         <RadzenButton Click="@TestLogoff" Disabled="_mayRender">Sign out user "Test"</RadzenButton>
         <RadzenButton Click="@TestLogoffUm" Disabled="_disabled">Sign out user "Test" user manager way</RadzenButton>
+        <RadzenButton Click="@TestDbQuery" Disabled="_disabled">Test db query - all roles</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -70,6 +72,17 @@
         base.OnInitializedAsync();
         userManager = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
         roleManager = (RoleManager<IdentityRole>)ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
+    }
+
+    public async Task TestDbQuery()
+    {
+        var result = await Mediator.SendScoped(new GetUserRolesQuery("adam"));
+        var notification = new NotificationMessage()
+        {
+            Detail = result.Conclusion ? $"All OK {string.Join(" ,", result.Output)}" : $"{result.ErrorDescription?.ErrorMessage ?? "Unknown error"}",
+            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
+        };
+        NotificationService.Notify(notification);
     }
 
     public async Task TestLogoffUm()
