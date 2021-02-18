@@ -46,13 +46,7 @@ namespace ScanApp.Application.Common.Extensions
         public static Result AsResult(this IdentityResult identityResult, object output = null)
         {
             var result = new Result().SetOutput(output);
-
-            return identityResult switch
-            {
-                _ when identityResult.Succeeded => result,
-                _ when identityResult.IsConcurrencyFailure() => result.Set(ErrorType.ConcurrencyFailure, identityResult.CombineErrors()),
-                _ => result.Set(ErrorType.NotValid, identityResult.CombineErrors())
-            };
+            return Describe(result, identityResult);
         }
 
         /// <summary>
@@ -64,7 +58,11 @@ namespace ScanApp.Application.Common.Extensions
         public static Result<TOutput> AsResult<TOutput>(this IdentityResult identityResult, TOutput output)
         {
             var result = new Result<TOutput>().SetOutput(output);
+            return Describe(result, identityResult) as Result<TOutput>;
+        }
 
+        private static Result Describe(Result result, IdentityResult identityResult)
+        {
             return identityResult switch
             {
                 _ when identityResult.Succeeded => result,

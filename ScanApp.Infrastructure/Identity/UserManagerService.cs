@@ -47,7 +47,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             return user is null
-                ? new Result(ErrorType.NotFound, $"No user with name of {userName} found.")
+                ? UserNotFound(userName)
                 : (await _userManager.DeleteAsync(user).ConfigureAwait(false)).AsResult();
         }
 
@@ -55,7 +55,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             return user is null
-                ? new Result(ErrorType.NotFound, $"No user with name of {userName} found.")
+                ? UserNotFound(userName)
                 : (await _userManager.AddToRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult();
         }
 
@@ -63,7 +63,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             return user is null
-                ? new Result(ErrorType.NotFound, $"No user with name of {userName} found.")
+                ? UserNotFound(userName)
                 : (await _userManager.RemoveFromRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult();
         }
 
@@ -71,7 +71,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return new Result(ErrorType.NotFound, $"No user with name of {userName} found.");
+                return UserNotFound(userName);
 
             var claims = await _userManager.GetClaimsAsync(user).ConfigureAwait(false);
 
@@ -93,7 +93,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return new Result(ErrorType.NotFound, $"No user with name of {userName} found.");
+                return UserNotFound(userName);
 
             var claims = await _userManager.GetClaimsAsync(user).ConfigureAwait(false);
             var claimToDelete = claims.FirstOrDefault(c =>
@@ -109,7 +109,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return new Result(ErrorType.NotFound, $"No user with name of {userName} found.");
+                return UserNotFound(userName);
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
             return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult();
@@ -122,7 +122,7 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
 
             if (user is null)
-                return new Result(ErrorType.NotFound, $"No user with name of {data.Name} found.");
+                return UserNotFound(data.Name);
 
             if (string.IsNullOrWhiteSpace(data.NewName) is false && data.NewName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) is false)
                 user.UserName = data.NewName;
@@ -140,10 +140,12 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return new Result(ErrorType.NotFound, $"No user with name of {userName} found.");
+                return UserNotFound(userName);
 
             var identityResult = await _userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
             return identityResult.AsResult();
         }
+
+        private static Result UserNotFound(string userName) => new (ErrorType.NotFound, $"No user with name of {userName} found.");
     }
 }
