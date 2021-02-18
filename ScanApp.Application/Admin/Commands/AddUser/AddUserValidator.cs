@@ -1,17 +1,16 @@
-﻿using FluentValidation;
+﻿using System.Linq;
+using FluentValidation;
 using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
     public class AddUserValidator : AbstractValidator<AddUserCommand>
     {
-        private readonly MustContainOnlyLettersOrAllowedSymbolsValidator _standardChars = new();
+        private readonly IdentityNamingValidator _standardChars = new();
 
         public AddUserValidator()
         {
             RuleFor(c => c.NewUser.Name)
-                .Cascade(CascadeMode.Stop)
-                .NotEmpty()
                 .SetValidator(_standardChars);
             RuleFor(c => c.NewUser.Password)
                 .NotEmpty();
@@ -22,7 +21,8 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             RuleFor(c => c.NewUser.Location)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(_standardChars);
+                .Must(c => !c.First().Equals(' ') && !c.Last().Equals(' '))
+                .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
             RuleFor(c => c.NewUser.Phone)
                 .SetValidator(new PhoneNumberValidator())
                 .When(p => p.NewUser.Phone is not null);

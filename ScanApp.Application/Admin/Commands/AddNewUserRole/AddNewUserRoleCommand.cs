@@ -1,9 +1,6 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Identity;
-using ScanApp.Application.Common.Extensions;
 using ScanApp.Application.Common.Helpers.Result;
-using System;
-using System.Linq;
+using ScanApp.Application.Common.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +8,7 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
     public class AddNewUserRoleCommand : IRequest<Result>
     {
-        public string RoleName { get; private set; }
+        public string RoleName { get; }
 
         public AddNewUserRoleCommand(string roleName)
         {
@@ -21,17 +18,16 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 
     public class AddNewUserRoleHandler : IRequestHandler<AddNewUserRoleCommand, Result>
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IRoleManager _roleManager;
 
-        public AddNewUserRoleHandler(RoleManager<IdentityRole> roleManager)
+        public AddNewUserRoleHandler(IRoleManager roleManager)
         {
             _roleManager = roleManager;
         }
 
         public async Task<Result> Handle(AddNewUserRoleCommand request, CancellationToken cancellationToken)
         {
-            var identityResult = await _roleManager.CreateAsync(new IdentityRole(request.RoleName)).ConfigureAwait(false);
-            return identityResult.AsResult();
+            return await _roleManager.AddNewRole(request.RoleName).ConfigureAwait(false);
         }
     }
 }
