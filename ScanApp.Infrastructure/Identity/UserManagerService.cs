@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Extensions;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;

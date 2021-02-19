@@ -26,4 +26,8 @@
     <ProjectReference Include="..\ScanApp.Domain\ScanApp.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\Extensions\" />
+  </ItemGroup>
+
 </Project>
