@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Application.Common.Behaviors
 {

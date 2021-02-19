@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 {

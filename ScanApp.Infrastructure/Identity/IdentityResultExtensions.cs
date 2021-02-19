@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using ScanApp.Application.Common.Helpers.Result;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Identity;
-using ScanApp.Application.Common.Helpers.Result;
 
 namespace ScanApp.Infrastructure.Identity
 {

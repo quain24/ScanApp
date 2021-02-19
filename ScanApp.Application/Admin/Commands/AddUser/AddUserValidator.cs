@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using FluentValidation;
+﻿using FluentValidation;
 using ScanApp.Common.Validators;
+using System.Linq;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {

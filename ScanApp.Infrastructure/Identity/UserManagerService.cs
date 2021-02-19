@@ -145,6 +145,6 @@ namespace ScanApp.Infrastructure.Identity
             return identityResult.AsResult();
         }
 
-        private static Result UserNotFound(string userName) => new (ErrorType.NotFound, $"No user with name of {userName} found.");
+        private static Result UserNotFound(string userName) => new(ErrorType.NotFound, $"No user with name of {userName} found.");
     }
 }

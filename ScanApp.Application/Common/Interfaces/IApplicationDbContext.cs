@@ -32,6 +32,7 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<IdentityUserRole<string>> UserRoles { get; set; }
         DbSet<ApplicationUser> Users { get; set; }
         DbSet<IdentityUserToken<string>> UserTokens { get; set; }
+
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 
         EntityEntry Add(object entity);
@@ -101,11 +102,15 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<TEntity> Set<TEntity>() where TEntity : class;
 
         DbSet<TEntity> Set<TEntity>(string name) where TEntity : class;
+
         string ToString();
 
         EntityEntry<TEntity> Update<TEntity>(TEntity entity) where TEntity : class;
+
         EntityEntry Update(object entity);
+
         void UpdateRange(params object[] entities);
+
         void UpdateRange(IEnumerable<object> entities);
     }
 }

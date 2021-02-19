@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
