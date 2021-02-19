@@ -35,8 +35,9 @@ namespace ScanApp.Common.Installers
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddRoleManager<RoleManager<IdentityRole>>()
-                .AddUserManager<UserManager<ApplicationUser>>();
-            
+                .AddUserManager<UserManager<ApplicationUser>>()
+                .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
+
             // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
             services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 

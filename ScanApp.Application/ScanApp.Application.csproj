@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\Validators\**" />
+    <EmbeddedResource Remove="Common\Validators\**" />
+    <None Remove="Common\Validators\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="9.5.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="9.5.1" />
     <PackageReference Include="MediatR" Version="9.0.0" />
@@ -18,10 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
     <ProjectReference Include="..\ScanApp.Domain\ScanApp.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\Validators\" />
   </ItemGroup>
 
 </Project>

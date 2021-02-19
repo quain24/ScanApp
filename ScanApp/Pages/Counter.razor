@@ -54,6 +54,13 @@
 </tr>
 }
 
+@foreach (var usr in _claims)
+{
+    <tr>
+        <td>@usr</td>
+    </tr>
+}
+
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
@@ -62,6 +69,7 @@
     private int _currentCount = 0;
     private string _name;
     private List<string> _users = new List<string>();
+    private List<string> _claims = new List<string>();
     string _userAuthenticated;
     bool _mayRender = false;
     UserManager<ApplicationUser> userManager;
@@ -72,6 +80,19 @@
         base.OnInitializedAsync();
         userManager = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
         roleManager = (RoleManager<IdentityRole>)ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Uclaim();
+    }
+
+    public async Task Uclaim()
+    {
+        var t = await AuthenticationStateTask;
+        var a = t.User.Claims;
+        _claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}" ));
     }
 
     public async Task TestDbQuery()
