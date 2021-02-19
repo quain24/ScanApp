@@ -4,7 +4,6 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,7 +40,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
                 return new Result<List<string>>(ErrorType.NotFound, $"No user with name \"{request.UserName}\" exists.");
 
             var roles = await _context.UserRoles
-                .Where("UserId.Equals(@0)", id)
+                .Where(u => u.UserId.Equals(id))
                 .Join(_context.Roles, role => role.RoleId, identityRole => identityRole.Id,
                     (_, identityRole) => identityRole.Name)
                 .ToListAsync(cancellationToken)

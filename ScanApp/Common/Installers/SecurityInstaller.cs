@@ -2,12 +2,11 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using ScanApp.Application.Common.Entities;
 using ScanApp.Areas.Identity;
+using ScanApp.Infrastructure.Identity;
 using ScanApp.Infrastructure.Persistence;
 using System;
-using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Interfaces;
-using ScanApp.Infrastructure.Identity;
 
 namespace ScanApp.Common.Installers
 {
@@ -38,10 +37,6 @@ namespace ScanApp.Common.Installers
                 .AddUserManager<UserManager<ApplicationUser>>()
                 .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
 
-            // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
-            // Guarantees update in roles and claims on each page refresh.
-            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
-
             // Login page is displayed if user is not authorized - also on startup
             services.AddAuthorization(options =>
             {
@@ -49,6 +44,10 @@ namespace ScanApp.Common.Installers
                     .RequireAuthenticatedUser()
                     .Build();
             });
+
+            // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
+            // Guarantees update in roles and claims on each page refresh.
+            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 
             // Registers a service to refresh user authorization periodically - timespan is set inside of this service
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();

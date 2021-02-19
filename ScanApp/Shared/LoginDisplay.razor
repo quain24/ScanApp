@@ -1,12 +1,12 @@
 ﻿<AuthorizeView>
     <Authorized>
-        <a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>
+        <MudLink Href="Identity/Account/Manage"><MudText Style="color: white">Hello, @context.User.Identity.Name!</MudText></MudLink>
         <form method="post" action="Identity/Account/LogOut">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
+            <button style="color: white" type="submit" class="nav-link btn btn-link"><MudText Style="color: white">Log out</MudText></button>
         </form>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
+        <MudLink Href="Identity/Account/Register"><MudText Style="color: white">Register</MudText></MudLink>
+        <MudLink Href="Identity/Account/Login"><MudText Style="color: white">Login</MudText></MudLink>
     </NotAuthorized>
 </AuthorizeView>

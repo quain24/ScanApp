@@ -3,23 +3,15 @@
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Infrastructure.Persistence
-@using System.Net
-@using MediatR
 @using Microsoft.Extensions.DependencyInjection
-@using ScanApp.Application.Admin.Commands
-@using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Common.Interfaces
-@using System.Linq.Dynamic.Core
-@using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
 @inject IScopedMediator Mediator
 @inject IApplicationDbContext context
-@inject NotificationService NotificationService
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
-@inject DialogService DialogService
 
 @inherits OwningComponentBase
 
@@ -27,32 +19,7 @@
 <div class="container-fluid m-0">
     <div class="row">
         <div class="col-sm-10 m-0 p-1">
-            <RadzenGrid @ref="_rolesGrid" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="3" AllowSorting="true" EditMode="DataGridEditMode.Single"
-                        Data="@_roles" TItem="IdentityRole" RowUpdate="@(async  (args) => await OnUpdateRow(args))" RowCreate="@OnCreateRow" Count="@_roleCount" LoadData="@LoadRoles">
-                <Columns>
-                    <RadzenGridColumn TItem="IdentityRole" Property="Name" Title="Name">
-                        <EditTemplate Context="identityRole">
-                            <RadzenTextBox @bind-value="identityRole.Name" Placeholder="@identityRole.Name"></RadzenTextBox>
-                        </EditTemplate>
-                    </RadzenGridColumn>
-                    <RadzenGridColumn TItem="IdentityRole" Property="Id" Title="Id">
-                    </RadzenGridColumn>
-                    <RadzenGridColumn TItem="IdentityRole" Context="SampleEditContext" Bubble="false" Width="150px">
-                        <Template Context="identityRole">
-                            <RadzenButton Icon="edit" Size="ButtonSize.Medium" Click="@(args => EditRow(identityRole))"></RadzenButton>
-                            <RadzenButton Icon="delete" Size="ButtonSize.Medium" Click="@(() => DeleteRowDialog(identityRole))"></RadzenButton>
-                        </Template>
-                        <EditTemplate Context="identityRole">
-                            <RadzenButton Icon="save" Size="ButtonSize.Medium" Click="@(args => SaveRow(identityRole))">
-                            </RadzenButton>
-                            <RadzenButton Icon="cancel" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CancelEdit(identityRole))">
-                            </RadzenButton>
-                        </EditTemplate>
-                    </RadzenGridColumn>
-                </Columns>
-            </RadzenGrid>
         </div>
-        <RadzenButton Icon="add_circle_outline" Text="Add" Click="@InsertRow" />
     </div>
 </div>
 
@@ -60,130 +27,16 @@
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
     private IApplicationDbContext ApplicationDbCtx { get; set; }
-
-    int _roleCount;
-    IList<IdentityRole> _roles;
-    IdentityRole _selectedRole;
-    RadzenGrid<IdentityRole> _rolesGrid;
-    bool render = true;
-
-    protected override bool ShouldRender() => render;
-
+    
     protected override void OnInitialized()
     {
         base.OnInitializedAsync();
         ApplicationDbCtx = ContextFactory.CreateDbContext();
-        DialogService.OnClose += Delete;
     }
 
-    void InsertRow()
+    protected override void Dispose(bool disposing)
     {
-        var role = new IdentityRole();
-        _rolesGrid.InsertRow(role);
+        base.Dispose(disposing);
+        ApplicationDbCtx.Dispose();
     }
-
-    void EditRow(IdentityRole order)
-    {
-        _rolesGrid.EditRow(order);
-    }
-
-    void SaveRow(IdentityRole order)
-    {
-        _rolesGrid.UpdateRow(order);
-    }
-
-    void Delete(dynamic result)
-    {
-        if (result is null)
-            return;
-        DeleteRow(result as IdentityRole);
-    }
-
-    void DeleteRow(IdentityRole role)
-    {
-        if (ApplicationDbCtx.Roles.Contains(role))
-        {
-            ApplicationDbCtx.Roles.Remove(role);
-
-            ApplicationDbCtx.SaveChanges();
-            _rolesGrid.Reload();
-        }
-        else
-        {
-            _rolesGrid.CancelEditRow(role);
-        }
-    }
-
-    async Task DeleteRowDialog(IdentityRole role) => await DialogService.OpenAsync("Delete", ds =>
-    @<div>
-        <p Style="margin-bottom: 1rem">Confirm?</p>
-        <div class="row">
-            <div class="col-md-12">
-                <RadzenButton Text="Ok" Click="() => ds.Close(role)" Style="margin-bottom: 10px; width: 150px" />
-                <RadzenButton Text="Cancel" Click="() => ds.Close(null)" ButtonStyle="ButtonStyle.Secondary" Style="margin-bottom: 10px; width: 150px" />
-            </div>
-        </div>
-    </div>);
-
-async Task OnCreateRow(IdentityRole role)
-{
-  role.NormalizedName = role.Name.ToUpperInvariant();
-  await ApplicationDbCtx.SaveChangesAsync();
-
-}
-void CancelEdit(IdentityRole order)
-{
-  _rolesGrid.CancelEditRow(order);
-
-  var orderEntry = ApplicationDbCtx.Entry(order);
-  if (orderEntry.State == EntityState.Modified)
-  {
-      orderEntry.CurrentValues.SetValues(orderEntry.OriginalValues);
-      orderEntry.State = EntityState.Unchanged;
-  }
-}
-
-async Task OnUpdateRow(IdentityRole obj)
-{
-  obj.NormalizedName = obj.Name.ToUpperInvariant();
-  ApplicationDbCtx.Roles.Update(obj);
-  var s = await ApplicationDbCtx.SaveChangesAsync();
-  Console.WriteLine(s);
-}
-
-void ShowNotification(NotificationMessage message)
-{
-  NotificationService.Notify(message);
-}
-
-async Task LoadRoles(LoadDataArgs args)
-{
-  var result = await Mediator.SendScoped(new GetAllUserRolesQuery());
-
-  if (result.Conclusion)
-  {
-      var query = result.Output.AsQueryable().Skip(args.Skip.Value).Take(args.Top.Value).OrderBy(r => r.Name);
-      _roles = string.IsNullOrEmpty(args.Filter) ? query.ToList() : query.Where(args.Filter).ToList();
-      _roleCount = result.Output.Count;
-      await InvokeAsync(StateHasChanged);
-  }
-  else
-  {
-      ShowNotification(new NotificationMessage()
-      {
-          Severity = NotificationSeverity.Error,
-          Duration = 5000,
-          Summary = "Could not load roles",
-          Detail = $"Something happened, roles could not be loaded:\n{result.ErrorDescription.ErrorMessage}"
-      });
-  }
-
-}
-
-protected override void Dispose(bool disposing)
-{
-  base.Dispose(disposing);
-  ApplicationDbCtx.Dispose();
-  DialogService.OnClose -= Delete;
-}
 }

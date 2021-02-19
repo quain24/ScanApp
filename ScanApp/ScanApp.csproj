@@ -18,7 +18,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
-    <PackageReference Include="Radzen.Blazor" Version="3.1.0" />
+    <PackageReference Include="MudBlazor" Version="5.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
   </ItemGroup>
 
@@ -26,6 +26,10 @@
     <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
     <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
     <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logs\" />
   </ItemGroup>
 
 </Project>

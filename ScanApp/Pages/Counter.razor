@@ -3,19 +3,13 @@
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Infrastructure.Persistence
-@using MediatR
-@using ScanApp.Application.Admin.Commands
-@using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
-@using ScanApp.Application.Admin.Queries
 @using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.Admin.Commands.AddNewUserRole
-@using ScanApp.Application.Admin.Queries.GetUserRoles
 @using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Infrastructure.Identity
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
-@inject NotificationService NotificationService
 @inject IScopedMediator Mediator
 
 @inherits OwningComponentBase
@@ -26,10 +20,10 @@
 
 <AuthorizeView Roles="admin">
     <Authorized>
-        <RadzenButton Click="@IncrementCount">Click me</RadzenButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IncrementCount">Authorized click</MudButton>
     </Authorized>
     <NotAuthorized>
-        <RadzenButton Click="@IncrementCount">Unauthorized click</RadzenButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IncrementCount">Unauthorized click</MudButton>
     </NotAuthorized>
 </AuthorizeView>
 @_name
@@ -38,20 +32,15 @@
         <button class="btn btn-primary" @onclick="IncrementCount" onmouseover="null">Authorized</button>
     </Authorized>
     <NotAuthorized>
-        @context.User.Identity.IsAuthenticated
-        <button class="btn btn-primary" @onclick="AddRole">Not Authorized</button>
-        <RadzenButton Click="@TestLogoff" Disabled="_mayRender">Sign out user "Test"</RadzenButton>
-        <RadzenButton Click="@TestLogoffUm" Disabled="_disabled">Sign out user "Test" user manager way</RadzenButton>
-        <RadzenButton Click="@TestDbQuery" Disabled="_disabled">Test db query - all roles</RadzenButton>
     </NotAuthorized>
 </AuthorizeView>
 
 @_userAuthenticated
 @foreach (var usr in _users)
 {
-<tr>
-    <td>@usr</td>
-</tr>
+    <tr>
+        <td>@usr</td>
+    </tr>
 }
 
 @foreach (var usr in _claims)
@@ -65,7 +54,6 @@
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
-    bool _disabled = false;
     private int _currentCount = 0;
     private string _name;
     private List<string> _users = new List<string>();
@@ -92,32 +80,7 @@
     {
         var t = await AuthenticationStateTask;
         var a = t.User.Claims;
-        _claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}" ));
-    }
-
-    public async Task TestDbQuery()
-    {
-        var result = await Mediator.SendScoped(new GetUserRolesQuery("adam"));
-        var notification = new NotificationMessage()
-        {
-            Detail = result.Conclusion ? $"All OK {string.Join(" ,", result.Output)}" : $"{result.ErrorDescription?.ErrorMessage ?? "Unknown error"}",
-            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
-        };
-        NotificationService.Notify(notification);
-    }
-
-    public async Task TestLogoffUm()
-    {
-        _disabled = true;
-        var result = await Mediator.SendScoped(new ChangeUserSecurityStampCommand("test"));
-
-        var notification = new NotificationMessage()
-        {
-            Detail = result.Conclusion ? $"All OK, {result.Output ?? "No additional output"}" : $"{result.ErrorDescription?.ErrorMessage ?? "Unknown error"}, {result.Output ?? "No additional output"}",
-            Severity = result.Conclusion ? NotificationSeverity.Success : NotificationSeverity.Error
-        };
-        NotificationService.Notify(notification);
-        _disabled = false;
+        _claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}"));
     }
 
     public async Task TestLogoff()
@@ -168,19 +131,5 @@
     {
         _currentCount++;
         _name += "A";
-    }
-
-    private async Task AddRole()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        var currentUser = await userManager.GetUserAsync(user);
-        var role = await roleManager.CreateAsync(new IdentityRole()
-        {
-            Name = "new_role"
-        });
-
-        var t = await userManager.AddToRoleAsync(currentUser, "new_role");
     }
 }
