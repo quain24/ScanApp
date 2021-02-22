@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,6 +16,16 @@ namespace ScanApp.Infrastructure.Identity
         public RoleManagerService(RoleManager<IdentityRole> roleManager)
         {
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager), $"Could not inject {nameof(RoleManager<IdentityRole>)}.");
+        }
+
+        public async Task<Result<List<string>>> GetAllRoles()
+        {
+            return new Result<List<string>>()
+                .SetOutput(await _roleManager.Roles
+                    .AsNoTracking()
+                    .Select(r => r.Name)
+                    .ToListAsync()
+                    .ConfigureAwait(false));
         }
 
         public async Task<Result> AddNewRole(string roleName)
@@ -37,7 +49,7 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _roleManager.SetRoleNameAsync(role, newName).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue)
+        public async Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue = null)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
@@ -59,7 +71,7 @@ namespace ScanApp.Infrastructure.Identity
             return (await _roleManager.AddClaimAsync(role, claim.ToClaim()).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue)
+        public async Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
@@ -74,6 +86,20 @@ namespace ScanApp.Infrastructure.Identity
             };
 
             return (await _roleManager.RemoveClaimAsync(role, claim.ToClaim()).ConfigureAwait(false)).AsResult();
+        }
+
+        public async Task<Result<bool>> HasClaim(string roleName, string claimType, string claimValue = null)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
+
+            if (role is null)
+                return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<bool>;
+
+            return new Result<bool>().SetOutput((await _roleManager.GetClaimsAsync(role))
+                .FirstOrDefault(c =>
+                    c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase) &&
+                    c.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase))
+                is not null);
         }
     }
 }
