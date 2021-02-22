@@ -31,6 +31,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
         public async Task<Result<List<string>>> Handle(GetUserRolesQuery request, CancellationToken cancellationToken)
         {
             var id = await _context.Users
+                .AsNoTracking()
                 .Where(u => u.UserName.Equals(request.UserName))
                 .Select(u => u.Id)
                 .FirstOrDefaultAsync(cancellationToken)
@@ -40,6 +41,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
                 return new Result<List<string>>(ErrorType.NotFound, $"No user with name \"{request.UserName}\" exists.");
 
             var roles = await _context.UserRoles
+                .AsNoTracking()
                 .Where(u => u.UserId.Equals(id))
                 .Join(_context.Roles, role => role.RoleId, identityRole => identityRole.Id,
                     (_, identityRole) => identityRole.Name)
