@@ -1,12 +1,14 @@
 ﻿<AuthorizeView>
     <Authorized>
-        <MudLink Href="Identity/Account/Manage"><MudText Style="color: white">Hello, @context.User.Identity.Name!</MudText></MudLink>
+        <MudLink Href="Identity/Account/Manage"><MudText Typo="Typo.button" Style="color: white">Hello, @context.User.Identity.Name!</MudText></MudLink>
+        <MudDivider Vertical="true" Style="margin-left: 10px; margin-right: 10px;" />
         <form method="post" action="Identity/Account/LogOut">
-            <button style="color: white" type="submit" class="nav-link btn btn-link"><MudText Style="color: white">Log out</MudText></button>
+            <button style="color: white" type="submit" class="nav-link btn btn-link"><MudText Typo="Typo.button" Style="color: white">Log out</MudText></button>
         </form>
     </Authorized>
     <NotAuthorized>
         <MudLink Href="Identity/Account/Register"><MudText Style="color: white">Register</MudText></MudLink>
+        <MudDivider Vertical="true" Style="margin-left: 10px; margin-right: 10px;" />
         <MudLink Href="Identity/Account/Login"><MudText Style="color: white">Login</MudText></MudLink>
     </NotAuthorized>
 </AuthorizeView>
