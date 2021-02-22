@@ -12,6 +12,7 @@ namespace ScanApp.Infrastructure.Common.Installers
             services.AddTransient<IScopedMediator, ScopedMediator>();
             services.AddTransient<IUserManager, UserManagerService>();
             services.AddTransient<IRoleManager, RoleManagerService>();
+            services.AddTransient<IUserInfo, UserInfoService>();
 
             return services;
         }
