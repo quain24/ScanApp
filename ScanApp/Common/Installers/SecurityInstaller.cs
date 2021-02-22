@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Areas.Identity;
+using ScanApp.Common.Extensions;
 using ScanApp.Infrastructure.Identity;
 using ScanApp.Infrastructure.Persistence;
 using System;
@@ -38,11 +40,14 @@ namespace ScanApp.Common.Installers
                 .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
 
             // Login page is displayed if user is not authorized - also on startup
+            // Automatic policy registration from Policies.cs
             services.AddAuthorization(options =>
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
+
+                options.AddSharedPolicies(services.BuildServiceProvider().GetService<ILogger<Startup>>());
             });
 
             // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)

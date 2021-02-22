@@ -1,4 +1,4 @@
-﻿@attribute [Authorize]
+﻿@attribute [Authorize(Policy = nameof(Policies.LocationMustBePoznan))]
 @page "/counter"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
@@ -11,6 +11,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IScopedMediator Mediator
+@inject IUserInfo UserInfo
 
 @inherits OwningComponentBase
 
@@ -79,8 +80,15 @@
     public async Task Uclaim()
     {
         var t = await AuthenticationStateTask;
-        var a = t.User.Claims;
-        _claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}"));
+        var a = await UserInfo.GetAllClaims(t.User.Identity.Name);
+
+        if (a.Conclusion)
+        {
+            _claims = a.Output.Select(i => $"{i.ClaimType} | {i.ClaimValue}").ToList();
+        }
+        //var u = await userManager.FindByNameAsync("test");
+        //var a = t.User.Claims;
+        //_claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}"));
     }
 
     public async Task TestLogoff()
