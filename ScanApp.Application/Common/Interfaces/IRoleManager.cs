@@ -14,6 +14,8 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> EditRoleName(string name, string newName);
 
+        Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaimsFromRole(string roleName);
+
         Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue = null);
 
         Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null);

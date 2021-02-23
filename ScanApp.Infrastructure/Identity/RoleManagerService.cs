@@ -49,6 +49,21 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _roleManager.SetRoleNameAsync(role, newName).ConfigureAwait(false)).AsResult();
         }
 
+        public async Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaimsFromRole(string roleName)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
+
+            if (role is null)
+                return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<List<(string ClaimType, string ClaimValue)>>;
+
+            return new Result<List<(string ClaimType, string ClaimValue)>>()
+                .SetOutput((await _roleManager
+                        .GetClaimsAsync(role)
+                        .ConfigureAwait(false))
+                    .Select(c => (c.Type, c.Value))
+                    .ToList());
+        }
+
         public async Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue = null)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
