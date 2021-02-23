@@ -1,0 +1,185 @@
+﻿@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.Admin.Queries.GetUserRoles
+@using ScanApp.Application.Common.Helpers.Result
+@using ScanApp.Application.Admin.Commands.RemoveUserFromRole
+@using ScanApp.Application.Admin.Commands.AddUserToRole
+@using ScanApp.Application.Admin.Queries.GetAllRoleClaims
+@using ScanApp.Application.Admin.Commands.AddClaimToRole
+@using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
+@using ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+<MudItem xs="12">
+    <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
+    <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
+</MudItem>
+<MudItem xs="12" sm="6">
+    <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_roleNames" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+              Filter="new Func<string, bool>(FilterRoles)" OnRowClick="@FillClaimsData" Hover="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Roles</MudText>
+            <MudToolBarSpacer />
+            <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="height: 51px;">@context</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+        </PagerContent>
+    </MudTable>
+</MudItem>
+<MudItem xs="12" sm="6">
+    <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5"
+              Filter="new Func<(string ClaimType, string ClaimValue, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Claims</MudText>
+            <MudToolBarSpacer />
+            <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Claim Type</MudTh>
+            <MudTh>Claim Value</MudTh>
+            <MudTh>Active</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ClaimType</MudTd>
+            <MudTd>@context.ClaimValue</MudTd>
+            <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInClaim" Color="Color.Primary"></MudSwitch></MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+        </PagerContent>
+    </MudTable>
+</MudItem>
+
+@code {
+    private List<string> _roleNames = new();
+    private List<(string ClaimType, string ClaimValue)> _claims = new();
+    private List<(string ClaimType, string ClaimValue, bool IsInClaim)> _roleClaims = new();
+    private string _selectedRole;
+    private (string ClaimType, string ClaimValue, bool IsInClaim) _selectedClaim;
+    private string _lastCheckedRole;
+    private string _searchStringRole;
+    private (string ClaimType, string ClaimValue) _searchClaim;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await RetrieveAllRoles();
+        await RetrieveAllClaims();
+    }
+
+    private async Task RetrieveAllRoles()
+    {
+        var usersResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
+        if (usersResult.Conclusion is false)
+        {
+            DisplayError(usersResult.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _roleNames = usersResult.Output;
+    }
+
+    private async Task RetrieveAllClaims()
+    {
+        var roleResult = await Mediator.SendScoped(new GetAllRoleClaimsQuery());
+
+        if (roleResult.Conclusion is false)
+        {
+            DisplayError(roleResult.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _claims = roleResult.Output;
+    }
+
+    private async Task Switch(bool arg)
+    {
+        Result result;
+        string message;
+
+        if (_selectedClaim.IsInClaim)
+        {
+            result = await Mediator.SendScoped(new RemoveClaimFromRoleCommand(_selectedClaim.ClaimType, _selectedClaim.ClaimValue, _selectedRole));
+            message = $"Claim {_selectedClaim.ClaimType} removed from {_selectedRole}";
+        }
+        else
+        {
+            result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole, _selectedClaim.ClaimType, _selectedClaim.ClaimValue));
+            message = $"Claim {_selectedClaim.ClaimType} added to {_selectedRole}";
+        }
+
+        if (result.Conclusion is false)
+        {
+            DisplayError(result.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        var index = _roleClaims.FindIndex(c => c.ClaimType.Equals(_selectedClaim.ClaimType) && c.ClaimValue.Equals(_selectedClaim.ClaimValue));
+        _roleClaims[index] = (_selectedClaim.ClaimType, _selectedClaim.ClaimValue, !_selectedClaim.IsInClaim);
+
+        await InvokeAsync(StateHasChanged);
+        DisplaySuccess(message);
+    }
+
+    private async void FillClaimsData(TableRowClickEventArgs<string> args)
+    {
+        if (args.Item.Equals(_lastCheckedRole))
+            return;
+
+        var res = await Mediator.SendScoped(new GetAllClaimsFromRoleQuery(args.Item));
+
+        if (res.Conclusion is false)
+        {
+            DisplayError(res.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _lastCheckedRole = args.Item;
+        _roleClaims = _claims.Select(r =>
+        {
+            var IsActive = res.Output.Contains(r);
+            return (r.ClaimType, r.ClaimValue, IsActive);
+        }).ToList();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void DisplayError(string errorMessage)
+    {
+        Snackbar.Add(errorMessage, Severity.Error, options =>
+        {
+            options.SnackbarVariant = Variant.Filled;
+        });
+    }
+
+    private void DisplaySuccess(string message)
+    {
+        Snackbar.Add(message, Severity.Success, options =>
+        {
+            options.SnackbarVariant = Variant.Filled;
+        });
+    }
+
+    private bool FilterClaims((string ClaimType, string ClaimValue, bool IsInClaim) data)
+    {
+        if (string.IsNullOrEmpty(_searchClaim.ClaimType))
+            return true;
+        return (data.ClaimType?.Contains(_searchClaim.ClaimType, StringComparison.OrdinalIgnoreCase) ?? false) &&
+               (data.ClaimValue?.Contains(_searchClaim.ClaimValue, StringComparison.OrdinalIgnoreCase) ?? true);
+    }
+
+    private bool FilterRoles(string roleName)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringRole))
+            return true;
+        return roleName?.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+}
