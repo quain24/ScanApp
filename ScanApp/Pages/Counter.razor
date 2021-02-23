@@ -60,7 +60,6 @@
     private List<string> _users = new List<string>();
     private List<string> _claims = new List<string>();
     string _userAuthenticated;
-    bool _mayRender = false;
     UserManager<ApplicationUser> userManager;
     RoleManager<IdentityRole> roleManager;
 
@@ -86,14 +85,10 @@
         {
             _claims = a.Output.Select(i => $"{i.ClaimType} | {i.ClaimValue}").ToList();
         }
-        //var u = await userManager.FindByNameAsync("test");
-        //var a = t.User.Claims;
-        //_claims.AddRange(a.Select(y => $"{y.Type} | {y.Value}"));
     }
 
     public async Task TestLogoff()
     {
-        _mayRender = true;
         await using (var context = AppDbContextFactory.CreateDbContext())
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -104,7 +99,6 @@
             mod.SecurityStamp = Guid.NewGuid().ToString();
             await context.SaveChangesAsync();
         }
-        _mayRender = false;
     }
 
     private async Task<List<string>> GetUsers()

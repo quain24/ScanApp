@@ -1,39 +1,192 @@
 ﻿@attribute [Authorize(Roles = "Admin")]
 @page "/admin"
-@using Microsoft.AspNetCore.Identity;
-@using Microsoft.EntityFrameworkCore
-@using ScanApp.Infrastructure.Persistence
-@using Microsoft.Extensions.DependencyInjection
 @using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin.Queries.GetAllUsers
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.Admin.Queries.GetUserRoles
+@using ScanApp.Application.Admin.Commands.RemoveUserFromRole
+@using ScanApp.Application.Common.Helpers.Result
+@using ScanApp.Application.Admin.Commands.AddUserToRole
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IServiceScopeFactory ScopeFactory
 @inject IScopedMediator Mediator
-@inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject ISnackbar Snackbar
 
 @inherits OwningComponentBase
+<MudContainer Style="background-color: blanchedalmond">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
+            <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_userNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+                      Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Users</MudText>
+                    <MudToolBarSpacer />
+                    <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Style="height: 51px;">@context</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTable Breakpoint="Breakpoint.None" Items="@_userRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+                      Filter="new Func<(string Name, bool IsInRole), bool>(FilterRoles)" Hover="true" Dense="true">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Roles</MudText>
+                    <MudToolBarSpacer />
+                    <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Role</MudTh>
+                    <MudTh>Active</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInRole" Color="Color.Primary"></MudSwitch></MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
 
-<h1>Admin page</h1>
+        <MudItem xs="12">@($"{_selectedRole.Name ?? "none"}, {_selectedUserName}")</MudItem>
+    </MudGrid>
+</MudContainer>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
-    private IApplicationDbContext ApplicationDbContext { get; set; }
-    private IApplicationDbContext RoleContext { get; set; }
 
-    protected override void OnInitialized()
+    private List<string> _userNames = new();
+    private List<string> _roleNames = new();
+    private List<(string Name, bool IsInRole)> _userRoles = new();
+    private string _selectedUserName;
+    private string _searchStringName;
+    private string _lastCheckedUserName;
+    private (string Name, bool IsInRole) _selectedRole;
+    private string _searchStringRole;
+
+    protected override async Task OnInitializedAsync()
     {
-
-        ApplicationDbContext = ContextFactory.CreateDbContext();
-        RoleContext = ContextFactory.CreateDbContext();
-
-        base.OnInitializedAsync();
-
+        await base.OnInitializedAsync();
+        await RetrieveAllUserNames();
+        await RetrieveAllRoleNames();
     }
 
-    protected override void Dispose(bool disposing)
+    private async Task RetrieveAllUserNames()
     {
-        base.Dispose(disposing);
-        RoleContext.Dispose();
-        ApplicationDbContext.Dispose();
+        var usersResult = await Mediator.SendScoped(new GetAllUsersQuery());
+        if (usersResult.Conclusion is false)
+        {
+            DisplayError(usersResult.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _userNames = usersResult.Output.Select(u => u.UserName).ToList();
+    }
+
+    private async Task RetrieveAllRoleNames()
+    {
+        var roleResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
+
+        if (roleResult.Conclusion is false)
+        {
+            DisplayError(roleResult.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _roleNames = roleResult.Output;
+    }
+
+    private async Task Switch(bool arg)
+    {
+        Result result;
+        string message;
+
+        if (_selectedRole.IsInRole)
+        {
+            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(_selectedUserName, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} removed from {_selectedUserName}";
+        }
+        else
+        {
+            result = await Mediator.SendScoped(new AddUserToRoleCommand(_selectedUserName, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} added to {_selectedUserName}";
+        }
+
+        if (result.Conclusion is false)
+        {
+            DisplayError(result.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        var index = _userRoles.FindIndex(u => u.Name == _selectedRole.Name);
+        _userRoles[index] = (_selectedRole.Name, !_selectedRole.IsInRole);
+
+        await InvokeAsync(StateHasChanged);
+        DisplaySuccess(message);
+    }
+
+    private async void FillRolesData(TableRowClickEventArgs<string> args)
+    {
+        if (args.Item.Equals(_lastCheckedUserName))
+            return;
+
+        var res = await Mediator.SendScoped(new GetUserRolesQuery(args.Item));
+
+        if (res.Conclusion is false)
+        {
+            DisplayError(res.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _lastCheckedUserName = args.Item;
+        _userRoles = _roleNames.Select(r =>
+        {
+            var IsActive = res.Output.Contains(r, StringComparer.OrdinalIgnoreCase);
+            return (r, IsActive);
+        }).ToList();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void DisplayError(string errorMessage)
+    {
+        Snackbar.Add(errorMessage, Severity.Error, options =>
+        {
+            options.SnackbarVariant = Variant.Filled;
+        });
+    }
+
+    private void DisplaySuccess(string message)
+    {
+        Snackbar.Add(message, Severity.Success, options =>
+        {
+            options.SnackbarVariant = Variant.Filled;
+        });
+    }
+
+    private bool FilterUsers(string name)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringName))
+            return true;
+        return name?.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private bool FilterRoles((string Name, bool IsInRole) data)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringRole))
+            return true;
+        return data.Name?.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }
