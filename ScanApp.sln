@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScanApp.Domain", "ScanApp.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScanApp.Tests", "ScanApp.Tests\ScanApp.Tests.csproj", "{929DE3BC-6D7F-41D0-B7E1-B414D6928CBE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanApp.Common", "ScanApp.Common\ScanApp.Common.csproj", "{DC40BE32-8AA1-4D6F-BD2A-65F967AC00A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScanApp.Common", "ScanApp.Common\ScanApp.Common.csproj", "{DC40BE32-8AA1-4D6F-BD2A-65F967AC00A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
