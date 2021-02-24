@@ -67,8 +67,7 @@ namespace ScanApp.Common.Extensions
 
             internal MethodInfo Method { get; }
 
-            internal PolicyInformation(string name,
-                MethodInfo method)
+            internal PolicyInformation(string name, MethodInfo method)
             {
                 Name = name;
                 Method = method;

@@ -31,7 +31,7 @@
       "resourceId": null,
       "type": "mssql.onprem",
       "connectionId": "TestConnection",
-      "secretStore": "LocalSecretsFile"
+      "secretStore": null
     }
   }
 }

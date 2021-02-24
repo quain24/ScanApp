@@ -1,9 +1,6 @@
 ﻿@using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
-@using ScanApp.Application.Admin.Queries.GetUserRoles
 @using ScanApp.Application.Common.Helpers.Result
-@using ScanApp.Application.Admin.Commands.RemoveUserFromRole
-@using ScanApp.Application.Admin.Commands.AddUserToRole
 @using ScanApp.Application.Admin.Queries.GetAllRoleClaims
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
@@ -11,55 +8,55 @@
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
-<MudItem xs="12">
-    <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
-    <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
-</MudItem>
-<MudItem xs="12" sm="6">
-    <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_roleNames" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
-              Filter="new Func<string, bool>(FilterRoles)" OnRowClick="@FillClaimsData" Hover="true" Dense="true">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Roles</MudText>
-            <MudToolBarSpacer />
-            <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>Name</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd Style="height: 51px;">@context</MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
-        </PagerContent>
-    </MudTable>
-</MudItem>
-<MudItem xs="12" sm="6">
-    <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5"
-              Filter="new Func<(string ClaimType, string ClaimValue, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Claims</MudText>
-            <MudToolBarSpacer />
-            <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-        <HeaderContent>
-            <MudTh>Claim Type</MudTh>
-            <MudTh>Claim Value</MudTh>
-            <MudTh>Active</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.ClaimType</MudTd>
-            <MudTd>@context.ClaimValue</MudTd>
-            <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInClaim" Color="Color.Primary"></MudSwitch></MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
-        </PagerContent>
-    </MudTable>
-</MudItem>
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudTable Breakpoint="Breakpoint.None" T="string" Items="@RoleNames" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+                  Filter="new Func<string, bool>(FilterRoles)" OnRowClick="@FillClaimsData" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Roles</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="height: 51px;">@context</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5"
+                  Filter="new Func<(string ClaimType, string ClaimValue, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Claims</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Claim Type</MudTh>
+                <MudTh>Claim Value</MudTh>
+                <MudTh>Active</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ClaimType</MudTd>
+                <MudTd>@context.ClaimValue</MudTd>
+                <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInClaim" Color="Color.Primary"></MudSwitch></MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
 
 @code {
-    private List<string> _roleNames = new();
+
+    [Parameter]
+    public List<string> RoleNames { get; set; }
     private List<(string ClaimType, string ClaimValue)> _claims = new();
     private List<(string ClaimType, string ClaimValue, bool IsInClaim)> _roleClaims = new();
     private string _selectedRole;
@@ -71,20 +68,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await RetrieveAllRoles();
         await RetrieveAllClaims();
-    }
-
-    private async Task RetrieveAllRoles()
-    {
-        var usersResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
-        if (usersResult.Conclusion is false)
-        {
-            DisplayError(usersResult.ErrorDescription?.ErrorMessage);
-            return;
-        }
-
-        _roleNames = usersResult.Output;
     }
 
     private async Task RetrieveAllClaims()
