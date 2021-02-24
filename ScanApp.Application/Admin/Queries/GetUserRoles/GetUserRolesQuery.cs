@@ -45,6 +45,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
                 .Where(u => u.UserId.Equals(id))
                 .Join(_context.Roles, role => role.RoleId, identityRole => identityRole.Id,
                     (_, identityRole) => identityRole.Name)
+                .OrderBy(name => name)
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
