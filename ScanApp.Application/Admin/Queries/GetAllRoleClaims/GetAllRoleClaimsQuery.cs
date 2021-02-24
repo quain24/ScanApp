@@ -33,6 +33,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllRoleClaims
                 var roles = await _context.RoleClaims
                     .AsNoTracking()
                     .Select(rc => new ValueTuple<string, string>(rc.ClaimType, rc.ClaimValue))
+                    .Distinct()
                     .ToListAsync(cancellationToken).ConfigureAwait(false);
 
                 return new Result<List<(string ClaimType, string ClaimValue)>>().SetOutput(roles);
