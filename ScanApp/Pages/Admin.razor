@@ -8,66 +8,113 @@
 @using ScanApp.Application.Admin.Commands.RemoveUserFromRole
 @using ScanApp.Application.Common.Helpers.Result
 @using ScanApp.Application.Admin.Commands.AddUserToRole
+@using ScanApp.Application.Admin.Queries.GetAllUserData
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
+@implements IDisposable
 
 @inherits OwningComponentBase
-<MudContainer Style="background-color: blanchedalmond">
-    <MudGrid>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
-            <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
-        </MudItem>
-        <MudItem md="12" lg="6">
-            <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_userNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
-                      Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Users</MudText>
-                    <MudToolBarSpacer />
-                    <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Name</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd Style="height: 51px;">@context</MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
-                </PagerContent>
-            </MudTable>
-        </MudItem>
-        <MudItem md="12" lg="6">
-            <MudTable Breakpoint="Breakpoint.None" Items="@_userRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
-                      Filter="new Func<(string Name, bool IsInRole), bool>(FilterRoles)" Hover="true" Dense="true">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Roles</MudText>
-                    <MudToolBarSpacer />
-                    <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh>Role</MudTh>
-                    <MudTh>Active</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.Name</MudTd>
-                    <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInRole" Color="Color.Primary"></MudSwitch></MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
-                </PagerContent>
-            </MudTable>
-        </MudItem>
-        <MudItem md="12">
+<MudContainer Style="background-color: blanchedalmond" MaxWidth="MaxWidth.False">
+
+    <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
+    <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-2">
+        <MudTabPanel Text="User Management">
+            <MudGrid>
+                <MudItem md="12" lg="4">
+                    <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_userNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+                              Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Users</MudText>
+                            <MudToolBarSpacer />
+                            <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd Style="height: 51px;">@context</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>
+                <MudItem md="12" lg="8">
+                    <MudForm>
+                        <MudTextField @bind-Value="_selectedUserData.Name" Label="Name" Disabled="_disableEdit"></MudTextField>
+                        <MudTextField @bind-Value="_selectedUserData.Email" Label="Email" Disabled="_disableEdit"></MudTextField>
+                        <MudTextField @bind-Value="_selectedUserData.Location" Label="Location" Disabled="_disableEdit"></MudTextField>
+                        <MudTextField @bind-Value="_selectedUserData.Phone" Label="Phone number" Disabled="_disableEdit"></MudTextField>
+                        <MudCheckBox Checked="_selectedUserData?.LockoutEndDate > DateTimeOffset.Now" Label="Locked" Disabled="_disableEdit" Class="ml-n2"></MudCheckBox>
+                    </MudForm>
+                </MudItem>
+                <MudItem md="12" lg="8">
+                    <MudButton Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name) ">Edit user</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_disableSave">Save changes</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Role Management">
+            <MudGrid>
+                <MudItem md="12" lg="6">
+                    <MudTable Breakpoint="Breakpoint.None" T="string" Items="@_userNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+                              Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Users</MudText>
+                            <MudToolBarSpacer />
+                            <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd Style="height: 51px;">@context</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>
+                <MudItem md="12" lg="6">
+                    <MudTable Breakpoint="Breakpoint.None" Items="@_userRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+                              Filter="new Func<(string Name, bool IsInRole), bool>(FilterRoles)" Hover="true" Dense="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Roles</MudText>
+                            <MudToolBarSpacer />
+                            <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh>Role</MudTh>
+                            <MudTh>Active</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.Name</MudTd>
+                            <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInRole" Color="Color.Primary"></MudSwitch></MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Claim management">
             <ScanApp.Pages.AdminComponents.RoleManager RoleNames="@_roleNames" />
-        </MudItem>
-    </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
 </MudContainer>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private UserInfoModel _selectedUserData = new();
+    private bool _disableEdit = true;
+    private bool _disableSave = true;
 
     private List<string> _userNames = new();
     private List<string> _roleNames = new();
@@ -77,6 +124,9 @@
     private string _lastCheckedUserName;
     private (string Name, bool IsInRole) _selectedRole;
     private string _searchStringRole;
+
+    private bool _shouldRender = true;
+    protected override bool ShouldRender() => _shouldRender;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,11 +182,24 @@
             return;
         }
 
-        var index = _userRoles.FindIndex(u => u.Name == _selectedRole.Name);
+        var index = _userRoles.FindIndex(u => u.Name.Equals(_selectedRole.Name, StringComparison.OrdinalIgnoreCase));
         _userRoles[index] = (_selectedRole.Name, !_selectedRole.IsInRole);
 
         await InvokeAsync(StateHasChanged);
         DisplaySuccess(message);
+    }
+
+    private async void FillUserData(TableRowClickEventArgs<string> args)
+    {
+        var result = await Mediator.SendScoped(new GetAllUserDataQuery(_selectedUserName));
+
+        if (result.Conclusion)
+        {
+            _selectedUserData = result.Output;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        DisplayError(result.ErrorDescription?.ErrorMessage);
     }
 
     private async void FillRolesData(TableRowClickEventArgs<string> args)
@@ -192,4 +255,10 @@
             return true;
         return data.Name?.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        _shouldRender = false;
+    }
+
 }

@@ -1,5 +1,4 @@
 ﻿@using ScanApp.Application.Common.Interfaces
-@using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @using ScanApp.Application.Common.Helpers.Result
 @using ScanApp.Application.Admin.Queries.GetAllRoleClaims
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
@@ -9,7 +8,7 @@
 @inject ISnackbar Snackbar
 
 <MudGrid>
-    <MudItem xs="12" sm="6">
+    <MudItem md="12" lg="6">
         <MudTable Breakpoint="Breakpoint.None" T="string" Items="@RoleNames" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterRoles)" OnRowClick="@FillClaimsData" Hover="true" Dense="true">
             <ToolBarContent>
@@ -28,7 +27,7 @@
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem xs="12" sm="6">
+    <MudItem md="12" lg="6">
         <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5"
                   Filter="new Func<(string ClaimType, string ClaimValue, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
             <ToolBarContent>
@@ -51,12 +50,19 @@
             </PagerContent>
         </MudTable>
     </MudItem>
+    <MudItem xs="12">
+        <MudButton Color="Color.Warning" Variant="Variant.Filled">Delete selected role</MudButton>
+        <MudButton Color="Color.Warning" Variant="Variant.Filled">Delete selected claim</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Filled">Add new role</MudButton>
+        <MudButton Color="Color.Info" Variant="Variant.Filled">Add new claim</MudButton>
+    </MudItem>
 </MudGrid>
 
 @code {
 
     [Parameter]
     public List<string> RoleNames { get; set; }
+
     private List<(string ClaimType, string ClaimValue)> _claims = new();
     private List<(string ClaimType, string ClaimValue, bool IsInClaim)> _roleClaims = new();
     private string _selectedRole;
@@ -106,7 +112,7 @@
             return;
         }
 
-        var index = _roleClaims.FindIndex(c => c.ClaimType.Equals(_selectedClaim.ClaimType) && c.ClaimValue.Equals(_selectedClaim.ClaimValue));
+        var index = _roleClaims.FindIndex(c => c.Equals(_selectedClaim));
         _roleClaims[index] = (_selectedClaim.ClaimType, _selectedClaim.ClaimValue, !_selectedClaim.IsInClaim);
 
         await InvokeAsync(StateHasChanged);
