@@ -16,6 +16,6 @@ namespace ScanApp.Areas.Identity
 
         public static void LocationMustBePoznan(AuthorizationPolicyBuilder builder)
             => builder.RequireAuthenticatedUser()
-                .RequireClaim("location", "Poznań");
+                .RequireClaim("location", "Poznan");
     }
 }
