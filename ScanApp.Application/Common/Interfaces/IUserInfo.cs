@@ -1,6 +1,7 @@
 ﻿using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin.Queries.GetAllUserData;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -9,6 +10,8 @@ namespace ScanApp.Application.Common.Interfaces
         Task<string> GetUserNameById(string userId);
 
         Task<string> GetUserIdByName(string userName);
+
+        Task<UserInfoModel> GetData(string userName);
 
         Task<Result<List<string>>> GetAllRoles(string userName);
 

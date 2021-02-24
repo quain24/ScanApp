@@ -6,7 +6,9 @@ using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin.Queries.GetAllUserData;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -39,6 +41,21 @@ namespace ScanApp.Infrastructure.Identity
                 .Select(u => u.Id)
                 .SingleOrDefaultAsync()
                 .ConfigureAwait(false);
+        }
+
+        public async Task<UserInfoModel> GetData(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
+            if (user is null) return null;
+
+            return new UserInfoModel()
+            {
+                Email = user.Email,
+                Location = user.Location,
+                Name = user.UserName,
+                Phone = user.PhoneNumber,
+                LockoutEndDate = user.LockoutEnd
+            };
         }
 
         public async Task<Result<List<string>>> GetAllRoles(string userName)
