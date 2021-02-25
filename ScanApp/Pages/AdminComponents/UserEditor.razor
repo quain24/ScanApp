@@ -1,10 +1,11 @@
 ﻿@using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Admin.Queries.GetAllUserData
+@using System.Windows.Input
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
 <MudGrid>
-    <MudItem md="12" lg="5" Class="px-1">
+    <MudItem xs="12" lg="5" Class="px-1">
         <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
             <ToolBarContent>
@@ -23,18 +24,29 @@
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem md="12" lg="7" Class="px-1">
-        <MudForm>
-            <MudTextField @bind-Value="_selectedUserData.Name" Variant="Variant.Filled" Label="Name" Disabled="_disableEdit"></MudTextField>
-            <MudTextField @bind-Value="_selectedUserData.Email" Variant="Variant.Filled" Label="Email" Disabled="_disableEdit"></MudTextField>
-            <MudTextField @bind-Value="_selectedUserData.Location" Variant="Variant.Filled" Label="Location" Disabled="_disableEdit"></MudTextField>
-            <MudTextField @bind-Value="_selectedUserData.Phone" Variant="Variant.Filled" Label="Phone number" Disabled="_disableEdit"></MudTextField>
-            <MudCheckBox Checked="_selectedUserData?.LockoutEndDate > DateTimeOffset.Now" Label="Locked" Disabled="_disableEdit" Class="ml-n2"></MudCheckBox>
-        </MudForm>
-    </MudItem>
-    <MudItem md="12" lg="8" Class="px-1">
-        <MudButton Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name) ">Edit user</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_disableSave">Save changes</MudButton>
+    <MudItem xs="12" lg="7" Class="px-1">
+        <MudCard Class="w-100 px-3 pt-2">
+            <MudCardContent>
+                <MudForm>
+                    <MudTextField @bind-Value="_selectedUserData.Name" Variant="Variant.Filled" Label="Name" Disabled="_editDisabled"></MudTextField>
+                    <MudTextField @bind-Value="_selectedUserData.Email" Variant="Variant.Filled" Label="Email" Disabled="_editDisabled"></MudTextField>
+                    <MudTextField @bind-Value="_selectedUserData.Location" Variant="Variant.Filled" Label="Location" Disabled="_editDisabled"></MudTextField>
+                    <MudTextField @bind-Value="_selectedUserData.Phone" Variant="Variant.Filled" Label="Phone number" Disabled="_editDisabled"></MudTextField>
+                    <MudCheckBox Checked="_selectedUserData?.LockoutEndDate > DateTimeOffset.Now" Label="Locked" Disabled="_editDisabled" Class="ml-n2"></MudCheckBox>
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                @if (_editVisible)
+                {
+                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name)">Edit user</MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name)">Cancel edit</MudButton>
+                }
+                <MudButton Class="ml-2 mr-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="_disableSave">Save changes</MudButton>
+            </MudCardActions>
+        </MudCard>
     </MudItem>
 </MudGrid>
 
@@ -43,8 +55,11 @@
     public List<string> UserNames { get; set; }
 
     private UserInfoModel _selectedUserData = new();
-    private bool _disableEdit = true;
+    private UserInfoModel _editingUserData = new();
+    private bool _editDisabled = true;
+    private bool _editVisible = true;
     private bool _disableSave = true;
+    private bool _disableUserChange = true;
     private string _selectedUserName;
     private string _searchStringName;
     private string _lastCheckedUserName;
@@ -54,8 +69,37 @@
         await base.OnInitializedAsync();
     }
 
+    private async void EditHandler()
+    {
+        _editVisible = !_editVisible;
+        _editDisabled = !_editDisabled;
+        if (_editDisabled)
+        {
+            _selectedUserData = _editingUserData;
+        }
+        else
+        {
+            _editingUserData = new UserInfoModel()
+            {
+                Email = _selectedUserData.Email,
+                Location = _selectedUserData.Location,
+                LockoutEndDate = _selectedUserData.LockoutEndDate,
+                Name = _selectedUserData.Name,
+                Phone = _selectedUserData.Phone
+            };
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
     private async void FillUserData(TableRowClickEventArgs<string> args)
     {
+        if (!_editDisabled)
+        {
+            _editDisabled = !_editDisabled;
+            _editVisible = !_editVisible;
+            _selectedUserData = _editingUserData;
+        }
+
         if (_selectedUserName.Equals(_lastCheckedUserName))
             return;
 

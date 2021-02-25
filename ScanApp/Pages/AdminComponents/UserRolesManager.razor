@@ -12,7 +12,7 @@
 @inject ISnackbar Snackbar
 
 <MudGrid>
-    <MudItem md="12" lg="6" Class="px-1">
+    <MudItem xs="12" lg="6" Class="px-1">
         <MudTable Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
             <ToolBarContent>
@@ -31,7 +31,7 @@
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem md="12" lg="6" Class="px-1">
+    <MudItem xs="12" lg="6" Class="px-1">
         <MudTable Breakpoint="Breakpoint.None" Items="@_userRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
                   Filter="new Func<(string Name, bool IsInRole), bool>(FilterRoles)" Hover="true" Dense="true">
             <ToolBarContent>
