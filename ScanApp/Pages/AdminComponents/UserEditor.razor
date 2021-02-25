@@ -1,0 +1,96 @@
+﻿@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin.Queries.GetAllUserData
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    <MudItem md="12" lg="5" Class="px-1">
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+                  Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="height: 51px;">@context</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem md="12" lg="7" Class="px-1">
+        <MudForm>
+            <MudTextField @bind-Value="_selectedUserData.Name" Variant="Variant.Filled" Label="Name" Disabled="_disableEdit"></MudTextField>
+            <MudTextField @bind-Value="_selectedUserData.Email" Variant="Variant.Filled" Label="Email" Disabled="_disableEdit"></MudTextField>
+            <MudTextField @bind-Value="_selectedUserData.Location" Variant="Variant.Filled" Label="Location" Disabled="_disableEdit"></MudTextField>
+            <MudTextField @bind-Value="_selectedUserData.Phone" Variant="Variant.Filled" Label="Phone number" Disabled="_disableEdit"></MudTextField>
+            <MudCheckBox Checked="_selectedUserData?.LockoutEndDate > DateTimeOffset.Now" Label="Locked" Disabled="_disableEdit" Class="ml-n2"></MudCheckBox>
+        </MudForm>
+    </MudItem>
+    <MudItem md="12" lg="8" Class="px-1">
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name) ">Edit user</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_disableSave">Save changes</MudButton>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public List<string> UserNames { get; set; }
+
+    private UserInfoModel _selectedUserData = new();
+    private bool _disableEdit = true;
+    private bool _disableSave = true;
+    private string _selectedUserName;
+    private string _searchStringName;
+    private string _lastCheckedUserName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private async void FillUserData(TableRowClickEventArgs<string> args)
+    {
+        if (_selectedUserName.Equals(_lastCheckedUserName))
+            return;
+
+        var result = await Mediator.SendScoped(new GetAllUserDataQuery(_selectedUserName));
+
+        if (!result.Conclusion)
+        {
+            DisplayError(result.ErrorDescription?.ErrorMessage);
+            return;
+        }
+
+        _selectedUserData = result.Output;
+        _lastCheckedUserName = _selectedUserName;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private bool FilterUsers(string name)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringName))
+            return true;
+        return name?.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private string RowStyleFunc(string rowValue, int rowNumber)
+    {
+        if (rowValue.Equals(_selectedUserName))
+            return "background-color: lightgrey; color: white;";
+        return string.Empty;
+    }
+
+    private void DisplayError(string errorMessage)
+    {
+        Snackbar.Add(errorMessage, Severity.Error, options =>
+        {
+            options.SnackbarVariant = Variant.Filled;
+        });
+    }
+}
