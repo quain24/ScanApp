@@ -153,5 +153,13 @@ namespace ScanApp.Infrastructure.Identity
                 ? new Result(ErrorType.NotFound, $"User {userName} does not have claim of type {claimType} with value of {claimValue}")
                 : (await _userManager.RemoveClaimAsync(user, claimToDelete).ConfigureAwait(false)).AsResult();
         }
+
+        public async Task<Result> SetLockoutDate(string userName, DateTimeOffset lockoutEndDate)
+        {
+            var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
+            return user is null
+                ? ResultHelpers.UserNotFound(userName)
+                : (await _userManager.SetLockoutEndDateAsync(user, lockoutEndDate).ConfigureAwait(false)).AsResult();
+        }
     }
 }

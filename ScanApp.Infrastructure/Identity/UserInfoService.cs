@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Admin.Queries.GetAllUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin.Queries.GetAllUserData;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -54,7 +53,7 @@ namespace ScanApp.Infrastructure.Identity
                 Location = user.Location,
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
-                LockoutEndDate = user.LockoutEnd
+                LockoutEnd = user.LockoutEnd
             };
         }
 
