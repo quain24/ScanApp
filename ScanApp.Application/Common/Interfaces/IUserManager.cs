@@ -1,4 +1,5 @@
-﻿using ScanApp.Application.Admin.Commands.EditUserData;
+﻿using System;
+using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Threading.Tasks;
 
@@ -25,5 +26,7 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result> AddClaimToUser(string userName, string claimType, string claimValue = null);
 
         Task<Result> RemoveClaimFromUser(string userName, string claimType, string claimValue);
+
+        Task<Result> SetLockoutDate(string userName, DateTimeOffset lockoutEndDate);
     }
 }
