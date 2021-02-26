@@ -10,7 +10,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 
         public EditUserDataCommandValidator()
         {
-            RuleFor(c => c.UserData.Name)
+            RuleFor(c => c.UserData.NewName)
                 .SetValidator(_standardChars);
             RuleFor(c => c.UserData.Email)
                 .Cascade(CascadeMode.Stop)
