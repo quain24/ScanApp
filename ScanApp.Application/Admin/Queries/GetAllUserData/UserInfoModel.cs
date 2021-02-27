@@ -38,7 +38,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
 
         public bool EqualWithDate(UserInfoModel other)
         {
-            return Equals(other) && LockoutEnd == other.LockoutEnd;
+            return EqualWithoutDate(other) && LockoutEnd == other.LockoutEnd;
         }
 
         public bool EqualWithoutDate(UserInfoModel other)

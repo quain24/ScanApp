@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using ScanApp.Application.Common.Entities;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -19,10 +21,31 @@ namespace ScanApp.Infrastructure.Identity
         public override async Task<ClaimsPrincipal> CreateAsync(ApplicationUser user)
         {
             var principal = await base.CreateAsync(user).ConfigureAwait(false);
-            ((ClaimsIdentity)principal.Identity)?.AddClaims(new[]
+            var identity = principal.Identity as ClaimsIdentity;
+
+            // Add custom claims / other sources claims
+            identity?.AddClaims(new[]
             {
-                new Claim("Location", user.Location),
+                new Claim("Location", user.Location)
             });
+
+            // Select only distinct user and role claims
+            var claims = identity?.Claims.Select(c => c).ToList();
+            var distinctClaims = identity
+                ?.Claims
+                .GroupBy(c =>
+                    c.Type, (_, groupedByName) =>
+                        groupedByName.GroupBy(c =>
+                            c.Value, (_, groupedByValue) => groupedByValue.First()))
+                .SelectMany(c => c)
+                .ToList();
+
+            foreach (var claim in claims ?? new List<Claim>(0))
+            {
+                identity?.RemoveClaim(claim);
+            }
+
+            identity?.AddClaims(distinctClaims);
 
             return principal;
         }
