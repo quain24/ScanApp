@@ -33,6 +33,9 @@
     private List<string> _userNames = new();
     private List<string> _roleNames = new();
 
+    private bool _shouldRender = true;
+    protected override bool ShouldRender() => _shouldRender;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -73,4 +76,11 @@
             options.SnackbarVariant = Variant.Filled;
         });
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        _shouldRender = false;
+        base.Dispose(disposing);
+    }
+
 }

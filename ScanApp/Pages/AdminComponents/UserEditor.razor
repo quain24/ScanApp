@@ -1,9 +1,9 @@
 ﻿@using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.EditUserData
-@using ValidationSummary = Microsoft.AspNetCore.Components.Forms.ValidationSummary
-@using ScanApp.Application.Admin.Commands
-@using ScanApp.Application.Common.Helpers.Result
+@using ScanApp.Common
+@using Severity = MudBlazor.Severity
+
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
@@ -30,26 +30,21 @@
     <MudItem xs="12" lg="7" Class="px-1">
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
-                <MudForm @bind-IsValid="@_success">
-                    <MudTextField @bind-Value="_selectedUserData.Name" Variant="Variant.Filled" Label="Name" Disabled="_editDisabled" Immediate="true"></MudTextField>
-                    <MudTextField @bind-Value="_selectedUserData.Email" Variant="Variant.Filled" Label="Email" Disabled="_editDisabled" Immediate="true"></MudTextField>
-                    <MudTextField @bind-Value="_selectedUserData.Location" Variant="Variant.Filled" Label="Location" Disabled="_editDisabled" Immediate="true"></MudTextField>
-                    <MudTextField @bind-Value="_selectedUserData.Phone" Variant="Variant.Filled" Label="Phone number" Disabled="_editDisabled" Immediate="true"></MudTextField>
-                    <MudDatePicker @bind-Date="_selectedLockoutDate" Label="Lockout end date" Disabled="_editDisabled" Editable="true" />
-                    <MudTimePicker @bind-Time="_selectedLockoutTime" Label="Lockout end time" Disabled="_editDisabled" Editable="true" />
-                    <MudCheckBox @bind-Checked="_locked" Label="Locked" ReadOnly="_editDisabled" Class="ml-n2"></MudCheckBox>
-                </MudForm>
+                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" EditingDisabled="@_editDisabled"/>
+                <MudButton OnClick="@EditHandler" Class="mt-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
             </MudCardContent>
             <MudCardActions>
                 @if (_editVisible)
                 {
-                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name)">Edit user</MudButton>
+                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
+                    <MudButton OnClick="@EditHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Add user</MudButton>
+                    <MudButton OnClick="@EditHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
                 }
                 else
                 {
-                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_selectedUserData.Name)">Cancel edit</MudButton>
+                    <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Cancel edit</MudButton>
                 }
-                <MudButton OnClick="@SaveHandler" Class="ml-2 mr-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanEnableSave() ||  _editDisabled)">Save changes</MudButton>
+                <MudButton OnClick="@SaveHandler" Class="ml-2 mr-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanEnableSave()">Save changes</MudButton>
             </MudCardActions>
         </MudCard>
     </MudItem>
@@ -58,14 +53,13 @@
 @code {
     [Parameter]
     public List<string> UserNames { get; set; }
-
     [Parameter]
     public EventCallback<List<string>> UserNamesChanged { get; set; }
 
-    private bool _success;
+    private bool _success = true;
 
-    private UserInfoModel _selectedUserData = new();
-    private UserInfoModel _editingUserData = new();
+    private UserInfoModel _userData = new();
+    private UserInfoModel _originalUserData = new();
     private bool _editDisabled = true;
     private bool _editVisible = true;
     private bool _disableSave = true;
@@ -74,35 +68,33 @@
     private string _searchStringName;
     private string _lastCheckedUserName;
     private bool _locked;
-    private DateTime? _selectedLockoutDate;
-    private TimeSpan? _selectedLockoutTime;
 
-    private DateTime? _editedLockoutDate;
-    private TimeSpan? _editedLockoutTime;
+    private bool CanEnableSave()
+    {
+        if (_userData is null || _originalUserData is null)
+            return false;
+        return !_userData.EqualWithoutDate(_originalUserData) && _success && !_editDisabled;
+    }
 
-    private async void EditHandler()
+    private async Task EditHandler()
     {
         _editVisible = !_editVisible;
         _editDisabled = !_editDisabled;
         if (_editDisabled)
         {
-            _selectedUserData = new UserInfoModel(_editingUserData);
-            _selectedLockoutDate = _editedLockoutDate;
-            _selectedLockoutTime = _editedLockoutTime;
+            _userData = new UserInfoModel(_originalUserData);
         }
         else
         {
-            _editingUserData = new UserInfoModel(_selectedUserData);
-            _editedLockoutDate = _selectedLockoutDate;
-            _editedLockoutTime = _selectedLockoutTime;
+            _originalUserData = new UserInfoModel(_userData);
         }
         await InvokeAsync(StateHasChanged);
     }
 
     private async void SaveHandler()
     {
-        var tmpData = new UserInfoModel(_selectedUserData);
-        var res = await Mediator.SendScoped(new EditUserDataCommand(new EditUserDto(_editingUserData.Name)
+        var tmpData = new UserInfoModel(_userData);
+        var res = await Mediator.SendScoped(new EditUserDataCommand(new EditUserDto(_originalUserData.Name)
         {
             Phone = tmpData.Phone,
             Location = tmpData.Location,
@@ -112,22 +104,17 @@
 
         if (res.Conclusion)
         {
-            UserNames[UserNames.FindIndex(ind => ind.Equals(_editingUserData.Name))] = tmpData.Name;
-            _editingUserData = _selectedUserData;
+            UserNames[UserNames.FindIndex(ind => ind.Equals(_originalUserData.Name))] = tmpData.Name;
+            _originalUserData = _userData;
             await UserNamesChanged.InvokeAsync(UserNames);
             DisplaySuccess("User data has been updated.");
+            await EditHandler();
             return;
         }
 
         DisplayError(res.ErrorDescription?.ErrorMessage ?? "Unknown error");
     }
 
-    private bool CanEnableSave()
-    {
-        if (_selectedUserData is null || _editingUserData is null)
-            return false;
-        return !_selectedUserData.EqualWithoutDate(_editingUserData);
-    }
 
     private async void FillUserData(TableRowClickEventArgs<string> args)
     {
@@ -135,9 +122,7 @@
         {
             _editDisabled = !_editDisabled;
             _editVisible = !_editVisible;
-            _selectedUserData = _editingUserData;
-            _selectedLockoutDate = _editedLockoutDate;
-            _selectedLockoutTime = _editedLockoutTime;
+            _userData = _originalUserData;
         }
 
         if (_selectedUserName.Equals(_lastCheckedUserName))
@@ -151,9 +136,8 @@
             return;
         }
 
-        _selectedUserData = result.Output;
-        _selectedLockoutDate = _selectedUserData.LockoutEndDate();
-        _selectedLockoutTime = _selectedUserData.LockoutEndTime();
+        _userData = result.Output;
+        _originalUserData = new UserInfoModel(result.Output);
         _lastCheckedUserName = _selectedUserName;
         await InvokeAsync(StateHasChanged);
     }
