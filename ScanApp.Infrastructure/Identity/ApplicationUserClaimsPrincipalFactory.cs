@@ -30,7 +30,7 @@ namespace ScanApp.Infrastructure.Identity
             });
 
             // Select only distinct user and role claims
-            var claims = identity?.Claims.Select(c => c).ToList();
+            var claims = identity?.Claims.ToList();
             var distinctClaims = identity
                 ?.Claims
                 .GroupBy(c =>

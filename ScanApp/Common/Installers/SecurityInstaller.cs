@@ -17,22 +17,35 @@ namespace ScanApp.Common.Installers
         /// <summary>
         /// Configures all ASP Core Identity and security options / settings, such as password requirements or User / role managers
         /// </summary>
-        public static IServiceCollection AddSecurityConfiguration(this IServiceCollection services)
+        /// <param name="services">Collection of service descriptors</param>
+        /// <param name="storeIdentityInMemory">If true, enables storing of user claims and roles on server side.<br/>
+        /// This behavior will help when asp identity cookie will grow to large because of large amount of claims or roles assigned to user<br/>
+        /// and browsers wont be able to handle it properly.
+        /// <para><see lang="false"/> - DEFAULT -Standard behavior - cookie stores all claims and roles on client side</para>
+        /// <para><see lang="true"/> - Cookie only points to store on server side</para>
+        /// </param>
+        public static IServiceCollection AddSecurityConfiguration(this IServiceCollection services, bool storeIdentityInMemory = false)
         {
-            services.AddDefaultIdentity<ApplicationUser>(options =>
-                {
-                    options.SignIn.RequireConfirmedAccount = false;
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequiredLength = 3;
+            var identityOptions = new Action<IdentityOptions>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequiredLength = 3;
 
-                    // lockout setup
-                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
-                    options.Lockout.MaxFailedAccessAttempts = 2;
-                    options.Lockout.AllowedForNewUsers = true;
-                })
+                // lockout setup
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
+                options.Lockout.MaxFailedAccessAttempts = 2;
+                options.Lockout.AllowedForNewUsers = true;
+            });
+
+            var identityBuilder = storeIdentityInMemory
+                ? services.SetUpIdentityToStoreDataInMemoryStore<ApplicationUser>(identityOptions)
+                : services.AddDefaultIdentity<ApplicationUser>(identityOptions);
+
+            identityBuilder
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddRoleManager<RoleManager<IdentityRole>>()
@@ -57,6 +70,27 @@ namespace ScanApp.Common.Installers
             // Registers a service to refresh user authorization periodically - timespan is set inside of this service
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
             return services;
+        }
+
+        private static IdentityBuilder SetUpIdentityToStoreDataInMemoryStore<TUser>(this IServiceCollection services, Action<IdentityOptions> options)
+        where TUser : class
+        {
+            services.AddAuthentication(o =>
+            {
+                o.DefaultScheme = IdentityConstants.ApplicationScheme;
+                o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            }).AddIdentityCookies(o =>
+            {
+                o.ApplicationCookie.PostConfigure(cookie => cookie.SessionStore = new MemoryCacheTicketStore());
+            });
+
+            return services.AddIdentityCore<TUser>(o =>
+                {
+                    o.Stores.MaxLengthForKeys = 128;
+                    options?.Invoke(o);
+                })
+                .AddDefaultUI()
+                .AddDefaultTokenProviders();
         }
     }
 }
