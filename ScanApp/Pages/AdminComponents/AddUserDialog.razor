@@ -1,0 +1,27 @@
+﻿@using ScanApp.Application.Admin.Queries.GetAllUserData
+
+<MudDialog>
+    <DialogContent>
+        <UserDataForm @bind-Success="_success" @bind-User="User" EditingDisabled="false"></UserDataForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Add user</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private bool _success;
+    UserInfoModel User { get; set; } = new UserInfoModel()
+    {
+        Email = string.Empty,
+        Location = string.Empty,
+        Name = string.Empty,
+        Phone = string.Empty
+    };
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}
+
