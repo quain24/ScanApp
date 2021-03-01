@@ -11,6 +11,8 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<string> GetUserIdByName(string userName);
 
+        Task<string> GetUserConcurrencyStamp(string userName);
+
         Task<UserInfoModel> GetData(string userName);
 
         Task<Result<List<string>>> GetAllRoles(string userName);

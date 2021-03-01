@@ -2,6 +2,7 @@
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -11,7 +12,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> DeleteUser(string userName);
 
-        Task<Result> EditUserData(EditUserDto data);
+        Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data);
 
         Task<Result> ChangePassword(string userName, string newPassword);
 

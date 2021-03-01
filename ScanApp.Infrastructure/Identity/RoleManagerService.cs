@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -49,22 +50,22 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _roleManager.SetRoleNameAsync(role, newName).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaimsFromRole(string roleName)
+        public async Task<Result<List<ClaimModel>>> GetAllClaimsFromRole(string roleName)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
             if (role is null)
-                return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<List<(string ClaimType, string ClaimValue)>>;
+                return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<List<ClaimModel>>;
 
-            return new Result<List<(string ClaimType, string ClaimValue)>>()
+            return new Result<List<ClaimModel>>()
                 .SetOutput((await _roleManager
                         .GetClaimsAsync(role)
                         .ConfigureAwait(false))
-                    .Select(c => (c.Type, c.Value))
+                    .Select(c => new ClaimModel(c.Type, c.Value))
                     .ToList());
         }
 
-        public async Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue = null)
+        public async Task<Result> AddClaimToRole(string roleName, ClaimModel claim)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
@@ -73,17 +74,17 @@ namespace ScanApp.Infrastructure.Identity
 
             var claims = await _roleManager.GetClaimsAsync(role).ConfigureAwait(false);
 
-            if (claims.Any(c => c.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase) && c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase)))
-                return new Result(ErrorType.Duplicated, $"Role {role.Name} already have claim {claimType} with value {claimValue}");
+            if (claims.Any(c => c.Value.Equals(claim.Value, StringComparison.OrdinalIgnoreCase) && c.Type.Equals(claim.Type, StringComparison.OrdinalIgnoreCase)))
+                return new Result(ErrorType.Duplicated, $"Role {role.Name} already have claim {claim.Type} with value {claim.Value}");
 
-            var claim = new IdentityRoleClaim<string>()
+            var newClaim = new IdentityRoleClaim<string>()
             {
                 RoleId = role.Id,
-                ClaimType = claimType,
-                ClaimValue = claimValue
+                ClaimType = claim.Type,
+                ClaimValue = claim.Value
             };
 
-            return (await _roleManager.AddClaimAsync(role, claim.ToClaim()).ConfigureAwait(false)).AsResult();
+            return (await _roleManager.AddClaimAsync(role, newClaim.ToClaim()).ConfigureAwait(false)).AsResult();
         }
 
         public async Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null)

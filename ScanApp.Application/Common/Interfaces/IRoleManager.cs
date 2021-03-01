@@ -1,6 +1,7 @@
 ﻿using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -14,9 +15,9 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> EditRoleName(string name, string newName);
 
-        Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaimsFromRole(string roleName);
+        Task<Result<List<ClaimModel>>> GetAllClaimsFromRole(string roleName);
 
-        Task<Result> AddClaimToRole(string roleName, string claimType, string claimValue = null);
+        Task<Result> AddClaimToRole(string roleName, ClaimModel claim);
 
         Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null);
 

@@ -7,6 +7,7 @@ using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -61,14 +62,18 @@ namespace ScanApp.Infrastructure.Identity
             return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result> EditUserData(EditUserDto data)
+        public async Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data)
         {
             var user = await _userManager.Users
                 .SingleOrDefaultAsync(u => u.UserName.Equals(data.Name))
                 .ConfigureAwait(false);
 
             if (user is null)
-                return ResultHelpers.UserNotFound(data.Name);
+                return ResultHelpers.UserNotFound(data.Name) as Result<ConcurrencyStamp>;
+
+            // TODO this enables concurrency check when updating user
+            if (string.Equals(data.ConcurrencyStamp.ToString(), user.ConcurrencyStamp) is false)
+                return new Result<ConcurrencyStamp>(ErrorType.ConcurrencyFailure, $"User {user.UserName} data has been changed - reload actual data").SetOutput(new ConcurrencyStamp(user.ConcurrencyStamp));
 
             if (string.IsNullOrWhiteSpace(data.NewName) is false && data.NewName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) is false)
                 user.UserName = data.NewName;
@@ -79,7 +84,7 @@ namespace ScanApp.Infrastructure.Identity
             if (data.Phone?.Equals(user.PhoneNumber, StringComparison.OrdinalIgnoreCase) is false)
                 user.PhoneNumber = data.Phone;
 
-            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult();
+            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(new ConcurrencyStamp(user.ConcurrencyStamp));
         }
 
         public async Task<Result> ChangeUserSecurityStamp(string userName)

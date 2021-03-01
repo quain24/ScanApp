@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -42,6 +43,16 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
         }
 
+        public async Task<string> GetUserConcurrencyStamp(string userName)
+        {
+            return await _userManager.Users
+                .AsNoTracking()
+                .Where(u => u.UserName.Equals(userName))
+                .Select(u => u.ConcurrencyStamp)
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false);
+        }
+
         public async Task<UserInfoModel> GetData(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
@@ -53,7 +64,8 @@ namespace ScanApp.Infrastructure.Identity
                 Location = user.Location,
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
-                LockoutEnd = user.LockoutEnd
+                LockoutEnd = user.LockoutEnd,
+                ConcurrencyStamp = new ConcurrencyStamp(user.ConcurrencyStamp)
             };
         }
 

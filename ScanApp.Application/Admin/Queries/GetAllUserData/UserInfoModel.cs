@@ -18,12 +18,15 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             Email = userInfo.Email;
             Location = userInfo.Location;
             Phone = userInfo.Phone;
+            ConcurrencyStamp = userInfo.ConcurrencyStamp;
         }
 
         public string Name { get; set; }
         public string Email { get; set; }
         public string Location { get; set; }
         public string Phone { get; set; }
+        public ConcurrencyStamp ConcurrencyStamp { get; set; }
+
         public DateTimeOffset? LockoutEnd { get; set; }
 
         public DateTime? LockoutEndDate() => DateTimeExtensions.ConvertFromDateTimeOffset(LockoutEnd);
@@ -46,10 +49,11 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             if (other is null)
                 return false;
 
-            return Name == other.Name &&
-                   Email == other.Email &&
-                   Location == other.Location &&
-                   Phone == other.Phone;
+            return string.Equals(Name, other.Name) &&
+                   string.Equals(Email, other.Email) &&
+                   string.Equals(Location, other.Location) &&
+                   string.Equals(Phone, other.Phone) &&
+                   string.Equals(ConcurrencyStamp, other.ConcurrencyStamp);
         }
     }
 }
