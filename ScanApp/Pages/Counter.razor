@@ -8,6 +8,7 @@
 @using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Infrastructure.Identity
+@using System.Diagnostics
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IScopedMediator Mediator
@@ -78,13 +79,25 @@
 
     public async Task Uclaim()
     {
+        var stop = new Stopwatch();
+        stop.Start();
         var t = await AuthenticationStateTask;
-        var a = await UserInfo.GetAllClaims(t.User.Identity.Name);
+        Console.WriteLine(stop.Elapsed);
+        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Console.WriteLine(t.User.HasClaim("Test", "1111"));
+        Console.WriteLine(stop.Elapsed);
+        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
+        var b = t.User.Claims.ToList();
+        var a = await UserInfo.GetAllClaims(t.User.Identity.Name);
+        Console.WriteLine(stop.Elapsed);
+        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         if (a.Conclusion)
         {
-            _claims = a.Output.Select(i => $"{i.ClaimType} | {i.ClaimValue}").ToList();
+            _claims = b.Select(i => $"{i.Type} | {i.Value}").ToList(); //a.Output.Select(i => $"{i.ClaimType} | {i.ClaimValue}").ToList();
         }
+        Console.WriteLine(stop.Elapsed);
+        Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
     }
 
     public async Task TestLogoff()

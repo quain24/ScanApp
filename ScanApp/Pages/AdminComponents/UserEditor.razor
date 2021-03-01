@@ -3,7 +3,9 @@
 @using ScanApp.Application.Admin.Commands.EditUserData
 @using ScanApp.Common
 @using Severity = MudBlazor.Severity
+@using ScanApp.Application.Admin
 
+@inject IDialogService DialogService
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
@@ -30,14 +32,14 @@
     <MudItem xs="12" lg="7" Class="px-1">
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
-                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" EditingDisabled="@_editDisabled"/>
+                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" EditingDisabled="@_editDisabled" />
                 <MudButton OnClick="@EditHandler" Class="mt-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
             </MudCardContent>
             <MudCardActions>
                 @if (_editVisible)
                 {
                     <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
-                    <MudButton OnClick="@EditHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Add user</MudButton>
+                    <MudButton OnClick="@OpenAddUserDialog" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="!_editDisabled">Add user</MudButton>
                     <MudButton OnClick="@EditHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
                 }
                 else
@@ -69,6 +71,15 @@
     private string _lastCheckedUserName;
     private bool _locked;
 
+    private void OpenAddUserDialog()
+    {
+        DialogService.Show<AddUserDialog>("Add new user", new DialogOptions()
+        {
+            FullWidth = true,
+            DisableBackdropClick = true
+        });
+    }
+
     private bool CanEnableSave()
     {
         if (_userData is null || _originalUserData is null)
@@ -99,13 +110,15 @@
             Phone = tmpData.Phone,
             Location = tmpData.Location,
             Email = tmpData.Email,
-            NewName = tmpData.Name
+            NewName = tmpData.Name,
+            ConcurrencyStamp = tmpData.ConcurrencyStamp
         }));
 
         if (res.Conclusion)
         {
             UserNames[UserNames.FindIndex(ind => ind.Equals(_originalUserData.Name))] = tmpData.Name;
             _originalUserData = _userData;
+            _originalUserData.ConcurrencyStamp = res.Output;
             await UserNamesChanged.InvokeAsync(UserNames);
             DisplaySuccess("User data has been updated.");
             await EditHandler();
@@ -114,7 +127,6 @@
 
         DisplayError(res.ErrorDescription?.ErrorMessage ?? "Unknown error");
     }
-
 
     private async void FillUserData(TableRowClickEventArgs<string> args)
     {

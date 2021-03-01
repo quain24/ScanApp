@@ -4,6 +4,7 @@
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 @using ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
+@using ScanApp.Application.Admin
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
@@ -29,11 +30,11 @@
     </MudItem>
     <MudItem xs="12" lg="6" Class="px-1">
         <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5"
-                  Filter="new Func<(string ClaimType, string ClaimValue, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
+                  Filter="new Func<(ClaimModel Claim, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Claims</MudText>
                 <MudToolBarSpacer />
-                <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <MudTextField @bind-Value="_searchStringClaim" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
             </ToolBarContent>
             <HeaderContent>
                 <MudTh>Claim Type</MudTh>
@@ -41,8 +42,8 @@
                 <MudTh>Active</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.ClaimType</MudTd>
-                <MudTd>@context.ClaimValue</MudTd>
+                <MudTd>@context.Item1.Type</MudTd>
+                <MudTd>@context.Item1.Value</MudTd>
                 <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsInClaim" Color="Color.Primary"></MudSwitch></MudTd>
             </RowTemplate>
             <PagerContent>
@@ -62,14 +63,14 @@
 
     [Parameter]
     public List<string> RoleNames { get; set; }
-    
+
     private string _selectedRole;
-    private (string ClaimType, string ClaimValue, bool IsInClaim) _selectedClaim;
-    private List<(string ClaimType, string ClaimValue)> _claims = new();
-    private List<(string ClaimType, string ClaimValue, bool IsInClaim)> _roleClaims = new();
+    private (ClaimModel Claim, bool IsInClaim) _selectedClaim;
+    private List<(ClaimModel, bool IsInClaim)> _roleClaims = new();
+    private List<ClaimModel> _claims = new();
     private string _lastCheckedRole;
     private string _searchStringRole;
-    private (string ClaimType, string ClaimValue) _searchClaim;
+    private string _searchStringClaim;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,13 +98,13 @@
 
         if (_selectedClaim.IsInClaim)
         {
-            result = await Mediator.SendScoped(new RemoveClaimFromRoleCommand(_selectedClaim.ClaimType, _selectedClaim.ClaimValue, _selectedRole));
-            message = $"Claim {_selectedClaim.ClaimType} removed from {_selectedRole}";
+            result = await Mediator.SendScoped(new RemoveClaimFromRoleCommand(_selectedClaim.Claim, _selectedRole));
+            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} removed from {_selectedRole}";
         }
         else
         {
-            result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole, _selectedClaim.ClaimType, _selectedClaim.ClaimValue));
-            message = $"Claim {_selectedClaim.ClaimType} added to {_selectedRole}";
+            result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole, _selectedClaim.Claim));
+            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} added to {_selectedRole}";
         }
 
         if (result.Conclusion is false)
@@ -113,7 +114,7 @@
         }
 
         var index = _roleClaims.FindIndex(c => c.Equals(_selectedClaim));
-        _roleClaims[index] = (_selectedClaim.ClaimType, _selectedClaim.ClaimValue, !_selectedClaim.IsInClaim);
+        _roleClaims[index] = (_selectedClaim.Claim, !_selectedClaim.IsInClaim);
 
         await InvokeAsync(StateHasChanged);
         DisplaySuccess(message);
@@ -136,7 +137,7 @@
         _roleClaims = _claims.Select(r =>
         {
             var IsActive = res.Output.Contains(r);
-            return (r.ClaimType, r.ClaimValue, IsActive);
+            return (r, IsActive);
         }).ToList();
 
         await InvokeAsync(StateHasChanged);
@@ -158,12 +159,12 @@
         });
     }
 
-    private bool FilterClaims((string ClaimType, string ClaimValue, bool IsInClaim) data)
+    private bool FilterClaims((ClaimModel Claim, bool IsInClaim) data)
     {
-        if (string.IsNullOrEmpty(_searchClaim.ClaimType))
+        if (string.IsNullOrEmpty(_searchStringClaim))
             return true;
-        return (data.ClaimType?.Contains(_searchClaim.ClaimType, StringComparison.OrdinalIgnoreCase) ?? false) &&
-               (data.ClaimValue?.Contains(_searchClaim.ClaimValue, StringComparison.OrdinalIgnoreCase) ?? true);
+        return (data.Claim.Type?.Contains(_searchStringClaim, StringComparison.OrdinalIgnoreCase) ?? false) ||
+               (data.Claim.Value?.Contains(_searchStringClaim, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
     private bool FilterRoles(string roleName)

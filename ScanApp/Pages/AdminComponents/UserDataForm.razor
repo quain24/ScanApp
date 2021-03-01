@@ -16,10 +16,10 @@
     {
         if (EditingDisabled is true)
             _form?.ResetValidation();
-        if(!User.EqualWithDate(_localUserCopy))
+        if(!User?.EqualWithDate(_localUserCopy) ?? false)
             _localUserCopy = new UserInfoModel(User);
     }
-    
+
     [Parameter]
     public bool Success { get; set; }
     [Parameter]
@@ -31,7 +31,7 @@
     public EventCallback<UserInfoModel> UserChanged { get; set; }
 
     private UserInfoModel _localUserCopy;
-
+    
     [Parameter]
     public bool EditingDisabled { get; set; }
 
