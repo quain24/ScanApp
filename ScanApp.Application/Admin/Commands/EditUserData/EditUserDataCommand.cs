@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
-    public class EditUserDataCommand : IRequest<Result>
+    public class EditUserDataCommand : IRequest<Result<ConcurrencyStamp>>
     {
         public EditUserDto UserData { get; }
 
@@ -16,7 +16,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         }
     }
 
-    public class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result>
+    public class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result<ConcurrencyStamp>>
     {
         private readonly IUserManager _userManager;
 
@@ -25,7 +25,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             _userManager = userManager;
         }
 
-        public async Task<Result> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ConcurrencyStamp>> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
         {
             return await _userManager.EditUserData(request.UserData).ConfigureAwait(false);
         }

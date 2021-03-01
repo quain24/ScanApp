@@ -9,14 +9,12 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
     public class AddClaimToRoleCommand : IRequest<Result>
     {
         public string RoleName { get; }
-        public string ClaimType { get; }
-        public string ClaimValue { get; }
+        public ClaimModel Claim { get; }
 
-        public AddClaimToRoleCommand(string roleName, string claimType, string claimValue = null)
+        public AddClaimToRoleCommand(string roleName, ClaimModel claim)
         {
             RoleName = roleName;
-            ClaimType = claimType;
-            ClaimValue = claimValue;
+            Claim = claim;
         }
     }
 
@@ -31,7 +29,7 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 
         public async Task<Result> Handle(AddClaimToRoleCommand request, CancellationToken cancellationToken)
         {
-            return await _roleManager.AddClaimToRole(request.RoleName, request.ClaimType, request.ClaimValue).ConfigureAwait(false);
+            return await _roleManager.AddClaimToRole(request.RoleName, request.Claim).ConfigureAwait(false);
         }
     }
 }

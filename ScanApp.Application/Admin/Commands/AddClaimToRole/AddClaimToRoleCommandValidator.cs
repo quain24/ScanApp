@@ -10,12 +10,12 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 
         public AddClaimToRoleCommandValidator()
         {
-            RuleFor(c => c.ClaimType)
+            RuleFor(c => c.Claim.Type)
                 .SetValidator(_allowedCharsValidator);
 
-            RuleFor(c => c.ClaimValue)
+            RuleFor(c => c.Claim.Value)
                 .SetValidator(_allowedCharsValidator)
-                .When(c => c.ClaimValue is not null);
+                .When(c => c.Claim.Value is not null);
 
             RuleFor(c => c.RoleName)
                 .SetValidator(_allowedCharsValidator);

@@ -8,14 +8,12 @@ namespace ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 {
     public class RemoveClaimFromRoleCommand : IRequest<Result>
     {
-        public string ClaimType { get; }
-        public string ClaimValue { get; }
+        public ClaimModel Claim { get; }
         public string RoleName { get; }
 
-        public RemoveClaimFromRoleCommand(string claimType, string claimValue, string roleName)
+        public RemoveClaimFromRoleCommand(ClaimModel claim, string roleName)
         {
-            ClaimType = claimType;
-            ClaimValue = claimValue;
+            Claim = claim;
             RoleName = roleName;
         }
     }
@@ -31,7 +29,7 @@ namespace ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 
         public Task<Result> Handle(RemoveClaimFromRoleCommand request, CancellationToken cancellationToken)
         {
-            return _roleManager.RemoveClaimFromRole(request.RoleName, request.ClaimType, request.ClaimValue);
+            return _roleManager.RemoveClaimFromRole(request.RoleName, request.Claim.Type, request.Claim.Value);
         }
     }
 }

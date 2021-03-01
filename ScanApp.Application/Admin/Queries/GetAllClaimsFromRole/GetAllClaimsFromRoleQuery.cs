@@ -7,7 +7,7 @@ using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 {
-    public class GetAllClaimsFromRoleQuery : IRequest<Result<List<(string ClaimType, string ClaimValue)>>>
+    public class GetAllClaimsFromRoleQuery : IRequest<Result<List<ClaimModel>>>
     {
         public string RoleName { get; }
 
@@ -17,7 +17,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
         }
     }
 
-    public class GetAllClaimsFromRoleQueryHandler : IRequestHandler<GetAllClaimsFromRoleQuery, Result<List<(string ClaimType, string ClaimValue)>>>
+    public class GetAllClaimsFromRoleQueryHandler : IRequestHandler<GetAllClaimsFromRoleQuery, Result<List<ClaimModel>>>
     {
         private readonly IRoleManager _roleManager;
 
@@ -26,7 +26,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
             _roleManager = roleManager;
         }
 
-        public Task<Result<List<(string ClaimType, string ClaimValue)>>> Handle(GetAllClaimsFromRoleQuery request, CancellationToken cancellationToken)
+        public Task<Result<List<ClaimModel>>> Handle(GetAllClaimsFromRoleQuery request, CancellationToken cancellationToken)
         {
             return _roleManager.GetAllClaimsFromRole(request.RoleName);
         }
