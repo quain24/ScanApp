@@ -12,23 +12,26 @@
 
     <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
     <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
-
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-2" KeepPanelsAlive="true">
-        <MudTabPanel Text="User Management">
-            <ScanApp.Pages.AdminComponents.UserEditor @bind-UserNames="@_userNames" />
-        </MudTabPanel>
-        <MudTabPanel Text="Role Management">
-            <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="_userNames" />
-        </MudTabPanel>
-        <MudTabPanel Text="Claim management">
-            <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" />
-        </MudTabPanel>
-    </MudTabs>
+    <MudSwipeArea OnSwipe="@OnSwipe">
+        <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-2" KeepPanelsAlive="true">
+            <MudTabPanel Text="User Management">
+                <ScanApp.Pages.AdminComponents.UserEditor @bind-UserNames="@_userNames" OnUserAdded="@RefreshUserNames" />
+            </MudTabPanel>
+            <MudTabPanel Text="Role Management">
+                <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="_userNames" />
+            </MudTabPanel>
+            <MudTabPanel Text="Claim management">
+                <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" />
+            </MudTabPanel>
+        </MudTabs>
+    </MudSwipeArea>
 </MudContainer>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private MudTabs _tabPanel;
 
     private List<string> _userNames = new();
     private List<string> _roleNames = new();
@@ -41,6 +44,25 @@
         await base.OnInitializedAsync();
         await RetrieveAllUserNames();
         await RetrieveAllRoleNames();
+    }
+
+    async Task RefreshUserNames()
+    {
+        await RetrieveAllUserNames();
+    }
+
+    public void OnSwipe(SwipeDirection direction)
+    {
+        switch (direction)
+        {
+            case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < _tabPanel.Panels.Count - 1:
+                _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex + 1);
+                break;
+            case SwipeDirection.LeftToRight when _tabPanel.ActivePanelIndex > 0:
+                _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex - 1);
+                break;
+        }
+        StateHasChanged();
     }
 
     private async Task RetrieveAllUserNames()

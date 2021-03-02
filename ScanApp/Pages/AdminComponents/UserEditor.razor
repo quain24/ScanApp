@@ -1,13 +1,16 @@
 ﻿@using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.EditUserData
-@using ScanApp.Common
 @using Severity = MudBlazor.Severity
-@using ScanApp.Application.Admin
+@using System.Security.Claims
+@using Microsoft.Extensions.Options;
+@using Microsoft.AspNetCore.Identity;
+@using ScanApp.Application.Admin.Commands.DeleteUser
 
 @inject IDialogService DialogService
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
+@inject IOptions<IdentityOptions> IdOptions
 
 <MudGrid>
     <MudItem xs="12" lg="5" Class="px-1">
@@ -32,7 +35,7 @@
     <MudItem xs="12" lg="7" Class="px-1">
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
-                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" EditingDisabled="@_editDisabled" />
+                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" DisablePassword="true" EditingDisabled="@_editDisabled" />
                 <MudButton OnClick="@EditHandler" Class="mt-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
             </MudCardContent>
             <MudCardActions>
@@ -40,7 +43,7 @@
                 {
                     <MudButton OnClick="@EditHandler" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
                     <MudButton OnClick="@OpenAddUserDialog" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="!_editDisabled">Add user</MudButton>
-                    <MudButton OnClick="@EditHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
+                    <MudButton OnClick="@DeleteHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="!CanEnableDelete()">Remove user</MudButton>
                 }
                 else
                 {
@@ -53,10 +56,16 @@
 </MudGrid>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
     [Parameter]
     public List<string> UserNames { get; set; }
     [Parameter]
     public EventCallback<List<string>> UserNamesChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnUserAdded { get; set; }
 
     private bool _success = true;
 
@@ -64,20 +73,24 @@
     private UserInfoModel _originalUserData = new();
     private bool _editDisabled = true;
     private bool _editVisible = true;
-    private bool _disableSave = true;
-    private bool _disableUserChange = true;
+    private bool _deleteDisabled = true;
     private string _selectedUserName;
     private string _searchStringName;
     private string _lastCheckedUserName;
-    private bool _locked;
 
-    private void OpenAddUserDialog()
+    private async Task OpenAddUserDialog()
     {
-        DialogService.Show<AddUserDialog>("Add new user", new DialogOptions()
+        var dialog = DialogService.Show<AddUserDialog>("Add new user", new DialogOptions()
         {
             FullWidth = true,
             DisableBackdropClick = true
         });
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            await OnUserAdded.InvokeAsync();
+        }
     }
 
     private bool CanEnableSave()
@@ -85,6 +98,54 @@
         if (_userData is null || _originalUserData is null)
             return false;
         return !_userData.EqualWithoutDate(_originalUserData) && _success && !_editDisabled;
+    }
+
+    private bool CanEnableDelete()
+    {
+        if (string.IsNullOrEmpty(_selectedUserName) || _userData is null)
+            return false;
+        return _editDisabled;
+    }
+
+    private async Task DeleteHandler()
+    {
+        var principal = (await AuthenticationStateTask).User;
+        var currentUserName = principal.FindFirstValue(IdOptions.Value.ClaimsIdentity.UserNameClaimType);
+
+        if (string.Equals(_selectedUserName, currentUserName))
+        {
+            Snackbar.Add("Cannot delete your own user account", Severity.Warning, options => options.SnackbarVariant = Variant.Filled);
+            return;
+        }
+
+        var dialog = DialogService.Show<YesNoDialog>("Confirm deletion", new DialogParameters()
+        {
+            ["Content"] = $"Are you sure you want to delete user {_selectedUserName}?"
+        },
+        new DialogOptions()
+        {
+            FullWidth = true,
+            DisableBackdropClick = true
+        });
+
+        if ((await dialog.Result).Cancelled)
+            return;
+
+        var result = await Mediator.SendScoped(new DeleteUserCommand(_selectedUserName));
+
+        if (result.Conclusion)
+        {
+            UserNames.Remove(_userData.Name);
+            await UserNamesChanged.InvokeAsync(UserNames);
+            _userData = new();
+            _originalUserData = new();
+            DisplaySuccess($"{_selectedUserName} has been deleted.");
+            _lastCheckedUserName = string.Empty;
+            _selectedUserName = string.Empty;
+            return;
+        }
+
+        DisplayError(result.ErrorDescription?.ErrorMessage ?? "Unknown error");
     }
 
     private async Task EditHandler()

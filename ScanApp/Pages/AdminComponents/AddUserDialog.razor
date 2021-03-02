@@ -1,8 +1,11 @@
 ﻿@using ScanApp.Application.Admin.Queries.GetAllUserData
+@using ScanApp.Application.Admin.Commands.AddUser
+@inject Application.Common.Interfaces.IScopedMediator Mediator
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
-        <UserDataForm @bind-Success="_success" @bind-User="User" EditingDisabled="false"></UserDataForm>
+        <UserDataForm @ref="_form" @bind-Success="_success" @bind-User="User" @bind-Password="_password" EditingDisabled="false" />
     </DialogContent>
     <DialogActions>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
@@ -13,15 +16,40 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    private bool _success;
-    UserInfoModel User { get; set; } = new UserInfoModel()
+    private UserDataForm _form;
+    private string _password;
+
+    // 'true' enables submit button on start
+    private bool _success = true;
+    UserInfoModel User { get; set; }
+
+    async Task Submit()
     {
-        Email = string.Empty,
-        Location = string.Empty,
-        Name = string.Empty,
-        Phone = string.Empty
-    };
-    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+        _form.Validate();
+        if (_success is false)
+            return;
+
+        var userDto = new AddUserDto()
+        {
+            Name = User.Name,
+            Email = User.Email,
+            Location = User.Location,
+            Phone = User.Phone,
+            Password = _password
+        };
+
+        var result = await Mediator.SendScoped(new AddUserCommand(userDto));
+
+        if (result.Conclusion)
+        {
+            Snackbar.Add($"User {userDto.Name} has been added to database", Severity.Success, options => options.SnackbarVariant = Variant.Filled );
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        Snackbar.Add($"Error: {result.ErrorDescription?.ErrorMessage}", Severity.Error, options => options.SnackbarVariant = Variant.Filled);
+    }
+
     void Cancel() => MudDialog.Cancel();
 }
 
