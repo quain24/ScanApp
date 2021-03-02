@@ -18,7 +18,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
-    <PackageReference Include="MudBlazor" Version="5.0.2" />
+    <PackageReference Include="MudBlazor" Version="5.0.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
   </ItemGroup>
 
@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Logs\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
 

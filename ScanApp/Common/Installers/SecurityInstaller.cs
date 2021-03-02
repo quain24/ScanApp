@@ -63,9 +63,9 @@ namespace ScanApp.Common.Installers
                 options.AddSharedPolicies(services.BuildServiceProvider().GetService<ILogger<Startup>>());
             });
 
-            // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR)
+            // Enables immediate logout after refresh if user logged in on another session (zero interval is safe when using SignalR in theory)
             // Guarantees update in roles and claims on each page refresh.
-            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
+            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.FromSeconds(1));
 
             // Registers a service to refresh user authorization periodically - timespan is set inside of this service
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
