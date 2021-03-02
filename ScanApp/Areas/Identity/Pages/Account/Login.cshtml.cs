@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Entities;
 using System.ComponentModel.DataAnnotations;
@@ -15,16 +14,14 @@ namespace ScanApp.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IServiceScopeFactory _scopeFactory;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<ApplicationUser> signInManager,
             ILogger<LoginModel> logger,
-            UserManager<ApplicationUser> userManager, IServiceScopeFactory scopeFactory)
+            UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
-            _scopeFactory = scopeFactory;
             _signInManager = signInManager;
             _logger = logger;
         }
@@ -70,18 +67,15 @@ namespace ScanApp.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var manager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-                var currentUser = await manager.FindByNameAsync(Input.UserName);
-                if (currentUser is not null)
-                {
-                    await manager.UpdateSecurityStampAsync(currentUser);
-                }
-            }
 
             if (ModelState.IsValid)
             {
+                var currentUser = await _userManager.FindByNameAsync(Input.UserName).ConfigureAwait(false);
+                if (currentUser is not null)
+                {
+                    await _userManager.UpdateSecurityStampAsync(currentUser).ConfigureAwait(false);
+                }
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
