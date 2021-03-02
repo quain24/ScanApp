@@ -2,12 +2,17 @@
 @using ScanApp.Common
 @using ScanApp.Common.Validators
 @using FluentValidation
+@using InputType = MudBlazor.InputType
 
 <MudForm @ref="@_form" IsValidChanged="@OnValidationChanged" IsValid="@Success">
-    <MudTextField @bind-Value="User.Name" TextChanged="OnUserChanged" Validation="@_nameValidator.Validation" Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudTextField @bind-Value="User.Email" TextChanged="OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudTextField @bind-Value="User.Location" TextChanged="OnUserChanged" Validation="@_locationValidator.Validation" Variant="Variant.Filled" Label="Location" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudTextField @bind-Value="User.Phone" TextChanged="OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.Name" TextChanged="@OnUserChanged" Validation="@_nameValidator.Validation" Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    @if (DisablePassword is false)
+    {
+        <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator.Validation" InputType="InputType.Password" Variant="Variant.Filled" Immediate="true" Label="Password"></MudTextFieldString>
+    }
+    <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.Location" TextChanged="@OnUserChanged" Validation="@_locationValidator.Validation" Variant="Variant.Filled" Label="Location" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
 </MudForm>
 
 @code {
@@ -16,8 +21,19 @@
     {
         if (EditingDisabled is true)
             _form?.ResetValidation();
-        if(!User?.EqualWithDate(_localUserCopy) ?? false)
+
+        User ??= new UserInfoModel()
+        {
+            Email = string.Empty,
+            Location = string.Empty,
+            Name = string.Empty,
+            Phone = string.Empty
+        };
+
+        if (!User?.EqualWithDate(_localUserCopy) ?? false)
             _localUserCopy = new UserInfoModel(User);
+        if (!Password?.Equals(_localPasswordCopy) ?? false)
+            _localPasswordCopy = Password;
     }
 
     [Parameter]
@@ -29,11 +45,22 @@
     public UserInfoModel User { get; set; }
     [Parameter]
     public EventCallback<UserInfoModel> UserChanged { get; set; }
-
     private UserInfoModel _localUserCopy;
-    
+
+    [Parameter]
+    public string Password { get; set; } = string.Empty;
+    [Parameter]
+    public EventCallback<string> PasswordChanged { get; set; }
+    [Parameter]
+    public bool DisablePassword { get; set; }
+    private string _localPasswordCopy;
+
     [Parameter]
     public bool EditingDisabled { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
 
     private MudForm _form;
 
@@ -41,17 +68,24 @@
         .SetValidator(new IdentityNamingValidator())
         .WithMessage("Name contain illegal chars or has length less than 3 or more than 60"));
 
+    private readonly FluentValidationWrapper<string> _passwordValidator = new(x => x
+        .NotEmpty()
+        .WithMessage("Password cannot be empty"));
+
     private readonly FluentValidationWrapper<string> _emailValidator = new(x => x
         .SetValidator(new EmailValidator())
         .WithMessage("This is not a valid email"));
 
     private readonly FluentValidationWrapper<string> _locationValidator = new(x => x
         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator())
-        .WithMessage("Location contains illegal chars"));
+        .WithMessage("Location contains illegal chars or is empty"));
 
     private readonly FluentValidationWrapper<string> _phoneValidator = new(x => x
         .SetValidator(new PhoneNumberValidator())
+        .When(s => !string.IsNullOrEmpty(s))
         .WithMessage("Not a valid phone number"));
+
+    public void Validate() => _form.Validate();
 
     private Task OnValidationChanged(bool isValid)
     {
@@ -60,9 +94,9 @@
 
     private async Task OnUserChanged()
     {
-        if (_localUserCopy.EqualWithDate(User))
+        if (_localUserCopy.EqualWithDate(User) && string.Equals(_localPasswordCopy, Password))
             return;
-
+        await PasswordChanged.InvokeAsync(Password);
         await UserChanged.InvokeAsync(User);
     }
 
