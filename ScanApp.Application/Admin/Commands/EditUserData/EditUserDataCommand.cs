@@ -8,11 +8,16 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     public class EditUserDataCommand : IRequest<Result<ConcurrencyStamp>>
     {
-        public EditUserDto UserData { get; }
+        public string Name { get; }
+        public string NewName { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Location { get; set; }
+        public ConcurrencyStamp ConcurrencyStamp { get; set; }
 
-        public EditUserDataCommand(EditUserDto userData)
+        public EditUserDataCommand(string name)
         {
-            UserData = userData;
+            Name = name;
         }
     }
 
@@ -27,7 +32,16 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 
         public async Task<Result<ConcurrencyStamp>> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
         {
-            return await _userManager.EditUserData(request.UserData).ConfigureAwait(false);
+            var data = new EditUserDto(request.Name)
+            {
+                Phone = request.Phone,
+                Email = request.Email,
+                Location = request.Location,
+                ConcurrencyStamp = request.ConcurrencyStamp,
+                NewName = request.NewName
+            };
+
+            return await _userManager.EditUserData(data).ConfigureAwait(false);
         }
     }
 }

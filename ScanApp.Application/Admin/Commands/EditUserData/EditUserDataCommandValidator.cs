@@ -10,22 +10,22 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 
         public EditUserDataCommandValidator()
         {
-            RuleFor(c => c.UserData.ConcurrencyStamp)
+            RuleFor(c => c.ConcurrencyStamp)
                 .NotEmpty();
-            RuleFor(c => c.UserData.NewName)
+            RuleFor(c => c.NewName)
                 .SetValidator(_standardChars);
-            RuleFor(c => c.UserData.Email)
+            RuleFor(c => c.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(new EmailValidator());
-            RuleFor(c => c.UserData.Location)
+            RuleFor(c => c.Location)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .Must(c => !c.First().Equals(' ') && !c.Last().Equals(' '))
                 .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
-            RuleFor(c => c.UserData.Phone)
+            RuleFor(c => c.Phone)
                 .SetValidator(new PhoneNumberValidator())
-                .When(p => p.UserData.Phone is not null);
+                .When(p => p.Phone is not null);
         }
     }
 }
