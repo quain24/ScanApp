@@ -13,7 +13,7 @@
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -61,9 +61,12 @@
     [Parameter]
     public List<string> RoleNames { get; set; }
 
+    [Parameter]
+    public string SelectedRowStyle { get; set; }
+
     private bool _disableEdit = true;
     private bool _disableSave = true;
-    
+
     private List<(string Name, bool IsInRole)> _userRoles = new();
     private string _selectedUserName;
     private string _searchStringName;
@@ -106,11 +109,11 @@
         _lastCheckedUserName = args.Item;
         _userRoles = RoleNames.Select(r =>
         {
-            var IsActive = res.Output.Contains(r, StringComparer.OrdinalIgnoreCase);
-            return (r, IsActive);
+            var isActive = res.Output.Contains(r, StringComparer.OrdinalIgnoreCase);
+            return (r, isActive);
         }).ToList();
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private async Task Switch(bool arg)
@@ -138,7 +141,7 @@
         var index = _userRoles.FindIndex(u => u.Name.Equals(_selectedRole.Name, StringComparison.OrdinalIgnoreCase));
         _userRoles[index] = (_selectedRole.Name, !_selectedRole.IsInRole);
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
         DisplaySuccess(message);
     }
 
@@ -163,5 +166,12 @@
         if (string.IsNullOrWhiteSpace(_searchStringRole))
             return true;
         return roleName?.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private string RowStyleFunc(string rowValue, int rowNumber)
+    {
+        return rowValue.Equals(_selectedUserName)
+            ? SelectedRowStyle ?? string.Empty
+            : string.Empty;
     }
 }

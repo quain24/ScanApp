@@ -67,6 +67,9 @@
     [Parameter]
     public EventCallback OnUserAdded { get; set; }
 
+    [Parameter]
+    public string SelectedRowStyle { get; set; }
+
     private bool _success = true;
 
     private UserInfoModel _userData = new();
@@ -148,7 +151,7 @@
         DisplayError(result.ErrorDescription?.ErrorMessage ?? "Unknown error");
     }
 
-    private async Task EditHandler()
+    private void EditHandler()
     {
         _editVisible = !_editVisible;
         _editDisabled = !_editDisabled;
@@ -160,20 +163,20 @@
         {
             _originalUserData = new UserInfoModel(_userData);
         }
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
-    private async void SaveHandler()
+    private async Task SaveHandler()
     {
         var tmpData = new UserInfoModel(_userData);
-        var res = await Mediator.SendScoped(new EditUserDataCommand(new EditUserDto(_originalUserData.Name)
+        var res = await Mediator.SendScoped(new EditUserDataCommand(_originalUserData.Name)
         {
             Phone = tmpData.Phone,
             Location = tmpData.Location,
             Email = tmpData.Email,
             NewName = tmpData.Name,
             ConcurrencyStamp = tmpData.ConcurrencyStamp
-        }));
+        });
 
         if (res.Conclusion)
         {
@@ -182,14 +185,14 @@
             _originalUserData.ConcurrencyStamp = res.Output;
             await UserNamesChanged.InvokeAsync(UserNames);
             DisplaySuccess("User data has been updated.");
-            await EditHandler();
+            EditHandler();
             return;
         }
 
         DisplayError(res.ErrorDescription?.ErrorMessage ?? "Unknown error");
     }
 
-    private async void FillUserData(TableRowClickEventArgs<string> args)
+    private async Task FillUserData(TableRowClickEventArgs<string> args)
     {
         if (!_editDisabled)
         {
@@ -212,7 +215,7 @@
         _userData = result.Output;
         _originalUserData = new UserInfoModel(result.Output);
         _lastCheckedUserName = _selectedUserName;
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private bool FilterUsers(string name)
@@ -225,7 +228,7 @@
     private string RowStyleFunc(string rowValue, int rowNumber)
     {
         return rowValue.Equals(_selectedUserName)
-            ? "background-color: lightgrey; color: white;"
+            ? SelectedRowStyle ?? string.Empty
             : string.Empty;
     }
 

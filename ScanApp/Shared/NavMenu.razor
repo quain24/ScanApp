@@ -2,6 +2,10 @@
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
     <MudNavLink Href="/counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
     <MudNavLink Href="/fetchdata" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Fetch data</MudNavLink>
-    <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Admin</MudNavLink>
+    <AuthorizeView Roles="Admin">
+        <Authorized >
+            <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Admin</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
     <MudNavLink Href="/test" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Test</MudNavLink>
 </MudNavMenu>
