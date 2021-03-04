@@ -1,5 +1,6 @@
 ﻿using ScanApp.Common.Extensions;
 using System;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
@@ -53,7 +54,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
                    string.Equals(Email, other.Email) &&
                    string.Equals(Location, other.Location) &&
                    string.Equals(Phone, other.Phone) &&
-                   string.Equals(ConcurrencyStamp, other.ConcurrencyStamp);
+                   ConcurrencyStamp == other.ConcurrencyStamp;
         }
     }
 }

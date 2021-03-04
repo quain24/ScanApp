@@ -3,17 +3,18 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     public class EditUserDataCommand : IRequest<Result<ConcurrencyStamp>>
     {
         public string Name { get; }
-        public string NewName { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Location { get; set; }
-        public ConcurrencyStamp ConcurrencyStamp { get; set; }
+        public string NewName { get; init; }
+        public string Phone { get; init; }
+        public string Email { get; init; }
+        public string Location { get; init; }
+        public ConcurrencyStamp ConcurrencyStamp { get; init; }
 
         public EditUserDataCommand(string name)
         {

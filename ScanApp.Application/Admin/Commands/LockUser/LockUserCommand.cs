@@ -1,11 +1,11 @@
-﻿using MediatR;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 
-namespace ScanApp.Application.Admin.Commands
+namespace ScanApp.Application.Admin.Commands.LockUser
 {
     public class LockUserCommand : IRequest<Result>
     {

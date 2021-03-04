@@ -1,4 +1,6 @@
-﻿namespace ScanApp.Application.Admin.Commands.EditUserData
+﻿using ScanApp.Domain.ValueObjects;
+
+namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     public class EditUserDto
     {
