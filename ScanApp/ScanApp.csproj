@@ -28,8 +28,4 @@
     <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
-
 </Project>

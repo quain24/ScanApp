@@ -6,6 +6,7 @@
 @using Microsoft.Extensions.Options;
 @using Microsoft.AspNetCore.Identity;
 @using ScanApp.Application.Admin.Commands.DeleteUser
+@using ScanApp.Domain.ValueObjects
 
 @inject IDialogService DialogService
 @inject IScopedMediator Mediator
@@ -36,7 +37,7 @@
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
                 <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" DisablePassword="true" EditingDisabled="@_editDisabled" />
-                <MudButton OnClick="@EditHandler" Class="mt-2" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Remove user</MudButton>
+                <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Change password</MudButton>
             </MudCardContent>
             <MudCardActions>
                 @if (_editVisible)
@@ -94,6 +95,30 @@
         {
             await OnUserAdded.InvokeAsync();
         }
+    }
+
+    private async Task OpenPasswordChangeDialog()
+    {
+        var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {_selectedUserName}",
+            new DialogParameters
+            {
+                ["User"] = _originalUserData 
+            },
+            new DialogOptions()
+            {
+                FullWidth = true,
+                DisableBackdropClick = true
+            });
+
+        var res = await dialog.Result;
+        
+        if (res.Cancelled)
+            return;
+
+        var stamp = res.Data as ConcurrencyStamp;
+        _userData.ConcurrencyStamp = stamp;
+        _originalUserData.ConcurrencyStamp = stamp;
+
     }
 
     private bool CanEnableSave()
