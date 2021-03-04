@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ScanApp.Application.Admin;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -65,7 +66,7 @@ namespace ScanApp.Infrastructure.Identity
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
                 LockoutEnd = user.LockoutEnd,
-                ConcurrencyStamp = new ConcurrencyStamp(user.ConcurrencyStamp)
+                ConcurrencyStamp = ConcurrencyStamp.Create(user.ConcurrencyStamp)
             };
         }
 
@@ -73,7 +74,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound(userName) as Result<List<string>>;
+                return ResultHelpers.UserNotFound<List<string>>(userName);
 
             return new Result<List<string>>().SetOutput((await _userManager.GetRolesAsync(user).ConfigureAwait(false)).ToList());
         }
@@ -82,27 +83,27 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             return user is null
-                ? ResultHelpers.UserNotFound(userName) as Result<bool>
+                ? ResultHelpers.UserNotFound<bool>(userName)
                 : new Result<bool>().SetOutput(await _userManager.IsInRoleAsync(user, roleName).ConfigureAwait(false));
         }
 
-        public async Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaims(string userName)
+        public async Task<Result<List<ClaimModel>>> GetAllClaims(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound(userName) as Result<List<(string, string)>>;
+                return ResultHelpers.UserNotFound<List<ClaimModel>>(userName);
 
             var cp = await _claimsFactory.CreateAsync(user).ConfigureAwait(false);
 
-            return new Result<List<(string ClaimType, string ClaimValue)>>()
-                .SetOutput(cp.Claims.Select(c => (c.Type, c.Value)).ToList());
+            return new Result<List<ClaimModel>>()
+                .SetOutput(cp.Claims.Select(c => new ClaimModel(c.Type, c.Value)).ToList());
         }
 
         public async Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound(userName) as Result<bool>;
+                return ResultHelpers.UserNotFound<bool>(userName);
 
             var cf = await _claimsFactory.CreateAsync(user).ConfigureAwait(false);
             return new Result<bool>().SetOutput(cf.HasClaim(claimType, claimValue));

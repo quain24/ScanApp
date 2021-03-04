@@ -1,6 +1,7 @@
 ﻿using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Queries.GetAllUserData;
 
 namespace ScanApp.Application.Common.Interfaces
@@ -19,7 +20,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result<bool>> IsInRole(string userName, string roleName);
 
-        Task<Result<List<(string ClaimType, string ClaimValue)>>> GetAllClaims(string userName);
+        Task<Result<List<ClaimModel>>> GetAllClaims(string userName);
 
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
     }

@@ -4,10 +4,11 @@ using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.ValueObjects;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -52,14 +53,32 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _userManager.DeleteAsync(user).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result> ChangePassword(string userName, string newPassword)
+        public async Task<Result<ConcurrencyStamp>> ChangePassword(string userName, string newPassword, ConcurrencyStamp stamp)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound(userName);
+                return ResultHelpers.UserNotFound<ConcurrencyStamp>(userName);
+
+            if (user.ConcurrencyStamp.Equals(stamp) is false)
+                return ResultHelpers.ConcurrencyError(ConcurrencyStamp.Create(user.ConcurrencyStamp));
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
-            return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult();
+            return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult(ConcurrencyStamp.Create(user.ConcurrencyStamp));
+        }
+
+        public async Task<List<(string Code, string Message)>> ValidatePassword(string password)
+        {
+            _ = password ?? throw new ArgumentNullException(nameof(password));
+
+            var results = new List<(string Code, string Message)>();
+            foreach (var validator in _userManager.PasswordValidators)
+            {
+                var result = await validator.ValidateAsync(_userManager, null, password).ConfigureAwait(false);
+                if (!result.Succeeded)
+                    results.AddRange(result.Errors.Select(e => (e.Code, e.Description)));
+            }
+
+            return results;
         }
 
         public async Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data)
@@ -69,11 +88,11 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
 
             if (user is null)
-                return ResultHelpers.UserNotFound(data.Name) as Result<ConcurrencyStamp>;
+                return ResultHelpers.UserNotFound<ConcurrencyStamp>(data.Name);
 
             // TODO this enables concurrency check when updating user
-            if (string.Equals(data.ConcurrencyStamp.ToString(), user.ConcurrencyStamp) is false)
-                return new Result<ConcurrencyStamp>(ErrorType.ConcurrencyFailure, $"User {user.UserName} data has been changed - reload actual data").SetOutput(new ConcurrencyStamp(user.ConcurrencyStamp));
+            if (user.ConcurrencyStamp.Equals(data.ConcurrencyStamp) is false)
+                return ResultHelpers.ConcurrencyError(ConcurrencyStamp.Create(user.ConcurrencyStamp));
 
             if (string.IsNullOrWhiteSpace(data.NewName) is false && data.NewName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) is false)
                 user.UserName = data.NewName;
@@ -84,7 +103,7 @@ namespace ScanApp.Infrastructure.Identity
             if (data.Phone?.Equals(user.PhoneNumber, StringComparison.OrdinalIgnoreCase) is false)
                 user.PhoneNumber = data.Phone;
 
-            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(new ConcurrencyStamp(user.ConcurrencyStamp));
+            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(ConcurrencyStamp.Create(user.ConcurrencyStamp));
         }
 
         public async Task<Result> ChangeUserSecurityStamp(string userName)

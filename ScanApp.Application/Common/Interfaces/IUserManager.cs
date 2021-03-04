@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Threading.Tasks;
 using ScanApp.Application.Admin;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -14,7 +16,9 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data);
 
-        Task<Result> ChangePassword(string userName, string newPassword);
+        Task<Result<ConcurrencyStamp>> ChangePassword(string userName, string newPassword, ConcurrencyStamp stamp);
+
+        Task<List<(string Code, string Message)>> ValidatePassword(string password);
 
         Task<Result> ChangeUserSecurityStamp(string userName);
 
