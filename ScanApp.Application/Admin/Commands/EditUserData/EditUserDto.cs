@@ -14,6 +14,6 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Location { get; set; }
-        public ConcurrencyStamp ConcurrencyStamp { get; set; }
+        public Version Version { get; set; } = Version.Empty();
     }
 }

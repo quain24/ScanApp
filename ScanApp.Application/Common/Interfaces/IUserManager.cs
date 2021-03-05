@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using ScanApp.Application.Admin.Commands.EditUserData;
+﻿using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Helpers.Result;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
-using ScanApp.Domain.ValueObjects;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -14,17 +13,17 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> DeleteUser(string userName);
 
-        Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data);
+        Task<Result<Version>> EditUserData(EditUserDto data);
 
-        Task<Result<ConcurrencyStamp>> ChangePassword(string userName, string newPassword, ConcurrencyStamp stamp);
+        Task<Result<Version>> ChangePassword(string userName, string newPassword, Version stamp);
 
         Task<List<(string Code, string Message)>> ValidatePassword(string password);
 
-        Task<Result> ChangeUserSecurityStamp(string userName);
+        Task<Result<Version>> ChangeUserSecurityStamp(string userName, Version version);
 
-        Task<Result> AddUserToRole(string userName, params string[] roleNames);
+        Task<Result<Version>> AddUserToRole(string userName, Version version, params string[] roleNames);
 
-        Task<Result> RemoveUserFromRole(string userName, params string[] roleNames);
+        Task<Result<Version>> RemoveUserFromRole(string userName, Version version, params string[] roleNames);
 
         Task<Result> IsInRole(string userName, string roleName);
 

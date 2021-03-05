@@ -7,13 +7,13 @@ using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 {
-    public class ChangeUserPasswordCommand : IRequest<Result<ConcurrencyStamp>>
+    public class ChangeUserPasswordCommand : IRequest<Result<Version>>
     {
         public string UserName { get; }
         public string NewPassword { get; }
-        public ConcurrencyStamp Stamp { get; }
+        public Version Stamp { get; }
 
-        public ChangeUserPasswordCommand(string userName, string newPassword, ConcurrencyStamp stamp)
+        public ChangeUserPasswordCommand(string userName, string newPassword, Version stamp)
         {
             UserName = userName;
             NewPassword = newPassword;
@@ -21,7 +21,7 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
         }
     }
 
-    public class ChangeUserPasswordCommandHandler : IRequestHandler<ChangeUserPasswordCommand, Result<ConcurrencyStamp>>
+    public class ChangeUserPasswordCommandHandler : IRequestHandler<ChangeUserPasswordCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 
@@ -29,7 +29,7 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
         {
             _userManager = userManager;
         }
-        public Task<Result<ConcurrencyStamp>> Handle(ChangeUserPasswordCommand request, CancellationToken cancellationToken)
+        public Task<Result<Version>> Handle(ChangeUserPasswordCommand request, CancellationToken cancellationToken)
         {
             return _userManager.ChangePassword(request.UserName, request.NewPassword, request.Stamp);
         }

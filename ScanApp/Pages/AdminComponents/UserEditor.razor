@@ -6,7 +6,7 @@
 @using Microsoft.Extensions.Options;
 @using Microsoft.AspNetCore.Identity;
 @using ScanApp.Application.Admin.Commands.DeleteUser
-@using ScanApp.Domain.ValueObjects
+@using Version = ScanApp.Domain.ValueObjects.Version
 
 @inject IDialogService DialogService
 @inject IScopedMediator Mediator
@@ -102,7 +102,7 @@
         var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {_selectedUserName}",
             new DialogParameters
             {
-                ["User"] = _originalUserData 
+                ["User"] = _originalUserData
             },
             new DialogOptions()
             {
@@ -111,13 +111,13 @@
             });
 
         var res = await dialog.Result;
-        
+
         if (res.Cancelled)
             return;
 
-        var stamp = res.Data as ConcurrencyStamp;
-        _userData.ConcurrencyStamp = stamp;
-        _originalUserData.ConcurrencyStamp = stamp;
+        var stamp = res.Data as Version;
+        _userData.Version = stamp;
+        _originalUserData.Version = stamp;
 
     }
 
@@ -200,21 +200,25 @@
             Location = tmpData.Location,
             Email = tmpData.Email,
             NewName = tmpData.Name,
-            ConcurrencyStamp = tmpData.ConcurrencyStamp
+            ConcurrencyStamp = tmpData.Version
         });
 
         if (res.Conclusion)
         {
             UserNames[UserNames.FindIndex(ind => ind.Equals(_originalUserData.Name))] = tmpData.Name;
             _originalUserData = _userData;
-            _originalUserData.ConcurrencyStamp = res.Output;
+            _originalUserData.Version = res.Output;
             await UserNamesChanged.InvokeAsync(UserNames);
             DisplaySuccess("User data has been updated.");
             EditHandler();
             return;
         }
 
-        DisplayError(res.ErrorDescription?.ErrorMessage ?? "Unknown error");
+        var message = string.IsNullOrEmpty(res.ErrorDescription?.ErrorMessage)
+            ? res.ErrorDescription?.ErrorType.ToString()
+            : res.ErrorDescription.ErrorMessage;
+
+        DisplayError(message);
     }
 
     private async Task FillUserData(TableRowClickEventArgs<string> args)

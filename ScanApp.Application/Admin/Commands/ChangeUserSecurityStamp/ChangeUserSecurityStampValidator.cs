@@ -8,6 +8,8 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
         {
             RuleFor(c => c.UserName)
                 .NotEmpty();
+            RuleFor(c => c.Version)
+                .NotNull();
         }
     }
 }

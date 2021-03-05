@@ -1,6 +1,6 @@
 ﻿using ScanApp.Common.Extensions;
 using System;
-using ScanApp.Domain.ValueObjects;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
@@ -8,6 +8,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
     {
         public UserInfoModel()
         {
+            Version = Version.Empty();
         }
 
         public UserInfoModel(UserInfoModel userInfo)
@@ -19,14 +20,14 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             Email = userInfo.Email;
             Location = userInfo.Location;
             Phone = userInfo.Phone;
-            ConcurrencyStamp = userInfo.ConcurrencyStamp;
+            Version = userInfo.Version;
         }
 
         public string Name { get; set; }
         public string Email { get; set; }
         public string Location { get; set; }
         public string Phone { get; set; }
-        public ConcurrencyStamp ConcurrencyStamp { get; set; }
+        public Version Version { get; set; }
 
         public DateTimeOffset? LockoutEnd { get; set; }
 
@@ -54,7 +55,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
                    string.Equals(Email, other.Email) &&
                    string.Equals(Location, other.Location) &&
                    string.Equals(Phone, other.Phone) &&
-                   ConcurrencyStamp == other.ConcurrencyStamp;
+                   Version == other.Version;
         }
     }
 }

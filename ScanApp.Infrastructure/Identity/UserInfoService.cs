@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ScanApp.Application.Admin;
 using ScanApp.Domain.ValueObjects;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -66,7 +67,7 @@ namespace ScanApp.Infrastructure.Identity
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
                 LockoutEnd = user.LockoutEnd,
-                ConcurrencyStamp = ConcurrencyStamp.Create(user.ConcurrencyStamp)
+                Version = Version.Create(user.ConcurrencyStamp)
             };
         }
 

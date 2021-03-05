@@ -3,6 +3,8 @@
 @using ScanApp.Application.Admin.Commands.AddUserToRole
 @using ScanApp.Application.Admin.Commands.RemoveUserFromRole
 @using ScanApp.Application.Admin.Queries.GetUserRoles
+@using ScanApp.Application.Admin.Queries.GetUserVersion
+@using Version = ScanApp.Domain.ValueObjects.Version
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
@@ -64,6 +66,7 @@
 
     private List<(string Name, bool IsInRole)> _userRoles = new();
     private string _selectedUserName;
+    private Version _selectedUserVersion = Version.Empty();
     private string _searchStringName;
     private string _lastCheckedUserName;
     private (string Name, bool IsInRole) _selectedRole;
@@ -94,14 +97,18 @@
             return;
 
         var res = await Mediator.SendScoped(new GetUserRolesQuery(args.Item));
+        var versionResult = await Mediator.SendScoped(new GetUserVersionCommand(args.Item));
 
-        if (res.Conclusion is false)
+        if (res.Conclusion is false || versionResult.Conclusion is false)
         {
-            DisplayError(res.ErrorDescription?.ErrorMessage);
+            DisplayError($"{res.ErrorDescription?.ErrorMessage} {versionResult.ErrorDescription?.ErrorMessage}");
             return;
         }
 
+
         _lastCheckedUserName = args.Item;
+        _selectedUserVersion = versionResult.Output;
+
         _userRoles = RoleNames.Select(r =>
         {
             var isActive = res.Output.Contains(r, StringComparer.OrdinalIgnoreCase);
@@ -113,28 +120,29 @@
 
     private async Task Switch(bool arg)
     {
-        Result result;
+        Result<Version> result;
         string message;
 
         if (_selectedRole.IsInRole)
         {
-            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(_selectedUserName, _selectedRole.Name));
+            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(_selectedUserName, _selectedUserVersion, _selectedRole.Name));
             message = $"Role {_selectedRole.Name} removed from {_selectedUserName}";
         }
         else
         {
-            result = await Mediator.SendScoped(new AddUserToRoleCommand(_selectedUserName, _selectedRole.Name));
+            result = await Mediator.SendScoped(new AddUserToRoleCommand(_selectedUserName, _selectedUserVersion, _selectedRole.Name));
             message = $"Role {_selectedRole.Name} added to {_selectedUserName}";
         }
 
         if (result.Conclusion is false)
         {
-            DisplayError(result.ErrorDescription?.ErrorMessage);
+            DisplayError(string.IsNullOrEmpty(result.ErrorDescription?.ErrorMessage) ? result.ErrorDescription?.ErrorType.ToString() : result.ErrorDescription.ErrorMessage);
             return;
         }
 
         var index = _userRoles.FindIndex(u => u.Name.Equals(_selectedRole.Name, StringComparison.OrdinalIgnoreCase));
         _userRoles[index] = (_selectedRole.Name, !_selectedRole.IsInRole);
+        _selectedUserVersion = result.Output;
 
         StateHasChanged();
         DisplaySuccess(message);

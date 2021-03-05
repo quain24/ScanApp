@@ -7,14 +7,14 @@ using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
-    public class EditUserDataCommand : IRequest<Result<ConcurrencyStamp>>
+    public class EditUserDataCommand : IRequest<Result<Version>>
     {
         public string Name { get; }
         public string NewName { get; init; }
         public string Phone { get; init; }
         public string Email { get; init; }
         public string Location { get; init; }
-        public ConcurrencyStamp ConcurrencyStamp { get; init; }
+        public Version ConcurrencyStamp { get; init; }
 
         public EditUserDataCommand(string name)
         {
@@ -22,7 +22,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         }
     }
 
-    public class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result<ConcurrencyStamp>>
+    public class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 
@@ -31,14 +31,14 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             _userManager = userManager;
         }
 
-        public async Task<Result<ConcurrencyStamp>> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
         {
             var data = new EditUserDto(request.Name)
             {
                 Phone = request.Phone,
                 Email = request.Email,
                 Location = request.Location,
-                ConcurrencyStamp = request.ConcurrencyStamp,
+                Version = request.ConcurrencyStamp,
                 NewName = request.NewName
             };
 

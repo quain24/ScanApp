@@ -4,11 +4,11 @@ using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -53,17 +53,17 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _userManager.DeleteAsync(user).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result<ConcurrencyStamp>> ChangePassword(string userName, string newPassword, ConcurrencyStamp stamp)
+        public async Task<Result<Version>> ChangePassword(string userName, string newPassword, Version stamp)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<ConcurrencyStamp>(userName);
+                return ResultHelpers.UserNotFound<Version>(userName);
 
             if (user.ConcurrencyStamp.Equals(stamp) is false)
-                return ResultHelpers.ConcurrencyError(ConcurrencyStamp.Create(user.ConcurrencyStamp));
+                return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
-            return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult(ConcurrencyStamp.Create(user.ConcurrencyStamp));
+            return (await _userManager.ResetPasswordAsync(user, token, newPassword).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
         public async Task<List<(string Code, string Message)>> ValidatePassword(string password)
@@ -81,18 +81,18 @@ namespace ScanApp.Infrastructure.Identity
             return results;
         }
 
-        public async Task<Result<ConcurrencyStamp>> EditUserData(EditUserDto data)
+        public async Task<Result<Version>> EditUserData(EditUserDto data)
         {
             var user = await _userManager.Users
                 .SingleOrDefaultAsync(u => u.UserName.Equals(data.Name))
                 .ConfigureAwait(false);
 
             if (user is null)
-                return ResultHelpers.UserNotFound<ConcurrencyStamp>(data.Name);
+                return ResultHelpers.UserNotFound<Version>(data.Name).SetOutput(Version.Empty());
 
             // TODO this enables concurrency check when updating user
-            if (user.ConcurrencyStamp.Equals(data.ConcurrencyStamp) is false)
-                return ResultHelpers.ConcurrencyError(ConcurrencyStamp.Create(user.ConcurrencyStamp));
+            if (user.ConcurrencyStamp.Equals(data.Version) is false)
+                return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
 
             if (string.IsNullOrWhiteSpace(data.NewName) is false && data.NewName.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) is false)
                 user.UserName = data.NewName;
@@ -103,33 +103,42 @@ namespace ScanApp.Infrastructure.Identity
             if (data.Phone?.Equals(user.PhoneNumber, StringComparison.OrdinalIgnoreCase) is false)
                 user.PhoneNumber = data.Phone;
 
-            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(ConcurrencyStamp.Create(user.ConcurrencyStamp));
+            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
-        public async Task<Result> ChangeUserSecurityStamp(string userName)
+        public async Task<Result<Version>> ChangeUserSecurityStamp(string userName, Version version)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound(userName);
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+
+            if (user.ConcurrencyStamp != version)
+                return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
 
             var identityResult = await _userManager.UpdateSecurityStampAsync(user).ConfigureAwait(false);
-            return identityResult.AsResult();
+            return identityResult.AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
-        public async Task<Result> AddUserToRole(string userName, params string[] roleNames)
+        public async Task<Result<Version>> AddUserToRole(string userName, Version version, params string[] roleNames)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
-            return user is null
-                ? ResultHelpers.UserNotFound(userName)
-                : (await _userManager.AddToRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult();
+            if (user is null)
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+
+            return user.ConcurrencyStamp != version
+                ? ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp))
+                : (await _userManager.AddToRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
-        public async Task<Result> RemoveUserFromRole(string userName, params string[] roleNames)
+        public async Task<Result<Version>> RemoveUserFromRole(string userName, Version version, params string[] roleNames)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
-            return user is null
-                ? ResultHelpers.UserNotFound(userName)
-                : (await _userManager.RemoveFromRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult();
+            if (user is null)
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+
+            return user.ConcurrencyStamp != version
+                ? ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp))
+                : (await _userManager.RemoveFromRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
         public async Task<Result> IsInRole(string userName, string roleName)
