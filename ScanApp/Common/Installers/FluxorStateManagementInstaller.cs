@@ -1,5 +1,6 @@
 ﻿using Fluxor;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace ScanApp.Common.Installers
 {
@@ -12,9 +13,10 @@ namespace ScanApp.Common.Installers
         {
             services.AddFluxor(options =>
             {
-                options.ScanAssemblies(typeof(Startup).Assembly);
+                options.ScanAssemblies(Assembly.GetExecutingAssembly());
                 options.UseReduxDevTools();
             });
+
             return services;
         }
     }

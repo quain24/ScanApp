@@ -1,13 +1,20 @@
 ﻿@attribute [Authorize(Roles = "Admin")]
 @page "/admin"
 @using ScanApp.Application.Common.Interfaces
-@using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using Fluxor;
+@using Microsoft.AspNetCore.Components;
+@using ScanApp.Store.Features.Admin.ReadUserNames
+@using Store.Features.Admin;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
-@inherits OwningComponentBase
+@inject IState<AdminState> State
+@inject IDispatcher Dispatcher
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
 <MudContainer Style="background-color: blanchedalmond; padding: 5px;" MaxWidth="MaxWidth.False">
 
     <MudText Typo="Typo.h3" GutterBottom="true">Admin page</MudText>
@@ -15,13 +22,13 @@
     <MudSwipeArea OnSwipe="@OnSwipe">
         <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-2" KeepPanelsAlive="true">
             <MudTabPanel Text="User Management">
-                <ScanApp.Pages.AdminComponents.UserEditor @bind-UserNames="@_userNames" OnUserAdded="@RefreshUserNames" SelectedRowStyle="@_selectedRowStyle" />
+                <ScanApp.Pages.AdminComponents.UserEditor UserNames="@State.Value.UserNames.ToList()" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Role Management">
-                <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="_userNames" SelectedRowStyle="@_selectedRowStyle"/>
+                <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="State.Value.UserNames.ToList()" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Claim management">
-                <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" SelectedRowStyle="@_selectedRowStyle"/>
+                <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
         </MudTabs>
     </MudSwipeArea>
@@ -33,23 +40,23 @@
 
     private MudTabs _tabPanel;
 
-    private List<string> _userNames = new();
     private List<string> _roleNames = new();
 
     private string _selectedRowStyle = "background-color: lightgrey";
     private bool _shouldRender = true;
     protected override bool ShouldRender() => _shouldRender;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (State.Value.UserNames.IsEmpty)
+            Dispatcher.Dispatch(new ReadUserNamesAction());
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await RetrieveAllUserNames();
         await RetrieveAllRoleNames();
-    }
-
-    async Task RefreshUserNames()
-    {
-        await RetrieveAllUserNames();
     }
 
     private void OnSwipe(SwipeDirection direction)
@@ -64,18 +71,6 @@
                 break;
         }
         StateHasChanged();
-    }
-
-    private async Task RetrieveAllUserNames()
-    {
-        var usersResult = await Mediator.SendScoped(new GetAllUsersQuery());
-        if (usersResult.Conclusion is false)
-        {
-            DisplayError(usersResult.ErrorDescription?.ErrorMessage);
-            return;
-        }
-
-        _userNames = usersResult.Output.Select(u => u.UserName).ToList();
     }
 
     private async Task RetrieveAllRoleNames()
@@ -99,8 +94,6 @@
             options.SnackbarVariant = Variant.Filled;
         });
     }
-
-
 
     protected override void Dispose(bool disposing)
     {

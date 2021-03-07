@@ -4,13 +4,18 @@
 @using ScanApp.Application.Admin.Commands.RemoveUserFromRole
 @using ScanApp.Application.Admin.Queries.GetUserRoles
 @using ScanApp.Application.Admin.Queries.GetUserVersion
+@using ScanApp.Store.Features.Admin
 @using Version = ScanApp.Domain.ValueObjects.Version
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
+@inject IState<AdminState> State
+
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" SelectedItem="State.Value.SelectedUserName" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -173,7 +178,7 @@
 
     private string RowStyleFunc(string rowValue, int rowNumber)
     {
-        return rowValue.Equals(_selectedUserName)
+        return rowValue.Equals(State.Value.SelectedUserName)
             ? SelectedRowStyle ?? string.Empty
             : string.Empty;
     }

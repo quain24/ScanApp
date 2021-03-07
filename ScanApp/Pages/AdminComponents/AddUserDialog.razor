@@ -1,15 +1,22 @@
 ﻿@using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.AddUser
-@inject Application.Common.Interfaces.IScopedMediator Mediator
+@using ScanApp.Store.Features
+@using ScanApp.Store.Features.Admin
+@using ScanApp.Store.Features.Admin.AddNewUser
 @inject ISnackbar Snackbar
+@inject IDispatcher Dispatcher
+@inject IActionSubscriber ActionSubscriber
+@inject IState<AdminState> State
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <MudDialog>
     <DialogContent>
         <UserDataForm @ref="_form" @bind-Success="_success" @bind-User="User" @bind-Password="_password" EditingDisabled="false" />
     </DialogContent>
     <DialogActions>
-        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Add user</MudButton>
+        <MudButton Class="ml-auto" Disabled="@State.Value.IsLoading" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Disabled="@(State.Value.IsLoading || !_success)" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddUserClicked">Add user</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -19,11 +26,17 @@
     private UserDataForm _form;
     private string _password;
 
-    // 'true' enables submit button on start
     private bool _success = true;
     UserInfoModel User { get; set; }
 
-    async Task Submit()
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ActionSubscriber.SubscribeToAction<AddNewUserSuccessAction>(this, action => CloseOnSuccess(action.NewUserName));
+        ActionSubscriber.SubscribeToAction<AddNewUserFailureAction>(this, action => DisplayError(action.Error));
+    }
+
+    private void AddUserClicked()
     {
         _form.Validate();
         if (_success is false)
@@ -38,18 +51,26 @@
             Password = _password
         };
 
-        var result = await Mediator.SendScoped(new AddUserCommand(userDto));
+        Dispatcher.Dispatch(new AddNewUserAction(userDto));
+    }
 
-        if (result.Conclusion)
-        {
-            Snackbar.Add($"User {userDto.Name} has been added to database", Severity.Success, options => options.SnackbarVariant = Variant.Filled );
-            MudDialog.Close(DialogResult.Ok(true));
-            return;
-        }
+    void CloseOnSuccess(string newUserName)
+    {
+        Snackbar.Add($"User {newUserName} has been added to database", Severity.Success, options => options.SnackbarVariant = Variant.Filled);
+        InvokeAsync(() => MudDialog.Close(DialogResult.Ok(true)));
+    }
 
-        Snackbar.Add($"Error: {result.ErrorDescription?.ErrorMessage}", Severity.Error, options => options.SnackbarVariant = Variant.Filled);
+    void DisplayError(Error error)
+    {
+        Snackbar.Add($"{error.ErrorCode} - {error.ErrorText}", Severity.Error, options => options.SnackbarVariant = Variant.Filled);
     }
 
     void Cancel() => MudDialog.Cancel();
-}
 
+    protected override void Dispose(bool disposing)
+    {
+        ActionSubscriber.UnsubscribeFromAllActions(this);
+        base.Dispose(disposing);
+    }
+
+}
