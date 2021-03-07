@@ -45,11 +45,14 @@ namespace ScanApp.Infrastructure.Identity
             return identityResult.AsResult(newUser.Id);
         }
 
-        public async Task<Result> DeleteUser(string userName)
+        public async Task<Result> DeleteUser(string userName, Version stamp)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
-            return user is null
-                ? ResultHelpers.UserNotFound(userName)
+            if (user is null)
+                return ResultHelpers.UserNotFound<Version>(userName);
+
+            return user.ConcurrencyStamp.Equals(stamp) is false
+                ? ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp))
                 : (await _userManager.DeleteAsync(user).ConfigureAwait(false)).AsResult();
         }
 

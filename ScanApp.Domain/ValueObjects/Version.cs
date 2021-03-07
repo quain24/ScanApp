@@ -1,6 +1,7 @@
 ﻿using ScanApp.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace ScanApp.Domain.ValueObjects
 {
@@ -16,6 +17,11 @@ namespace ScanApp.Domain.ValueObjects
                 throw new FormatException($"{nameof(value)} must contain a value other than just whitespaces. For empty version use {nameof(Version)}.Empty()");
 
             Value = value;
+        }
+
+        [JsonConstructor]
+        private Version()
+        {
         }
 
         public string Value { get; }

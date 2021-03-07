@@ -11,7 +11,7 @@ namespace ScanApp.Application.Common.Interfaces
     {
         Task<Result<string>> AddNewUser(string userName, string password, string email, string location, string phoneNumber);
 
-        Task<Result> DeleteUser(string userName);
+        Task<Result> DeleteUser(string userName, Version stamp);
 
         Task<Result<Version>> EditUserData(EditUserDto data);
 

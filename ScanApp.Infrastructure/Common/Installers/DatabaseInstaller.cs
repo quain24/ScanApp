@@ -37,6 +37,7 @@ namespace ScanApp.Infrastructure.Common.Installers
                             maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null);
+                        sqlOptions.CommandTimeout(60);
                     });
             });
 
