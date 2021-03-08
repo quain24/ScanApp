@@ -30,5 +30,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         {
             Guid = Guid.NewGuid();
         }
+
+        public override string ToString() => string.IsNullOrEmpty(ErrorMessage) ? ErrorType.ToString() : $"{ErrorType} - {ErrorMessage}";
     }
 }

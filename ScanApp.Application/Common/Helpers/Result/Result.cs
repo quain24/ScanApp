@@ -89,14 +89,14 @@ namespace ScanApp.Application.Common.Helpers.Result
         public Result(ErrorType errorType)
         {
             Conclusion = false;
-            ErrorDescription = new ErrorDescription();
+            ErrorDescription = new();
             ErrorDescription.ErrorType = errorType;
         }
 
         public Result(ErrorType errorType, Exception exception)
         {
             Conclusion = false;
-            ErrorDescription = new ErrorDescription();
+            ErrorDescription = new();
             ErrorDescription.ErrorMessage = exception.Message;
             ErrorDescription.Exception = exception;
             ErrorDescription.ErrorType = errorType;
@@ -105,7 +105,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         public Result(ErrorType errorType, string errorMessage, Exception exception = null)
         {
             Conclusion = false;
-            ErrorDescription = new ErrorDescription();
+            ErrorDescription = new();
             ErrorDescription.ErrorMessage = errorMessage;
             ErrorDescription.Exception = exception;
             ErrorDescription.ErrorType = errorType;
@@ -114,7 +114,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         public Result(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
-            ErrorDescription = new ErrorDescription();
+            ErrorDescription = new();
             ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
             ErrorDescription.Exception = exception;
             ErrorDescription.ErrorType = errorType;
