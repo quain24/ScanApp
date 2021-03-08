@@ -18,10 +18,10 @@
                 <ScanApp.Pages.AdminComponents.UserEditor @bind-UserNames="@_userNames" OnUserAdded="@RefreshUserNames" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Role Management">
-                <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="_userNames" SelectedRowStyle="@_selectedRowStyle"/>
+                <ScanApp.Pages.AdminComponents.UserRolesManager RoleNames="@_roleNames" UserNames="_userNames" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Claim management">
-                <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" SelectedRowStyle="@_selectedRowStyle"/>
+                <ScanApp.Pages.AdminComponents.RoleClaimManager RoleNames="@_roleNames" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
         </MudTabs>
     </MudSwipeArea>
@@ -71,7 +71,7 @@
         var usersResult = await Mediator.SendScoped(new GetAllUsersQuery());
         if (usersResult.Conclusion is false)
         {
-            DisplayError(usersResult.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(usersResult.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -84,23 +84,12 @@
 
         if (roleResult.Conclusion is false)
         {
-            DisplayError(roleResult.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(roleResult.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
         _roleNames = roleResult.Output;
     }
-
-    private void DisplayError(string errorMessage)
-    {
-        Snackbar.Add(errorMessage, Severity.Error, options =>
-        {
-            options.RequireInteraction = true;
-            options.SnackbarVariant = Variant.Filled;
-        });
-    }
-
-
 
     protected override void Dispose(bool disposing)
     {

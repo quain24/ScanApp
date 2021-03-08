@@ -42,12 +42,12 @@
 
         if (result.Conclusion)
         {
-            Snackbar.Add($"User {userDto.Name} has been added to database", Severity.Success, options => options.SnackbarVariant = Variant.Filled );
+            Snackbar.Add($"User {userDto.Name} has been added to database", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));
             return;
         }
 
-        Snackbar.Add($"Error: {result.ErrorDescription?.ErrorMessage}", Severity.Error, options => options.SnackbarVariant = Variant.Filled);
+        Snackbar.Add($"Error: {result.ErrorDescription?.ErrorMessage}", Severity.Error);
     }
 
     void Cancel() => MudDialog.Cancel();

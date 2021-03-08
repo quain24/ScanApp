@@ -101,7 +101,7 @@
 
         if (res.Conclusion is false || versionResult.Conclusion is false)
         {
-            DisplayError($"{res.ErrorDescription?.ErrorMessage} {versionResult.ErrorDescription?.ErrorMessage}");
+            Snackbar.Add(res.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -136,7 +136,7 @@
 
         if (result.Conclusion is false)
         {
-            DisplayError(string.IsNullOrEmpty(result.ErrorDescription?.ErrorMessage) ? result.ErrorDescription?.ErrorType.ToString() : result.ErrorDescription.ErrorMessage);
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -145,23 +145,7 @@
         _selectedUserVersion = result.Output;
 
         StateHasChanged();
-        DisplaySuccess(message);
-    }
-
-    private void DisplayError(string errorMessage)
-    {
-        Snackbar.Add(errorMessage, Severity.Error, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
-    }
-
-    private void DisplaySuccess(string message)
-    {
-        Snackbar.Add(message, Severity.Success, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
+        Snackbar.Add(message, Severity.Success);
     }
 
     private bool FilterRoles(string roleName)

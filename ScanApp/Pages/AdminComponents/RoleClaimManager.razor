@@ -87,7 +87,7 @@
 
         if (roleResult.Conclusion is false)
         {
-            DisplayError(roleResult.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(roleResult.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -112,7 +112,7 @@
 
         if (result.Conclusion is false)
         {
-            DisplayError(result.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -120,7 +120,7 @@
         _roleClaims[index] = (_selectedClaim.Claim, !_selectedClaim.IsInClaim);
 
         StateHasChanged();
-        DisplaySuccess(message);
+        Snackbar.Add(message, Severity.Success);
     }
 
     private async void FillSelectedRoleClaimsData(TableRowClickEventArgs<string> args)
@@ -132,7 +132,7 @@
 
         if (res.Conclusion is false)
         {
-            DisplayError(res.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(res.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
@@ -144,22 +144,6 @@
         }).ToList();
 
         StateHasChanged();
-    }
-
-    private void DisplayError(string errorMessage)
-    {
-        Snackbar.Add(errorMessage, Severity.Error, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
-    }
-
-    private void DisplaySuccess(string message)
-    {
-        Snackbar.Add(message, Severity.Success, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
     }
 
     private bool FilterClaims((ClaimModel Claim, bool IsInClaim) data)
