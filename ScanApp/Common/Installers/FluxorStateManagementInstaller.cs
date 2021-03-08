@@ -1,6 +1,7 @@
 ﻿using Fluxor;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using ScanApp.Store.Features.Middleware;
 
 namespace ScanApp.Common.Installers
 {
@@ -13,7 +14,8 @@ namespace ScanApp.Common.Installers
         {
             services.AddFluxor(options =>
             {
-                options.ScanAssemblies(Assembly.GetExecutingAssembly());
+                options.ScanAssemblies(Assembly.GetExecutingAssembly())
+                    .AddMiddleware<LoggingMiddleware>();
                 options.UseReduxDevTools();
             });
 

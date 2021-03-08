@@ -5,17 +5,20 @@
 @using ScanApp.Application.Admin.Queries.GetUserRoles
 @using ScanApp.Application.Admin.Queries.GetUserVersion
 @using ScanApp.Store.Features.Admin
+@using ScanApp.Store.Features.Admin.FillUserRoles
+@using ScanApp.Store.Features.Admin.ReadRoleNames
 @using Version = ScanApp.Domain.ValueObjects.Version
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 @inject IState<AdminState> State
-
+@inject IDispatcher Dispatcher
+@inject IActionSubscriber Subscriber
 
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" SelectedItem="State.Value.SelectedUserName" RowsPerPage="5"
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@State.Value.UserNames" SelectedItem="State.Value.SelectedUserName" RowsPerPage="5"
                   Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -57,11 +60,6 @@
 </MudGrid>
 
 @code {
-    [Parameter]
-    public List<string> UserNames { get; set; }
-
-    [Parameter]
-    public List<string> RoleNames { get; set; }
 
     [Parameter]
     public string SelectedRowStyle { get; set; }
@@ -77,9 +75,19 @@
     private (string Name, bool IsInRole) _selectedRole;
     private string _searchStringRole;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await base.OnInitializedAsync();
+        base.OnInitialized();
+        Subscriber.SubscribeToAction<ReadRoleNamesSuccessAction>(this, action =>
+        {
+            _userRoles = State.Value.RoleNames.Select(r =>
+            {
+                var isActive = action.RoleNames.Contains(r, StringComparer.OrdinalIgnoreCase);
+                return (r, isActive);
+            }).ToList();
+        });
+
+        Subscriber.SubscribeToAction<FillUserRolesFailureAction>(this, action => DisplayError(action?.Error?.ErrorCode + " " + action?.Error?.ErrorText));
     }
 
     private bool FilterUsers(string name)
@@ -98,29 +106,11 @@
 
     private async void FillRolesData(TableRowClickEventArgs<string> args)
     {
-        if (args.Item.Equals(_lastCheckedUserName))
+        if (args.Item.Equals(State.Value.SelectedUserName))
             return;
 
-        var res = await Mediator.SendScoped(new GetUserRolesQuery(args.Item));
-        var versionResult = await Mediator.SendScoped(new GetUserVersionCommand(args.Item));
+        Dispatcher.Dispatch(new FillUserRolesAction(args.Item));
 
-        if (res.Conclusion is false || versionResult.Conclusion is false)
-        {
-            DisplayError($"{res.ErrorDescription?.ErrorMessage} {versionResult.ErrorDescription?.ErrorMessage}");
-            return;
-        }
-
-
-        _lastCheckedUserName = args.Item;
-        _selectedUserVersion = versionResult.Output;
-
-        _userRoles = RoleNames.Select(r =>
-        {
-            var isActive = res.Output.Contains(r, StringComparer.OrdinalIgnoreCase);
-            return (r, isActive);
-        }).ToList();
-
-        StateHasChanged();
     }
 
     private async Task Switch(bool arg)
@@ -182,4 +172,11 @@
             ? SelectedRowStyle ?? string.Empty
             : string.Empty;
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        Subscriber.UnsubscribeFromAllActions(this);
+        base.Dispose(disposing);
+    }
+
 }

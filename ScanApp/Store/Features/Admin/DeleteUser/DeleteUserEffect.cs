@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Fluxor;
+﻿using Fluxor;
 using ScanApp.Application.Admin.Commands.DeleteUser;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Common.Extensions;
+using System.Threading.Tasks;
 
 namespace ScanApp.Store.Features.Admin.DeleteUser
 {
@@ -20,12 +17,13 @@ namespace ScanApp.Store.Features.Admin.DeleteUser
             _mediator = mediator;
             _state = state;
         }
+
         public override async Task HandleAsync(DeleteUserAction action, IDispatcher dispatcher)
         {
             var result = await _mediator.SendScoped(new DeleteUserCommand(_state.Value.SelectedUserName, _state.Value.SelectedUserVersion))
                 .ConfigureAwait(false);
 
-            if(result.Conclusion || result.ErrorDescription.ErrorType.Equals(ErrorType.NotFound))
+            if (result.Conclusion || result.ErrorDescription.ErrorType.Equals(ErrorType.NotFound))
                 dispatcher.Dispatch(new DeleteUserSuccessAction(_state.Value.SelectedUserName));
             else
                 dispatcher.Dispatch(new DeleteUserFailureAction(result.ErrorDescription.AsError()));
