@@ -47,7 +47,7 @@
             return;
         }
 
-        Snackbar.Add($"Error: {result.ErrorDescription?.ErrorMessage}", Severity.Error);
+        Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
     }
 
     void Cancel() => MudDialog.Cancel();

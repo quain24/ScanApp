@@ -1,0 +1,165 @@
+﻿@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Common.Helpers.Result
+@using ScanApp.Application.Admin.Commands.AddUserToRole
+@using ScanApp.Application.Admin.Commands.RemoveUserFromRole
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
+@using ScanApp.Application.Admin.Queries.GetUserRoles
+@using ScanApp.Application.Admin.Queries.GetUserVersion
+@using ScanApp.Models.Admin
+@using Version = ScanApp.Domain.ValueObjects.Version
+@using ScanApp.Application.Admin
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    <MudItem xs="12" lg="6" Class="px-1">
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" @bind-SelectedItem="_selectedUser" RowsPerPage="5"
+                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="height: 51px;">@context.Name</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xs="12" lg="6" Class="px-1">
+        <MudTable Breakpoint="Breakpoint.None" T="RoleModel" Items="@UserRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+                  Filter="new Func<RoleModel, bool>(FilterRoles)" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Roles</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Role</MudTh>
+                <MudTh>Active</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Name</MudTd>
+                <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsActive" Color="Color.Primary"></MudSwitch></MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public List<BasicUserModel> Users { get; set; }
+
+    [Parameter]
+    public List<BasicRoleModel> Roles { get; set; }
+
+    private List<RoleModel> UserRoles { get; set; } = new();
+
+    [Parameter]
+    public string SelectedRowStyle { get; set; }
+
+    private bool _disableEdit = true;
+    private bool _disableSave = true;
+
+    private BasicUserModel _selectedUser;
+    private RoleModel _selectedRole;
+    private string _searchStringName;
+    private string _searchStringRole;
+    private string _lastCheckedUserName;
+
+    private async void FillRolesData(TableRowClickEventArgs<BasicUserModel> args)
+    {
+        if (args.Item.Name.Equals(_lastCheckedUserName))
+            return;
+
+        var res = await Mediator.SendScoped(new GetUserRolesQuery(args.Item.Name, args.Item.Version));
+
+        if (res.Conclusion is false)
+        {
+            Snackbar.Add(res.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        _lastCheckedUserName = args.Item.Name;
+        _selectedUser.Version = args.Item.Version;
+
+        UserRoles = Roles.Select(basicRole =>
+        {
+            var role = res.Output.FirstOrDefault(r => r.Name.Equals(basicRole.Name));
+            return new RoleModel
+            {
+                IsActive = role is not null,
+                Name = basicRole.Name,
+                Version = role is not null ? role.Version : basicRole.Version
+            };
+        }).ToList();
+
+        StateHasChanged();
+    }
+
+    private async Task Switch(bool arg)
+    {
+        Result<Version> result;
+        string message;
+
+        if (_selectedRole.IsActive)
+        {
+            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(_selectedUser.Name, _selectedUser.Version, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} removed from {_selectedUser.Name}";
+        }
+        else
+        {
+            result = await Mediator.SendScoped(new AddUserToRoleCommand(_selectedUser.Name, _selectedUser.Version, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} added to {_selectedUser.Name}";
+        }
+
+        if (result.Conclusion is false)
+        {
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        var index = UserRoles.FindIndex(u => u.Name.Equals(_selectedRole.Name, StringComparison.OrdinalIgnoreCase));
+        UserRoles[index] = new RoleModel()
+        {
+            IsActive = !_selectedRole.IsActive,
+            Name = _selectedRole.Name,
+            Version = _selectedRole.Version
+        };
+
+        _selectedUser.Version = result.Output;
+
+        StateHasChanged();
+        Snackbar.Add(message, Severity.Success);
+    }
+
+    private bool FilterUsers(BasicUserModel user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringName))
+            return true;
+        return user?.Name.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private bool FilterRoles(RoleModel roleModel)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringRole))
+            return true;
+        return roleModel?.Name.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private string RowStyleFunc(BasicUserModel rowValue, int rowNumber)
+    {
+        return rowValue.Name.Equals(_selectedUser?.Name)
+            ? SelectedRowStyle ?? string.Empty
+            : string.Empty;
+    }
+}

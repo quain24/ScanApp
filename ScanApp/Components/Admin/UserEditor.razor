@@ -2,21 +2,20 @@
 @using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.EditUserData
 @using Severity = MudBlazor.Severity
-@using System.Security.Claims
-@using Microsoft.Extensions.Options;
-@using Microsoft.AspNetCore.Identity;
 @using ScanApp.Application.Admin.Commands.DeleteUser
+@using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
+@using ScanApp.Common.Extensions
 @using Version = ScanApp.Domain.ValueObjects.Version
+@using ScanApp.Application.Admin
 
 @inject IDialogService DialogService
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
-@inject IOptions<IdentityOptions> IdOptions
 
 <MudGrid>
     <MudItem xs="12" lg="5" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@UserNames" @bind-SelectedItem="_selectedUserName" RowsPerPage="5"
-                  Filter="new Func<string, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" @bind-SelectedItem="_selectedUser" RowsPerPage="5"
+                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
                 <MudToolBarSpacer />
@@ -26,7 +25,7 @@
                 <MudTh>Name</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Style="height: 51px;">@context</MudTd>
+                <MudTd Style="height: 51px;">@context.Name</MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
@@ -36,7 +35,7 @@
     <MudItem xs="12" lg="7" Class="px-1">
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
-                <ScanApp.Pages.AdminComponents.UserDataForm @bind-Success="_success" @bind-User="_userData" DisablePassword="true" EditingDisabled="@_editDisabled" />
+                <ScanApp.Components.Admin.UserDataForm @bind-Success="_success" @bind-User="_userData" DisablePassword="true" EditingDisabled="@_editDisabled" />
                 <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Change password</MudButton>
             </MudCardContent>
             <MudCardActions>
@@ -61,9 +60,9 @@
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     [Parameter]
-    public List<string> UserNames { get; set; }
+    public List<BasicUserModel> Users { get; set; }
     [Parameter]
-    public EventCallback<List<string>> UserNamesChanged { get; set; }
+    public EventCallback<List<BasicUserModel>> UsersChanged { get; set; }
 
     [Parameter]
     public EventCallback OnUserAdded { get; set; }
@@ -73,12 +72,12 @@
 
     private bool _success = true;
 
+    private BasicUserModel _selectedUser;
     private UserInfoModel _userData = new();
     private UserInfoModel _originalUserData = new();
     private bool _editDisabled = true;
     private bool _editVisible = true;
     private bool _deleteDisabled = true;
-    private string _selectedUserName;
     private string _searchStringName;
     private string _lastCheckedUserName;
 
@@ -99,10 +98,10 @@
 
     private async Task OpenPasswordChangeDialog()
     {
-        var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {_selectedUserName}",
+        var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {_selectedUser.Name}",
             new DialogParameters
             {
-                ["User"] = _originalUserData
+                ["User"] = _selectedUser
             },
             new DialogOptions()
             {
@@ -116,9 +115,9 @@
             return;
 
         var stamp = res.Data as Version;
-        _userData.Version = stamp;
+        _selectedUser.Version = stamp;
         _originalUserData.Version = stamp;
-
+        _userData.Version = stamp;
     }
 
     private bool CanEnableSave()
@@ -130,25 +129,22 @@
 
     private bool CanEnableDelete()
     {
-        if (string.IsNullOrEmpty(_selectedUserName) || _userData is null)
+        if (_selectedUser is null || _userData is null)
             return false;
         return _editDisabled;
     }
 
     private async Task DeleteHandler()
     {
-        var principal = (await AuthenticationStateTask).User;
-        var currentUserName = principal.FindFirstValue(IdOptions.Value.ClaimsIdentity.UserNameClaimType);
-
-        if (string.Equals(_selectedUserName, currentUserName))
+        if ((await AuthenticationStateTask).IsItMe(_selectedUser.Name))
         {
-            Snackbar.Add("Cannot delete your own user account", Severity.Warning, options => options.SnackbarVariant = Variant.Filled);
+            Snackbar.Add("Cannot delete your own user account", Severity.Warning);
             return;
         }
 
         var dialog = DialogService.Show<YesNoDialog>("Confirm deletion", new DialogParameters()
         {
-            ["Content"] = $"Are you sure you want to delete user {_selectedUserName}?"
+            ["Content"] = $"Are you sure you want to delete user {_selectedUser.Name}?"
         },
         new DialogOptions()
         {
@@ -159,21 +155,22 @@
         if ((await dialog.Result).Cancelled)
             return;
 
-        var result = await Mediator.SendScoped(new DeleteUserCommand(_selectedUserName));
+        var result = await Mediator.SendScoped(new DeleteUserCommand(_selectedUser.Name));
 
-        if (result.Conclusion)
+        if (!result.Conclusion)
         {
-            UserNames.Remove(_userData.Name);
-            await UserNamesChanged.InvokeAsync(UserNames);
-            _userData = new();
-            _originalUserData = new();
-            DisplaySuccess($"{_selectedUserName} has been deleted.");
-            _lastCheckedUserName = string.Empty;
-            _selectedUserName = string.Empty;
+            Snackbar.Add(result.ErrorDescription?.ErrorMessage ?? "Unknown error", Severity.Error);
             return;
         }
 
-        DisplayError(result.ErrorDescription?.ErrorMessage ?? "Unknown error");
+        Users.Remove(_selectedUser);
+        await UsersChanged.InvokeAsync(Users);
+        Snackbar.Add($"{_selectedUser.Name} has been deleted.", Severity.Success);
+        _userData = new();
+        _originalUserData = new();
+        _lastCheckedUserName = string.Empty;
+        _selectedUser = null;
+
     }
 
     private void EditHandler()
@@ -193,87 +190,67 @@
 
     private async Task SaveHandler()
     {
-        var tmpData = new UserInfoModel(_userData);
         var res = await Mediator.SendScoped(new EditUserDataCommand(_originalUserData.Name)
         {
-            Phone = tmpData.Phone,
-            Location = tmpData.Location,
-            Email = tmpData.Email,
-            NewName = tmpData.Name,
-            ConcurrencyStamp = tmpData.Version
+            Phone = _userData.Phone,
+            Location = _userData.Location,
+            Email = _userData.Email,
+            NewName = _userData.Name,
+            ConcurrencyStamp = _userData.Version
         });
 
         if (res.Conclusion)
         {
-            UserNames[UserNames.FindIndex(ind => ind.Equals(_originalUserData.Name))] = tmpData.Name;
+            Users[Users.FindIndex(ind => ind.Name.Equals(_originalUserData.Name))] = new BasicUserModel(_userData.Name, res.Output);
             _originalUserData = _userData;
             _originalUserData.Version = res.Output;
-            await UserNamesChanged.InvokeAsync(UserNames);
-            DisplaySuccess("User data has been updated.");
+            await UsersChanged.InvokeAsync(Users);
+            Snackbar.Add("User data has been updated.", Severity.Success);
             EditHandler();
             return;
         }
 
-        var message = string.IsNullOrEmpty(res.ErrorDescription?.ErrorMessage)
-            ? res.ErrorDescription?.ErrorType.ToString()
-            : res.ErrorDescription.ErrorMessage;
-
-        DisplayError(message);
+        Snackbar.Add(res.ErrorDescription?.ToString(), Severity.Error);
     }
 
-    private async Task FillUserData(TableRowClickEventArgs<string> args)
+    private async Task FillUserData(TableRowClickEventArgs<BasicUserModel> args)
     {
         if (!_editDisabled)
         {
+            // selection changed, so exit edit mode
             _editDisabled = !_editDisabled;
             _editVisible = !_editVisible;
             _userData = _originalUserData;
         }
 
-        if (_selectedUserName.Equals(_lastCheckedUserName))
+        if (_selectedUser.Name.Equals(_lastCheckedUserName))
             return;
 
-        var result = await Mediator.SendScoped(new GetAllUserDataQuery(_selectedUserName));
+        var result = await Mediator.SendScoped(new GetAllUserDataQuery(_selectedUser.Name));
 
         if (!result.Conclusion)
         {
-            DisplayError(result.ErrorDescription?.ErrorMessage);
+            Snackbar.Add(result.ErrorDescription?.ErrorMessage, Severity.Error);
             return;
         }
 
         _userData = result.Output;
         _originalUserData = new UserInfoModel(result.Output);
-        _lastCheckedUserName = _selectedUserName;
+        _lastCheckedUserName = _selectedUser.Name;
         StateHasChanged();
     }
 
-    private bool FilterUsers(string name)
+    private bool FilterUsers(BasicUserModel user)
     {
         if (string.IsNullOrWhiteSpace(_searchStringName))
             return true;
-        return name?.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
+        return user?.Name.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 
-    private string RowStyleFunc(string rowValue, int rowNumber)
+    private string RowStyleFunc(BasicUserModel rowValue, int rowNumber)
     {
-        return rowValue.Equals(_selectedUserName)
+        return rowValue?.Name?.Equals(_selectedUser?.Name) ?? false
             ? SelectedRowStyle ?? string.Empty
             : string.Empty;
-    }
-
-    private void DisplaySuccess(string message)
-    {
-        Snackbar.Add(message, Severity.Success, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
-    }
-
-    private void DisplayError(string errorMessage)
-    {
-        Snackbar.Add(errorMessage, Severity.Error, options =>
-        {
-            options.SnackbarVariant = Variant.Filled;
-        });
     }
 }

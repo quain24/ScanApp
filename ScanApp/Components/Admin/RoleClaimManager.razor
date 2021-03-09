@@ -5,13 +5,14 @@
 @using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 @using ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 @using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="string" Items="@RoleNames" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
-                  Filter="new Func<string, bool>(FilterRoles)" OnRowClick="@FillSelectedRoleClaimsData" Hover="true" Dense="true">
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicRoleModel" Items="@Roles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
+                  Filter="new Func<BasicRoleModel, bool>(FilterRoles)" OnRowClick="@FillSelectedRoleClaimsData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Roles</MudText>
                 <MudToolBarSpacer />
@@ -21,7 +22,7 @@
                 <MudTh>Name</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Style="height: 51px;">@context</MudTd>
+                <MudTd Style="height: 51px;">@context.Name</MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
@@ -62,12 +63,12 @@
 @code {
 
     [Parameter]
-    public List<string> RoleNames { get; set; }
+    public List<BasicRoleModel> Roles { get; set; }
 
     [Parameter]
     public string SelectedRowStyle { get; set; }
 
-    private string _selectedRole;
+    private BasicRoleModel _selectedRole;
     private (ClaimModel Claim, bool IsInClaim) _selectedClaim;
     private List<(ClaimModel, bool IsInClaim)> _roleClaims = new();
     private List<ClaimModel> _claims = new();
@@ -101,13 +102,13 @@
 
         if (_selectedClaim.IsInClaim)
         {
-            result = await Mediator.SendScoped(new RemoveClaimFromRoleCommand(_selectedClaim.Claim, _selectedRole));
-            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} removed from {_selectedRole}";
+            result = await Mediator.SendScoped(new RemoveClaimFromRoleCommand(_selectedClaim.Claim, _selectedRole.Name));
+            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} removed from {_selectedRole.Name}";
         }
         else
         {
-            result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole, _selectedClaim.Claim));
-            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} added to {_selectedRole}";
+            result = await Mediator.SendScoped(new AddClaimToRoleCommand(_selectedRole.Name, _selectedClaim.Claim));
+            message = $"Claim {_selectedClaim.Claim.Type} with value of {_selectedClaim.Claim.Value} added to {_selectedRole.Name}";
         }
 
         if (result.Conclusion is false)
@@ -123,12 +124,12 @@
         Snackbar.Add(message, Severity.Success);
     }
 
-    private async void FillSelectedRoleClaimsData(TableRowClickEventArgs<string> args)
+    private async void FillSelectedRoleClaimsData(TableRowClickEventArgs<BasicRoleModel> args)
     {
-        if (args.Item.Equals(_lastCheckedRole))
+        if (args.Item.Name.Equals(_lastCheckedRole))
             return;
 
-        var res = await Mediator.SendScoped(new GetAllClaimsFromRoleQuery(args.Item));
+        var res = await Mediator.SendScoped(new GetAllClaimsFromRoleQuery(args.Item.Name));
 
         if (res.Conclusion is false)
         {
@@ -136,7 +137,7 @@
             return;
         }
 
-        _lastCheckedRole = args.Item;
+        _lastCheckedRole = args.Item.Name;
         _roleClaims = _claims.Select(r =>
         {
             var IsActive = res.Output.Contains(r);
@@ -154,16 +155,16 @@
                (data.Claim.Value?.Contains(_searchStringClaim, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    private bool FilterRoles(string roleName)
+    private bool FilterRoles(BasicRoleModel roleName)
     {
         if (string.IsNullOrWhiteSpace(_searchStringRole))
             return true;
-        return roleName?.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
+        return roleName?.Name.Contains(_searchStringRole, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 
-    private string RowStyleFunc(string rowValue, int rowNumber)
+    private string RowStyleFunc(BasicRoleModel rowValue, int rowNumber)
     {
-        return rowValue.Equals(_selectedRole)
+        return rowValue?.Name?.Equals(_selectedRole?.Name) ?? false
             ? SelectedRowStyle ?? string.Empty
             : string.Empty;
     }
