@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ScanApp.Application.Admin;
+using ScanApp.Application.Admin.Queries.GetAllUserRoles;
+using ScanApp.Domain.ValueObjects;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
 {
@@ -19,12 +22,12 @@ namespace ScanApp.Infrastructure.Identity
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager), $"Could not inject {nameof(RoleManager<IdentityRole>)}.");
         }
 
-        public async Task<Result<List<string>>> GetAllRoles()
+        public async Task<Result<List<BasicRoleModel>>> GetAllRoles()
         {
-            return new Result<List<string>>()
+            return new Result<List<BasicRoleModel>>()
                 .SetOutput(await _roleManager.Roles
                     .AsNoTracking()
-                    .Select(r => r.Name)
+                    .Select(r => new BasicRoleModel(r.Name, Version.Create(r.ConcurrencyStamp)))
                     .ToListAsync()
                     .ConfigureAwait(false));
         }

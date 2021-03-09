@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ScanApp.Application.Admin;
+using ScanApp.Application.Admin.Queries.GetAllUserRoles;
 
 namespace ScanApp.Application.Common.Interfaces
 {
     public interface IRoleManager
     {
-        Task<Result<List<string>>> GetAllRoles();
+        Task<Result<List<BasicRoleModel>>> GetAllRoles();
 
         Task<Result> AddNewRole(string roleName);
 
