@@ -3,13 +3,14 @@ using ScanApp.Application.Common.Helpers.Result;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Common.Interfaces
 {
     public interface IUserManager
     {
-        Task<Result<string>> AddNewUser(string userName, string password, string email, string location, string phoneNumber);
+        Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string location, string phoneNumber);
 
         Task<Result> DeleteUser(string userName);
 

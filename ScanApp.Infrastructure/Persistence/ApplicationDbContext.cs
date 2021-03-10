@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence
 {
@@ -25,6 +26,8 @@ namespace ScanApp.Infrastructure.Persistence
             builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", "sca");
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "sca");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("UserRoleClaims", "sca");
+
+            builder.Entity<UserLocation>().ToTable("UserLocations", "sca");
         }
     }
 }
