@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ScanApp.Application.Admin;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
@@ -21,7 +22,7 @@ namespace ScanApp.Infrastructure.Identity
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager), $"Could not inject {nameof(UserManager<ApplicationUser>)}.");
         }
 
-        public async Task<Result<string>> AddNewUser(string userName, string password, string email, string location, string phoneNumber)
+        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string location, string phoneNumber)
         {
             var userId = await _userManager.Users
                 .AsNoTracking()
@@ -31,7 +32,7 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
 
             if (userId is not null)
-                return new Result<string>(ErrorType.Duplicated, $"user with name {userName} already exists").SetOutput(userId);
+                return new Result<BasicUserModel>(ErrorType.Duplicated, $"user with name {userName} already exists");
 
             var newUser = new ApplicationUser()
             {
@@ -42,7 +43,7 @@ namespace ScanApp.Infrastructure.Identity
             };
 
             var identityResult = await _userManager.CreateAsync(newUser, password).ConfigureAwait(false);
-            return identityResult.AsResult(newUser.Id);
+            return identityResult.AsResult(new BasicUserModel(newUser.UserName, Version.Create(newUser.ConcurrencyStamp)));
         }
 
         public async Task<Result> DeleteUser(string userName)

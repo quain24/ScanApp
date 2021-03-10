@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
-    public class AddUserCommand : IRequest<Result<string>>
+    public class AddUserCommand : IRequest<Result<BasicUserModel>>
     {
-        public AddUserDto NewUser { get; private set; }
+        public AddUserDto NewUser { get; }
 
         public AddUserCommand(AddUserDto newUser)
         {
@@ -16,7 +16,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         }
     }
 
-    public class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<string>>
+    public class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<BasicUserModel>>
     {
         private readonly IUserManager _userManager;
 
@@ -25,7 +25,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             _userManager = userManager;
         }
 
-        public async Task<Result<string>> Handle(AddUserCommand request, CancellationToken cancellationToken)
+        public async Task<Result<BasicUserModel>> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
             var data = request.NewUser;
             return await _userManager.AddNewUser(data.Name, data.Password, data.Email, data.Location, data.Phone).ConfigureAwait(false);
