@@ -1,5 +1,6 @@
 ﻿@using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.AddUser
+@using ScanApp.Application.Admin
 @inject Application.Common.Interfaces.IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
@@ -43,7 +44,7 @@
         if (result.Conclusion)
         {
             Snackbar.Add($"User {userDto.Name} has been added to database", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
+            MudDialog.Close(DialogResult.Ok(result.Output));
             return;
         }
 

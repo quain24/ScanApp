@@ -2,10 +2,7 @@
 @using ScanApp.Application.Common.Helpers.Result
 @using ScanApp.Application.Admin.Commands.AddUserToRole
 @using ScanApp.Application.Admin.Commands.RemoveUserFromRole
-@using ScanApp.Application.Admin.Queries.GetAllUserRoles
-@using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 @using ScanApp.Application.Admin.Queries.GetUserRoles
-@using ScanApp.Application.Admin.Queries.GetUserVersion
 @using ScanApp.Models.Admin
 @using Version = ScanApp.Domain.ValueObjects.Version
 @using ScanApp.Application.Admin
@@ -14,7 +11,7 @@
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" @bind-SelectedItem="_selectedUser" RowsPerPage="5"
+        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
                   Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -49,7 +46,7 @@
                 <MudTd><MudSwitch T="bool" CheckedChanged="@(async arg => await Switch(arg))" Checked="@context.IsActive" Color="Color.Primary"></MudSwitch></MudTd>
             </RowTemplate>
             <PagerContent>
-                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" DisableRowsPerPage="true" />
             </PagerContent>
         </MudTable>
     </MudItem>
@@ -58,6 +55,13 @@
 @code {
     [Parameter]
     public List<BasicUserModel> Users { get; set; }
+    [Parameter]
+    public EventCallback<List<BasicUserModel>> UsersChanged { get; set; }
+
+    [Parameter]
+    public BasicUserModel SelectedUser { get; set; }
+    [Parameter]
+    public EventCallback<BasicUserModel> SelectedUserChanged { get; set; }
 
     [Parameter]
     public List<BasicRoleModel> Roles { get; set; }
@@ -69,14 +73,26 @@
 
     private bool _disableEdit = true;
     private bool _disableSave = true;
-
-    private BasicUserModel _selectedUser;
+    
     private RoleModel _selectedRole;
     private string _searchStringName;
     private string _searchStringRole;
     private string _lastCheckedUserName;
 
-    private async void FillRolesData(TableRowClickEventArgs<BasicUserModel> args)
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (SelectedUser is not null)
+            await FillRolesData(new TableRowClickEventArgs<BasicUserModel>() { Item = SelectedUser });
+    }
+
+    async Task OnSelectedUserChange(BasicUserModel user)
+    {
+        SelectedUser = user;
+        await SelectedUserChanged.InvokeAsync(user);
+    }
+
+    private async Task FillRolesData(TableRowClickEventArgs<BasicUserModel> args)
     {
         if (args.Item.Name.Equals(_lastCheckedUserName))
             return;
@@ -90,7 +106,8 @@
         }
 
         _lastCheckedUserName = args.Item.Name;
-        _selectedUser.Version = args.Item.Version;
+        SelectedUser.Version = args.Item.Version;
+        await SelectedUserChanged.InvokeAsync(SelectedUser);
 
         UserRoles = Roles.Select(basicRole =>
         {
@@ -113,13 +130,13 @@
 
         if (_selectedRole.IsActive)
         {
-            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(_selectedUser.Name, _selectedUser.Version, _selectedRole.Name));
-            message = $"Role {_selectedRole.Name} removed from {_selectedUser.Name}";
+            result = await Mediator.SendScoped(new RemoveUserFromRoleCommand(SelectedUser.Name, SelectedUser.Version, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} removed from {SelectedUser.Name}";
         }
         else
         {
-            result = await Mediator.SendScoped(new AddUserToRoleCommand(_selectedUser.Name, _selectedUser.Version, _selectedRole.Name));
-            message = $"Role {_selectedRole.Name} added to {_selectedUser.Name}";
+            result = await Mediator.SendScoped(new AddUserToRoleCommand(SelectedUser.Name, SelectedUser.Version, _selectedRole.Name));
+            message = $"Role {_selectedRole.Name} added to {SelectedUser.Name}";
         }
 
         if (result.Conclusion is false)
@@ -136,9 +153,9 @@
             Version = _selectedRole.Version
         };
 
-        _selectedUser.Version = result.Output;
+        SelectedUser.Version = result.Output;
 
-        StateHasChanged();
+        await Task.WhenAll(UsersChanged.InvokeAsync(Users), SelectedUserChanged.InvokeAsync(SelectedUser));
         Snackbar.Add(message, Severity.Success);
     }
 
@@ -158,7 +175,7 @@
 
     private string RowStyleFunc(BasicUserModel rowValue, int rowNumber)
     {
-        return rowValue.Name.Equals(_selectedUser?.Name)
+        return rowValue.Name.Equals(SelectedUser?.Name)
             ? SelectedRowStyle ?? string.Empty
             : string.Empty;
     }
