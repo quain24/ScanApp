@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ScanApp.Domain.Entities;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -32,6 +33,7 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<IdentityUserRole<string>> UserRoles { get; set; }
         DbSet<ApplicationUser> Users { get; set; }
         DbSet<IdentityUserToken<string>> UserTokens { get; set; }
+        DbSet<Location> Locations { get; set; }
 
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 

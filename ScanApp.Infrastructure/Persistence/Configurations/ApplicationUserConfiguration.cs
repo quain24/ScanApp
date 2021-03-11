@@ -9,7 +9,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
             builder.ToTable("Users", "sca");
-            builder.Property(u => u.Location).HasMaxLength(60);
         }
     }
 }

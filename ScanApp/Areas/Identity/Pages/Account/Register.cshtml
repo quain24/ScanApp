@@ -23,9 +23,11 @@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Input.Location"></label>
-                <input asp-for="Input.Location" class="form-control" />
-                <span asp-validation-for="Input.Location" class="text-danger"></span>
+                <label asp-for="Input.LocationId"></label>
+                <select asp-for="Input.LocationId" asp-items="@(new SelectList(Model.Locations, "Value", "Text"))" class="form-control">
+                    <option value="">Pick One</option>
+                </select>
+                <span asp-validation-for="Input.LocationId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Input.Password"></label>

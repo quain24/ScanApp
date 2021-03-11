@@ -14,10 +14,11 @@ namespace ScanApp.Infrastructure.Persistence
         {
         }
 
+        public DbSet<Location> Locations { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
             // small configurations here - no point in extracting one liners to separate files
             builder.Entity<IdentityRole>().ToTable("Roles", "sca");
@@ -27,7 +28,7 @@ namespace ScanApp.Infrastructure.Persistence
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "sca");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("UserRoleClaims", "sca");
 
-            builder.Entity<Location>().ToTable("UserLocations", "sca");
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
     }
 }

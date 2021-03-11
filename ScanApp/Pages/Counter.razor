@@ -1,4 +1,4 @@
-﻿@attribute [Authorize(Policy = nameof(Policies.LocationMustBePoznan))]
+﻿@*@attribute [Authorize(Policy = nameof(Policies.LocationMustBePoznan))]*@
 @page "/counter"
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.EntityFrameworkCore
@@ -20,7 +20,7 @@
 
 <p>Current count: @_currentCount</p>
 
-<AuthorizeView Roles="admin">
+<AuthorizeView Roles="Admin">
     <Authorized>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IncrementCount">Authorized click</MudButton>
     </Authorized>

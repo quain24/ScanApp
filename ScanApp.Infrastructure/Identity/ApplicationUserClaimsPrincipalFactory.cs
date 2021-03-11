@@ -26,7 +26,7 @@ namespace ScanApp.Infrastructure.Identity
             // Add custom claims / other sources claims
             identity?.AddClaims(new[]
             {
-                new Claim("Location", user.Location)
+                new Claim("Location", user.LocationId.ToString())
             });
 
             // Select only distinct user and role claims

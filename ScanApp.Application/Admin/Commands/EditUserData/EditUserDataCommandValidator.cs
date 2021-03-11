@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using ScanApp.Common.Validators;
-using System.Linq;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
@@ -12,17 +11,19 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         {
             RuleFor(c => c.ConcurrencyStamp)
                 .NotEmpty();
+
             RuleFor(c => c.NewName)
                 .SetValidator(_standardChars);
+
             RuleFor(c => c.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(new EmailValidator());
-            RuleFor(c => c.Location)
+
+            RuleFor(c => c.LocationId)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty()
-                .Must(c => !c.First().Equals(' ') && !c.Last().Equals(' '))
-                .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
+                .NotNull();
+
             RuleFor(c => c.Phone)
                 .SetValidator(new PhoneNumberValidator())
                 .When(p => p.Phone is not null);

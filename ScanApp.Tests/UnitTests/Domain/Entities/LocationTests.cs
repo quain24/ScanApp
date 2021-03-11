@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions.Common;
+﻿using FluentAssertions;
+using ScanApp.Application.Common.Entities;
 using ScanApp.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;
-using FluentAssertions;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {
@@ -31,8 +26,8 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             var entity = new Location(name);
 
             entity.Should().NotBeNull();
-            entity.Name.Should().BeEquivalentTo(name, "That's the original name value");
-            entity.NormalizedName.Should().BeEquivalentTo(normalizedName, "This would be correctly normalized name");
+            entity.Name.Should().BeEquivalentTo(name, "need to check if name is unmodified");
+            entity.NormalizedName.Should().BeEquivalentTo(normalizedName, "need to validate normalizing algorithm");
         }
     }
 }

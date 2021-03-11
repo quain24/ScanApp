@@ -1,4 +1,5 @@
-﻿using ScanApp.Domain.ValueObjects;
+﻿using ScanApp.Application.Common.Entities;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
@@ -13,7 +14,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         public string NewName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public string Location { get; set; }
+        public int LocationId { get; set; }
         public Version Version { get; set; } = Version.Empty();
     }
 }

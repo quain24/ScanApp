@@ -1,5 +1,5 @@
-﻿using ScanApp.Domain.Exceptions;
-using System.Linq;
+﻿using System.Linq;
+using ScanApp.Domain.Exceptions;
 
 namespace ScanApp.Domain.Entities
 {
@@ -34,8 +34,11 @@ namespace ScanApp.Domain.Entities
 
         private static void Validate(string name)
         {
+            if (name is null)
+                throw new LocationNameFormatException("Location name NULL");
+
             if (string.IsNullOrWhiteSpace(name))
-                throw new LocationNameFormatException(name, "Location name cannot be null or empty / contain only whitespaces");
+                throw new LocationNameFormatException(name, "Location name cannot be be empty / contain only whitespaces");
 
             if (name[0] == ' ' || name.Last() == ' ')
                 throw new LocationNameFormatException(name, "Name cannot begin nor end with whitespace");

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
@@ -8,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
@@ -22,7 +22,7 @@ namespace ScanApp.Infrastructure.Identity
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager), $"Could not inject {nameof(UserManager<ApplicationUser>)}.");
         }
 
-        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string location, string phoneNumber)
+        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, int locationId, string phoneNumber)
         {
             var userId = await _userManager.Users
                 .AsNoTracking()
@@ -37,7 +37,7 @@ namespace ScanApp.Infrastructure.Identity
             var newUser = new ApplicationUser()
             {
                 Email = email,
-                Location = location,
+                LocationId = locationId,
                 PhoneNumber = phoneNumber,
                 UserName = userName
             };
@@ -99,8 +99,8 @@ namespace ScanApp.Infrastructure.Identity
                 user.UserName = data.NewName;
             if (data.Email?.Equals(user.Email, StringComparison.OrdinalIgnoreCase) is false)
                 user.Email = data.Email;
-            if (data.Location?.Equals(user.Location, StringComparison.OrdinalIgnoreCase) is false)
-                user.Location = data.Location;
+            if (data.LocationId.Equals(user.LocationId) is false)
+                user.LocationId = data.LocationId;
             if (data.Phone?.Equals(user.PhoneNumber, StringComparison.OrdinalIgnoreCase) is false)
                 user.PhoneNumber = data.Phone;
 

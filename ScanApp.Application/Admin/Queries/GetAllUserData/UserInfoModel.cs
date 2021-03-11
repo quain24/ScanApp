@@ -18,14 +18,14 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             Name = userInfo.Name;
             LockoutEnd = userInfo.LockoutEnd;
             Email = userInfo.Email;
-            Location = userInfo.Location;
+            LocationId = userInfo.LocationId;
             Phone = userInfo.Phone;
             Version = userInfo.Version;
         }
 
         public string Name { get; set; }
         public string Email { get; set; }
-        public string Location { get; set; }
+        public int LocationId { get; set; }
         public string Phone { get; set; }
         public Version Version { get; set; }
 
@@ -53,8 +53,8 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
 
             return string.Equals(Name, other.Name) &&
                    string.Equals(Email, other.Email) &&
-                   string.Equals(Location, other.Location) &&
                    string.Equals(Phone, other.Phone) &&
+                   LocationId == other.LocationId &&
                    Version == other.Version;
         }
     }

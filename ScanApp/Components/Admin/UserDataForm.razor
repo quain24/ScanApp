@@ -2,7 +2,7 @@
 @using ScanApp.Common
 @using ScanApp.Common.Validators
 @using FluentValidation
-@using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
+@using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Validators
 @using ScanApp.Common.Extensions
 @using InputType = MudBlazor.InputType
@@ -15,7 +15,7 @@
         <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator" InputType="InputType.Password" Variant="Variant.Filled" Immediate="true" Label="Password"></MudTextFieldString>
     }
     <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudTextField @bind-Value="User.Location" TextChanged="@OnUserChanged" Validation="@_locationValidator.Validation" Variant="Variant.Filled" Label="Location" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.LocationId" TextChanged="@OnUserChanged" Validation="@_locationValidator.Validation" Variant="Variant.Filled" Label="Location" Disabled="EditingDisabled" Immediate="true"></MudTextField>
     <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
 </MudForm>
 
@@ -23,7 +23,7 @@
 
     protected override void OnInitialized()
     {
-        if(!DisablePassword)
+        if (!DisablePassword)
             _passwordValidator = PasswordValidator.ToAsyncMudFormFieldValidator();
     }
 
@@ -35,7 +35,7 @@
         User ??= new UserInfoModel()
         {
             Email = string.Empty,
-            Location = string.Empty,
+            LocationId = 0,
             Name = string.Empty,
             Phone = string.Empty
         };
@@ -67,7 +67,7 @@
 
     [Parameter]
     public bool EditingDisabled { get; set; }
-    
+
     private MudForm _form;
 
     private Func<string, Task<IEnumerable<string>>> _passwordValidator;
@@ -91,13 +91,13 @@
         .WithMessage("Not a valid phone number"));
 
     public void Validate() => _form.Validate();
-    
+
     private async Task OnUserChanged()
     {
         if (_localUserCopy.EqualWithDate(User) && string.Equals(_localPasswordCopy, Password))
             return;
         await PasswordChanged.InvokeAsync(Password);
-        await UserChanged.InvokeAsync(User);        
+        await UserChanged.InvokeAsync(User);
     }
 
 }

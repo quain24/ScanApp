@@ -4,6 +4,6 @@ namespace ScanApp.Application.Common.Entities
 {
     public class ApplicationUser : IdentityUser
     {
-        public string Location { get; set; }
+        public int LocationId { get; set; }
     }
 }

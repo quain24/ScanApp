@@ -209,7 +209,7 @@
         var res = await Mediator.SendScoped(new EditUserDataCommand(_originalUserData.Name)
         {
             Phone = _userData.Phone,
-            Location = _userData.Location,
+            LocationId = _userData.LocationId,
             Email = _userData.Email,
             NewName = _userData.Name,
             ConcurrencyStamp = _userData.Version

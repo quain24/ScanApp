@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using ScanApp.Common.Validators;
-using System.Linq;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
@@ -12,20 +11,22 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         {
             RuleFor(c => c.NewUser.Name)
                 .SetValidator(_standardChars);
+
             RuleFor(c => c.NewUser.Password)
                 .NotEmpty();
+
             RuleFor(c => c.NewUser.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(new EmailValidator());
-            RuleFor(c => c.NewUser.Location)
+
+            RuleFor(c => c.NewUser.LocationId)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty()
-                .Must(c => !c.First().Equals(' ') && !c.Last().Equals(' '))
-                .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
+                .GreaterThanOrEqualTo(0);
+
             RuleFor(c => c.NewUser.Phone)
-                .SetValidator(new PhoneNumberValidator())
-                .When(p => p.NewUser.Phone is not null);
+            .SetValidator(new PhoneNumberValidator())
+            .When(p => p.NewUser.Phone is not null);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Queries.GetAllUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
@@ -8,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
-using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
@@ -63,7 +62,7 @@ namespace ScanApp.Infrastructure.Identity
             return new UserInfoModel()
             {
                 Email = user.Email,
-                Location = user.Location,
+                LocationId = user.LocationId,
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
                 LockoutEnd = user.LockoutEnd,
