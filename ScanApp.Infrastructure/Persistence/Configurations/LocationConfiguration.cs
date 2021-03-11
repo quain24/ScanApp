@@ -4,13 +4,12 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    internal class UserLocationConfiguration : IEntityTypeConfiguration<UserLocation>
+    internal class LocationConfiguration : IEntityTypeConfiguration<Location>
     {
-        public void Configure(EntityTypeBuilder<UserLocation> builder)
+        public void Configure(EntityTypeBuilder<Location> builder)
         {
-            builder.HasKey(e => e.NormalizedName);
-            builder.Property(e => e.NormalizedName).HasMaxLength(200).IsRequired();
             builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            builder.Property(e => e.NormalizedName).HasMaxLength(200).IsRequired();
         }
     }
 }

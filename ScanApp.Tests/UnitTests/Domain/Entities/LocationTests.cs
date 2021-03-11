@@ -28,7 +28,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         [InlineData("Łęczna", "ŁĘCZNA")]
         public void Will_create_entity_given_proper_data(string name, string normalizedName)
         {
-            var entity = new UserLocation(name);
+            var entity = new Location(name);
 
             entity.Should().NotBeNull();
             entity.Name.Should().BeEquivalentTo(name, "That's the original name value");

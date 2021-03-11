@@ -1,32 +1,38 @@
-﻿using System.Collections.Generic;
-using ScanApp.Domain.Exceptions;
-using System.Globalization;
+﻿using ScanApp.Domain.Exceptions;
 using System.Linq;
-using System.Text;
 
 namespace ScanApp.Domain.Entities
 {
-    public class UserLocation
+    public class Location
     {
-        public UserLocation(string name)
+        public Location(string name)
         {
-            ValidateName(name);
+            Validate(name);
             Name = name;
             NormalizedName = NormalizeName(name);
         }
 
+        public Location(int id, string name)
+        {
+            Validate(name);
+            Id = id;
+            Name = name;
+            NormalizedName = NormalizeName(name);
+        }
+
+        public int Id { get; set; }
         public string Name { get; private set; }
 
         public string NormalizedName { get; private set; }
 
         public void ChangeName(string name)
         {
-            ValidateName(name);
+            Validate(name);
             Name = name;
             NormalizedName = NormalizeName(Name);
         }
 
-        private static void ValidateName(string name)
+        private static void Validate(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new LocationNameFormatException(name, "Location name cannot be null or empty / contain only whitespaces");

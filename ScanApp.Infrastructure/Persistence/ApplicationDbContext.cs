@@ -27,7 +27,7 @@ namespace ScanApp.Infrastructure.Persistence
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "sca");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("UserRoleClaims", "sca");
 
-            builder.Entity<UserLocation>().ToTable("UserLocations", "sca");
+            builder.Entity<Location>().ToTable("UserLocations", "sca");
         }
     }
 }
