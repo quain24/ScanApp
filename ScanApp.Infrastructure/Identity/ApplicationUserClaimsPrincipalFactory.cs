@@ -5,17 +5,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ScanApp.Infrastructure.Persistence;
 
 namespace ScanApp.Infrastructure.Identity
 {
     public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<ApplicationUser, IdentityRole>
     {
+        private readonly IDbContextFactory<ApplicationDbContext> _ctxFactory;
+
         public ApplicationUserClaimsPrincipalFactory(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IOptions<IdentityOptions> optionsAccessor)
+            IOptions<IdentityOptions> optionsAccessor,
+            IDbContextFactory<ApplicationDbContext> ctxFactory)
             : base(userManager, roleManager, optionsAccessor)
         {
+            _ctxFactory = ctxFactory;
         }
 
         public override async Task<ClaimsPrincipal> CreateAsync(ApplicationUser user)
@@ -23,11 +29,22 @@ namespace ScanApp.Infrastructure.Identity
             var principal = await base.CreateAsync(user).ConfigureAwait(false);
             var identity = principal.Identity as ClaimsIdentity;
 
+            await using var ctx = _ctxFactory.CreateDbContext();
+
+            var locations = await ctx.UserLocations
+                .AsNoTracking()
+                .Where(l => l.UserId.Equals(user.Id))
+                .Select(l => l.LocationId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            locations.ForEach(l => identity?.AddClaim(new Claim("Location", l)));
+
             // Add custom claims / other sources claims
-            identity?.AddClaims(new[]
-            {
-                new Claim("Location", user.LocationId.ToString())
-            });
+            //identity?.AddClaims(new[]
+            //{
+            //    new Claim("Location", user.LocationId.ToString())
+            //});
 
             // Select only distinct user and role claims
             var claims = identity?.Claims.ToList();
