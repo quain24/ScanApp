@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
@@ -9,6 +9,20 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
         {
             migrationBuilder.EnsureSchema(
                 name: "sca");
+
+            migrationBuilder.CreateTable(
+                name: "Locations",
+                schema: "sca",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    NormalizedName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Locations", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Roles",
@@ -31,7 +45,6 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -91,6 +104,33 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     table.PrimaryKey("PK_UserClaims", x => x.Id);
                     table.ForeignKey(
                         name: "FK_UserClaims_Users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "sca",
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserLocations",
+                schema: "sca",
+                columns: table => new
+                {
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserLocations", x => new { x.UserId, x.LocationId });
+                    table.ForeignKey(
+                        name: "FK_UserLocations_Locations_LocationId",
+                        column: x => x.LocationId,
+                        principalSchema: "sca",
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserLocations_Users_UserId",
                         column: x => x.UserId,
                         principalSchema: "sca",
                         principalTable: "Users",
@@ -184,6 +224,18 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserLocations_LocationId",
+                schema: "sca",
+                table: "UserLocations",
+                column: "LocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserLocations_UserId",
+                schema: "sca",
+                table: "UserLocations",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserLogins_UserId",
                 schema: "sca",
                 table: "UserLogins",
@@ -223,6 +275,10 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                 schema: "sca");
 
             migrationBuilder.DropTable(
+                name: "UserLocations",
+                schema: "sca");
+
+            migrationBuilder.DropTable(
                 name: "UserLogins",
                 schema: "sca");
 
@@ -236,6 +292,10 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserTokens",
+                schema: "sca");
+
+            migrationBuilder.DropTable(
+                name: "Locations",
                 schema: "sca");
 
             migrationBuilder.DropTable(

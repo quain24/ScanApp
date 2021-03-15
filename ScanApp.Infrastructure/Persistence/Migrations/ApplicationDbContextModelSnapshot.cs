@@ -173,9 +173,6 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -222,12 +219,11 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.ToTable("Users", "sca");
                 });
 
-            modelBuilder.Entity("ScanApp.Application.Common.Entities.Location", b =>
+            modelBuilder.Entity("ScanApp.Domain.Entities.Location", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -242,6 +238,23 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Locations", "sca");
+                });
+
+            modelBuilder.Entity("ScanApp.Domain.Entities.UserLocation", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LocationId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "LocationId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserLocations", "sca");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -291,6 +304,21 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ScanApp.Domain.Entities.UserLocation", b =>
+                {
+                    b.HasOne("ScanApp.Domain.Entities.Location", null)
+                        .WithOne()
+                        .HasForeignKey("ScanApp.Domain.Entities.UserLocation", "LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ScanApp.Application.Common.Entities.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("ScanApp.Domain.Entities.UserLocation", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
