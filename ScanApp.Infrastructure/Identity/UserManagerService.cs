@@ -5,10 +5,13 @@ using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.Entities;
+using ScanApp.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
@@ -16,34 +19,58 @@ namespace ScanApp.Infrastructure.Identity
     public class UserManagerService : IUserManager
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IDbContextFactory<ApplicationDbContext> _ctxFactory;
 
-        public UserManagerService(UserManager<ApplicationUser> userManager)
+        public UserManagerService(UserManager<ApplicationUser> userManager, IDbContextFactory<ApplicationDbContext> ctxFactory)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager), $"Could not inject {nameof(UserManager<ApplicationUser>)}.");
+            _ctxFactory = ctxFactory ?? throw new ArgumentNullException(nameof(ctxFactory), "Could not inject DBContextFactory");
         }
 
-        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, int locationId, string phoneNumber)
+        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location)
         {
-            var userId = await _userManager.Users
-                .AsNoTracking()
-                .Where(u => u.UserName.Equals(userName))
-                .Select(u => u.Id)
-                .SingleOrDefaultAsync()
-                .ConfigureAwait(false);
+            await using var context = _ctxFactory.CreateDbContext();
+            var strategy = context.Database.CreateExecutionStrategy();
 
-            if (userId is not null)
-                return new Result<BasicUserModel>(ErrorType.Duplicated, $"user with name {userName} already exists");
+            return await strategy.ExecuteAsync(async () => await AddUser(context, userName, password, email, phoneNumber, location)).ConfigureAwait(false);
+        }
 
-            var newUser = new ApplicationUser()
+        private async Task<Result<BasicUserModel>> AddUser(IApplicationDbContext context, string userName, string password, string email, string phoneNumber, Location location)
+        {
+            try
             {
-                Email = email,
-                LocationId = locationId,
-                PhoneNumber = phoneNumber,
-                UserName = userName
-            };
+                using var transaction = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { Timeout = TimeSpan.FromSeconds(60) }, TransactionScopeAsyncFlowOption.Enabled);
 
-            var identityResult = await _userManager.CreateAsync(newUser, password).ConfigureAwait(false);
-            return identityResult.AsResult(new BasicUserModel(newUser.UserName, Version.Create(newUser.ConcurrencyStamp)));
+                var newUser = new ApplicationUser
+                {
+                    Email = email,
+                    PhoneNumber = phoneNumber,
+                    UserName = userName
+                };
+
+                var identityResult = await _userManager.CreateAsync(newUser, password).ConfigureAwait(false);
+                if (!identityResult.Succeeded)
+                    return identityResult.AsResult<BasicUserModel>();
+
+                if (location is not null)
+                {
+                    var exists = await context.Locations.AnyAsync(l => l.Id.Equals(location.Id));
+                    if (exists)
+                    {
+                        await context.UserLocations.AddAsync(new UserLocation { UserId = newUser.Id, LocationId = location.Id }).ConfigureAwait(false);
+                        await context.SaveChangesAsync().ConfigureAwait(false);
+                    }
+                    else
+                        return new Result<BasicUserModel>(ErrorType.NotFound, $"Location {location.Name} does not exist");
+                }
+
+                transaction.Complete();
+                return new Result<BasicUserModel>(new BasicUserModel(newUser.UserName, Version.Create(newUser.ConcurrencyStamp)));
+            }
+            catch (TransactionAbortedException ex)
+            {
+                return new Result<BasicUserModel>(ErrorType.Timeout, $"Failed to add \"{userName}\" to db - transaction timeout", ex);
+            }
         }
 
         public async Task<Result> DeleteUser(string userName)
@@ -97,12 +124,173 @@ namespace ScanApp.Infrastructure.Identity
                 user.UserName = data.NewName;
             if (data.Email?.Equals(user.Email, StringComparison.OrdinalIgnoreCase) is false)
                 user.Email = data.Email;
-            if (data.LocationId.Equals(user.LocationId) is false)
-                user.LocationId = data.LocationId;
             if (data.Phone?.Equals(user.PhoneNumber, StringComparison.OrdinalIgnoreCase) is false)
                 user.PhoneNumber = data.Phone;
 
-            return (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
+            await using var context = _ctxFactory.CreateDbContext();
+            var userLocation = await context.UserLocations.FirstOrDefaultAsync(l => l.UserId.Equals(user.Id)).ConfigureAwait(false);
+
+            var strategy = context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                    var userUpdateResult = (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
+                    if (userLocation is not null)
+                    {
+                        context.Remove(userLocation);
+                        await context.SaveChangesAsync().ConfigureAwait(false);
+                    }
+
+                    if (data.Location is not null)
+                    {
+                        await context.AddAsync(new UserLocation {UserId = user.Id, LocationId = data.Location.Id})
+                            .ConfigureAwait(false);
+                    }
+
+                    await context.SaveChangesAsync().ConfigureAwait(false);
+                    transaction.Complete();
+                    return userUpdateResult;
+                }
+                catch (DbUpdateConcurrencyException e)
+                {
+                    return new Result<Version>(ErrorType.ConcurrencyFailure, "User or location has been changed during this command.", e);
+                }
+                catch (DbUpdateException e)
+                {
+                    return new Result<Version>(ErrorType.Unknown, $"Something happened during update of {data.Name}.", e);
+                }
+                catch (TransactionAbortedException e)
+                {
+                    return new Result<Version>(ErrorType.Timeout, "User or location has been changed during this command.", e);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<Result<bool>> HasLocation(string userName)
+        {
+            await using var context = _ctxFactory.CreateDbContext();
+
+            var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
+            if (user is null)
+                return ResultHelpers.UserNotFound<bool>(userName).SetOutput(false);
+
+            var hasLocation = await context.UserLocations
+                .AsNoTracking()
+                .SingleOrDefaultAsync(l => l.UserId.Equals(user.Id))
+                .ConfigureAwait(false);
+
+            return new Result<bool>(hasLocation is not null);
+        }
+
+        public async Task<Result<Location>> GetUserLocation(string userName)
+        {
+            await using var context = _ctxFactory.CreateDbContext();
+
+            var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
+            if (user is null)
+                return ResultHelpers.UserNotFound<Location>(userName);
+
+            var location = await context.UserLocations
+                .AsNoTracking()
+                .Where(o => o.UserId.Equals(user.Id))
+                .Join(context.Locations, userLocations => userLocations.LocationId, location => location.Id,
+                    (_, l) => l)
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false);
+
+            return location is null
+                ? new Result<Location>(ErrorType.NotFound)
+                : new Result<Location>(location);
+        }
+
+        public async Task<Result<Version>> SetUserLocation(string userName, Location location, Version stamp)
+        {
+            await using var context = _ctxFactory.CreateDbContext();
+
+            var strategy = context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    await using var transaction = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+                    var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
+
+                    if (user is null)
+                        return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+
+                    if (user.ConcurrencyStamp != stamp)
+                        return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
+
+                    context.Attach(user);
+
+                    var userLocation = await context.UserLocations
+                        .SingleOrDefaultAsync(l => l.UserId.Equals(user.Id))
+                        .ConfigureAwait(false);
+
+                    if (userLocation?.LocationId.Equals(location.Id) ?? false)
+                        return new Result<Version>(Version.Create(user.ConcurrencyStamp));
+
+                    if (userLocation is not null)
+                    {
+                        context.UserLocations.Remove(userLocation);
+                        await context.SaveChangesAsync().ConfigureAwait(false);
+                    }
+
+                    user.ConcurrencyStamp = await _userManager.GenerateConcurrencyStampAsync(user).ConfigureAwait(false);
+                    userLocation ??= new UserLocation { UserId = user.Id };
+                    userLocation.LocationId = location.Id;
+                    await context.AddAsync(userLocation).ConfigureAwait(false);
+                    await context.SaveChangesAsync().ConfigureAwait(false);
+
+                    await transaction.CommitAsync().ConfigureAwait(false);
+                    return new Result<Version>(Version.Create(user.ConcurrencyStamp));
+                }
+                catch (DbUpdateException ex)
+                {
+                    return new Result<Version>(ErrorType.Unknown, ex);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task<Result> RemoveFromLocation(string userName, Location location, Version stamp)
+        {
+            await using var context = _ctxFactory.CreateDbContext();
+
+            var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
+            if (user is null)
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+
+            if (user.ConcurrencyStamp != stamp)
+                return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
+
+            var userLocation = await context.UserLocations
+                .SingleOrDefaultAsync(l => l.UserId.Equals(user.Id) && l.LocationId.Equals(location.Id))
+                .ConfigureAwait(false);
+
+            if (userLocation is not null)
+            {
+                context.Attach(user);
+                context.UserLocations.Remove(userLocation);
+                user.ConcurrencyStamp = await _userManager.GenerateConcurrencyStampAsync(user).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+            }
+
+            return new Result<Version>(Version.Create(user.ConcurrencyStamp));
+        }
+
+        private static Task<ApplicationUser> GetBasicUserDataByName(string userName, IApplicationDbContext context)
+        {
+            return context.Users
+                .Where(u => u.UserName.Equals(userName))
+                .Select(u => new ApplicationUser
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    ConcurrencyStamp = u.ConcurrencyStamp
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Result<Version>> ChangeUserSecurityStamp(string userName, Version version)

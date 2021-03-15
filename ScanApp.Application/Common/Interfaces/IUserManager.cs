@@ -4,13 +4,14 @@ using ScanApp.Application.Common.Helpers.Result;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Domain.Entities;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Common.Interfaces
 {
     public interface IUserManager
     {
-        Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, int locationId, string phoneNumber);
+        Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location);
 
         Task<Result> DeleteUser(string userName);
 
@@ -19,6 +20,14 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result<Version>> ChangePassword(string userName, string newPassword, Version stamp);
 
         Task<List<(string Code, string Message)>> ValidatePassword(string password);
+
+        Task<Result<bool>> HasLocation(string userName);
+
+        Task<Result<Location>> GetUserLocation(string userName);
+
+        Task<Result<Version>> SetUserLocation(string userName, Location location, Version stamp);
+
+        Task<Result> RemoveFromLocation(string userName, Location location, Version stamp);
 
         Task<Result<Version>> ChangeUserSecurityStamp(string userName, Version version);
 

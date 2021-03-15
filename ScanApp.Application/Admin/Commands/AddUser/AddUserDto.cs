@@ -1,4 +1,4 @@
-﻿using ScanApp.Application.Common.Entities;
+﻿using ScanApp.Domain.Entities;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
@@ -8,6 +8,6 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         public string Password { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
-        public int LocationId { get; set; }
+        public Location Location { get; set; }
     }
 }

@@ -20,10 +20,6 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
                 .NotEmpty()
                 .SetValidator(new EmailValidator());
 
-            RuleFor(c => c.LocationId)
-                .Cascade(CascadeMode.Stop)
-                .NotNull();
-
             RuleFor(c => c.Phone)
                 .SetValidator(new PhoneNumberValidator())
                 .When(p => p.Phone is not null);

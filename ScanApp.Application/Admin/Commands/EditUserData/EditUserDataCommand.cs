@@ -4,6 +4,7 @@ using ScanApp.Application.Common.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
 using ScanApp.Application.Common.Entities;
+using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         public string NewName { get; init; }
         public string Phone { get; init; }
         public string Email { get; init; }
-        public int LocationId { get; init; }
+        public Location Location { get; init; }
         public Version ConcurrencyStamp { get; init; }
 
         public EditUserDataCommand(string name)
@@ -38,9 +39,9 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             {
                 Phone = request.Phone,
                 Email = request.Email,
-                LocationId = request.LocationId,
                 Version = request.ConcurrencyStamp,
-                NewName = request.NewName
+                NewName = request.NewName,
+                Location = request.Location
             };
 
             return await _userManager.EditUserData(data).ConfigureAwait(false);

@@ -34,6 +34,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         ConfigurationError,
         NetworkError,
         ConcurrencyFailure,
+        Timeout
 
         ///// <summary>
         ///// Specific error code

@@ -28,7 +28,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         public async Task<Result<BasicUserModel>> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
             var data = request.NewUser;
-            return await _userManager.AddNewUser(data.Name, data.Password, data.Email, data.LocationId, data.Phone).ConfigureAwait(false);
+            return await _userManager.AddNewUser(data.Name, data.Password, data.Email, data.Phone, data.Location).ConfigureAwait(false);
         }
     }
 }
