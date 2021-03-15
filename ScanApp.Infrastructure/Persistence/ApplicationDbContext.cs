@@ -15,6 +15,7 @@ namespace ScanApp.Infrastructure.Persistence
         }
 
         public DbSet<Location> Locations { get; set; }
+        public DbSet<UserLocation> UserLocations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
