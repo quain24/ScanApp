@@ -31,11 +31,14 @@ namespace ScanApp.Infrastructure.Identity
         /// <para>
         /// False if no concurrency error occurred
         /// </para></returns>
-        public static bool IsConcurrencyFailure(this IdentityResult result)
+        public static bool IsConcurrencyFailure(this IdentityResult result) => result.GotErrorCode("ConcurrencyFailure");
+
+        public static bool IsDuplicatedNameError(this IdentityResult result) => result.GotErrorCode("DuplicateName") || result.GotErrorCode("DuplicateUserName");
+
+        private static bool GotErrorCode(this IdentityResult result, string code)
         {
-            return result.Succeeded is false &&
-                   (result.Errors?.Any(e =>
-                       string.Equals(e.Code, "ConcurrencyFailure", StringComparison.OrdinalIgnoreCase)) ?? false);
+            return result.Succeeded is false
+                   && (result.Errors?.Any(e => string.Equals(e.Code, code, StringComparison.OrdinalIgnoreCase)) ?? false);
         }
 
         /// <summary>
@@ -55,7 +58,7 @@ namespace ScanApp.Infrastructure.Identity
         /// <param name="identityResult">An input from which <see cref="Result{T}"/> will be generated</param>
         /// <param name="output">An object of type <typeparamref name="TOutput"/> which will be returned with created <see cref="Result{TOutput}"/></param>
         /// <typeparam name="TOutput">Type of object that will be returned with created <see cref="Result{T}"/></typeparam>
-        public static Result<TOutput> AsResult<TOutput>(this IdentityResult identityResult, TOutput output)
+        public static Result<TOutput> AsResult<TOutput>(this IdentityResult identityResult, TOutput output = default)
         {
             var result = new Result<TOutput>().SetOutput(output);
             return Describe(result, identityResult) as Result<TOutput>;
@@ -67,6 +70,7 @@ namespace ScanApp.Infrastructure.Identity
             {
                 _ when identityResult.Succeeded => result,
                 _ when identityResult.IsConcurrencyFailure() => result.Set(ErrorType.ConcurrencyFailure, identityResult.CombineErrors()),
+                _ when identityResult.IsDuplicatedNameError() => result.Set(ErrorType.Duplicated, identityResult.CombineErrors()),
                 _ => result.Set(ErrorType.NotValid, identityResult.CombineErrors())
             };
         }
