@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ScanApp.Application.Common.Entities;
+using ScanApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Domain.Entities;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -34,6 +34,7 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<ApplicationUser> Users { get; set; }
         DbSet<IdentityUserToken<string>> UserTokens { get; set; }
         DbSet<Location> Locations { get; set; }
+        DbSet<UserLocation> UserLocations { get; set; }
 
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 

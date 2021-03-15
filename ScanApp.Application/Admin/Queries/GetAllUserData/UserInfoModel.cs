@@ -1,5 +1,6 @@
 ﻿using ScanApp.Common.Extensions;
 using System;
+using ScanApp.Domain.Entities;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
@@ -18,15 +19,15 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             Name = userInfo.Name;
             LockoutEnd = userInfo.LockoutEnd;
             Email = userInfo.Email;
-            LocationId = userInfo.LocationId;
             Phone = userInfo.Phone;
+            Location = userInfo.Location;
             Version = userInfo.Version;
         }
 
         public string Name { get; set; }
         public string Email { get; set; }
-        public int LocationId { get; set; }
         public string Phone { get; set; }
+        public Location Location { get; set; }
         public Version Version { get; set; }
 
         public DateTimeOffset? LockoutEnd { get; set; }
@@ -54,7 +55,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
             return string.Equals(Name, other.Name) &&
                    string.Equals(Email, other.Email) &&
                    string.Equals(Phone, other.Phone) &&
-                   LocationId == other.LocationId &&
+                   Equals(Location?.Id, other.Location?.Id) &&
                    Version == other.Version;
         }
     }

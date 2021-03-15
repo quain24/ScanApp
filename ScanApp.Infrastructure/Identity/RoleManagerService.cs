@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Admin;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
-using ScanApp.Application.Admin.Queries.GetAllUserRoles;
-using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Identity
