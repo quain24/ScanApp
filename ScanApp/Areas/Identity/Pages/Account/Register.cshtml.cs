@@ -15,6 +15,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using ScanApp.Domain.Entities;
 
 namespace ScanApp.Areas.Identity.Pages.Account
 {
@@ -95,8 +96,17 @@ namespace ScanApp.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.UserName, Email = Input.Email, LocationId = Input.LocationId };
+                var user = new ApplicationUser { UserName = Input.UserName, Email = Input.Email };
                 var result = await _userManager.CreateAsync(user, Input.Password).ConfigureAwait(false);
+
+                await using var ctx = _ctxFactory.CreateDbContext();
+                await ctx.UserLocations.AddAsync(new UserLocation()
+                {
+                    LocationId = Input.LocationId.ToString(),
+                    UserId = user.Id
+                });
+
+                await ctx.SaveChangesAsync();
 
                 if (result.Succeeded)
                 {

@@ -9,11 +9,14 @@
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Infrastructure.Identity
 @using System.Diagnostics
+@using ScanApp.Domain.Entities
+@using Version = ScanApp.Domain.ValueObjects.Version
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IScopedMediator Mediator
 @inject IUserInfo UserInfo
-@inject LocationManagerService LocationManagerService
+@inject IUserManager Manager
+@inject ILocationManager LocationManagerService
 
 @inherits OwningComponentBase
 
@@ -72,10 +75,27 @@
         roleManager = (RoleManager<IdentityRole>)ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //var x = await LocationManagerService.RemoveLocation(new Location("1", "Poznań"));
+            var t = await LocationManagerService.GetLocationByName("Poznań");
+
+            var h = await Manager.SetUserLocation("testaaasd", new Location("123", "newnew"), Version.Create("d1dab7ec-bebd-45fb-878e-98f35fd1f198"));
+            var u = "";
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         await Uclaim();
+        //var t = await Manager.DeleteUser("testasaa");
+        //var a = await Manager.SetUserLocation("testaaasd", new Location("4e2d15a3-e00e-4c75-9551-3bf476078b55", "Genewa"), Version.Empty());
+        var u = "";
+        //await LocationManagerService.RemoveLocation(new Location("1", "Poznań"));
+        //await LocationManagerService.AddNewLocation("Genewa");
     }
 
     public async Task Uclaim()

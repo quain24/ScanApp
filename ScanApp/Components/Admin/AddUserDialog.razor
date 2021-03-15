@@ -1,12 +1,12 @@
 ﻿@using ScanApp.Application.Admin.Queries.GetAllUserData
 @using ScanApp.Application.Admin.Commands.AddUser
-@using ScanApp.Application.Admin
+@using ScanApp.Domain.Entities
 @inject Application.Common.Interfaces.IScopedMediator Mediator
 @inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
-        <UserDataForm @ref="_form" @bind-Success="_success" @bind-User="User" @bind-Password="_password" EditingDisabled="false" />
+        <UserDataForm @ref="_form" @bind-Success="_success" @bind-User="User" @bind-Password="_password" Locations="Locations" EditingDisabled="false" />
     </DialogContent>
     <DialogActions>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
@@ -16,6 +16,9 @@
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public List<Location> Locations { get; set; }
 
     private UserDataForm _form;
     private string _password;
@@ -34,9 +37,9 @@
         {
             Name = User.Name,
             Email = User.Email,
-            LocationId = User.LocationId,
             Phone = User.Phone,
-            Password = _password
+            Password = _password,
+            Location = User.Location
         };
 
         var result = await Mediator.SendScoped(new AddUserCommand(userDto));

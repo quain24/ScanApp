@@ -4,6 +4,8 @@
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 @using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Queries.GetLocationList
+@using ScanApp.Domain.Entities
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
@@ -16,7 +18,7 @@
     <MudSwipeArea OnSwipe="@OnSwipe">
         <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-2" KeepPanelsAlive="false">
             <MudTabPanel Text="User Management">
-                <ScanApp.Components.Admin.UserEditor @bind-SelectedUser="_selectedUser" @bind-Users="@_users" SelectedRowStyle="@_selectedRowStyle" />
+                <ScanApp.Components.Admin.UserEditor @bind-SelectedUser="_selectedUser" @bind-Users="@_users" Locations="@_locations" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Role Management">
                 <ScanApp.Components.Admin.UserRolesManager @bind-SelectedUser="_selectedUser" Roles="@_roles" Users="@_users" SelectedRowStyle="@_selectedRowStyle" />
@@ -36,6 +38,7 @@
 
     private List<BasicUserModel> _users = new();
     private List<BasicRoleModel> _roles = new();
+    private List<Location> _locations = new();
     private BasicUserModel _selectedUser;
     private bool _shouldRender = true;
     private string _selectedRowStyle = "background-color: lightgrey";
@@ -45,7 +48,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await Task.WhenAll(RetrieveAllUserNames(), RetrieveAllRoleNames());
+        await Task.WhenAll(RetrieveAllUserNames(), RetrieveAllRoleNames(), RetrieveAllLocations());
     }
 
     private void OnSwipe(SwipeDirection direction)
@@ -70,7 +73,7 @@
             Snackbar.Add(usersResult.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
-        
+
         usersResult.Output.Sort();
         _users = usersResult.Output;
     }
@@ -87,6 +90,20 @@
 
         roleResult.Output.Sort();
         _roles = roleResult.Output;
+    }
+
+    private async Task RetrieveAllLocations()
+    {
+        var locations = await Mediator.Send(new GetLocationListQuery());
+
+        if (locations.Conclusion is false)
+        {
+            Snackbar.Add(locations.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        locations.Output.Sort((location, other) => string.CompareOrdinal(location.Name, other.Name));
+        _locations = locations.Output;
     }
 
     protected override void Dispose(bool disposing)

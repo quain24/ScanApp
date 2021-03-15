@@ -2,9 +2,9 @@
 @using ScanApp.Common
 @using ScanApp.Common.Validators
 @using FluentValidation
-@using ScanApp.Application.Common.Entities
 @using ScanApp.Application.Common.Validators
 @using ScanApp.Common.Extensions
+@using ScanApp.Domain.Entities
 @using InputType = MudBlazor.InputType
 @inject PasswordValidator PasswordValidator
 
@@ -15,7 +15,13 @@
         <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator" InputType="InputType.Password" Variant="Variant.Filled" Immediate="true" Label="Password"></MudTextFieldString>
     }
     <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudTextField @bind-Value="User.LocationId" TextChanged="@OnUserChanged" Validation="@_locationValidator.Validation" Variant="Variant.Filled" Label="Location" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudSelect T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter" @bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled">
+        <MudSelectItem T="Location" Value="null" ToStringFunc="@_selectConverter" />
+        @foreach (var location in Locations)
+        {
+            <MudSelectItem T="Location" Value="location"/>
+        }
+    </MudSelect>
     <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
 </MudForm>
 
@@ -35,7 +41,6 @@
         User ??= new UserInfoModel()
         {
             Email = string.Empty,
-            LocationId = 0,
             Name = string.Empty,
             Phone = string.Empty
         };
@@ -45,6 +50,9 @@
         if (!Password?.Equals(_localPasswordCopy) ?? false)
             _localPasswordCopy = Password;
     }
+
+    [Parameter]
+    public List<Location> Locations { get; set; } = new ();
 
     [Parameter]
     public bool Success { get; set; }
@@ -71,6 +79,8 @@
     private MudForm _form;
 
     private Func<string, Task<IEnumerable<string>>> _passwordValidator;
+
+    Func<Location, string> _selectConverter = l => l?.Name ?? "None";
 
     private readonly FluentValidationWrapper<string> _nameValidator = new(x => x
         .SetValidator(new IdentityNamingValidator())
