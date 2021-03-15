@@ -12,7 +12,7 @@ namespace ScanApp.Domain.Entities
             NormalizedName = NormalizeName(name);
         }
 
-        public Location(int id, string name)
+        public Location(string id, string name)
         {
             Validate(name);
             Id = id;
@@ -20,7 +20,7 @@ namespace ScanApp.Domain.Entities
             NormalizedName = NormalizeName(name);
         }
 
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; private set; }
 
         public string NormalizedName { get; private set; }

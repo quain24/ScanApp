@@ -13,7 +13,7 @@ namespace ScanApp.Infrastructure.Common.Installers
             services.AddTransient<IUserManager, UserManagerService>();
             services.AddTransient<IRoleManager, RoleManagerService>();
             services.AddTransient<IUserInfo, UserInfoService>();
-            services.AddTransient<LocationManagerService>();
+            services.AddTransient<ILocationManager, LocationManagerService>();
 
             return services;
         }
