@@ -17,11 +17,13 @@ namespace ScanApp.Infrastructure.Identity
     {
         private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsFactory;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserManager _manager;
 
-        public UserInfoService(IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory, UserManager<ApplicationUser> userManager)
+        public UserInfoService(IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory, UserManager<ApplicationUser> userManager, IUserManager manager)
         {
             _claimsFactory = claimsFactory ?? throw new ArgumentNullException(nameof(claimsFactory));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
         public async Task<string> GetUserNameById(string userId)
@@ -59,13 +61,15 @@ namespace ScanApp.Infrastructure.Identity
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null) return null;
 
-            return new UserInfoModel()
+            var location = await _manager.GetUserLocation(userName).ConfigureAwait(false);
+
+            return new UserInfoModel
             {
                 Email = user.Email,
-                LocationId = user.LocationId,
                 Name = user.UserName,
                 Phone = user.PhoneNumber,
                 LockoutEnd = user.LockoutEnd,
+                Location = location.Output,
                 Version = Version.Create(user.ConcurrencyStamp)
             };
         }
