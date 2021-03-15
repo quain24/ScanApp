@@ -13,10 +13,9 @@ namespace ScanApp.Application.Admin
                 ? throw new ArgumentOutOfRangeException(nameof(type), "Type must not be null, empty or whitespace-only")
                 : type;
 
-            if (value is not null && string.IsNullOrWhiteSpace(value))
-                throw new ArgumentOutOfRangeException(nameof(value), "If value is present, it must not be empty or contain only whitespaces");
-
-            Value = value;
+            Value = string.IsNullOrWhiteSpace(value)
+                ? throw new ArgumentOutOfRangeException(nameof(value), "Value must not be empty or contain only whitespaces")
+                : value;
         }
 
         public bool Equals(ClaimModel other)
@@ -30,7 +29,7 @@ namespace ScanApp.Application.Admin
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && Equals((ClaimModel) obj);
+            return obj.GetType() == this.GetType() && Equals((ClaimModel)obj);
         }
 
         public override int GetHashCode()

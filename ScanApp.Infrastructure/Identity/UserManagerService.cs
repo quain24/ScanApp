@@ -84,9 +84,7 @@ namespace ScanApp.Infrastructure.Identity
 
         public async Task<Result<Version>> EditUserData(EditUserDto data)
         {
-            var user = await _userManager.Users
-                .SingleOrDefaultAsync(u => u.UserName.Equals(data.Name))
-                .ConfigureAwait(false);
+            var user = await _userManager.FindByNameAsync(data.Name).ConfigureAwait(false);
 
             if (user is null)
                 return ResultHelpers.UserNotFound<Version>(data.Name).SetOutput(Version.Empty());
@@ -150,11 +148,14 @@ namespace ScanApp.Infrastructure.Identity
                 : new Result().SetOutput(await _userManager.IsInRoleAsync(user, roleName).ConfigureAwait(false));
         }
 
-        public async Task<Result> AddClaimToUser(string userName, string claimType, string claimValue = null)
+        public async Task<Result> AddClaimToUser(string userName, string claimType, string claimValue)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
                 return ResultHelpers.UserNotFound(userName);
+
+            if (string.IsNullOrWhiteSpace(claimType) || string.IsNullOrWhiteSpace(claimValue))
+                return new Result(ErrorType.NotValid, $"Neither {nameof(claimType)} nor {nameof(claimValue)} can be null or composed only from whitespaces");
 
             var claims = await _userManager.GetClaimsAsync(user).ConfigureAwait(false);
 

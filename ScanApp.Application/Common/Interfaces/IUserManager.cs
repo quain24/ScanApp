@@ -28,7 +28,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> IsInRole(string userName, string roleName);
 
-        Task<Result> AddClaimToUser(string userName, string claimType, string claimValue = null);
+        Task<Result> AddClaimToUser(string userName, string claimType, string claimValue);
 
         Task<Result> RemoveClaimFromUser(string userName, string claimType, string claimValue);
 
