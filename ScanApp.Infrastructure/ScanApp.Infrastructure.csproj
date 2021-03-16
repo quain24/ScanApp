@@ -19,8 +19,4 @@
     <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Persistence\Migrations\" />
-  </ItemGroup>
-
 </Project>
