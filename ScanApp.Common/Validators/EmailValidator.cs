@@ -5,7 +5,7 @@ namespace ScanApp.Common.Validators
 {
     public class EmailValidator : PropertyValidator
     {
-        private readonly Regex _emailRegex = new(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,7})|(([0-9]{1,3}\.){3}[0-9]{1,3}))\z$");
+        private readonly Regex _emailRegex = new(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,10})|(([0-9]{1,3}\.){3}[0-9]{1,3}))\z$");
 
         protected override bool IsValid(PropertyValidatorContext context)
         {

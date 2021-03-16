@@ -75,10 +75,11 @@ namespace ScanApp.Infrastructure.Identity
 
             var claims = await _roleManager.GetClaimsAsync(role).ConfigureAwait(false);
 
-            if (claims.Any(c => c.Value.Equals(claim.Value, StringComparison.OrdinalIgnoreCase) && c.Type.Equals(claim.Type, StringComparison.OrdinalIgnoreCase)))
+            if (claims.Any(c => c.Value.Equals(claim.Value, StringComparison.OrdinalIgnoreCase)
+                                   && c.Type.Equals(claim.Type, StringComparison.OrdinalIgnoreCase)))
                 return new Result(ErrorType.Duplicated, $"Role {role.Name} already have claim {claim.Type} with value {claim.Value}");
 
-            var newClaim = new IdentityRoleClaim<string>()
+            var newClaim = new IdentityRoleClaim<string>
             {
                 RoleId = role.Id,
                 ClaimType = claim.Type,
@@ -88,14 +89,14 @@ namespace ScanApp.Infrastructure.Identity
             return (await _roleManager.AddClaimAsync(role, newClaim.ToClaim()).ConfigureAwait(false)).AsResult();
         }
 
-        public async Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null)
+        public async Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue)
         {
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
             if (role is null)
                 return new Result(ErrorType.NotFound, $"Role {roleName} was not found!");
 
-            var claim = new IdentityRoleClaim<string>()
+            var claim = new IdentityRoleClaim<string>
             {
                 ClaimType = claimType,
                 ClaimValue = claimValue,
@@ -112,11 +113,12 @@ namespace ScanApp.Infrastructure.Identity
             if (role is null)
                 return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<bool>;
 
-            return new Result<bool>().SetOutput((await _roleManager.GetClaimsAsync(role))
-                .FirstOrDefault(c =>
-                    c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase) &&
-                    c.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase))
-                is not null);
+            var hasClaim = (await _roleManager.GetClaimsAsync(role).ConfigureAwait(false))
+                .Any(c => claimValue is null
+                    ? c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase)
+                    : c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase) && c.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase));
+
+            return new Result<bool>().SetOutput(hasClaim);
         }
     }
 }

@@ -57,8 +57,8 @@
 }
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+        [CascadingParameter]
+        private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     private int _currentCount = 0;
     private string _name;
@@ -115,7 +115,8 @@
         Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         if (a.Conclusion)
         {
-            _claims = b.Select(i => $"{i.Type} | {i.Value}").ToList();
+            var u = string.Join(" // ", b.Select(c => c.Properties.Select(p => $"{p.Key} ||| {p.Value}").ToList()));
+            _claims = b.Select(i => $"{i.Type} |1| {i.Value} |2| {i.Issuer} |3| {i.OriginalIssuer} |4| {u} ").ToList();
         }
         Console.WriteLine(stop.Elapsed);
         Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");

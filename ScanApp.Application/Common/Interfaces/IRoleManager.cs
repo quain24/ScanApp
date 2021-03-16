@@ -1,8 +1,7 @@
-﻿using ScanApp.Application.Common.Helpers.Result;
+﻿using ScanApp.Application.Admin;
+using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
-using ScanApp.Application.Admin.Queries.GetAllUserRoles;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -20,7 +19,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result> AddClaimToRole(string roleName, ClaimModel claim);
 
-        Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue = null);
+        Task<Result> RemoveClaimFromRole(string roleName, string claimType, string claimValue);
 
         Task<Result<bool>> HasClaim(string roleName, string claimType, string claimValue = null);
     }
