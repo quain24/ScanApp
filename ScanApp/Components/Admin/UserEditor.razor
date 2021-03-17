@@ -7,6 +7,7 @@
 @using Version = ScanApp.Domain.ValueObjects.Version
 @using ScanApp.Application.Admin
 @using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
+@using ScanApp.Components.YesNoDialog
 @using ScanApp.Domain.Entities
 
 @inject IDialogService DialogService
@@ -137,9 +138,7 @@
 
     private async Task OnLogOffUser()
     {
-        var dialog = DialogService.Show<YesNoDialog>($"Log-off user {SelectedUser.Name}?",
-            new DialogParameters { ["Content"] = $"Are you sure you want to Log-off user {SelectedUser.Name}?" },
-            new DialogOptions { FullWidth = true, DisableBackdropClick = true });
+        var dialog = DialogService.AskForConfirmation($"Log-off user {SelectedUser.Name}?", $"Are you sure you want to Log-off user {SelectedUser.Name}?");
 
         if ((await dialog.Result).Cancelled)
             return;
@@ -179,9 +178,7 @@
             return;
         }
 
-        var dialog = DialogService.Show<YesNoDialog>("Confirm deletion",
-            new DialogParameters { ["Content"] = $"Are you sure you want to delete user {SelectedUser.Name}?" },
-            new DialogOptions { FullWidth = true, DisableBackdropClick = true });
+        var dialog = DialogService.AskForConfirmation("Confirm deletion", $"Are you sure you want to delete user {SelectedUser.Name}?");
 
         if ((await dialog.Result).Cancelled)
             return;
@@ -190,7 +187,7 @@
 
         if (!result.Conclusion)
         {
-            Snackbar.Add(result.ErrorDescription?.ErrorMessage ?? "Unknown error", Severity.Error);
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
             return;
         }
 
