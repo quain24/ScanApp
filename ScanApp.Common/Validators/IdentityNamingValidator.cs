@@ -8,7 +8,7 @@ namespace ScanApp.Common.Validators
     /// </summary>
     public class IdentityNamingValidator : PropertyValidator
     {
-        private readonly Regex _namingRegex = new(@"^[a-zA-Z0-9\.\-\\_]{3,60}$");
+        private readonly Regex _namingRegex = new(@"^[a-zA-Z0-9\.\-\\_]{3,450}$");
 
         protected override bool IsValid(PropertyValidatorContext context)
         {

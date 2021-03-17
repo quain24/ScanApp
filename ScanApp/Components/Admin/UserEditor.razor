@@ -38,8 +38,8 @@
         <MudCard Class="w-100 px-3 pt-2">
             <MudCardContent>
                 <ScanApp.Components.Admin.UserDataForm @bind-Success="_success" @bind-User="_userData" Locations="Locations" DisablePassword="true" EditingDisabled="@_editDisabled" />
-                <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Change password</MudButton>
-                <MudButton OnClick="@OnLogOffUser" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Log-off selected user</MudButton>
+                <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Change password</MudButton>
+                <MudButton OnClick="@OnLogOffUser" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Log-off selected user</MudButton>
             </MudCardContent>
             <MudCardActions>
                 @if (_editVisible)
@@ -202,13 +202,13 @@
 
     private async Task SaveHandler()
     {
-        var res = await Mediator.SendScoped(new EditUserDataCommand(_originalUserData.Name)
+        var res = await Mediator.SendScoped(new EditUserDataCommand(SelectedUser.Name)
         {
             Phone = _userData.Phone,
             Email = _userData.Email,
             NewName = _userData.Name,
             Location = _userData.Location,
-            ConcurrencyStamp = _userData.Version
+            ConcurrencyStamp = SelectedUser.Version
         });
 
         if (!res.Conclusion)
