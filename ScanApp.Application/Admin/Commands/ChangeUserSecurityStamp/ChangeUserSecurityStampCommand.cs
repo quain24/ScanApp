@@ -28,9 +28,9 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
             _userManager = userManager;
         }
 
-        public async Task<Result<Version>> Handle(ChangeUserSecurityStampCommand request, CancellationToken cancellationToken)
+        public Task<Result<Version>> Handle(ChangeUserSecurityStampCommand request, CancellationToken cancellationToken)
         {
-            return await _userManager.ChangeUserSecurityStamp(request.UserName, request.Version).ConfigureAwait(false);
+            return _userManager.ChangeUserSecurityStamp(request.UserName, request.Version);
         }
     }
 }
