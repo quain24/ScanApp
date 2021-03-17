@@ -1,10 +1,10 @@
 ﻿@using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Common.Helpers.Result
-@using ScanApp.Application.Admin.Queries.GetAllRoleClaims
 @using ScanApp.Application.Admin.Commands.AddClaimToRole
 @using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 @using ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 @using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Queries.GetAllClaims
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
@@ -84,7 +84,7 @@
 
     private async Task RetrieveAllClaims()
     {
-        var roleResult = await Mediator.SendScoped(new GetAllRoleClaimsQuery());
+        var roleResult = await Mediator.SendScoped(new GetAllClaimsQuery());
 
         if (roleResult.Conclusion is false)
         {

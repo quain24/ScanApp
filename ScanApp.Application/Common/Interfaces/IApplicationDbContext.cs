@@ -35,6 +35,7 @@ namespace ScanApp.Application.Common.Interfaces
         DbSet<IdentityUserToken<string>> UserTokens { get; set; }
         DbSet<Location> Locations { get; set; }
         DbSet<UserLocation> UserLocations { get; set; }
+        public DbSet<Claim> ClaimsSource { get; set; }
 
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 
