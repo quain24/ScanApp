@@ -7,7 +7,6 @@
 @using Version = ScanApp.Domain.ValueObjects.Version
 @using ScanApp.Application.Admin
 @using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
-@using ScanApp.Components.YesNoDialog
 @using ScanApp.Domain.Entities
 
 @inject IDialogService DialogService
@@ -138,9 +137,12 @@
 
     private async Task OnLogOffUser()
     {
-        var dialog = DialogService.AskForConfirmation($"Log-off user {SelectedUser.Name}?", $"Are you sure you want to Log-off user {SelectedUser.Name}?");
+        var answer = await DialogService.ShowMessageBox(
+            $"Log-off user {SelectedUser.Name}?",
+            $"Are you sure you want to Log-off user {SelectedUser.Name}?",
+            "Yes", null, "Cancel", Globals.Gui.DefaultDialogOptions);
 
-        if ((await dialog.Result).Cancelled)
+        if (!answer ?? true)
             return;
 
         var result = await Mediator.SendScoped(new ChangeUserSecurityStampCommand(SelectedUser.Name, SelectedUser.Version));
@@ -178,9 +180,12 @@
             return;
         }
 
-        var dialog = DialogService.AskForConfirmation("Confirm deletion", $"Are you sure you want to delete user {SelectedUser.Name}?");
+        var answer = await DialogService.ShowMessageBox(
+            "Confirm deletion",
+            $"Are you sure you want to delete user {SelectedUser.Name}?",
+            "Delete", null, "Cancel", Globals.Gui.DefaultDialogOptions);
 
-        if ((await dialog.Result).Cancelled)
+        if (!answer ?? true)
             return;
 
         var result = await Mediator.SendScoped(new DeleteUserCommand(SelectedUser.Name));
