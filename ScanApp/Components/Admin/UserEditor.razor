@@ -106,7 +106,7 @@
     {
         var dialog = DialogService.Show<AddUserDialog>("Add new user",
             new DialogParameters { ["Locations"] = Locations },
-            new DialogOptions { FullWidth = true, DisableBackdropClick = true });
+            Globals.Gui.DefaultDialogOptions);
 
         var result = await dialog.Result;
         if (!result.Cancelled)
@@ -122,7 +122,7 @@
     {
         var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {SelectedUser.Name}",
             new DialogParameters { ["User"] = SelectedUser },
-            new DialogOptions { FullWidth = true, DisableBackdropClick = true });
+            Globals.Gui.DefaultDialogOptions);
 
         var res = await dialog.Result;
 

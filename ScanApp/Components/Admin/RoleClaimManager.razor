@@ -89,7 +89,7 @@
         var dialog = DialogService.Show<AddNewRoleDialog>("Add new role", new DialogParameters
         {
             ["Roles"] = Roles
-        }, new DialogOptions { DisableBackdropClick = true, FullWidth = true });
+        }, Globals.Gui.DefaultDialogOptions);
 
         if ((await dialog.Result).Cancelled)
             return;
