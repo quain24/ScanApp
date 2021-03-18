@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Entities;
+using ScanApp.Domain.Entities;
 using ScanApp.Infrastructure.Persistence;
 using SharedExtensions;
 using System.Collections.Generic;
@@ -15,7 +16,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using ScanApp.Domain.Entities;
 
 namespace ScanApp.Areas.Identity.Pages.Account
 {

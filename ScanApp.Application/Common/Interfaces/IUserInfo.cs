@@ -1,8 +1,8 @@
-﻿using ScanApp.Application.Common.Helpers.Result;
+﻿using ScanApp.Application.Admin;
+using ScanApp.Application.Admin.Queries.GetAllUserData;
+using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScanApp.Application.Admin;
-using ScanApp.Application.Admin.Queries.GetAllUserData;
 
 namespace ScanApp.Application.Common.Interfaces
 {

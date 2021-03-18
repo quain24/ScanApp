@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.ValueObjects;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 {
@@ -29,6 +29,7 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
         {
             _userManager = userManager;
         }
+
         public Task<Result<Version>> Handle(ChangeUserPasswordCommand request, CancellationToken cancellationToken)
         {
             return _userManager.ChangePassword(request.UserName, request.NewPassword, request.Stamp);

@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.ValueObjects;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Queries.GetUserRoles
 {
@@ -36,7 +36,8 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
             var user = await _context.Users
                 .AsNoTracking()
                 .Where(u => u.UserName.Equals(request.UserName))
-                .Select(u => new {
+                .Select(u => new
+                {
                     u.Id,
                     Name = u.UserName,
                     Version = Version.Create(u.ConcurrencyStamp)

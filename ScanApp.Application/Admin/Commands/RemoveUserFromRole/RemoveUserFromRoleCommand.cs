@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.ValueObjects;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
 {

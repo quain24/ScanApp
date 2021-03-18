@@ -1,11 +1,10 @@
 ﻿using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using System.Threading;
-using System.Threading.Tasks;
-using ScanApp.Application.Common.Entities;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {

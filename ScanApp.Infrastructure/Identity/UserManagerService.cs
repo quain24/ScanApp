@@ -145,7 +145,7 @@ namespace ScanApp.Infrastructure.Identity
 
                     if (data.Location is not null)
                     {
-                        await context.AddAsync(new UserLocation {UserId = user.Id, LocationId = data.Location.Id})
+                        await context.AddAsync(new UserLocation { UserId = user.Id, LocationId = data.Location.Id })
                             .ConfigureAwait(false);
                     }
 

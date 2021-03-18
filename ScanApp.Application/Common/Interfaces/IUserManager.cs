@@ -1,10 +1,10 @@
 ﻿using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScanApp.Domain.Entities;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Common.Interfaces

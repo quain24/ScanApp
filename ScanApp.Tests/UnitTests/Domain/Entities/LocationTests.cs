@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using ScanApp.Application.Common.Entities;
 using ScanApp.Domain.Entities;
 using Xunit;
 using Xunit.Abstractions;

@@ -1,5 +1,4 @@
-﻿using ScanApp.Application.Common.Entities;
-using ScanApp.Domain.Entities;
+﻿using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData

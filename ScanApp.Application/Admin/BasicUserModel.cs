@@ -33,7 +33,7 @@ namespace ScanApp.Application.Admin
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((BasicUserModel) obj);
+            return Equals((BasicUserModel)obj);
         }
 
         public override int GetHashCode()

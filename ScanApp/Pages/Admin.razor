@@ -32,84 +32,88 @@
 
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private Task<AuthenticationState>
+    AuthenticationStateTask { get; set; }
 
     private MudTabs _tabPanel;
 
-    private List<BasicUserModel> _users = new();
-    private List<BasicRoleModel> _roles = new();
-    private List<Location> _locations = new();
-    private BasicUserModel _selectedUser;
-    private bool _shouldRender = true;
-    private string _selectedRowStyle = "background-color: lightgrey";
+    private List<BasicUserModel>
+        _users = new();
+        private List<BasicRoleModel>
+            _roles = new();
+            private List<Location>
+                _locations = new();
+                private BasicUserModel _selectedUser;
+                private bool _shouldRender = true;
+                private string _selectedRowStyle = "background-color: lightgrey";
 
-    protected override bool ShouldRender() => _shouldRender;
+                protected override bool ShouldRender() => _shouldRender;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await Task.WhenAll(RetrieveAllUserNames(), RetrieveAllRoleNames(), RetrieveAllLocations());
-    }
+                protected override async Task OnInitializedAsync()
+                {
+                await base.OnInitializedAsync();
+                await Task.WhenAll(RetrieveAllUserNames(), RetrieveAllRoleNames(), RetrieveAllLocations());
+                }
 
-    private void OnSwipe(SwipeDirection direction)
-    {
-        switch (direction)
-        {
-            case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < _tabPanel.Panels.Count - 1:
+                private void OnSwipe(SwipeDirection direction)
+                {
+                switch (direction)
+                {
+                case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < _tabPanel.Panels.Count - 1:
                 _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex + 1);
                 break;
-            case SwipeDirection.LeftToRight when _tabPanel.ActivePanelIndex > 0:
+                case SwipeDirection.LeftToRight when _tabPanel.ActivePanelIndex > 0:
                 _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex - 1);
                 break;
-        }
-        StateHasChanged();
-    }
+                }
+                StateHasChanged();
+                }
 
-    private async Task RetrieveAllUserNames()
-    {
-        var usersResult = await Mediator.SendScoped(new GetAllUsersBasicDataQuery());
-        if (usersResult.Conclusion is false)
-        {
-            Snackbar.Add(usersResult.ErrorDescription?.ToString(), Severity.Error);
-            return;
-        }
+                private async Task RetrieveAllUserNames()
+                {
+                var usersResult = await Mediator.SendScoped(new GetAllUsersBasicDataQuery());
+                if (usersResult.Conclusion is false)
+                {
+                Snackbar.Add(usersResult.ErrorDescription?.ToString(), Severity.Error);
+                return;
+                }
 
-        usersResult.Output.Sort();
-        _users = usersResult.Output;
-    }
+                usersResult.Output.Sort();
+                _users = usersResult.Output;
+                }
 
-    private async Task RetrieveAllRoleNames()
-    {
-        var roleResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
+                private async Task RetrieveAllRoleNames()
+                {
+                var roleResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
 
-        if (roleResult.Conclusion is false)
-        {
-            Snackbar.Add(roleResult.ErrorDescription?.ToString(), Severity.Error);
-            return;
-        }
+                if (roleResult.Conclusion is false)
+                {
+                Snackbar.Add(roleResult.ErrorDescription?.ToString(), Severity.Error);
+                return;
+                }
 
-        roleResult.Output.Sort();
-        _roles = roleResult.Output;
-    }
+                roleResult.Output.Sort();
+                _roles = roleResult.Output;
+                }
 
-    private async Task RetrieveAllLocations()
-    {
-        var locations = await Mediator.Send(new GetLocationListQuery());
+                private async Task RetrieveAllLocations()
+                {
+                var locations = await Mediator.Send(new GetLocationListQuery());
 
-        if (locations.Conclusion is false)
-        {
-            Snackbar.Add(locations.ErrorDescription?.ToString(), Severity.Error);
-            return;
-        }
+                if (locations.Conclusion is false)
+                {
+                Snackbar.Add(locations.ErrorDescription?.ToString(), Severity.Error);
+                return;
+                }
 
-        locations.Output.Sort((location, other) => string.CompareOrdinal(location.Name, other.Name));
-        _locations = locations.Output;
-    }
+                locations.Output.Sort((location, other) => string.CompareOrdinal(location.Name, other.Name));
+                _locations = locations.Output;
+                }
 
-    protected override void Dispose(bool disposing)
-    {
-        _shouldRender = false;
-        base.Dispose(disposing);
-    }
+                protected override void Dispose(bool disposing)
+                {
+                _shouldRender = false;
+                base.Dispose(disposing);
+                }
 
-}
+                }

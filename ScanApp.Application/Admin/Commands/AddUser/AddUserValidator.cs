@@ -19,7 +19,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(new EmailValidator());
-            
+
             RuleFor(c => c.NewUser.Phone)
             .SetValidator(new PhoneNumberValidator())
             .When(p => p.NewUser.Phone is not null);

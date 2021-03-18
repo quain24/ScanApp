@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using ScanApp.Domain.Exceptions;
+﻿using ScanApp.Domain.Exceptions;
+using System.Linq;
 
 namespace ScanApp.Domain.Entities
 {

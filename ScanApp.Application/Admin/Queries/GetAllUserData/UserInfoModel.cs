@@ -1,6 +1,6 @@
 ﻿using ScanApp.Common.Extensions;
-using System;
 using ScanApp.Domain.Entities;
+using System;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
