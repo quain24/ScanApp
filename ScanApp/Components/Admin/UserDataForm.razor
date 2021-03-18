@@ -9,20 +9,24 @@
 @inject PasswordValidator PasswordValidator
 
 <MudForm @ref="@_form" IsValidChanged="@(async valid => await SuccessChanged.InvokeAsync(valid))" IsValid="@Success">
-    <MudTextField @bind-Value="User.Name" TextChanged="@OnUserChanged" Validation="@_nameValidator.Validation" Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.Name" TextChanged="@OnUserChanged" Validation="@_nameValidator.Validation"
+                   Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true" FullWidth="true"/>
     @if (DisablePassword is false)
     {
-        <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator" InputType="InputType.Password" Variant="Variant.Filled" Immediate="true" Label="Password"></MudTextFieldString>
+        <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator" InputType="InputType.Password" Variant="Variant.Filled"
+                             Immediate="true" Label="Password" FullWidth="true"/>
     }
-    <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
-    <MudSelect T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter" @bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled">
+    <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled"
+                   Label="Email" Disabled="EditingDisabled" Immediate="true" FullWidth="true"/>
+
+    <MudSelect AutoFocus="true" T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter"@bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled" FullWidth="true">
         <MudSelectItem T="Location" Value="null" />
         @foreach (var location in Locations)
         {
             <MudSelectItem T="Location" Value="location" />
         }
     </MudSelect>
-    <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
+    <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true" FullWidth="true"/>
 </MudForm>
 
 @code {

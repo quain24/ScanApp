@@ -15,7 +15,8 @@
 
 <MudGrid>
     <MudItem xs="12" lg="5" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
+        <MudTable RowStyleFunc="RowStyleFunc" Outlined="false" Bordered="true" Striped="true" Elevation="0" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users"
+                  SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
                   Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -33,17 +34,17 @@
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem xs="12" lg="7" Class="px-1">
-        <MudCard Class="w-100 px-3 pt-2">
-            <MudCardContent>
+    <MudItem xs="12" lg="7" >
+        <MudCard Elevation="0" Outlined="false">
+            <MudCardContent Class="px-0">
                 <ScanApp.Components.Admin.UserDataForm @bind-Success="_success" @bind-User="_userData" Locations="Locations" DisablePassword="true" EditingDisabled="@_editDisabled" />
                 <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Change password</MudButton>
                 <MudButton OnClick="@OnLogOffUser" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Log-off selected user</MudButton>
             </MudCardContent>
-            <MudCardActions>
+            <MudCardActions Class="mt-n1 pl-0 pt-0">
                 @if (_editVisible)
                 {
-                    <MudButton OnClick="@EnterEditMode" Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
+                    <MudButton OnClick="@EnterEditMode" Class="ml-0" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
                     <MudButton OnClick="@OpenAddUserDialog" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="!_editDisabled">Add user</MudButton>
                     <MudButton OnClick="@DeleteHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="!CanEnableDelete()">Remove user</MudButton>
                 }

@@ -12,7 +12,7 @@
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
         <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
-                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true">
+                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillRolesData" Hover="true" Dense="true" Outlined="false" Elevation="0" Striped="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
                 <MudToolBarSpacer />
@@ -31,7 +31,7 @@
     </MudItem>
     <MudItem xs="12" lg="6" Class="px-1">
         <MudTable Breakpoint="Breakpoint.None" T="RoleModel" Items="@UserRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
-                  Filter="new Func<RoleModel, bool>(FilterRoles)" Hover="true" Dense="true">
+                  Filter="new Func<RoleModel, bool>(FilterRoles)" Hover="true" Dense="true" Outlined="false" Elevation="0" Striped="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Roles</MudText>
                 <MudToolBarSpacer />
