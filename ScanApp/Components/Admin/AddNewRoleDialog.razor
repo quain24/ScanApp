@@ -1,0 +1,66 @@
+﻿@using InputType = MudBlazor.InputType
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin
+@using ScanApp.Common
+@using ScanApp.Common.Validators
+@using FluentValidation
+@using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using Severity = MudBlazor.Severity
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_success">
+            <MudTextFieldString @bind-Value="Name" Variant="Variant.Filled" Validation="@_roleNameValidator.Validation" Label="Role name" Immediate="true"></MudTextFieldString>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="!_success" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public List<BasicRoleModel> Roles { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _roleNameValidator = new FluentValidationWrapper<string>(x => x
+            .SetValidator(new IdentityNamingValidator())
+            .WithMessage("Role Name contains illegal symbols or is not long enough...")
+            .Must(name => !Roles.Any(r => string.Equals(name, r.Name, StringComparison.OrdinalIgnoreCase)))
+            .WithMessage("This name is already taken"));
+    }
+
+    private FluentValidationWrapper<string> _roleNameValidator;
+
+    private MudForm _form;
+    private bool _success = true;
+    string Name { get; set; } = string.Empty;
+
+    async Task Submit()
+    {
+        _form.Validate();
+        if (!_success)
+            return;
+
+        var result = await Mediator.SendScoped(new AddNewUserRoleCommand(Name));
+
+        if (result.Conclusion)
+        {
+            Snackbar.Add("Role added!", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(result.Output));
+            return;
+        }
+
+        Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+        _form.Reset();
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

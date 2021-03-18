@@ -24,7 +24,7 @@
                 <ScanApp.Components.Admin.UserRolesManager @bind-SelectedUser="_selectedUser" Roles="@_roles" Users="@_users" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
             <MudTabPanel Text="Claim management">
-                <ScanApp.Components.Admin.RoleClaimManager Roles="@_roles" SelectedRowStyle="@_selectedRowStyle" />
+                <ScanApp.Components.Admin.RoleClaimManager Roles="@_roles" RolesChanged="@RetrieveAllRoleNames" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
         </MudTabs>
     </MudSwipeArea>

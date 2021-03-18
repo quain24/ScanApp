@@ -16,10 +16,10 @@
     }
     <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled" Label="Email" Disabled="EditingDisabled" Immediate="true"></MudTextField>
     <MudSelect T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter" @bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled">
-        <MudSelectItem T="Location" Value="null" ToStringFunc="@_selectConverter" />
+        <MudSelectItem T="Location" Value="null" />
         @foreach (var location in Locations)
         {
-            <MudSelectItem T="Location" Value="location"/>
+            <MudSelectItem T="Location" Value="location" />
         }
     </MudSelect>
     <MudTextField @bind-Value="User.Phone" TextChanged="@OnUserChanged" Validation="@_phoneValidator.Validation" Variant="Variant.Filled" Label="Phone number" Disabled="EditingDisabled" Immediate="true"></MudTextField>
@@ -52,7 +52,7 @@
     }
 
     [Parameter]
-    public List<Location> Locations { get; set; } = new ();
+    public List<Location> Locations { get; set; } = new();
 
     [Parameter]
     public bool Success { get; set; }

@@ -4,10 +4,11 @@
 @using ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 @using ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 @using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Commands.DeleteRole
 @using ScanApp.Application.Admin.Queries.GetAllClaims
-@using ScanApp.Application.Admin.Queries.GetAllUserRoles
 @inject IScopedMediator Mediator
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
@@ -53,10 +54,8 @@
         </MudTable>
     </MudItem>
     <MudItem xs="12" Class="px-1">
-        <MudButton Color="Color.Warning" Variant="Variant.Filled">Delete selected role</MudButton>
-        <MudButton Color="Color.Warning" Variant="Variant.Filled">Delete selected claim</MudButton>
-        <MudButton Color="Color.Info" Variant="Variant.Filled">Add new role</MudButton>
-        <MudButton Color="Color.Info" Variant="Variant.Filled">Add new claim</MudButton>
+        <MudButton Class="ml-auto" OnClick="@AddNewRole" Color="Color.Info" Variant="Variant.Filled">Add new role</MudButton>
+        <MudButton Class="ml-2" OnClick="@DeleteRole" Color="Color.Warning" Variant="Variant.Filled">Delete selected role</MudButton>
     </MudItem>
 </MudGrid>
 
@@ -64,6 +63,9 @@
 
     [Parameter]
     public List<BasicRoleModel> Roles { get; set; }
+
+    [Parameter]
+    public EventCallback RolesChanged { get; set; }
 
     [Parameter]
     public string SelectedRowStyle { get; set; }
@@ -80,6 +82,45 @@
     {
         await base.OnInitializedAsync();
         await RetrieveAllClaims();
+    }
+
+    private async Task AddNewRole()
+    {
+        var dialog = DialogService.Show<AddNewRoleDialog>("Add new role", new DialogParameters
+        {
+            ["Roles"] = Roles
+        }, new DialogOptions { DisableBackdropClick = true, FullWidth = true });
+
+        if ((await dialog.Result).Cancelled)
+            return;
+
+        await RolesChanged.InvokeAsync();
+        _roleClaims = new List<(ClaimModel, bool IsInClaim)>();
+        StateHasChanged();
+    }
+
+    private async Task DeleteRole()
+    {
+        var answer = await DialogService.ShowMessageBox(
+            "Confirm deletion",
+            $"Are you sure you want to delete {_selectedRole.Name} role?",
+            "Delete", null, "Cancel", Globals.Gui.DefaultDialogOptions);
+
+        if (!answer ?? true)
+            return;
+
+        var result = await Mediator.SendScoped(new DeleteRoleCommand(_selectedRole.Name));
+
+        if (result.Conclusion is false)
+        {
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        _selectedRole = null;
+        _roleClaims = new();
+        await InvokeAsync(StateHasChanged);
+        await RolesChanged.InvokeAsync();
     }
 
     private async Task RetrieveAllClaims()
@@ -99,6 +140,8 @@
     {
         Result result;
         string message;
+        if (_selectedRole is null)
+            return;
 
         if (_selectedClaim.IsInClaim)
         {
