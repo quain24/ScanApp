@@ -8,14 +8,21 @@ namespace ScanApp.Domain.ValueObjects
     {
         public static Version Create(string stamp) => new(stamp);
 
-        public static Version Empty() => new(null);
+        public static Version Empty() => new();
 
         private Version(string value)
         {
-            if (value is not null && string.IsNullOrWhiteSpace(value))
+            if (value is null)
+                throw new ArgumentNullException(nameof(value), $"value cannot be NULL. To create empty {nameof(Version)} use {nameof(Version)}.Empty()");
+
+            if (string.IsNullOrWhiteSpace(value))
                 throw new FormatException($"{nameof(value)} must contain a value other than just whitespaces. For empty version use {nameof(Version)}.Empty()");
 
             Value = value;
+        }
+
+        private Version()
+        {
         }
 
         public string Value { get; }

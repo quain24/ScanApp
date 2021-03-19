@@ -54,7 +54,7 @@ namespace ScanApp.Infrastructure.Identity
 
                 if (location is not null)
                 {
-                    var exists = await context.Locations.AnyAsync(l => l.Id.Equals(location.Id));
+                    var exists = await context.Locations.AnyAsync(l => l.Id.Equals(location.Id)).ConfigureAwait(false);
                     if (exists)
                     {
                         await context.UserLocations.AddAsync(new UserLocation { UserId = newUser.Id, LocationId = location.Id }).ConfigureAwait(false);
