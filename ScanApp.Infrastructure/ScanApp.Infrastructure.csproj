@@ -19,4 +19,8 @@
     <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Persistence\SeedData\" />
+  </ItemGroup>
+
 </Project>

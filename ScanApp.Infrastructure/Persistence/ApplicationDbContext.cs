@@ -18,6 +18,9 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<UserLocation> UserLocations { get; set; }
         public DbSet<Claim> ClaimsSource { get; set; }
 
+        public DbSet<SparePart> SpareParts { get; set; }
+        public DbSet<StoragePlace> StoragePlaces { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
