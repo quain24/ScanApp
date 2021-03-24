@@ -38,6 +38,7 @@ namespace ScanApp.Application.Common.Interfaces
         public DbSet<Claim> ClaimsSource { get; set; }
 
         DbSet<SparePart> SpareParts { get; set; }
+        DbSet<SparePartType> SparePartTypes { get; set; }
         DbSet<StoragePlace> StoragePlaces { get; set; }
 
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;

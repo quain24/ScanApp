@@ -8,6 +8,8 @@ namespace ScanApp.Application.Common.Interfaces
 {
     public interface IUserInfo
     {
+        Task<bool> UserExists(string userName);
+
         Task<string> GetUserNameById(string userId);
 
         Task<string> GetUserIdByName(string userName);
@@ -21,6 +23,8 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result<bool>> IsInRole(string userName, string roleName);
 
         Task<Result<List<ClaimModel>>> GetAllClaims(string userName);
+
+        Task<Result<List<ClaimModel>>> GetClaims(string userName, params string[] claimTypes);
 
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
     }

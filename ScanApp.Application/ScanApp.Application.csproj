@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Common\Extensions\" />
+    <Folder Include="SpareParts\Commands\" />
   </ItemGroup>
 
 </Project>

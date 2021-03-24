@@ -14,8 +14,8 @@ namespace ScanApp.Areas.Identity
         internal static void PolicyConfigurationFailedFallback(AuthorizationPolicyBuilder builder)
             => builder.RequireAssertion(_ => false);
 
-        public static void LocationMustBePoznan(AuthorizationPolicyBuilder builder)
+        public static void LocationMustBeSady(AuthorizationPolicyBuilder builder)
             => builder.RequireAuthenticatedUser()
-                .RequireClaim("location", "Poznan");
+                .RequireClaim(Globals.ClaimTypes.Location, "Sady");
     }
 }

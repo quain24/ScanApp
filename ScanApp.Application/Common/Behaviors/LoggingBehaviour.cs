@@ -50,7 +50,7 @@ namespace ScanApp.Application.Common.Behaviors
             {
                 var info = result.Conclusion
                     ? result.ResultType?.ToString()
-                    : result.ErrorDescription?.ErrorType.ToString()
+                    : result.ErrorDescription?.ToString()
                     ?? "Unknown";
 
                 message += $" {result.Conclusion} - {info}";

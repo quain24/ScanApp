@@ -26,6 +26,11 @@ namespace ScanApp.Infrastructure.Identity
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
+        public async Task<bool> UserExists(string userName)
+        {
+            return await _userManager.Users.AnyAsync(u => u.UserName.Equals(userName)).ConfigureAwait(false);
+        }
+
         public async Task<string> GetUserNameById(string userId)
         {
             return await _userManager.Users
@@ -101,6 +106,20 @@ namespace ScanApp.Infrastructure.Identity
 
             return new Result<List<ClaimModel>>()
                 .SetOutput(cp.Claims.Select(c => new ClaimModel(c.Type, c.Value)).ToList());
+        }
+
+        public async Task<Result<List<ClaimModel>>> GetClaims(string userName, params string[] claimTypes)
+        {
+            var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
+            if (user is null)
+                return ResultHelpers.UserNotFound<List<ClaimModel>>(userName);
+
+            var cp = await _claimsFactory.CreateAsync(user).ConfigureAwait(false);
+
+            return new Result<List<ClaimModel>>()
+                .SetOutput(cp.Claims.Where(c => claimTypes?.Contains(c.Type) ?? false)
+                    .Select(c => new ClaimModel(c.Type, c.Value))
+                    .ToList());
         }
 
         public async Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue)
