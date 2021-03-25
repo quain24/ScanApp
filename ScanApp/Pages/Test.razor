@@ -4,14 +4,20 @@
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Infrastructure.Persistence
 @using Microsoft.Extensions.DependencyInjection
+@using ScanApp.Application
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.SpareParts
+@using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
+@using ScanApp.Application.SpareParts.Queries.StoragePlacesByLocation
+@using ScanApp.Common.Extensions
+@using ScanApp.Domain.Entities
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
 @inject IScopedMediator Mediator
-@inject IApplicationDbContext context
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
+@inject IUserInfo Info
 
 @inherits OwningComponentBase
 
@@ -21,22 +27,48 @@
         <div class="col-sm-10 m-0 p-1">
         </div>
     </div>
+
+    <ul>
+        @foreach (var t in _types)
+        {
+            <li>@t.Name</li>
+        }
+    </ul>
+
+    <ul>
+        @foreach (var t in _rs)
+        {
+            <li>@t.Id</li>
+            <li>@t.Number</li>
+        }
+    </ul>
 </div>
 
 @code {
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
-    private IApplicationDbContext ApplicationDbCtx { get; set; }
+    private List<SparePartTypeModel> _types { get; set; } = new List<SparePartTypeModel>();
+    private List<RepairWorkshopModel> _rs { get; set; } = new List<RepairWorkshopModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
+        _rs = (await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
+    //var name = (await AuthenticationStateTask).Name();
+    //var t = await Info.GetClaims(name);
+    //var y = "";
+    }
 
     protected override void OnInitialized()
     {
         base.OnInitializedAsync();
-        ApplicationDbCtx = ContextFactory.CreateDbContext();
+        //ApplicationDbCtx = ContextFactory.CreateDbContext();
+
     }
 
     protected override void Dispose(bool disposing)
     {
+        //ApplicationDbCtx.Dispose();
         base.Dispose(disposing);
-        ApplicationDbCtx.Dispose();
     }
 }

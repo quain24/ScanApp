@@ -22,18 +22,20 @@ namespace ScanApp.Application.SpareParts.Queries.StoragePlacesByLocation
 
         public class StoragePlacesByLocationQueryHandler : IRequestHandler<StoragePlacesByLocationQuery, Result<List<RepairWorkshopModel>>>
         {
-            private readonly IApplicationDbContext _context;
+            private readonly IContextFactory _contextFactory;
 
-            public StoragePlacesByLocationQueryHandler(IApplicationDbContext context)
+            public StoragePlacesByLocationQueryHandler(IContextFactory contextFactory)
             {
-                _context = context;
+                _contextFactory = contextFactory;
             }
 
             public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesByLocationQuery request, CancellationToken cancellationToken)
             {
+                await using var ctx = _contextFactory.CreateDbContext();
+
                 try
                 {
-                    var locations = await _context.StoragePlaces
+                    var locations = await ctx.StoragePlaces
                         .AsNoTracking()
                         .Where(e => e.LocationId.Equals(request.LocationId))
                         .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id})

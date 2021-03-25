@@ -99,6 +99,7 @@ namespace ScanApp.Infrastructure.Identity
         public async Task<Result<List<ClaimModel>>> GetAllClaims(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
+
             if (user is null)
                 return ResultHelpers.UserNotFound<List<ClaimModel>>(userName);
 

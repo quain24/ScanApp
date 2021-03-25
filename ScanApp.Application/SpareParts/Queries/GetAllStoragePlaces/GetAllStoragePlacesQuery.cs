@@ -14,18 +14,19 @@ namespace ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces
     {
         public class GetAllStoragePlacesQueryHandler : IRequestHandler<GetAllStoragePlacesQuery, Result<List<RepairWorkshopModel>>>
         {
-            private readonly IApplicationDbContext _context;
+            private readonly IContextFactory _contextFactory;
 
-            public GetAllStoragePlacesQueryHandler(IApplicationDbContext context)
+            public GetAllStoragePlacesQueryHandler(IContextFactory contextFactory)
             {
-                _context = context;
+                _contextFactory = contextFactory;
             }
 
             public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllStoragePlacesQuery request, CancellationToken cancellationToken)
             {
+                await using var ctx = _contextFactory.CreateDbContext();
                 try
                 {
-                    var places = await _context.StoragePlaces
+                    var places = await ctx.StoragePlaces
                         .AsNoTracking()
                         .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
                         .ToListAsync(cancellationToken)

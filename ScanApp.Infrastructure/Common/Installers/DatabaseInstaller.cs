@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
+using ScanApp.Infrastructure.Services;
 using System;
 
 namespace ScanApp.Infrastructure.Common.Installers
@@ -40,20 +41,10 @@ namespace ScanApp.Infrastructure.Common.Installers
                     });
             });
 
-            // Registration for direct injection for UserManager and similar.
-            // Registering it this way enables automatic lifetime management (no need to dispose)
-            services.AddDbContext<ApplicationDbContext>(options => sqlConfiguration(options), optionsLifetime: ServiceLifetime.Singleton);
-            services.AddScoped<IApplicationDbContext>(sp => sp.GetService<ApplicationDbContext>());
-
-            // Registration for blazor to handle concurrency in components - context created by this factory requires manual dispose
             services.AddDbContextFactory<ApplicationDbContext>(options => sqlConfiguration(options));
-
-            // Nicer code, but requires manual use of Dispose()
-            //services.AddScoped<IApplicationDbContext>(p =>
-            //    p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
-            //        .CreateDbContext());
-            //services.AddScoped(p => p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()
-            //        .CreateDbContext());
+            services.AddSingleton<IContextFactory, AppDbContextFactory>(srv => new AppDbContextFactory(srv.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()));
+            services.AddScoped<IApplicationDbContext>(p => p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
+            services.AddDbContext<ApplicationDbContext>(options => sqlConfiguration(options), optionsLifetime: ServiceLifetime.Singleton);
 
             return services;
         }

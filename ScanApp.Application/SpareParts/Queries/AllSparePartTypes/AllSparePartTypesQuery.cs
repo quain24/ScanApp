@@ -14,18 +14,19 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
     {
         public class AllSparePartTypesQueryHandler : IRequestHandler<AllSparePartTypesQuery, Result<List<SparePartTypeModel>>>
         {
-            private readonly IApplicationDbContext _context;
+            private readonly IContextFactory _contextFactory;
 
-            public AllSparePartTypesQueryHandler(IApplicationDbContext context)
+            public AllSparePartTypesQueryHandler(IContextFactory contextFactory)
             {
-                _context = context;
+                _contextFactory = contextFactory;
             }
 
             public async Task<Result<List<SparePartTypeModel>>> Handle(AllSparePartTypesQuery request, CancellationToken cancellationToken)
             {
+                await using var ctx = _contextFactory.CreateDbContext();
                 try
                 {
-                    var parts = await _context.SparePartTypes
+                    var parts = await ctx.SparePartTypes
                         .AsNoTracking()
                         .Select(s => new SparePartTypeModel(s.Name))
                         .ToListAsync(cancellationToken)

@@ -12,7 +12,6 @@
 @using ScanApp.Domain.Entities
 @using Version = ScanApp.Domain.ValueObjects.Version
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IScopedMediator Mediator
 @inject IUserInfo UserInfo
 @inject IUserManager Manager
@@ -65,14 +64,10 @@
     private List<string> _users = new List<string>();
     private List<string> _claims = new List<string>();
     string _userAuthenticated;
-    UserManager<ApplicationUser> userManager;
-    RoleManager<IdentityRole> roleManager;
 
     protected override void OnInitialized()
     {
         base.OnInitializedAsync();
-        userManager = (UserManager<ApplicationUser>)ScopedServices.GetService(typeof(UserManager<ApplicationUser>));
-        roleManager = (RoleManager<IdentityRole>)ScopedServices.GetService(typeof(RoleManager<IdentityRole>));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -91,8 +86,6 @@
     {
         await base.OnInitializedAsync();
         await Uclaim();
-        //var t = await Manager.DeleteUser("testasaa");
-        //var a = await Manager.SetUserLocation("testaaasd", new Location("4e2d15a3-e00e-4c75-9551-3bf476078b55", "Genewa"), Version.Empty());
         var u = "";
         //await LocationManagerService.RemoveLocation(new Location("1", "Poznań"));
         //await LocationManagerService.AddNewLocation("Genewa");
@@ -110,30 +103,20 @@
         Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
         var b = t.User.Claims.ToList();
-        var a = await UserInfo.GetAllClaims(t.User.Identity.Name);
+        //var a = await UserInfo.GetAllClaims(t.User.Identity.Name);
         Console.WriteLine(stop.Elapsed);
         Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        if (a.Conclusion)
+        if (true)//a.Conclusion)
         {
-            var u = string.Join(" // ", b.Select(c => c.Properties.Select(p => $"{p.Key} ||| {p.Value}").ToList()));
-            _claims = b.Select(i => $"{i.Type} |1| {i.Value} |2| {i.Issuer} |3| {i.OriginalIssuer} |4| {u} ").ToList();
+            _claims = b.Select(i => $"{i.Type} |1| {i.Value}").ToList();
         }
         Console.WriteLine(stop.Elapsed);
         Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    }
 
-    public async Task TestLogoff()
-    {
-        await using (var context = AppDbContextFactory.CreateDbContext())
-        {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+        //var a = await UserInfo.GetAllClaims("Test");
 
-            var mod = await context.Users.FirstAsync(u => u.UserName == "test");
-            var u = Mediator.Send(new AddNewUserRoleCommand("&* ll"));
-            mod.SecurityStamp = Guid.NewGuid().ToString();
-            await context.SaveChangesAsync();
-        }
+        //_claims = a.Output.Select(c => $"{c.Type} || {c.Value}").ToList();
+
     }
 
     private async Task<List<string>> GetUsers()
@@ -156,12 +139,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _name = await GetName();
+        //_name = await GetName();
 
-        _users = await GetUsers();
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        _userAuthenticated = user.Identity.IsAuthenticated ? $"{ user.Identity.Name} is authenticated." : "The user is NOT authenticated.";
+        //_users = await GetUsers();
+        //var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        //var user = authState.User;
+        //_userAuthenticated = user.Identity.IsAuthenticated ? $"{ user.Identity.Name} is authenticated." : "The user is NOT authenticated.";
     }
 
     private void IncrementCount()
