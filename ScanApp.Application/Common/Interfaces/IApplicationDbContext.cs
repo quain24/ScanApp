@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.Interfaces
 {
-    public interface IApplicationDbContext
+    public interface IApplicationDbContext : IAsyncDisposable, IDisposable
     {
         event EventHandler<SaveChangesFailedEventArgs> SaveChangesFailed;
 
@@ -64,10 +64,6 @@ namespace ScanApp.Application.Common.Interfaces
         void AttachRange(params object[] entities);
 
         void AttachRange(IEnumerable<object> entities);
-
-        void Dispose();
-
-        ValueTask DisposeAsync();
 
         EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 
