@@ -38,6 +38,7 @@ namespace ScanApp
             services.AddSecurityConfiguration();
             services.AddMediatR();
             services.AddInfrastructureServices();
+            services.AddGuiServices();
             services.AddDatabases(Configuration, _env.IsDevelopment());
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddMudBlazor();
