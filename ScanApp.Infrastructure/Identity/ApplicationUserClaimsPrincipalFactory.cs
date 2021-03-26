@@ -38,7 +38,7 @@ namespace ScanApp.Infrastructure.Identity
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            locations.ForEach(l => identity?.AddClaim(new Claim("Location", l)));
+            locations.ForEach(l => identity?.AddClaim(new Claim(Globals.ClaimTypes.Location, l)));
 
             // Add custom claims / other sources claims
             //identity?.AddClaims(new[]
