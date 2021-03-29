@@ -6,6 +6,9 @@
 # Private files
 [Kk]ee[Pp]ass[Tt]est[Ss]ettings.json
 
+# Img uploads
+ScanApp/wwwroot/[Uu]pload
+
 # User-specific files
 *.rsuser
 *.suo

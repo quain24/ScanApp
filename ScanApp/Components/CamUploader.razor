@@ -1,0 +1,106 @@
+﻿@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@using System.IO
+@using System.Threading
+@using Globals
+@using Microsoft.AspNetCore.Hosting
+@using Color = MudBlazor.Color
+@using Size = SixLabors.ImageSharp.Size
+
+@inject IWebHostEnvironment Environment
+
+<InputFile id="fileInput" OnChange="UploadFiles" accept="image/*" hidden capture />
+
+<MudButton HtmlTag="label"
+           Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Filled.Camera"
+           Disabled="@_uploadDisabled"
+           for="fileInput">
+    @_displayText
+</MudButton>
+
+@code {
+    private int _uploadPercentUpdateInterval = 500;
+    private int _uploadPercent = 0;
+    private int _maxHorizontalResolution = 512;
+    private string _path;
+    private string _buttonTextNormal = "Take picture";
+    private string _buttonTextUploading = "Uploading...";
+    private string _buttonTextFailed = "Error!";
+    private string _buttonTextCompleted = "Uploaded!";
+    private bool _uploadDisabled = false;
+    private bool _oneImageMode = false;
+    private string _displayText = string.Empty;
+    private string _nameSingleMode = Guid.NewGuid().ToString();
+
+    protected override void OnInitialized()
+    {
+        _path ??= $"{Environment.WebRootPath}\\Upload\\SparePartsImg\\";
+        _displayText = _buttonTextNormal;
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var cts = new CancellationTokenSource();
+            _uploadDisabled = true;
+            CreateDirectory(_path);
+
+            foreach (var file in e.GetMultipleFiles())
+            {
+                await using var stream = file.OpenReadStream(file.Size, cts.Token);
+                var monitor = Task.Run(async () => await RecalculatePercentage(stream, cts.Token).ConfigureAwait(false), cts.Token);
+
+                using var image = await Image.LoadAsync(stream);
+                await monitor;
+
+                var path = _oneImageMode ? $"{_path}{_nameSingleMode}.png" : $"{_path}{file.Name[..^3]}png";
+
+                image.Mutate(i => i.Resize(new ResizeOptions {Size = new Size(_maxHorizontalResolution), Mode = ResizeMode.Min}));
+                await image.SaveAsPngAsync(path, cts.Token);
+
+                cts.Cancel();
+                _uploadPercent = 0;
+                _displayText = _oneImageMode
+                    ? _buttonTextCompleted
+                    : _buttonTextNormal;
+
+            }
+        }
+        catch
+        {
+            _uploadPercent = 0;
+            _displayText = _buttonTextFailed;
+        }
+        finally
+        {
+            _uploadDisabled = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateDirectory(string path)
+    {
+        if (Directory.Exists(path))
+            return;
+        Directory.CreateDirectory(path);
+    }
+
+    private async Task RecalculatePercentage(Stream s, CancellationToken token)
+    {
+        while (_uploadPercent < 100 && !token.IsCancellationRequested)
+        {
+            if (s is not null)
+            {
+                var a = ((double)s.Position / (double)s.Length) * 100;
+                _uploadPercent = (int)a;
+
+                _displayText = $"{_buttonTextUploading} {_uploadPercent}%";
+                await Task.Delay(_uploadPercentUpdateInterval, token);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+}

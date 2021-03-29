@@ -14,12 +14,22 @@
 @using ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
 @using ScanApp.Common.Extensions
 @using ScanApp.Domain.Entities
+@using System.IO
+@using System.Threading
+@using Microsoft.AspNetCore.Hosting
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@using Color = MudBlazor.Color
+@using Size = SixLabors.ImageSharp.Size
+@using System.Diagnostics
+@using SixLabors.ImageSharp.Formats.Png
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
 @inject IServiceScopeFactory ScopeFactory
 @inject IScopedMediator Mediator
 @inject IDbContextFactory<ApplicationDbContext> ContextFactory
 @inject IUserInfo Info
+@inject IWebHostEnvironment env
 
 @inject ICurrentUserService CurrentUserService
 
@@ -31,6 +41,10 @@
         <div class="col-sm-10 m-0 p-1">
         </div>
     </div>
+
+    Camera opens straight away
+    <ScanApp.Components.CamUploader></ScanApp.Components.CamUploader>
+    
 
     <AuthorizeView Policy="@nameof(Policies.LocationMustBeSady)">
         <Authorized>
@@ -66,15 +80,46 @@
     private List<SparePartTypeModel> _types { get; set; } = new List<SparePartTypeModel>();
     private List<RepairWorkshopModel> _rs { get; set; } = new List<RepairWorkshopModel>();
     private List<ClaimModel> _cm;
+    double i = 0;
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            await using var f = file.OpenReadStream(file.Size);
+
+            Task.Run(() => aaa(f));
+            using var image = await Image.LoadAsync(f);
+            var path = $"{env.WebRootPath}\\{file.Name[..^3]}png";
+
+            image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(512), Mode = ResizeMode.Min }));
+            await image.SaveAsPngAsync(path);
+        }
+    }
+
+    private async Task aaa(Stream s)
+    {
+        while (s.Length > s.Position || i < 100)
+        {
+            if (s is not null)
+            {
+                var a = ((double)s.Position / (double)s.Length) * 100;
+                i = Math.Round(a, MidpointRounding.AwayFromZero);
+                await Task.Delay(100);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        _types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
-        _rs = (await Mediator.Send(new StoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
+        //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
+        //_rs = (await Mediator.Send(new StoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
 
-        _cm = await CurrentUserService.AllClaims();
-        var ui = await CurrentUserService.IsInRole("Admin");
-        var t = "";
+        //_cm = await CurrentUserService.AllClaims();
+        //var ui = await CurrentUserService.IsInRole("Admin");
+        //var t = "";
         //var name = (await AuthenticationStateTask).Name();
         //var t = await Info.GetClaims(name);
         //var y = "";
