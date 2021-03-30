@@ -1,0 +1,325 @@
+﻿@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@using System.IO
+@using System.Threading
+@using Microsoft.AspNetCore.Hosting
+@using ScanApp.Common.Interfaces
+@using Color = MudBlazor.Color
+@using Size = SixLabors.ImageSharp.Size
+@implements IDisposable
+
+@inject IDateTime DateTime
+@inject IWebHostEnvironment Environment
+
+<InputFile id="@_key" OnChange="UploadFiles" accept="image/*" hidden capture />
+
+@if (_uploadDisabled && UserCanCancel)
+{
+    <MudButton StartIcon="@Icons.Filled.Camera"
+               Variant="Variant.Filled"
+               Disabled="@(!_uploadDisabled || Disabled)"
+               OnClick="@CancelUpload">
+        @_displayText
+    </MudButton>
+}
+else
+{
+    <MudButton HtmlTag="label"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Filled.Camera"
+               Disabled="@(_uploadDisabled || Disabled)"
+               for="@_key">
+        @_displayText
+    </MudButton>
+}
+
+@code {
+
+    /// <summary>
+    /// If set to true, only one image uploaded by this component will be saved.
+    /// <br />If caller will try to upload another one, then previous one will be overriden.
+    /// <br /><br /><para>
+    /// Default value (false) allows multiple images to be saved one after another.
+    /// </para>
+    /// </summary>
+    [Parameter]
+    public bool SingleImageMode { get; set; }
+
+    /// <summary>
+    /// Time-limit for upload action in ms.
+    /// <para>Default value: 30000</para>
+    /// </summary>
+    [Parameter]
+    public int UploadTimeLimit { get; set; } = 30000;
+
+    /// <summary>
+    /// Enables or disables this component
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// If set to 'true', user will be able to cancel pending upload operation
+    /// <para>Default value: TRUE</para>
+    /// </summary>
+    [Parameter]
+    public bool UserCanCancel { get; set; } = true;
+
+    /// <summary>
+    /// Name used when Single Image mode is enabled
+    /// <para>Warning - this will overwrite existing files</para>
+    /// <para>Default value - random guid</para>
+    /// </summary>
+    [Parameter]
+    public string SingleImageModeName { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Save path for captured images.
+    /// <para>
+    /// Defaults to "wwwroot\Upload\"
+    /// </para>
+    /// </summary>
+    [Parameter]
+    public string SavePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Set up how often caller should be informed about upload percentage change (in ms)
+    /// <para>Default value = 750 ms</para>
+    /// </summary>
+    [Parameter]
+    public int UpdateInterval { get; set; } = 750;
+
+    /// <summary>
+    /// Set up how how long should informative text be displayed (Uploaded, error, Canceled) (in ms)
+    /// <para>Default value = 1000 ms</para>
+    /// </summary>
+    [Parameter]
+    public int InfoTextInterval { get; set; } = 1000;
+
+    /// <summary>
+    /// Horizontal resolution of uploaded image, in pixels
+    /// <para>Default value: 768px</para>
+    /// </summary>
+    [Parameter]
+    public int HorizontalResolution { get; set; } = 768;
+
+    /// <summary>
+    /// Normal text displayed on button
+    /// <para>Default value: "Take picture"</para>
+    /// </summary>
+    [Parameter]
+    public string ButtonText { get; set; } = "Take picture";
+
+    /// <summary>
+    /// Text displayed on button when uploading
+    /// <para>Default value: "Uploading..."</para>
+    /// </summary>
+    [Parameter]
+    public string UploadingText { get; set; } = "Uploading...";
+
+    /// <summary>
+    /// Text displayed on button, when Single Image mode is set and upload has been successful
+    /// <para>Default value: "Uploaded!"</para>
+    /// </summary>
+    [Parameter]
+    public string UploadSuccessText { get; set; } = "Uploaded!";
+
+    /// <summary>
+    /// Text displayed on button if upload have failed
+    /// <para>Default value: "Error!"</para>
+    /// </summary>
+    [Parameter]
+    public string UploadFailedText { get; set; } = "Error!";
+
+    /// <summary>
+    /// Text displayed on button if upload have been canceled
+    /// <para>Default value: "Canceled!"</para>
+    /// </summary>
+    [Parameter]
+    public string UploadCanceledText { get; set; } = "Canceled!";
+
+    /// <summary>
+    /// Updates caller with current upload percentage
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnUploadPercentageChanged { get; set; }
+
+    /// <summary>
+    /// Informs caller when upload has started
+    /// </summary>
+    [Parameter]
+    public EventCallback OnUploadStarted { get; set; }
+
+    /// <summary>
+    /// Informs caller that upload was successful and returns file name
+    /// </summary>
+    [Parameter]
+    public EventCallback<FileInfo> OnUploadSuccessful { get; set; }
+
+    /// <summary>
+    /// Informs caller that upload has failed and returns exception
+    /// </summary>
+    [Parameter]
+    public EventCallback<Exception> OnUploadFailed { get; set; }
+
+    private bool _userCanceled = false;
+    private int _uploadPercent = 0;
+    private bool _uploadDisabled = false;
+    private string _displayText = string.Empty;
+    private CancellationTokenSource Cts { get; set; }
+
+    /// <summary>
+    /// Unique Id for <see cref="InputFile" /> component.<br />
+    /// Thanks to this multiple concurrent uploads from multiple copies of <see cref="CamUploader" /> are possible without conflict.
+    /// </summary>
+    private readonly string _key = Guid.NewGuid().ToString();
+
+    protected override void OnInitialized()
+    {
+        SetUpSavePath();
+        _displayText = string.IsNullOrWhiteSpace(ButtonText)
+            ? throw new ArgumentOutOfRangeException(nameof(ButtonText), "Standard button text cannot be empty or null")
+            : ButtonText;
+
+        if (string.IsNullOrWhiteSpace(SingleImageModeName))
+            throw new ArgumentOutOfRangeException(nameof(SingleImageModeName), "Default name cannot be null or empty");
+
+        if (HorizontalResolution < 32)
+            throw new ArgumentOutOfRangeException(nameof(HorizontalResolution), "Horizontal resolution of uploaded image cannot be lower than 32px.");
+
+        if (UploadTimeLimit <= 0)
+            throw new ArgumentOutOfRangeException(nameof(UploadTimeLimit), "Maximum upload time must be a positive integer");
+
+        if (UpdateInterval <= 0)
+            throw new ArgumentOutOfRangeException(nameof(UpdateInterval), "Update interval cannot be lower than 1 millisecond");
+    }
+
+    private void CancelUpload()
+    {
+        if (Cts?.IsCancellationRequested ?? true)
+            return;
+        _userCanceled = true;
+        Cts?.Cancel();
+    }
+
+    private void SetUpSavePath()
+    {
+        if (string.IsNullOrWhiteSpace(SavePath))
+            SavePath = $"{Environment.WebRootPath}\\Upload\\";
+        if (SavePath.Last() != '\\')
+            SavePath += '\\';
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            Cts = new CancellationTokenSource(UploadTimeLimit);
+            _uploadDisabled = true;
+            _displayText = UploadingText;
+            CreateDirectory(SavePath);
+
+            var file = e.File;
+            await OnUploadStarted.InvokeAsync();
+
+            await using var stream = file.OpenReadStream(file.Size, Cts.Token);
+            var monitor = Task.Run(async () => await RecalculatePercentage(stream, Cts.Token), Cts.Token);
+
+            using var image = await Image.LoadAsync(Configuration.Default, stream, Cts.Token);
+            await monitor;
+
+            var name = DateTime.UtcNow.ToFileTimeUtc();
+            var path = SingleImageMode ? $"{SavePath}{SingleImageModeName}.jpg" : $"{SavePath}{name}.jpg";
+            image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(HorizontalResolution), Mode = ResizeMode.Min }));
+
+            await image.SaveAsJpegAsync(path, Cts.Token);
+            Cts?.Cancel();
+
+            await UploadSuccess(new FileInfo(path));
+        }
+
+        catch (OperationCanceledException) when (_userCanceled)
+        {
+            await UploadCanceled();
+        }
+        catch (Exception ex)
+        {
+            await UploadFail(ex);
+        }
+        finally
+        {
+            _uploadDisabled = false;
+            _userCanceled = false;
+            _uploadPercent = 0;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateDirectory(string path)
+    {
+        if (Directory.Exists(path))
+            return;
+        Directory.CreateDirectory(path);
+    }
+
+    private async Task UploadSuccess(FileInfo fileInfo)
+    {
+        _displayText = SingleImageMode
+            ? UploadSuccessText
+            : ButtonText;
+
+        await OnUploadSuccessful.InvokeAsync(fileInfo);
+        if (!SingleImageMode)
+        {
+            _displayText = UploadSuccessText;
+            StateHasChanged();
+            await Task.Delay(InfoTextInterval);
+            _displayText = ButtonText;
+        }
+    }
+
+    private async Task UploadCanceled()
+    {
+        _displayText = UploadCanceledText;
+        StateHasChanged();
+        await Task.Delay(InfoTextInterval);
+        _displayText = ButtonText;
+    }
+
+    private Task UploadFail(Exception ex)
+    {
+        _displayText = UploadFailedText;
+        return OnUploadFailed.InvokeAsync(ex);
+    }
+
+    private async Task RecalculatePercentage(Stream s, CancellationToken token)
+    {
+        while (s is not null && _uploadPercent < 100 && !token.IsCancellationRequested)
+        {
+            await Task.Delay(UpdateInterval, token).ConfigureAwait(false);
+
+            var percent = (s.Position / (double)s.Length) * 100;
+            _uploadPercent = (int)percent;
+
+            _displayText = $"{UploadingText} {_uploadPercent}%";
+            await InvokeAsync(async () => await OnUploadPercentageChanged.InvokeAsync(_uploadPercent));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        OnUploadPercentageChanged = EventCallback<int>.Empty;
+        OnUploadStarted = EventCallback.Empty;
+        OnUploadFailed = EventCallback<Exception>.Empty;
+        OnUploadSuccessful = EventCallback<FileInfo>.Empty;
+
+        if (Cts is not null)
+        {
+            Cts.Cancel();
+            Cts.Dispose();
+            Cts = null;
+        }
+    }
+}

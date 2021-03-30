@@ -29,4 +29,8 @@
     <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Common\" />
+  </ItemGroup>
+
 </Project>
