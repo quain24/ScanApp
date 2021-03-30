@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Common.Interfaces;
+using ScanApp.Common.Services;
 using ScanApp.Infrastructure.Identity;
 using ScanApp.Infrastructure.Services;
 
@@ -14,6 +16,7 @@ namespace ScanApp.Infrastructure.Common.Installers
             services.AddTransient<IRoleManager, RoleManagerService>();
             services.AddTransient<IUserInfo, UserInfoService>();
             services.AddTransient<ILocationManager, LocationManagerService>();
+            services.AddSingleton<IDateTime, DateTimeService>();
 
             return services;
         }
