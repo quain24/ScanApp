@@ -39,7 +39,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         DbSet<SparePart> SpareParts { get; set; }
         DbSet<SparePartType> SparePartTypes { get; set; }
-        DbSet<StoragePlace> StoragePlaces { get; set; }
+        DbSet<SparePartStoragePlace> StoragePlaces { get; set; }
 
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 

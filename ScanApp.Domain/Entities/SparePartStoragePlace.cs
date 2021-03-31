@@ -1,6 +1,6 @@
 ﻿namespace ScanApp.Domain.Entities
 {
-    public class StoragePlace
+    public class SparePartStoragePlace
     {
         public string Id { get; set; }
         public string Name { get; set; }
