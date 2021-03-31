@@ -9,6 +9,7 @@
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using System.IO
 @using Microsoft.AspNetCore.Hosting
+@using ScanApp.Components.Common
 @using SixLabors.ImageSharp
 @using SixLabors.ImageSharp.Processing
 @using Size = SixLabors.ImageSharp.Size
@@ -37,9 +38,9 @@
     <ScanApp.Components.Common.CamUploader Disabled="b" OnUploadFailed="@FileFailed" UploadTimeLimit="1000" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
     <ScanApp.Components.Common.CamUploader UserCanCancel="false" OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
     <ScanApp.Components.Common.CamUploader SingleImageMode="true" OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
-    <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
-    <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
-    <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
+    <ScanApp.Components.Common.CamUploader @ref="@uploader" Text="active upload" OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
+    <ScanApp.Components.Common.CamUploader @ref="@uploader2" Text="singleUpload" SingleImageMode="true" OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
+    <ScanApp.Components.Common.CamUploader @bind-UploadedFiles="@lis" Text="listbind" OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
     <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader><ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
     <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
     <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader><ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
@@ -49,6 +50,27 @@
     <ScanApp.Components.Common.CamUploader OnUploadFailed="@FileFailed" SavePath="@(Environment.WebRootPath + "\\Upload\\SpareParts\\")" OnUploadPercentageChanged="@PercentageChanged" OnUploadSuccessful="@FileUploaded"></ScanApp.Components.Common.CamUploader>
 
     <MudButton OnClick="@(() => b = !b)">Disable first one</MudButton>
+
+    <br>
+    <br>
+
+    @if (uploader is not null)
+    {
+        foreach (var file in uploader.UploadedFiles)
+        {
+            <img src="@($"{file.DirectoryName.Substring(Environment.WebRootPath.Length)}\\{file.Name}?ts={file.LastWriteTime.Ticks}")" />
+        }
+    }
+
+    @if (uploader2?.UploadedFile is not null)
+    {
+        <img src="@($"{uploader2.UploadedFile.DirectoryName.Substring(Environment.WebRootPath.Length)}\\{uploader2.UploadedFile.Name}?ts={uploader2.UploadedFile.LastWriteTime.Ticks}")" />
+    }
+
+    @foreach(var o in lis ?? new List<FileInfo>(0))
+    {
+        <img src="@($"{o.DirectoryName.Substring(Environment.WebRootPath.Length)}\\{o.Name}?ts={o.CreationTime.Ticks}")" />
+    }
 
     <AuthorizeView Policy="@nameof(Policies.LocationMustBeSady)">
         <Authorized>
@@ -81,6 +103,11 @@
 @code {
     bool b = true;
 
+    CamUploader uploader;
+    CamUploader uploader2;
+
+    public IList<FileInfo> lis = new List<FileInfo>();
+
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; }
     private List<SparePartTypeModel> _types { get; set; } = new List<SparePartTypeModel>();
@@ -102,7 +129,6 @@
     {
         //Snackbar.Add($"Uploaded {percents}%", Severity.Info, options => options.SnackbarVariant = Variant.Filled);
     }
-    
 
     protected override async Task OnInitializedAsync()
     {

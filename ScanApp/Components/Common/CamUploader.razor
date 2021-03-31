@@ -37,6 +37,16 @@ else
 @code {
 
     /// <summary>
+    /// Unique Id for <see cref="InputFile" /> component.<br />
+    /// Thanks to this multiple concurrent uploads from multiple copies of <see cref="CamUploader" /> are possible without conflict.
+    /// </summary>
+    private readonly string _key = Guid.NewGuid().ToString();
+    private int _uploadPercent = 0;
+    private bool _userCanceled = false;
+    private bool _uploadDisabled = false;
+    private string _displayText = string.Empty;
+
+    /// <summary>
     /// If set to true, only one image uploaded by this component will be saved.
     /// <br />If caller will try to upload another one, then previous one will be overriden.
     /// <br /><br /><para>
@@ -109,7 +119,7 @@ else
     /// <para>Default value: "Take picture"</para>
     /// </summary>
     [Parameter]
-    public string ButtonText { get; set; } = "Take picture";
+    public string Text { get; set; } = "Take picture";
 
     /// <summary>
     /// Text displayed on button when uploading
@@ -163,24 +173,33 @@ else
     [Parameter]
     public EventCallback<Exception> OnUploadFailed { get; set; }
 
-    private bool _userCanceled = false;
-    private int _uploadPercent = 0;
-    private bool _uploadDisabled = false;
-    private string _displayText = string.Empty;
-    private CancellationTokenSource Cts { get; set; }
+    /// <summary>
+    /// In single picture mode this variable holds reference to uploaded file.
+    /// </summary>
+    [Parameter]
+    public FileInfo UploadedFile { get; set; }
+    [Parameter]
+    public EventCallback<FileInfo> UploadedFileChanged { get; set; }
 
     /// <summary>
-    /// Unique Id for <see cref="InputFile" /> component.<br />
-    /// Thanks to this multiple concurrent uploads from multiple copies of <see cref="CamUploader" /> are possible without conflict.
+    /// In multi picture mode this variable holds reference to uploaded files.
     /// </summary>
-    private readonly string _key = Guid.NewGuid().ToString();
+    [Parameter]
+    public IList<FileInfo> UploadedFiles { get; set; } = new List<FileInfo>();
+    [Parameter]
+    public EventCallback<IList<FileInfo>> UploadedFilesChanged { get; set; }
+
+    private CancellationTokenSource Cts { get; set; }
 
     protected override void OnInitialized()
     {
         SetUpSavePath();
-        _displayText = string.IsNullOrWhiteSpace(ButtonText)
-            ? throw new ArgumentOutOfRangeException(nameof(ButtonText), "Standard button text cannot be empty or null")
-            : ButtonText;
+        _displayText = string.IsNullOrWhiteSpace(Text)
+            ? throw new ArgumentOutOfRangeException(nameof(Text), "Standard button text cannot be empty or null")
+            : Text;
+
+        if (UploadedFiles is null)
+            throw new ArgumentNullException(nameof(UploadedFiles), $"Cannot initialize component with {nameof(UploadedFiles)} set to null");
 
         if (string.IsNullOrWhiteSpace(SingleImageModeName))
             throw new ArgumentOutOfRangeException(nameof(SingleImageModeName), "Default name cannot be null or empty");
@@ -234,7 +253,6 @@ else
             image.Mutate(i => i.Resize(new ResizeOptions { Size = new Size(HorizontalResolution), Mode = ResizeMode.Min }));
 
             await image.SaveAsJpegAsync(path, Cts.Token);
-            Cts?.Cancel();
 
             await UploadSuccess(new FileInfo(path));
         }
@@ -249,6 +267,7 @@ else
         }
         finally
         {
+            Cts?.Cancel();
             _uploadDisabled = false;
             _userCanceled = false;
             _uploadPercent = 0;
@@ -265,17 +284,24 @@ else
 
     private async Task UploadSuccess(FileInfo fileInfo)
     {
-        _displayText = SingleImageMode
-            ? UploadSuccessText
-            : ButtonText;
+        _displayText = UploadSuccessText;
+        if (SingleImageMode)
+        {
+            UploadedFile = fileInfo;
+            await UploadedFileChanged.InvokeAsync(UploadedFile);
+        }
+        else
+        {
+            UploadedFiles.Add(fileInfo);
+            await UploadedFilesChanged.InvokeAsync(UploadedFiles);
+        }
 
         await OnUploadSuccessful.InvokeAsync(fileInfo);
+
         if (!SingleImageMode)
         {
-            _displayText = UploadSuccessText;
-            StateHasChanged();
             await Task.Delay(InfoTextInterval);
-            _displayText = ButtonText;
+            _displayText = Text;
         }
     }
 
@@ -284,7 +310,7 @@ else
         _displayText = UploadCanceledText;
         StateHasChanged();
         await Task.Delay(InfoTextInterval);
-        _displayText = ButtonText;
+        _displayText = Text;
     }
 
     private Task UploadFail(Exception ex)
@@ -314,7 +340,6 @@ else
         OnUploadStarted = EventCallback.Empty;
         OnUploadFailed = EventCallback<Exception>.Empty;
         OnUploadSuccessful = EventCallback<FileInfo>.Empty;
-
         if (Cts is not null)
         {
             Cts.Cancel();
