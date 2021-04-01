@@ -14,7 +14,7 @@ namespace ScanApp.Application.Common.Helpers.Result
 
         private Exception _exception;
 
-        internal Exception Exception
+        internal Exception Exc
         {
             get => _exception;
             set
@@ -23,6 +23,8 @@ namespace ScanApp.Application.Common.Helpers.Result
                 StackTrace = _exception?.StackTrace;
             }
         }
+
+        public Exception Exception => _exception;
 
         public Guid Guid { get; }
 

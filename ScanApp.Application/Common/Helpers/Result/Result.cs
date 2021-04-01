@@ -99,7 +99,7 @@ namespace ScanApp.Application.Common.Helpers.Result
             Conclusion = false;
             ErrorDescription = new();
             ErrorDescription.ErrorMessage = exception.Message;
-            ErrorDescription.Exception = exception;
+            ErrorDescription.Exc = exception;
             ErrorDescription.ErrorType = errorType;
         }
 
@@ -108,7 +108,7 @@ namespace ScanApp.Application.Common.Helpers.Result
             Conclusion = false;
             ErrorDescription = new();
             ErrorDescription.ErrorMessage = errorMessage;
-            ErrorDescription.Exception = exception;
+            ErrorDescription.Exc = exception;
             ErrorDescription.ErrorType = errorType;
         }
 
@@ -117,7 +117,7 @@ namespace ScanApp.Application.Common.Helpers.Result
             Conclusion = false;
             ErrorDescription = new();
             ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
-            ErrorDescription.Exception = exception;
+            ErrorDescription.Exc = exception;
             ErrorDescription.ErrorType = errorType;
         }
 
@@ -126,7 +126,7 @@ namespace ScanApp.Application.Common.Helpers.Result
             Conclusion = false;
             ErrorDescription = new ErrorDescription();
             ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
-            ErrorDescription.Exception = exception;
+            ErrorDescription.Exc = exception;
             ErrorDescription.ErrorType = errorType;
             return this;
         }
@@ -173,7 +173,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         {
         }
 
-        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exception)
+        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exc)
         {
         }
 
