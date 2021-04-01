@@ -3,6 +3,7 @@ using ScanApp.Application.Admin.Queries.GetAllUserData;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -27,5 +28,6 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result<List<ClaimModel>>> GetClaims(string userName, params string[] claimTypes);
 
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
+        Task<Version> GetUserVersion(string userName);
     }
 }

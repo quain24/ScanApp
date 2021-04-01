@@ -61,6 +61,14 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
         }
 
+        public async Task<Version> GetUserVersion(string userName)
+        {
+            var stamp = await GetUserConcurrencyStamp(userName).ConfigureAwait(false);
+            return stamp is null
+                ? Version.Empty()
+                : Version.Create(stamp);
+        }
+
         public async Task<UserInfoModel> GetData(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
