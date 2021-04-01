@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Persistence\SeedData\**" />
+    <EmbeddedResource Remove="Persistence\SeedData\**" />
+    <None Remove="Persistence\SeedData\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.4" />
@@ -17,10 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
     <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Persistence\SeedData\" />
   </ItemGroup>
 
 </Project>

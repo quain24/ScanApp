@@ -60,13 +60,13 @@ namespace ScanApp.Infrastructure.Identity
 
             await using var ctx = _ctxFactory.CreateDbContext();
 
-            var existingName = await ctx.Locations
+            var existingLocation = await ctx.Locations
                 .AsNoTracking()
                 .Where(n => n.Name.Equals(location.NormalizedName) || n.Id.Equals(location.Id))
                 .SingleOrDefaultAsync()
                 .ConfigureAwait(false);
 
-            if (existingName is not null)
+            if (existingLocation is not null)
                 return new Result<Location>(ErrorType.Duplicated, $"Location {location.Name} already exist or other location share the same ID.");
 
             ctx.Locations.Add(location);

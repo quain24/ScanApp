@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ScanApp.Application.Common.Interfaces;
 using Serilog;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace ScanApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = new ConfigurationBuilder();
             BuildConfig(builder);
@@ -22,11 +25,19 @@ namespace ScanApp
             try
             {
                 Log.Information("Starting up...");
-                CreateHostBuilder(args).Build().Run();
+                var host = CreateHostBuilder(args).Build();
+
+                using (var scope = host.Services.CreateScope())
+                {
+                    var seeder = scope.ServiceProvider.GetService<IInitialDataSeeder>();
+                    await seeder.Initialize(false);
+                }
+
+                await host.RunAsync();
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Application start-up failed");
+                Log.Fatal(ex, "Application failed, logging unhandled exceptions...");
             }
             finally
             {
