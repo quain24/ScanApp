@@ -27,15 +27,15 @@ namespace ScanApp.Infrastructure.Identity
             _ctxFactory = ctxFactory ?? throw new ArgumentNullException(nameof(ctxFactory), "Could not inject DBContextFactory");
         }
 
-        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location)
+        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location, bool canBeLockedOut = true)
         {
             await using var context = _ctxFactory.CreateDbContext();
             var strategy = context.Database.CreateExecutionStrategy();
 
-            return await strategy.ExecuteAsync(async () => await AddUser(context, userName, password, email, phoneNumber, location)).ConfigureAwait(false);
+            return await strategy.ExecuteAsync(async () => await AddUser(context, userName, password, email, phoneNumber, canBeLockedOut, location).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        private async Task<Result<BasicUserModel>> AddUser(IApplicationDbContext context, string userName, string password, string email, string phoneNumber, Location location)
+        private async Task<Result<BasicUserModel>> AddUser(IApplicationDbContext context, string userName, string password, string email, string phoneNumber, bool canBeLockedOut = true, Location location = null)
         {
             try
             {
@@ -45,7 +45,9 @@ namespace ScanApp.Infrastructure.Identity
                 {
                     Email = email,
                     PhoneNumber = phoneNumber,
-                    UserName = userName
+                    UserName = userName,
+                    EmailConfirmed = true,
+                    LockoutEnabled = canBeLockedOut
                 };
 
                 var identityResult = await _userManager.CreateAsync(newUser, password).ConfigureAwait(false);

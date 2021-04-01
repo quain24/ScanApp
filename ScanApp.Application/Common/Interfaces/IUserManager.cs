@@ -11,7 +11,7 @@ namespace ScanApp.Application.Common.Interfaces
 {
     public interface IUserManager
     {
-        Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location);
+        Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location, bool canBeLockedOut = true);
 
         Task<Result> DeleteUser(string userName);
 
