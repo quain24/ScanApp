@@ -51,13 +51,29 @@ namespace ScanApp.Infrastructure.Identity
         private static Task<Location> GetLocationBy(IApplicationDbContext ctx, Expression<Func<Location, bool>> predicate) =>
             ctx.Locations.AsNoTracking().SingleOrDefaultAsync(predicate);
 
-        public Task<Result<Location>> AddNewLocation(Location location)
+        public async Task<Result<Location>> AddNewLocation(Location location)
         {
             _ = location ?? throw new ArgumentNullException(nameof(location));
 
-            return string.IsNullOrEmpty(location.Id)
-                ? AddNewLocation(location.Name)
-                : Task.FromResult(new Result<Location>(ErrorType.NotValid, "Custom index value is not supported when adding location - set location index to null or empty string"));
+            if (string.IsNullOrEmpty(location.Id))
+                return await AddNewLocation(location.Name);
+
+            await using var ctx = _ctxFactory.CreateDbContext();
+
+            var existingName = await ctx.Locations
+                .AsNoTracking()
+                .Where(n => n.Name.Equals(location.NormalizedName) || n.Id.Equals(location.Id))
+                .SingleOrDefaultAsync()
+                .ConfigureAwait(false);
+
+            if (existingName is not null)
+                return new Result<Location>(ErrorType.Duplicated, $"Location {location.Name} already exist or other location share the same ID.");
+
+            ctx.Locations.Add(location);
+            var change = await ctx.SaveChangesAsync().ConfigureAwait(false);
+            return change != 0
+                ? new Result<Location>(ResultType.Created, location)
+                : new Result<Location>(ErrorType.Unknown, $"Could not save changes in context for new location {location.Name}");
         }
 
         public async Task<Result<Location>> AddNewLocation(string locationName)
