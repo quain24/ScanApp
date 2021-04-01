@@ -33,7 +33,7 @@ namespace ScanApp.Infrastructure.Identity
         /// </para></returns>
         public static bool IsConcurrencyFailure(this IdentityResult result) => result.GotErrorCode("ConcurrencyFailure");
 
-        public static bool IsDuplicatedNameError(this IdentityResult result) => result.GotErrorCode("DuplicateName") || result.GotErrorCode("DuplicateUserName");
+        public static bool IsDuplicatedNameError(this IdentityResult result) => result.GotErrorCode("DuplicateName") || result.GotErrorCode("DuplicateUserName") || result.GotErrorCode("DuplicateRoleName");
 
         private static bool GotErrorCode(this IdentityResult result, string code)
         {
