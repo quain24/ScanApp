@@ -33,17 +33,13 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>
-    AuthenticationStateTask
-    { get; set; }
+    AuthenticationStateTask { get; set; }
 
     private MudTabs _tabPanel;
 
-    private List<BasicUserModel>
-    _users = new();
-    private List<BasicRoleModel>
-        _roles = new();
-    private List<Location>
-    _locations = new();
+    private List<BasicUserModel> _users = new();
+    private List<BasicRoleModel> _roles = new();
+    private List<Location> _locations = new();
     private BasicUserModel _selectedUser;
     private bool _shouldRender = true;
     private string _selectedRowStyle = "background-color: lightgrey";
