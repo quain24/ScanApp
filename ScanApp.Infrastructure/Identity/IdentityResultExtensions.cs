@@ -35,6 +35,8 @@ namespace ScanApp.Infrastructure.Identity
 
         public static bool IsDuplicatedNameError(this IdentityResult result) => result.GotErrorCode("DuplicateName") || result.GotErrorCode("DuplicateUserName") || result.GotErrorCode("DuplicateRoleName");
 
+        public static bool IsAlreadyInRole(this IdentityResult result) => result.GotErrorCode("UserAlreadyInRole");
+
         private static bool GotErrorCode(this IdentityResult result, string code)
         {
             return result.Succeeded is false
@@ -70,7 +72,7 @@ namespace ScanApp.Infrastructure.Identity
             {
                 _ when identityResult.Succeeded => result,
                 _ when identityResult.IsConcurrencyFailure() => result.Set(ErrorType.ConcurrencyFailure, identityResult.CombineErrors()),
-                _ when identityResult.IsDuplicatedNameError() => result.Set(ErrorType.Duplicated, identityResult.CombineErrors()),
+                _ when identityResult.IsDuplicatedNameError() || identityResult.IsAlreadyInRole() => result.Set(ErrorType.Duplicated, identityResult.CombineErrors()),
                 _ => result.Set(ErrorType.NotValid, identityResult.CombineErrors())
             };
         }

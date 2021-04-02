@@ -18,7 +18,7 @@ namespace ScanApp.Infrastructure.Services
         private const string Administrator = "Administrator";
         private const string AdministratorPwd = "initial";
 
-        private Action<string, string> LogInformation;
+        private readonly Action<string, string> _logInformation;
 
         private readonly Location[] _defaultLocations =
         {
@@ -63,7 +63,7 @@ namespace ScanApp.Infrastructure.Services
             ContextFactory = contextFactory;
             Logger = logger;
 
-            LogInformation = (partName, info) => Logger.LogInformation("{name} - {part} - " + info, ServiceName, partName);
+            _logInformation = (partName, info) => Logger.LogInformation("{name} - {part} - " + info, ServiceName, partName);
         }
 
         public async Task Initialize(bool force)
@@ -89,27 +89,27 @@ namespace ScanApp.Infrastructure.Services
             await using var ctx = ContextFactory.CreateDbContext();
             if ((await ctx.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any() || force)
             {
-                LogInformation(name, "Beginning database migrations");
+                _logInformation(name, "Beginning applying pending database migrations");
                 await ctx.Database.MigrateAsync().ConfigureAwait(false);
-                LogInformation(name, "Migrations applied");
+                _logInformation(name, "Migrations applied");
             }
         }
 
         private async Task AddDefaultLocations()
         {
             const string name = "Locations";
-            LogInformation(name, "Beginning initial locations seeding");
+            _logInformation(name, "Beginning initial locations seeding");
             foreach (var location in _defaultLocations)
             {
                 var res = await LocationManager.AddNewLocation(location).ConfigureAwait(false);
                 HandleResult(res, name);
             }
-            LogInformation(name, "Initial locations seeded");
+            _logInformation(name, "Initial locations seeded");
         }
 
         private async Task AddDefaultUsers()
         {
-            LogInformation("Default admin", "Seeding Default administrator account");
+            _logInformation("Default admin", "Seeding Default administrator account");
             var res = await UserManager.AddNewUser
             (
                 userName: Administrator,
@@ -121,19 +121,19 @@ namespace ScanApp.Infrastructure.Services
             ).ConfigureAwait(false);
 
             HandleResult(res, "Users");
-            LogInformation("Default admin", "Default admin account created");
+            _logInformation("Default admin", "Default admin account created");
         }
 
         private async Task AddDefaultRoles()
         {
             const string name = "Roles";
-            LogInformation(name, "Seeding Default roles");
+            _logInformation(name, "Seeding Default roles");
             foreach (var role in _defaultRoles)
             {
                 var res = await RoleManager.AddNewRole(role).ConfigureAwait(false);
                 HandleResult(res, name);
             }
-            LogInformation(name, "Default roles created");
+            _logInformation(name, "Default roles created");
         }
 
         private async Task AddDefaultClaimSourceList()
@@ -141,7 +141,7 @@ namespace ScanApp.Infrastructure.Services
             const string name = "Default claims";
             try
             {
-                LogInformation(name, "Inserting default claim collection to database");
+                _logInformation(name, "Inserting default claim collection to database");
                 await using var ctx = ContextFactory.CreateDbContext();
                 foreach (var claim in _defaultClaims)
                 {
@@ -150,7 +150,7 @@ namespace ScanApp.Infrastructure.Services
                     ctx.Add(claim);
                 }
                 await ctx.SaveChangesAsync().ConfigureAwait(false);
-                LogInformation(name, "Inserted");
+                _logInformation(name, "Inserted");
             }
             catch (DbUpdateException ex)
             {
@@ -162,27 +162,27 @@ namespace ScanApp.Infrastructure.Services
         private async Task AssignClaimsToAdministratorRole()
         {
             const string name = "Administrator role claims";
-            LogInformation(name, "Assigning all claims to administrator role");
+            _logInformation(name, "Assigning all claims to administrator role");
             foreach (var claim in _defaultClaims)
             {
                 var claimModel = new ClaimModel(claim.Type, claim.Value);
                 var res = await RoleManager.AddClaimToRole(_defaultRoles[0], claimModel).ConfigureAwait(false);
                 HandleResult(res, name);
             }
-            LogInformation(name, "claims assigned");
+            _logInformation(name, "claims assigned");
         }
 
         private async Task AssignRolesToAdministrator()
         {
             const string name = "Role assignment";
-            LogInformation(name, "Adding administrator role to user 'Administrator'");
+            _logInformation(name, "Adding administrator role to user 'Administrator'");
             var version = await UserInfo.GetUserVersion(Administrator).ConfigureAwait(false);
             if (version.IsEmpty)
                 Logger.LogError("{name} - {part} - Could not retrieve Administrator account version!", ServiceName, name);
 
             var res = await UserManager.AddUserToRole(Administrator, version, _defaultRoles[0]).ConfigureAwait(false);
             HandleResult(res, name);
-            LogInformation(name, "Role added");
+            _logInformation(name, "Role added");
         }
 
         private void HandleResult<TResult>(TResult result, string seedPartName) where TResult : Result
