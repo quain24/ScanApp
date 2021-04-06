@@ -27,7 +27,7 @@ namespace ScanApp.Infrastructure.Identity
             _ctxFactory = ctxFactory ?? throw new ArgumentNullException(nameof(ctxFactory), "Could not inject DBContextFactory");
         }
 
-        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location, bool canBeLockedOut = true)
+        public async Task<Result<BasicUserModel>> AddNewUser(string userName, string password, string email, string phoneNumber, Location location = null, bool canBeLockedOut = true)
         {
             await using var context = _ctxFactory.CreateDbContext();
             var strategy = context.Database.CreateExecutionStrategy();
@@ -78,16 +78,19 @@ namespace ScanApp.Infrastructure.Identity
         public async Task<Result> DeleteUser(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
-            return user is null
-                ? ResultHelpers.UserNotFound(userName)
-                : (await _userManager.DeleteAsync(user).ConfigureAwait(false)).AsResult();
+
+            if (user is null)
+                return ResultHelpers.UserNotFound(userName);
+
+            var res = await _userManager.DeleteAsync(user).ConfigureAwait(false);
+            return res.Succeeded ? new Result(ResultType.Deleted) : res.AsResult();
         }
 
         public async Task<Result<Version>> ChangePassword(string userName, string newPassword, Version stamp)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName);
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
 
             if (user.ConcurrencyStamp.Equals(stamp) is false)
                 return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
@@ -139,7 +142,10 @@ namespace ScanApp.Infrastructure.Identity
                 {
                     using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
                     var userUpdateResult = (await _userManager.UpdateAsync(user).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
-                    if (userLocation is not null)
+                    if (userUpdateResult.Conclusion is false)
+                        return userUpdateResult;
+
+                    if (userLocation is not null && data.Location is not null)
                     {
                         context.Remove(userLocation);
                         await context.SaveChangesAsync().ConfigureAwait(false);

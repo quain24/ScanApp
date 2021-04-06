@@ -19,6 +19,7 @@
 @inject IWebHostEnvironment env
 @inject ISnackbar   Snackbar
 @inject IWebHostEnvironment Environment
+@inject IUserManager UserManager
 
 @inject ICurrentUserService CurrentUserService
 
@@ -129,15 +130,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
-        //_rs = (await Mediator.Send(new StoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
+        var t = await UserManager.DeleteUser("asdasd");
+    //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
+    //_rs = (await Mediator.Send(new StoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
 
-        //_cm = await CurrentUserService.AllClaims();
-        //var ui = await CurrentUserService.IsInRole("Admin");
-        //var t = "";
-        //var name = (await AuthenticationStateTask).Name();
-        //var t = await Info.GetClaims(name);
-        //var y = "";
+    //_cm = await CurrentUserService.AllClaims();
+    //var ui = await CurrentUserService.IsInRole("Admin");
+    //var t = "";
+    //var name = (await AuthenticationStateTask).Name();
+    //var t = await Info.GetClaims(name);
+    //var y = "";
     }
 
     protected override void OnInitialized()
