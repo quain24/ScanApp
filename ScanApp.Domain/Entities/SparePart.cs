@@ -49,7 +49,7 @@ namespace ScanApp.Domain.Entities
 
         private void ChangeAmount(int amount)
         {
-            _amount = amount < 0 ? throw new ArgumentOutOfRangeException(nameof(amount), "Given amount cannot be a negative number") : amount;
+            _amount = amount <= 0 ? throw new ArgumentOutOfRangeException(nameof(amount), "Given amount cannot be a negative number") : amount;
         }
     }
 }
