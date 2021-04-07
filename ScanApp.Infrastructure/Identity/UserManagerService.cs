@@ -209,12 +209,15 @@ namespace ScanApp.Infrastructure.Identity
                 .ConfigureAwait(false);
 
             return location is null
-                ? new Result<Location>(ErrorType.NotFound)
+                ? new Result<Location>()
                 : new Result<Location>(location);
         }
 
         public async Task<Result<Version>> SetUserLocation(string userName, Location location, Version stamp)
         {
+            if (location is null)
+                throw new ArgumentNullException(nameof(location), "Cannot change or set user location with null instead of location instance");
+
             await using var context = _ctxFactory.CreateDbContext();
 
             var strategy = context.Database.CreateExecutionStrategy();
@@ -262,7 +265,7 @@ namespace ScanApp.Infrastructure.Identity
             }).ConfigureAwait(false);
         }
 
-        public async Task<Result> RemoveFromLocation(string userName, Location location, Version stamp)
+        public async Task<Result<Version>> RemoveFromLocation(string userName, Version stamp)
         {
             await using var context = _ctxFactory.CreateDbContext();
 
@@ -274,7 +277,7 @@ namespace ScanApp.Infrastructure.Identity
                 return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
 
             var userLocation = await context.UserLocations
-                .SingleOrDefaultAsync(l => l.UserId.Equals(user.Id) && l.LocationId.Equals(location.Id))
+                .SingleOrDefaultAsync(l => l.UserId.Equals(user.Id))
                 .ConfigureAwait(false);
 
             if (userLocation is not null)

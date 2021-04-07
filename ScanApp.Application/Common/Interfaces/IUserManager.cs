@@ -27,7 +27,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result<Version>> SetUserLocation(string userName, Location location, Version stamp);
 
-        Task<Result> RemoveFromLocation(string userName, Location location, Version stamp);
+        Task<Result<Version>> RemoveFromLocation(string userName, Version stamp);
 
         Task<Result<Version>> ChangeUserSecurityStamp(string userName, Version version);
 
