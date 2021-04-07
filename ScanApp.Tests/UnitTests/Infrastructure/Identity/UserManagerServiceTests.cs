@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
@@ -12,6 +13,7 @@ using ScanApp.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Transactions;
 using Xunit;
@@ -464,10 +466,603 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
         }
 
-        private static Mock<IDbContextFactory<ApplicationDbContext>> CreateSimpleFactoryMock()
+        [Fact]
+        public async Task EditUserData_will_return_invalid_result_if_internal_user_update_fails()
+        {
+            var ctxFacMock = CreateSimpleFactoryMock();
+            var appusers = new List<ApplicationUser>();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Failed(new[] { new IdentityError() { Code = "testCode", Description = "test description" } }));
+            var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
+
+            var result = await sut.EditUserData(new EditUserDto(user.UserName) { Version = Version.Create(user.ConcurrencyStamp) });
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotValid);
+            result.ErrorDescription.ErrorMessage.Should().Be("testCode | test description");
+        }
+
+        [Fact]
+        public async Task EditUserData_will_return_concurrency_error_result_if_database_operation_fails_with_dbconcurrency_exc()
+        {
+            var ctxFacMock = CreateSimpleFactoryMock();
+            var appusers = new List<ApplicationUser>();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateAsync(It.IsAny<ApplicationUser>())).ThrowsAsync(new DbUpdateConcurrencyException());
+            var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
+
+            var result = await sut.EditUserData(new EditUserDto(user.UserName) { Version = Version.Create(user.ConcurrencyStamp) });
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+            result.ErrorDescription.ErrorMessage.Should().Be("User or location has been changed during this command.");
+            result.ErrorDescription.Exception.Should().NotBeNull().And.BeAssignableTo<DbUpdateConcurrencyException>();
+        }
+
+        [Fact]
+        public async Task EditUserData_will_return_unknown_error_result_if_database_operation_fails_with_dbupdate_exc()
+        {
+            var ctxFacMock = CreateSimpleFactoryMock();
+            var appusers = new List<ApplicationUser>();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateAsync(It.IsAny<ApplicationUser>())).ThrowsAsync(new DbUpdateException());
+            var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
+
+            var result = await sut.EditUserData(new EditUserDto(user.UserName) { Version = Version.Create(user.ConcurrencyStamp) });
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Unknown);
+            result.ErrorDescription.ErrorMessage.Should().Be($"Something happened during update of {user.UserName}.");
+            result.ErrorDescription.Exception.Should().NotBeNull().And.BeAssignableTo<DbUpdateException>();
+        }
+
+        [Fact]
+        public async Task EditUserData_will_return_timeout_error_result_if_database_operation_fails_transaction_aborted_exc()
+        {
+            var ctxFacMock = CreateSimpleFactoryMock();
+            var appusers = new List<ApplicationUser>();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateAsync(It.IsAny<ApplicationUser>())).ThrowsAsync(new TransactionAbortedException());
+            var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
+
+            var result = await sut.EditUserData(new EditUserDto(user.UserName) { Version = Version.Create(user.ConcurrencyStamp) });
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Timeout);
+            result.ErrorDescription.ErrorMessage.Should().Be("User or location has been changed during this command.");
+            result.ErrorDescription.Exception.Should().NotBeNull().And.BeAssignableTo<TransactionAbortedException>();
+        }
+
+        public static IEnumerable<object[]> GetPartialUpdateDtos()
+        {
+            yield return new object[] { new EditUserDto(UserGeneratorFixture.CreateValidUser().UserName)
+            {
+                Version = Version.Create(UserGeneratorFixture.CreateValidUser().ConcurrencyStamp),
+                Email = "new_email@wp.pl"
+            }};
+            yield return new object[] { new EditUserDto(UserGeneratorFixture.CreateValidUser().UserName)
+            {
+                Version = Version.Create(UserGeneratorFixture.CreateValidUser().ConcurrencyStamp),
+                NewName = "new_name"
+            }};
+            yield return new object[] { new EditUserDto(UserGeneratorFixture.CreateValidUser().UserName)
+            {
+                Version = Version.Create(UserGeneratorFixture.CreateValidUser().ConcurrencyStamp),
+                Phone = "123555555",
+                NewName = "a_new_name"
+            }};
+        }
+
+        [Theory]
+        [MemberData(nameof(GetPartialUpdateDtos))]
+        public async Task EditUserData_will_update_only_provided_data(EditUserDto editData)
+        {
+            var databaseId = Guid.NewGuid().ToString();
+            var ctxFacMock = CreateSimpleFactoryMock(databaseId);
+            var comparedUser = UserGeneratorFixture.CreateValidUser();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+
+            using (var ctx = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(databaseName: databaseId).Options))
+            {
+                ctx.Add(user);
+                ctx.SaveChanges();
+            }
+
+            comparedUser.Id = user.Id;
+            comparedUser.ConcurrencyStamp = user.ConcurrencyStamp;
+            comparedUser.SecurityStamp = user.SecurityStamp;
+            comparedUser.PasswordHash = user.PasswordHash;
+
+            userMgrMock.Setup(u => u.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success).Callback(() =>
+            {
+                using var ctx = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(databaseName: databaseId).Options);
+                ctx.Update(user);
+                ctx.SaveChanges();
+            });
+
+            var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
+
+            var result = await sut.EditUserData(editData);
+            var props = typeof(EditUserDto).GetProperties();
+            var userProps = typeof(ApplicationUser).GetProperties();
+
+            foreach (var up in userProps)
+            {
+                PropertyInfo dtoProp;
+                if (up.Name == nameof(user.UserName))
+                    dtoProp = props.FirstOrDefault(p => p.Name == nameof(editData.NewName));
+                else if (up.Name == nameof(user.PhoneNumber))
+                    dtoProp = props.FirstOrDefault(p => p.Name == nameof(editData.Phone));
+                else
+                    dtoProp = props.FirstOrDefault(p => p.Name == up.Name);
+
+                var orgProp = userProps.FirstOrDefault(p => p.Name == up.Name);
+                if (dtoProp?.GetValue(editData) is not null)
+                {
+                    dtoProp.GetValue(editData).Should().BeEquivalentTo(up.GetValue(user), $"dto have {dtoProp?.Name ?? "unknown name"} value, so it should replace user {up?.Name ?? "unknown name"} value.");
+                }
+                else
+                {
+                    up.GetValue(user).Should().BeEquivalentTo(orgProp.GetValue(comparedUser), $"dto does not have {dtoProp?.Name ?? "unknown name"} value, so  user {up?.Name ?? "unknown name"} value should match compared user {orgProp?.Name ?? "unknown name"}");
+                }
+            }
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().Be(Version.Create(user.ConcurrencyStamp));
+        }
+
+        [Fact]
+        public async Task HasLocation_will_return_valid_result_of_true_if_user_has_location()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var location = new Location("1", "location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(location);
+                ctx.SaveChanges();
+                ctx.Add(new UserLocation() { LocationId = location.Id, UserId = user.Id });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var result = await sut.HasLocation(user.UserName);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task HasLocation_will_return_valid_result_of_false_if_user_has_no_location()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var result = await sut.HasLocation(user.UserName);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task HasLocation_will_return_invalid_result_if_no_user_is_found()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var result = await sut.HasLocation(user.UserName);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            result.Output.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetUserLocation_will_return_location_when_user_has_one()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var location = new Location("1", "location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(location);
+                ctx.SaveChanges();
+                ctx.Add(new UserLocation() { LocationId = location.Id, UserId = user.Id });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var result = await sut.GetUserLocation(user.UserName);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeOfType<Location>();
+            result.Output.Id.Should().Be("1");
+            result.Output.Name.Should().Be("location_name");
+        }
+
+        [Fact]
+        public async Task GetUserLocation_will_return_valid_result_with_null_when_user_has_no_location()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(new UserLocation() { LocationId = "location_id", UserId = "other_id" });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var result = await sut.GetUserLocation(user.UserName);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetUserLocation_will_return_invalid_result_not_found_when_user_has_is_not_found()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var result = await sut.GetUserLocation(user.UserName);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_set_new_location_for_user()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var location = new Location("1", "location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(location);
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+
+            var result = await sut.SetUserLocation(user.UserName, location, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeTrue();
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                var cstamp = ctx.Users.First().ConcurrencyStamp;
+                result.Output.Should().Be(Version.Create(cstamp));
+            }
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_replace_old_location_with_new()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var oldLocation = new Location("1", "location_name");
+            var newLocation = new Location("2", "new_location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(oldLocation);
+                ctx.Add(newLocation);
+                ctx.Add(new UserLocation() { LocationId = oldLocation.Id, UserId = user.Id });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
+            userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+
+            var result = await sut.SetUserLocation(user.UserName, newLocation, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeTrue();
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                var cstamp = ctx.Users.First().ConcurrencyStamp;
+                result.Output.Should().Be(Version.Create(cstamp));
+                ctx.UserLocations.Should().HaveCount(1);
+                var newLocationData = ctx.UserLocations.First();
+                newLocationData.UserId.Should().Be(user.Id);
+                newLocationData.LocationId.Should().Be(newLocation.Id);
+            }
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_throw_arg_null_exc_when_null_given_instead_location()
+        {
+            var factoryMock = CreateSimpleFactoryMock();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
+            Func<Task> act = async () => await sut.SetUserLocation("random_name", null, Version.Create("random stamp"));
+
+            await act.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_return_not_found_invalid_result_if_there_is_no_user_with_given_name()
+        {
+            var factoryMock = CreateSimpleFactoryMock();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
+
+            var result = await sut.SetUserLocation("unknown", new Location("not important"), Version.Create("test"));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_return_concurrency_error_invalid_result_if_given_version_is_not_valid()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var factoryMock = CreateSimpleFactoryMock(dbId);
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(), findByNameResult: user);
+
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.SaveChanges();
+            }
+
+            var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
+
+            var result = await sut.SetUserLocation(user.UserName, new Location("not important"), Version.Create("test"));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+        }
+
+        [Fact]
+        public async Task SetUserLocation_will_return_invalid_result_with_unknown_error_if_dbupdate_exc_was_thrown()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var factoryMock = CreateSimpleFactoryMock(dbId);
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(), findByNameResult: user);
+            userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ThrowsAsync(new DbUpdateException());
+
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.SaveChanges();
+            }
+
+            var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
+
+            var result = await sut.SetUserLocation(user.UserName, new Location("not important"), Version.Create(user.ConcurrencyStamp));
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Unknown);
+        }
+
+        [Fact]
+        public async Task RemoveFromLocation_will_remove_user_from_location_when_he_have_one()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var location = new Location("1", "location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(location);
+                ctx.Add(new UserLocation() { LocationId = location.Id, UserId = user.Id });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers);
+            userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+
+            var result = await sut.RemoveFromLocation(user.UserName, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeTrue();
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.UserLocations.Any(u => u.UserId == user.Id).Should().BeFalse();
+                var cstamp = ctx.Users.First(u => u.Id == user.Id).ConcurrencyStamp;
+                result.Output.Should().Be(Version.Create(cstamp));
+            }
+        }
+
+        [Fact]
+        public async Task RemoveFromLocation_will_return_concurrency_error_bad_result_if_version_mismatch()
+        {
+            var dbId = Guid.NewGuid().ToString();
+            var user = UserGeneratorFixture.CreateValidUser();
+            var location = new Location("1", "location_name");
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.Add(user);
+                ctx.Add(location);
+                ctx.Add(new UserLocation() { LocationId = location.Id, UserId = user.Id });
+                ctx.SaveChanges();
+            }
+
+            var appusers = new List<ApplicationUser> { user };
+            var userMgrMock = UserManagerFixture.MockUserManager(appusers);
+            userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+
+            var result = await sut.RemoveFromLocation(user.UserName, Version.Create("invalid"));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            {
+                ctx.UserLocations.Any(u => u.UserId == user.Id).Should().BeTrue();
+                result.Output.Should().Be(Version.Create(user.ConcurrencyStamp));
+            }
+        }
+
+        [Fact]
+        public async Task RemoveFromLocation_returns_not_found_bad_result_if_no_user_with_given_name_exists()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveFromLocation(user.UserName, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+        }
+
+        [Fact]
+        public async Task ChangeUserSecurityStamp_will_change_security_stamp()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeTrue();
+            userMgrMock.Verify(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ChangeUserSecurityStamp_returns_invalid_result_of_concurrency_error_if_version_mismatch()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create("invalid"));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+            userMgrMock.Verify(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ChangeUserSecurityStamp_returns_invalid_result_of_not_found_if_there_is_no_user_with_given_name()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create(user.ConcurrencyStamp));
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            userMgrMock.Verify(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddUserToRole_will_add_proper_user_to_role()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var role = "role_name";
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.Is<string[]>(r => r.First() == role))).ReturnsAsync(IdentityResult.Success);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), role);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().NotBeNull();
+            userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddUserToRole_will_add_proper_user_to_multiple_roles()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var roles = new [] {"role_name", "new_role", "additional_role"};
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.Is<string[]>(r => r.SequenceEqual(roles)))).ReturnsAsync(IdentityResult.Success);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().NotBeNull();
+            userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddUserToRole_will_return_bad_result_of_concurrency_error_on_version_mismatch()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var role = "role_name";
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddUserToRole(user.UserName, Version.Create("random"), role);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+            result.Output.Should().Be(Version.Create(user.ConcurrencyStamp), "on failure - current version is returned");
+            userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddUserToRole_will_return_bad_result_of_not_found_if_user_is_not_found()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var role = "role_name";
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), role);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            result.Output.Should().Be(Version.Empty(), "on failure - empty version is returned, since no user is found to create one from");
+            userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        private static Mock<IDbContextFactory<ApplicationDbContext>> CreateSimpleFactoryMock(string id = null)
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: id ?? Guid.NewGuid().ToString())
+                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
 
             var ctxFacMock = new Mock<IDbContextFactory<ApplicationDbContext>>();
