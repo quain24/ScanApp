@@ -1014,7 +1014,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task AddUserToRole_will_add_proper_user_to_multiple_roles()
         {
             var user = UserGeneratorFixture.CreateValidUser();
-            var roles = new [] {"role_name", "new_role", "additional_role"};
+            var roles = new[] { "role_name", "new_role", "additional_role" };
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.Is<string[]>(r => r.SequenceEqual(roles)))).ReturnsAsync(IdentityResult.Success);
             var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
@@ -1056,6 +1056,54 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
             result.Output.Should().Be(Version.Empty(), "on failure - empty version is returned, since no user is found to create one from");
             userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("a_role")]
+        [InlineData("a_role", "another_role")]
+        public async Task RemoveUserFromRole_will_remove_given_roles_from_given_user(params string[] roles)
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.RemoveFromRolesAsync(It.Is<ApplicationUser>(u => u.UserName.Equals(user.UserName)),
+                It.Is<string[]>(m => m.SequenceEqual(roles)))).ReturnsAsync(IdentityResult.Success);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeOfType<Version>().And.Should().NotBe(Version.Empty());
+            userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RemoveUserFromRole_will_return_invalid_result_if_user_is_not_found()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), "a_role");
+
+            result.Conclusion.Should().BeFalse();
+            result.Output.Should().Be(Version.Empty());
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RemoveUserFromRole_will_return_invalid_result_if_version_mismatch()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveUserFromRole(user.UserName, Version.Create("invalid"), "a_role");
+
+            result.Conclusion.Should().BeFalse();
+            result.Output.Should().Be(Version.Create(user.ConcurrencyStamp));
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
+            userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
         }
 
         private static Mock<IDbContextFactory<ApplicationDbContext>> CreateSimpleFactoryMock(string id = null)
