@@ -34,9 +34,9 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         }
 
         [Theory]
-        [InlineData("Poznań", "POZNAŃ", "Warszawa", "WARSZAWA")]
-        [InlineData("Sady", "SADY", "Name with spaces", "NAME_WITH_SPACES")]
-        public void ChangeName_will_replace_old_name_and_normalized_name(string name, string nname, string newName, string nNewName)
+        [InlineData("Poznań", "Warszawa", "WARSZAWA")]
+        [InlineData("Sady", "Name with spaces", "NAME_WITH_SPACES")]
+        public void ChangeName_will_replace_old_name_and_normalized_name(string name, string newName, string nNewName)
         {
             var subject = new Location(name);
             subject.ChangeName(newName);
@@ -58,7 +58,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         {
             Action act = () => new Location(string.Empty);
 
-            act.Should().Throw<LocationNameFormatException>().WithMessage("Location name cannot be be empty / contain only whitespaces");
+            act.Should().Throw<LocationNameFormatException>().WithMessage("Location name cannot be empty / contain only whitespaces");
         }
 
         [Theory]
@@ -77,7 +77,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         [InlineData("name  and")]
         [InlineData("name  a")]
         [InlineData("name and  error")]
-        public void Will_throw_if_two_or_more_conecutive_whitespaces_in_name(string name)
+        public void Will_throw_if_two_or_more_consecutive_whitespaces_in_name(string name)
         {
             Action act = () => new Location(name);
 

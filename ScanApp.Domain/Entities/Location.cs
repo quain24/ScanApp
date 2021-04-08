@@ -38,7 +38,7 @@ namespace ScanApp.Domain.Entities
                 throw new LocationNameFormatException("Location name NULL");
 
             if (string.IsNullOrWhiteSpace(name))
-                throw new LocationNameFormatException(name, "Location name cannot be be empty / contain only whitespaces");
+                throw new LocationNameFormatException(name, "Location name cannot be empty / contain only whitespaces");
 
             if (name[0] == ' ' || name.Last() == ' ')
                 throw new LocationNameFormatException(name, "Name cannot begin nor end with whitespace");

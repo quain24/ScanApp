@@ -339,12 +339,12 @@ namespace ScanApp.Infrastructure.Identity
                 : (await _userManager.RemoveFromRolesAsync(user, roleNames).ConfigureAwait(false)).AsResult(Version.Create(user.ConcurrencyStamp));
         }
 
-        public async Task<Result> IsInRole(string userName, string roleName)
+        public async Task<Result<bool>> IsInRole(string userName, string roleName)
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             return user is null
-                ? ResultHelpers.UserNotFound(userName)
-                : new Result().SetOutput(await _userManager.IsInRoleAsync(user, roleName).ConfigureAwait(false));
+                ? ResultHelpers.UserNotFound<bool>(userName)
+                : new Result<bool>().SetOutput(await _userManager.IsInRoleAsync(user, roleName).ConfigureAwait(false));
         }
 
         public async Task<Result> AddClaimToUser(string userName, string claimType, string claimValue)
@@ -354,7 +354,7 @@ namespace ScanApp.Infrastructure.Identity
                 return ResultHelpers.UserNotFound(userName);
 
             if (string.IsNullOrWhiteSpace(claimType) || string.IsNullOrWhiteSpace(claimValue))
-                return new Result(ErrorType.NotValid, $"Neither {nameof(claimType)} nor {nameof(claimValue)} can be null or composed only from whitespaces");
+                return new Result(ErrorType.NotValid, $"Neither {nameof(claimType)} nor {nameof(claimValue)} can be null or composed only using whitespace");
 
             var claims = await _userManager.GetClaimsAsync(user).ConfigureAwait(false);
 
@@ -384,7 +384,7 @@ namespace ScanApp.Infrastructure.Identity
                 c.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase));
 
             return claimToDelete is null
-                ? new Result(ErrorType.NotFound, $"User {userName} does not have claim of type {claimType} with value of {claimValue}")
+                ? new Result()
                 : (await _userManager.RemoveClaimAsync(user, claimToDelete).ConfigureAwait(false)).AsResult();
         }
 

@@ -35,7 +35,7 @@ namespace ScanApp.Application.Common.Interfaces
 
         Task<Result<Version>> RemoveUserFromRole(string userName, Version version, params string[] roleNames);
 
-        Task<Result> IsInRole(string userName, string roleName);
+        Task<Result<bool>> IsInRole(string userName, string roleName);
 
         Task<Result> AddClaimToUser(string userName, string claimType, string claimValue);
 
