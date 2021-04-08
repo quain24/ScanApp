@@ -31,7 +31,7 @@
     {
         base.OnInitialized();
         _roleNameValidator = new FluentValidationWrapper<string>(x => x
-            .SetValidator(new IdentityNamingValidator())
+            .SetValidator(new IdentityNamingValidator<string, string>())
             .WithMessage("Role Name contains illegal symbols or is not long enough...")
             .Must(name => !Roles.Any(r => string.Equals(name, r.Name, StringComparison.OrdinalIgnoreCase)))
             .WithMessage("This name is already taken"));

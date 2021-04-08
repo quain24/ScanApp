@@ -6,7 +6,7 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
     public class AddClaimToRoleCommandValidator : AbstractValidator<AddClaimToRoleCommand>
     {
-        private readonly PropertyValidator _allowedCharsValidator = new IdentityNamingValidator();
+        private readonly PropertyValidator<AddClaimToRoleCommand, string> _allowedCharsValidator = new IdentityNamingValidator<AddClaimToRoleCommand, string>();
 
         public AddClaimToRoleCommandValidator()
         {

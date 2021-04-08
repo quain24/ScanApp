@@ -8,7 +8,7 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
         public AddNewUserRoleValidator()
         {
             RuleFor(c => c.RoleName)
-                .SetValidator(new IdentityNamingValidator())
+                .SetValidator(new IdentityNamingValidator<AddNewUserRoleCommand, string>())
                 .WithMessage("Role name contained not allowed characters");
         }
     }

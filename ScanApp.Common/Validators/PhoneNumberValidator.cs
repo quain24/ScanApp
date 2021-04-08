@@ -1,13 +1,16 @@
 ﻿using FluentValidation.Validators;
 using System.Linq;
+using FluentValidation;
 
 namespace ScanApp.Common.Validators
 {
-    public class PhoneNumberValidator : PropertyValidator
+    public class PhoneNumberValidator<T, TProperty> : PropertyValidator<T, TProperty>
     {
-        protected override bool IsValid(PropertyValidatorContext context)
+        public override string Name => "Phone number validator";
+
+        public override bool IsValid(ValidationContext<T> context, TProperty value)
         {
-            if (context.PropertyValue is not string phone)
+            if (value is not string phone)
                 return false;
 
             if (phone.Length < 6 || phone.Length > 25)
@@ -20,7 +23,7 @@ namespace ScanApp.Common.Validators
             return false;
         }
 
-        protected override string GetDefaultMessageTemplate()
+        protected override string GetDefaultMessageTemplate(string errorCode)
         {
             return "\"{PropertyValue}\" is not a valid phone number.";
         }

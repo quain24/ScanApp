@@ -5,7 +5,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     public class EditUserDataCommandValidator : AbstractValidator<EditUserDataCommand>
     {
-        private readonly IdentityNamingValidator _standardChars = new();
+        private readonly IdentityNamingValidator<EditUserDataCommand, string> _standardChars = new();
 
         public EditUserDataCommandValidator()
         {
@@ -18,10 +18,10 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             RuleFor(c => c.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(new EmailValidator());
+                .SetValidator(new EmailValidator<EditUserDataCommand, string>());
 
             RuleFor(c => c.Phone)
-                .SetValidator(new PhoneNumberValidator())
+                .SetValidator(new PhoneNumberValidator<EditUserDataCommand, string>())
                 .When(p => p.Phone is not null);
         }
     }

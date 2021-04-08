@@ -5,7 +5,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
 {
     public class AddUserValidator : AbstractValidator<AddUserCommand>
     {
-        private readonly IdentityNamingValidator _standardChars = new();
+        private readonly IdentityNamingValidator<AddUserCommand, string> _standardChars = new();
 
         public AddUserValidator()
         {
@@ -18,10 +18,10 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             RuleFor(c => c.NewUser.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(new EmailValidator());
+                .SetValidator(new EmailValidator<AddUserCommand, string>());
 
             RuleFor(c => c.NewUser.Phone)
-            .SetValidator(new PhoneNumberValidator())
+            .SetValidator(new PhoneNumberValidator<AddUserCommand, string>())
             .When(p => p.NewUser.Phone is not null);
         }
     }

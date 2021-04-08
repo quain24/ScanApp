@@ -87,20 +87,20 @@
     Func<Location, string> _selectConverter = l => l?.Name ?? "None";
 
     private readonly FluentValidationWrapper<string> _nameValidator = new(x => x
-        .SetValidator(new IdentityNamingValidator())
+        .SetValidator(new IdentityNamingValidator<string, string>())
         .WithMessage("Name contain illegal chars or has length less than 3 or more than 60"));
 
     private readonly FluentValidationWrapper<string> _emailValidator = new(x => x
         .Cascade(CascadeMode.Stop)
         .NotEmpty().WithMessage("Email cannot be empty")
-        .SetValidator(new EmailValidator()));
+        .SetValidator(new EmailValidator<string, string>()));
 
     private readonly FluentValidationWrapper<string> _locationValidator = new(x => x
-        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator())
+        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator<string, string>())
         .WithMessage("Location contains illegal chars or is empty"));
 
     private readonly FluentValidationWrapper<string> _phoneValidator = new(x => x
-        .SetValidator(new PhoneNumberValidator())
+        .SetValidator(new PhoneNumberValidator<string, string>())
         .When(s => !string.IsNullOrEmpty(s))
         .WithMessage("Not a valid phone number"));
 
