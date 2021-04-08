@@ -227,7 +227,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
-            var result = await sut.ChangePassword("wont.find", "new password", Version.Create("aaa"));
+            var result = await sut.ChangePassword("wont.find", "new password", Version.Create("none"));
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
@@ -1104,6 +1104,236 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             result.Output.Should().Be(Version.Create(user.ConcurrencyStamp));
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
             userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task IsInRole_will_return_valid_result_of_true_if_user_is_in_role()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.IsInRoleAsync(It.Is<ApplicationUser>(u => u.Id == user.Id), It.Is<string>(u => u.Equals("role_name")))).ReturnsAsync(true);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.IsInRole(user.UserName, "role_name");
+
+            result.Conclusion.Should().BeTrue();
+            result.Output.Should().BeTrue();
+            userMgrMock.Verify(u => u.IsInRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task IsInRole_will_return_invalid_result_of_false_if_user_is_not_fount()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.IsInRole(user.UserName, "role_name");
+
+            result.Conclusion.Should().BeFalse();
+            result.Output.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            userMgrMock.Verify(u => u.IsInRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddClaimToUser_will_add_claim_to_given_user()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var claimList = new List<System.Security.Claims.Claim>(1);
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<System.Security.Claims.Claim>());
+            userMgrMock.Setup(u => u.AddClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()))
+                .ReturnsAsync(IdentityResult.Success)
+                .Callback<ApplicationUser, System.Security.Claims.Claim>((_, c) => claimList.Add(c));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeTrue();
+            claimList.Should().HaveCount(1);
+            claimList.First().Type.Should().Be("type");
+            claimList.First().Value.Should().Be("value");
+        }
+
+        [Fact]
+        public async Task AddClaimToUser_will_return_bad_result_of_duplicated_if_user_already_have_given_claim()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var claimList = new List<System.Security.Claims.Claim>(1) { new(claim.Type, claim.Value) };
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(claimList);
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Duplicated);
+            claimList.Should().HaveCount(1);
+            claimList.First().Type.Should().Be("type");
+            claimList.First().Value.Should().Be("value");
+        }
+
+        [Theory]
+        [InlineData("", "value")]
+        [InlineData("type", "")]
+        [InlineData("type", null)]
+        [InlineData(null, "value")]
+        [InlineData(null, null)]
+        [InlineData("", "")]
+        public async Task AddClaimToUser_will_return_bad_result_of_not_valid_if_given_claim_is_not_valid(string type, string value)
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddClaimToUser(user.UserName, type, value);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotValid);
+            userMgrMock.Verify(u => u.AddClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddClaimToUser_will_return_bad_result_of_not_found_if_there_is_no_user_with_given_name()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+        }
+
+        [Fact]
+        public async Task RemoveClaimFromUser_removes_existing_claim()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var claimList = new List<System.Security.Claims.Claim>(1) { new(claim.Type, claim.Value) };
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(claimList);
+            userMgrMock.Setup(u => u.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()))
+                .ReturnsAsync(IdentityResult.Success)
+                .Callback<ApplicationUser, System.Security.Claims.Claim>((_, c) => claimList.Remove(c));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeTrue();
+            claimList.Should().BeEmpty();
+            userMgrMock.Verify(u => u.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RemoveClaimFromUser_returns_valid_result_if_there_was_no_such_claim_to_delete()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeTrue();
+            userMgrMock.Verify(u => u.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RemoveClaimFromUser_returns_invalid_result_of_not_found_if_user_was_not_found()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var claim = new Claim("type", "value");
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            userMgrMock.Verify(u => u.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("", "value")]
+        [InlineData("type", "")]
+        [InlineData("type", null)]
+        [InlineData(null, "value")]
+        [InlineData(null, null)]
+        [InlineData("", "")]
+        public async Task RemoveClaimFromUser_will_return_valid_result_if_given_invalid_claim_to_delete(string type, string value)
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+
+            userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
+
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.RemoveClaimFromUser(user.UserName, type, value);
+
+            result.Conclusion.Should().BeTrue();
+            userMgrMock.Verify(u => u.RemoveClaimAsync(It.IsAny<ApplicationUser>(), It.IsAny<System.Security.Claims.Claim>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetLockoutDate_will_set_lockout_date()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
+            userMgrMock.Setup(u => u.SetLockoutEndDateAsync(It.IsAny<ApplicationUser>(), It.IsAny<DateTimeOffset>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            var date = new DateTimeOffset(1999, 1, 1, 12, 0, 0, TimeSpan.Zero);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.SetLockoutDate(user.UserName, date);
+
+            result.Conclusion.Should().BeTrue();
+            userMgrMock.Verify(u => u.SetLockoutEndDateAsync(It.IsAny<ApplicationUser>(), It.Is<DateTimeOffset>(d => d.Equals(date))), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetLockoutDate_will_return_invalid_result_of_not_found_if_there_is_no_user_with_given_name()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
+
+            var date = new DateTimeOffset(1999, 1, 1, 12, 0, 0, TimeSpan.Zero);
+            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+
+            var result = await sut.SetLockoutDate(user.UserName, date);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
+            userMgrMock.Verify(u => u.SetLockoutEndDateAsync(It.IsAny<ApplicationUser>(), It.Is<DateTimeOffset>(d => d.Equals(date))), Times.Never);
         }
 
         private static Mock<IDbContextFactory<ApplicationDbContext>> CreateSimpleFactoryMock(string id = null)
