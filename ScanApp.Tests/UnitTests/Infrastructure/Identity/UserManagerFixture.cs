@@ -9,7 +9,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 {
     public static class UserManagerFixture
     {
-        public static Mock<UserManager<TUser>> MockUserManager<TUser>(List<TUser> ls, IdentityResult deleteResult = null, IdentityResult createResult = null, IdentityResult updateResult = null, TUser findByNameResult = null) where TUser : class
+        public static Mock<UserManager<TUser>> MockUserManager<TUser>(List<TUser> ls = null, IdentityResult deleteResult = null, IdentityResult createResult = null, IdentityResult updateResult = null, TUser findByNameResult = null) where TUser : class
         {
             ls ??= new List<TUser>(0);
             var store = new Mock<IUserStore<TUser>>();
