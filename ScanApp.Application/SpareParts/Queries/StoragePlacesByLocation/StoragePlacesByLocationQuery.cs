@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,10 +34,10 @@ namespace ScanApp.Application.SpareParts.Queries.StoragePlacesByLocation
 
                 try
                 {
-                    var locations = await ctx.StoragePlaces
+                    var locations = await ctx.SparePartStoragePlaces
                         .AsNoTracking()
                         .Where(e => e.LocationId.Equals(request.LocationId))
-                        .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id})
+                        .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
 

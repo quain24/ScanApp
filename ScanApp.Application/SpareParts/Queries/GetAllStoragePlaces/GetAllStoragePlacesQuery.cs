@@ -26,7 +26,7 @@ namespace ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces
                 await using var ctx = _contextFactory.CreateDbContext();
                 try
                 {
-                    var places = await ctx.StoragePlaces
+                    var places = await ctx.SparePartStoragePlaces
                         .AsNoTracking()
                         .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
                         .ToListAsync(cancellationToken)

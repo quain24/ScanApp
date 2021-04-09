@@ -25,27 +25,30 @@ namespace ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
             public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesForCurrentUserQuery request, CancellationToken cancellationToken)
             {
                 await using var ctx = _contextFactory.CreateDbContext();
-
-                if (await _currentUserService.HasClaim(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule))
+                var places = ctx.SparePartStoragePlaces.AsNoTracking();
+                if (!await UserIgnoresLocationConstraint().ConfigureAwait(false))
                 {
-                    var places = await ctx.StoragePlaces
-                        .AsNoTracking()
-                        .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return new Result<List<RepairWorkshopModel>>(places);
+                    var userLocationIds = await GetUserLocationsIds().ConfigureAwait(false);
+                    places = places.Where(s => userLocationIds.Contains(s.LocationId));
                 }
 
-                var userLocationIds = (await _currentUserService.AllClaims(Globals.ClaimTypes.Location).ConfigureAwait(false)).Select(c => c.Value);
-                var storagePlaces = await ctx.StoragePlaces
-                    .AsNoTracking()
-                    .Where(s => userLocationIds.Contains(s.LocationId))
+                var selectedPlaces = await places
                     .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                return new Result<List<RepairWorkshopModel>>(storagePlaces);
+                return new Result<List<RepairWorkshopModel>>(selectedPlaces);
+            }
+
+            private Task<bool> UserIgnoresLocationConstraint()
+            {
+                return _currentUserService.HasClaim(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule);
+            }
+
+            private async Task<IEnumerable<string>> GetUserLocationsIds()
+            {
+                return (await _currentUserService.AllClaims(Globals.ClaimTypes.Location).ConfigureAwait(false))
+                    .Select(c => c.Value);
             }
         }
     }
