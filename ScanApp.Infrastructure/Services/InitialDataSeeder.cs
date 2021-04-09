@@ -27,6 +27,13 @@ namespace ScanApp.Infrastructure.Services
             new("80818ca4-57f2-4871-81d4-dc97aef5aa64", "Genderkingen")
         };
 
+        private readonly SparePartStoragePlace[] _defaultSparePartStoragePlaces =
+        {
+            new() {LocationId = "DF5BBE28-688E-4DA8-8E79-3C1D9C75CFAA", Name = "100000"},
+            new() {LocationId = "DF5BBE28-688E-4DA8-8E79-3C1D9C75CFAA", Name = "86001"},
+            new() {LocationId = "80818ca4-57f2-4871-81d4-dc97aef5aa64", Name = "33000"},
+        };
+
         private readonly string[] _defaultRoles =
         {
             "Administrator",
@@ -76,6 +83,7 @@ namespace ScanApp.Infrastructure.Services
                 return;
 
             await AddDefaultLocations().ConfigureAwait(false);
+            await AddDefaultSparePartStoragePlaces().ConfigureAwait(false);
             await AddDefaultUsers().ConfigureAwait(false);
             await AddDefaultRoles().ConfigureAwait(false);
             await AddDefaultClaimSourceList().ConfigureAwait(false);
@@ -105,6 +113,30 @@ namespace ScanApp.Infrastructure.Services
                 HandleResult(res, name);
             }
             _logInformation(name, "Initial locations seeded");
+        }
+
+        private async Task AddDefaultSparePartStoragePlaces()
+        {
+            const string name = "Spare part locations";
+            _logInformation(name, "Beginning initial seeding");
+            await using var ctx = ContextFactory.CreateDbContext();
+            try
+            {
+                foreach (var spsp in _defaultSparePartStoragePlaces)
+                {
+                    if (ctx.SparePartStoragePlaces.AsNoTracking().Any(s => s.Name.Equals(spsp.LocationId)))
+                        continue;
+                    ctx.Add(spsp);
+                }
+
+                await ctx.SaveChangesAsync().ConfigureAwait(false);
+                _logInformation(name, "seeding completed");
+            }
+            catch (DbUpdateException)
+            {
+                Logger.LogError("{name} - {part} - seeding failed!", ServiceName, name);
+                throw;
+            }
         }
 
         private async Task AddDefaultUsers()
