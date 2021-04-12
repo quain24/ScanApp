@@ -17,7 +17,6 @@
     },
     "ScanApp": {
       "commandName": "Project",
-      "commandLineArgs": "-f",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

@@ -111,7 +111,7 @@ namespace ScanApp.Infrastructure.Identity
             var role = await _roleManager.FindByNameAsync(roleName).ConfigureAwait(false);
 
             if (role is null)
-                return new Result(ErrorType.NotFound, $"Role {roleName} was not found!") as Result<bool>;
+                return new Result<bool>(ErrorType.NotFound, $"Role {roleName} was not found!");
 
             var hasClaim = (await _roleManager.GetClaimsAsync(role).ConfigureAwait(false))
                 .Any(c => claimValue is null
