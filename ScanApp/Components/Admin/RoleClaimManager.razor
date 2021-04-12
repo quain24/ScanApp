@@ -13,7 +13,7 @@
 <MudGrid>
     <MudItem xs="12" lg="6" Class="px-1">
         <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicRoleModel" Items="@Roles" @bind-SelectedItem="_selectedRole" RowsPerPage="5" Striped="true"
-                  Filter="new Func<BasicRoleModel, bool>(FilterRoles)" OnRowClick="@FillSelectedRoleClaimsData" Hover="true" Dense="true" Outlined="false" Elevation="0">
+                  Filter="new Func<BasicRoleModel, bool>(FilterRoles)" OnRowClick="@(async args => await FillSelectedRoleClaimsData(args))" Hover="true" Dense="true" Outlined="false" Elevation="0">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Roles</MudText>
                 <MudToolBarSpacer />
@@ -167,7 +167,7 @@
         Snackbar.Add(message, Severity.Success);
     }
 
-    private async void FillSelectedRoleClaimsData(TableRowClickEventArgs<BasicRoleModel> args)
+    private async Task FillSelectedRoleClaimsData(TableRowClickEventArgs<BasicRoleModel> args)
     {
         if (args.Item.Name.Equals(_lastCheckedRole))
             return;

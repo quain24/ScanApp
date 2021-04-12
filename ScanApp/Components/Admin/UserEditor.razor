@@ -17,7 +17,7 @@
     <MudItem xs="12" lg="5" Class="px-1">
         <MudTable RowStyleFunc="RowStyleFunc" Outlined="false" Bordered="true" Striped="true" Elevation="0" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users"
                   SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
-                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@FillUserData" Hover="true" Dense="true">
+                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@(async args => await FillUserData(args))" Hover="true" Dense="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
                 <MudToolBarSpacer />

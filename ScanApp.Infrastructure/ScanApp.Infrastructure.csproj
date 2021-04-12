@@ -1,28 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Persistence\SeedData\**" />
-    <EmbeddedResource Remove="Persistence\SeedData\**" />
-    <None Remove="Persistence\SeedData\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Persistence\SeedData\**" />
+		<EmbeddedResource Remove="Persistence\SeedData\**" />
+		<None Remove="Persistence\SeedData\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.5" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="5.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.5" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.5" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
-    <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
+		<ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<!-- Making internal functions visible to test assembly -->
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>ScanApp.Tests</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 </Project>
