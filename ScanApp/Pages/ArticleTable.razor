@@ -1,0 +1,57 @@
+﻿@page "/articletable"
+@using ScanApp.Domain.Entities;
+@using ScanApp.Components.Common.ScanAppTable
+@using ScanApp.Application.Common.Interfaces 
+@using ScanApp.Infrastructure.Services
+@using Microsoft.EntityFrameworkCore
+@inject IArticleService articleService 
+
+<ScanAppTable Items="@_articles" Headers="@_headers" Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
+
+
+@code {
+    private List<Article> _articles;
+
+    private string[] _headersArray =
+    {
+        "Article Number", "Supplier", "Factory Nr", "EAN", "Article Desc",
+        "Amount", "Lock Reason", "LHM Ref", "Charge", "Zustand", "Einlagerung",
+        "Lager", "Lagerort", "Lagerplatz"
+    };
+
+    private Header _headers { get; set; }
+    private string _height = "600px";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _headers = new Header(_headersArray);
+
+        _headers.MakeNotEditable("Article Number");
+        _headers.MakeNotVisible("Lock Reason");
+        _headers.MakeNotGroupable("Lock Reason");
+
+        _headers.MakeNotGroupable("Article Number");
+
+        _articles = await articleService.GetArticlesAsync();
+
+        base.OnInitialized();
+    }
+
+
+    public void Save(Article article)
+    {
+
+    }
+
+    public void Delete(IEnumerable<Article> articles)
+    {
+
+    }
+
+    public async Task GetData()
+    {
+        // Call database to get data
+        _articles = await articleService.GetArticlesAsync();
+        StateHasChanged();
+    }
+}
