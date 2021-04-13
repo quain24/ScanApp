@@ -100,6 +100,9 @@ namespace ScanApp.Infrastructure.Identity
 
         public async Task<Result> RemoveLocation(Location location)
         {
+            if (string.IsNullOrWhiteSpace(location.Id))
+                return new Result(ErrorType.NotValid, "Given location does not have id");
+
             await using var ctx = _ctxFactory.CreateDbContext();
 
             var users = await ctx.UserLocations
@@ -109,7 +112,7 @@ namespace ScanApp.Infrastructure.Identity
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            if (await ctx.Locations.SingleOrDefaultAsync(l => l.Id.Equals(location.Id)).ConfigureAwait(false) is not null)
+            if (await ctx.Locations.AsNoTracking().SingleOrDefaultAsync(l => l.Id.Equals(location.Id)).ConfigureAwait(false) is not null)
                 ctx.Locations.Remove(location);
 
             ctx.AttachRange(users);
@@ -119,7 +122,7 @@ namespace ScanApp.Infrastructure.Identity
             }
 
             await ctx.SaveChangesAsync().ConfigureAwait(false);
-            return new Result<Location>(ResultType.Deleted);
+            return new Result(ResultType.Deleted);
         }
     }
 }
