@@ -1,0 +1,384 @@
+﻿@typeparam TItem
+@inject IDialogService DialogService
+@inject ISnackbar SnackBar
+@using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable;
+
+@if (_loading)
+{
+    <MudContainer Fixed="true" Style="width: 100%; height: 500px;">
+        <MudProgressCircular Style="position: absolute; left: 50%; margin-left: -10px; top: 50%; margin-top: -10px;"
+                             Color="Color.Info" Size="Size.Large" Indeterminate="true" />
+    </MudContainer>
+}
+else
+{
+    @if (_groupingEnabled)
+    {
+        <MudTabs Position="@Position.Left" Rounded="true" MaxHeight="600" ApplyEffectsToContainer="true" AlwaysShowScrollButtons="true"
+                 Class="mt-8" PanelClass="pa-6">
+            @foreach (var group in _groupList)
+            {
+                <MudTabPanel Text="@GetFormattedString(group.Key)">
+                    <MudTable Items="group.itemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
+                        <HeaderContent>
+                            @for (int i = 0; i < Headers.Count; i++)
+                            {
+                                int local = i;
+                                if (!Headers.IsVisible(local))
+                                {
+                                    continue;
+                                }
+                                <MudTh @onclick="() => SubSortBy(group.itemGroup, _subScanAppTableSorter, _properties[local], Headers.Names[local])">
+                                    @Headers.Names[local]
+                                    @if (_subScanAppTableSorter.AscendingOrder == _properties[local].Name)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
+                                    }
+                                    else if (_subScanAppTableSorter.DescendingOrder == _properties[local].Name)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
+                                    }
+                                </MudTh>
+                            }
+                        </HeaderContent>
+                        <RowTemplate>
+                            @for (int i = 0; i < _properties.Length; i++)
+                                        {
+                                            int local = i;
+                                            if (!Headers.IsVisible(local))
+                                            {
+                                                continue;
+                                            }
+                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
+                                        }
+                        </RowTemplate>
+                    </MudTable>
+                </MudTabPanel>
+            }
+        </MudTabs>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Style="margin: 10px;">
+            <MudTable MultiSelection="_multiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
+                      FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
+                <HeaderContent>
+                    @for (int i = 0; i < Headers.Count; i++)
+                            {
+                                int local = i;
+                                if (!Headers.IsVisible(local))
+                                {
+                                    continue;
+                                }
+                        <MudTh @onclick="() => SortBy(_scanAppTableSorter, _properties[local], Headers.Names[local])">
+                            @Headers.Names[local]
+                            @if (_scanAppTableSorter.AscendingOrder == _properties[local].Name)
+                                    {
+                                <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
+                                    }
+                                    else if (_scanAppTableSorter.DescendingOrder == _properties[local].Name)
+                                    {
+                                <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
+                                    }
+                        </MudTh>
+                            }
+                </HeaderContent>
+                <RowTemplate>
+                    @for (int i = 0; i < _properties.Length; i++)
+                            {
+                                int local = i;
+                                if (!Headers.IsVisible(local))
+                                {
+                                    continue;
+                                }
+                        @if (_multiselectionEnabled)
+                                {
+                            <MudTd Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
+                                }
+                                else
+                                {
+                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
+
+                                }
+                            }
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+
+    <MudToolBar>
+        @if (_multiselectionEnabled && _selectedItems.Count > 0)
+        {
+            <MudIconButton OnClick="() => OpenSelectionDialog()" Icon="@Icons.Material.Filled.ReadMore"></MudIconButton>
+        }
+        <MudToolBarSpacer />
+        @if (_menuOpened)
+        {
+            @if (_multiselectionEnabled)
+            {
+                <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBox"></MudIconButton>
+            }
+            else
+            {
+                <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBoxOutlineBlank"></MudIconButton>
+            }
+            @if (!_groupingEnabled)
+            {
+                <MudIconButton OnClick="() => OpenFilterDialog(_scanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+            }
+            <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
+            @if (_dataIsFiltered && !_groupingEnabled)
+            {
+                <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(_scanAppTableSorter)"></MudIconButton>
+            }
+            @if (_groupingEnabled)
+            {
+                <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
+            }
+            <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+        }
+        else
+        {
+            <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Menu"></MudIconButton>
+        }
+    </MudToolBar>
+
+}
+
+
+@code
+{
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; }
+
+    [Parameter]
+    public Header Headers { get; set; }
+
+    [Parameter]
+    public string Height { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem> ChildContent { get; set; }
+
+    [Parameter]
+    public Action<TItem> SaveChanges { get; set; }
+
+    [Parameter]
+    public Func<Task> GetData { get; set; }
+
+    [Parameter]
+    public Action<IEnumerable<TItem>> DeleteData { get; set; }
+
+    [Parameter]
+    public DialogOptions dialogOptions { get; set; }
+
+
+
+    private PropertyInfo[] _properties { get; set; }
+    private ScanAppTableSorter<TItem> _scanAppTableSorter { get; set; }
+    private ScanAppTableSorter<TItem> _subScanAppTableSorter { get; set; }
+    private bool _dataIsFiltered { get; set; }
+    private bool _menuOpened { get; set; }
+    private bool _groupingEnabled { get; set; }
+    private bool _multiselectionEnabled { get; set; }
+    private bool _loading { get; set; } = true;
+
+    private List<Group<TItem>> _groupList { get; set; } = new List<Group<TItem>>();
+    private HashSet<TItem> _selectedItems = new HashSet<TItem>();
+
+    public void InvokeSaveChanges(TItem titem)
+    {
+        SaveChanges?.Invoke(titem);
+    }
+
+    public async Task InvokeGetData()
+    {
+        _loading = true;
+        await GetData();
+        _loading = false;
+    }
+
+    public async Task InvokeDeleteData(IEnumerable<TItem> titemList)
+    {
+        DeleteData?.Invoke(titemList);
+        await InvokeGetData();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InvokeGetData();
+
+        _scanAppTableSorter = new ScanAppTableSorter<TItem>();
+        _subScanAppTableSorter = new ScanAppTableSorter<TItem>();
+        if (dialogOptions is null)
+        {
+            dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Large };
+        }
+        _properties = Items.FirstOrDefault().GetType().GetProperties();
+
+        //return base.OnInitializedAsync();
+    }
+
+    public void ToggleOpenMenu()
+    {
+        _menuOpened = !_menuOpened;
+    }
+
+    public void ToggleMultiSelection()
+    {
+        _multiselectionEnabled = !_multiselectionEnabled;
+    }
+
+    public async Task OpenEditDialog(TItem titem)
+    {
+        var parameter = new DialogParameters { ["Item"] = titem, ["Headers"] = Headers };
+        var dialog = DialogService.Show<ScanAppTableEditDialog<TItem>>("Edit", parameter, dialogOptions);
+        var result = await dialog.Result;
+        titem = (TItem)result.Data;
+        InvokeSaveChanges(titem);
+        StateHasChanged();
+    }
+
+    public async Task OpenGroupDialog()
+    {
+        var parameter = new DialogParameters
+        {
+            ["Properties"] = _properties,
+            ["Headers"] = Headers,
+            ["Items"] = Items
+        };
+        var dialog = DialogService.Show<ScanAppTableGroupDialog<TItem>>("Group By", parameter);
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        var groups = (List<IGrouping<object, TItem>>)result.Data;
+        if (groups.Count == 0)
+        {
+            return;
+        }
+        _groupList.Clear();
+        foreach (var group in groups)
+        {
+            _groupList.Add(new Group<TItem>(group.Key.ToString(), group.ToList()));
+        }
+        _subScanAppTableSorter.ResetSortingStatus();
+        _groupingEnabled = true;
+        //StateHasChanged();
+    }
+
+    public async Task OpenSelectionDialog()
+    {
+        var parameter = new DialogParameters
+        {
+            ["SelectedItems"] = _selectedItems
+        };
+        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>("Selection", parameter);
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        var action = (string)result.Data;
+
+        if (action == "Delete")
+        {
+            var itemsList = Items.ToList();
+            foreach (var selectedItem in _selectedItems)
+            {
+                itemsList.Remove(selectedItem);
+            }
+            Items = itemsList;
+        }
+        else if (action == "Copy")
+        {
+            var itemsList = Items.ToList();
+            var selectedItemsList = _selectedItems.ToList();
+            //itemsList.AddRange(_selectedItems);
+            itemsList.AddRange(selectedItemsList);
+            //Items = null;
+            Items = itemsList;
+            StateHasChanged();
+        }
+    }
+
+    public string GetFormattedString(string str)
+    {
+        if (str.Length > 10)
+        {
+            str = str.Substring(0, 10);
+            return str + "...";
+        }
+        return str;
+    }
+
+    public void ToggleGroupingMenu()
+    {
+        _groupingEnabled = !_groupingEnabled;
+    }
+
+    public string GetToolbarStyle(bool groupingEnabled)
+    {
+        if (groupingEnabled)
+        {
+            return "margin-top: -90px; right:10px";
+        }
+        return "margin-top: -75px;";
+    }
+
+    public async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter, IEnumerable<TItem> items)
+    {
+        await InvokeGetData();
+        var parameter = new DialogParameters
+        {
+            ["Items"] = items,
+            ["Headers"] = Headers,
+            ["Properties"] = _properties
+        };
+        var dialog = DialogService.Show<ScanAppTableFilterDialog<TItem>>("Filter", parameter, dialogOptions);
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        Items = (IEnumerable<TItem>)result.Data;
+        _dataIsFiltered = true;
+        sorter.ResetSortingStatus();
+        StateHasChanged();
+    }
+
+    private async Task ResetFilter(ScanAppTableSorter<TItem> sorter)
+    {
+        _dataIsFiltered = false;
+        sorter.ResetSortingStatus();
+        await InvokeGetData();
+    }
+
+    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
+    {
+        sorter.CurrentlySorted = header;
+        var direction = sorter.ResolveSortDirection(propertyInfo);
+        Items = sorter.OrderByPropertyName<TItem>(Items, propertyInfo.Name, direction);
+
+        return EventCallback.Empty;
+    }
+
+    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
+    {
+        // Recognise which item group it is
+        for (int i = 0; i < _groupList.Count; i++)
+        {
+            if (_groupList[i].itemGroup[0].Equals(items.First<TItem>()))
+            {
+                sorter.CurrentlySorted = header;
+                var direction = sorter.ResolveSortDirection(propertyInfo);
+                _groupList[i].itemGroup = sorter.OrderByPropertyName<TItem>(_groupList[i].itemGroup, propertyInfo.Name, direction).ToList();
+                break;
+            }
+        }
+        return EventCallback.Empty;
+    }
+
+}

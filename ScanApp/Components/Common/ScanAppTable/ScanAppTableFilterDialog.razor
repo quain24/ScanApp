@@ -1,0 +1,120 @@
+﻿@typeparam TItem
+@using System.Reflection;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.CleaningServices" />
+            Filter
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: scroll;">
+            <MudGrid>
+                <MudItem >
+                    <MudExpansionPanels MultiExpansion="true">
+                        @for (int i = 0; i < Properties.Length; i++)
+                        {
+                            int local = i;
+                            if (!Headers.IsVisible(local))
+                            {
+                                continue;
+                            }
+                            if (Properties[local].PropertyType == typeof(int))
+                            {
+                            <MudExpansionPanel Text="@Headers.Names[local]"  Style="margin-left: 5px; margin-right: 5px;">
+                                <MudTextField @bind-Value="@from[local]" @onkeypress="KeyPressed" Immediate="true" Label="From"
+                                              Variant="Variant.Outlined"></MudTextField>
+                                <MudTextField @bind-Value="@to[local]" @onkeypress="KeyPressed" Immediate="true" Label="To" 
+                                              Variant="Variant.Outlined"></MudTextField>
+                            </MudExpansionPanel>
+                            }
+                            else if (Properties[local].PropertyType == typeof(string))
+                            {
+                            <MudExpansionPanel Text="@Headers.Names[local]" Style="margin-left: 5px; margin-right: 5px;">
+                                <MudTextField @bind-Value="@contains[local]" @onkeypress="KeyPressed" Immediate="true" Label="Contains"
+                                              Variant="Variant.Outlined"></MudTextField>
+                            </MudExpansionPanel>
+                            }
+                            else if (Properties[local].PropertyType == typeof(DateTime))
+                            {
+                            <MudExpansionPanel Text="@Headers.Names[local]" Style="margin-left: 5px; margin-right: 5px;">
+                                <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="From"
+                                               @bind-Date="@fromDate[local]" Editable="true" ShowWeekNumbers="true" />
+                                <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="To"
+                                               @bind-Date="@toDate[local]" Editable="true" ShowWeekNumbers="true" />
+                            </MudExpansionPanel>
+                            }
+                        }
+                    </MudExpansionPanels>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; }
+
+    [Parameter]
+    public Header Headers { get; set; }
+
+    [Parameter]
+    public PropertyInfo[] Properties { get; set; }
+
+    private int?[] from { get; set; }
+    private int?[] to { get; set; }
+    private string[] contains { get; set; }
+    private DateTime?[] fromDate { get; set; }
+    private DateTime?[] toDate { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        from = new int?[Properties.Length];
+        to = new int?[Properties.Length];
+        contains = new string[Properties.Length];
+        fromDate = new DateTime?[Properties.Length];
+        toDate = new DateTime?[Properties.Length];
+        return base.OnInitializedAsync();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Submit()
+    {
+        for (int i = 0; i < from.Length; i++)
+        {
+            Items = ScanAppTableFilter<TItem>.FilterBetween<TItem>(Items, Properties[i].Name, from[i], to[i]);
+        }
+        for (int i = 0; i < contains.Length; i++)
+        {
+            Items = ScanAppTableFilter<TItem>.FilterContains<TItem>(Items, Properties[i].Name, contains[i]);
+        }
+        for (int i = 0; i < fromDate.Length; i++)
+        {
+            Items = ScanAppTableFilter<TItem>.FilterBetweenDates<TItem>(Items, Properties[i].Name, fromDate[i], toDate[i]);
+        }
+        MudDialog.Close(DialogResult.Ok(Items));
+    }
+
+    private void KeyPressed(KeyboardEventArgs keyboardEventArg)
+    {
+        if (keyboardEventArg.Key != "Enter")
+        {
+            return;
+        }
+        Submit();
+    }
+}
