@@ -17,7 +17,7 @@ namespace ScanApp.Infrastructure.Identity
         /// <returns>Enumerable of <c>"error code | error description"</c> formatted messages or empty collection if there are no errors</returns>
         public static IEnumerable<string> CombineErrors(this IdentityResult result)
         {
-            return result.Errors?.Select(e => $"{e.Code} | {e.Description}").ToArray() ?? Array.Empty<string>();
+            return result.Errors?.Select(e => $"{e.Code ?? "no_code"} | {e.Description ?? "no_description"}").ToArray() ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -47,10 +47,9 @@ namespace ScanApp.Infrastructure.Identity
         /// Converts <paramref name="identityResult"/> to a more user friendly and commonly used <see cref="Result"/>
         /// </summary>
         /// <param name="identityResult">An input from which <see cref="Result"/> will be generated</param>
-        /// <param name="output">Optional object to be passed inside returned <see cref="Result"/></param>
-        public static Result AsResult(this IdentityResult identityResult, object output = null)
+        public static Result AsResult(this IdentityResult identityResult)
         {
-            var result = new Result().SetOutput(output);
+            var result = new Result();
             return Describe(result, identityResult);
         }
 
@@ -68,6 +67,7 @@ namespace ScanApp.Infrastructure.Identity
 
         private static Result Describe(Result result, IdentityResult identityResult)
         {
+            _ = identityResult ?? throw new ArgumentNullException(nameof(identityResult), $"Cannot create proper {nameof(Result)} from null {nameof(identityResult)}");
             return identityResult switch
             {
                 _ when identityResult.Succeeded => result,
