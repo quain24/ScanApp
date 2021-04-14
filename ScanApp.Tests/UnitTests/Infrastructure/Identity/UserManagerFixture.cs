@@ -19,6 +19,15 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var queryableList = ls.AsQueryable().BuildMock();
             mgr.SetupGet(p => p.Users).Returns(queryableList.Object);
 
+            mgr.SetupGet(u => u.SupportsUserEmail).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserSecurityStamp).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserClaim).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserLockout).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserPassword).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserLogin).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserPhoneNumber).Returns(true);
+            mgr.SetupGet(u => u.SupportsUserRole).Returns(true);
+
             mgr.Setup(x => x.DeleteAsync(It.IsAny<TUser>())).ReturnsAsync(deleteResult ?? IdentityResult.Success);
             mgr.Setup(x => x.CreateAsync(It.IsAny<TUser>(), It.IsAny<string>())).ReturnsAsync(createResult ?? IdentityResult.Success).Callback<TUser, string>((x, y) => ls.Add(x));
             mgr.Setup(x => x.UpdateAsync(It.IsAny<TUser>())).ReturnsAsync(updateResult ?? IdentityResult.Success);
