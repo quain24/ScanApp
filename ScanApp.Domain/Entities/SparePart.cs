@@ -4,18 +4,18 @@ namespace ScanApp.Domain.Entities
 {
     public class SparePart
     {
-        public SparePart(string id, string name, int amount, string sourceArticleId, string storagePlaceId)
-            : this(name, amount, sourceArticleId, storagePlaceId)
+        public SparePart(string id, string name, int amount, string sourceArticleId, string sparePartStoragePlaceId)
+            : this(name, amount, sourceArticleId, sparePartStoragePlaceId)
         {
             Id = id;
         }
 
-        public SparePart(string name, int amount, string sourceArticleId, string storagePlaceId)
+        public SparePart(string name, int amount, string sourceArticleId, string sparePartStoragePlaceId)
         {
             Name = name;
             Amount = amount;
             SourceArticleId = sourceArticleId;
-            StoragePlaceId = storagePlaceId;
+            SparePartStoragePlaceId = sparePartStoragePlaceId;
         }
 
         public string Id { get; set; }
@@ -37,7 +37,7 @@ namespace ScanApp.Domain.Entities
         }
 
         public string SourceArticleId { get; set; }
-        public string StoragePlaceId { get; set; }
+        public string SparePartStoragePlaceId { get; set; }
 
         private void ChangeName(string name)
         {
