@@ -17,8 +17,8 @@ namespace ScanApp.Infrastructure.Services
 
         public ScopedMediator(IServiceScopeFactory scopeFactory, IMediator mediator)
         {
-            _scopeFactory = scopeFactory;
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "IMediator interface has not been injected!");
+            _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         }
 
         public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
