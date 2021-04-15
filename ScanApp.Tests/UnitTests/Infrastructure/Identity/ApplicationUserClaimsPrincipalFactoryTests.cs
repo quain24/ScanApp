@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using ScanApp.Application.Common.Entities;
+using ScanApp.Domain.Entities;
 using ScanApp.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using Claim = System.Security.Claims.Claim;
 
 namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 {
@@ -81,7 +82,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         }
 
         [Fact]
-        public async Task Returned_claim_principal_will_not_contain_duplicates()
+        public async Task @ill_not_contain_duplicates()
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userManagerMock = CreateUserManagerMock(user);
@@ -90,9 +91,10 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 new("Type_a", "value_a"),
                 new("Type_a", "value_a"),
                 new("Type_a", "value_a"),
-                new("Type_b", "value_b"),
-                new("Type_b", "value_b"),
+                new("Type_b", "value_a"),
+                new("Type_b", "value_a"),
                 new("Type_c", "value_c"),
+                new("Type_c", "value_ex")
             };
             userManagerMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(claims);
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
@@ -104,18 +106,54 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             var result = await sut.CreateAsync(user);
 
+            // ReSharper disable PossibleNullReferenceException
             result.Identity.Name.Should().Be(user.UserName);
             result.FindFirst(options.ClaimsIdentity.UserIdClaimType).Value.Should().Be(user.Id);
             result.FindFirst(options.ClaimsIdentity.EmailClaimType).Value.Should().Be(user.Email);
             result.FindFirst(options.ClaimsIdentity.SecurityStampClaimType).Value.Should().Be(user.SecurityStamp);
-            result.Claims.Should().OnlyHaveUniqueItems(c => c.Type)
-                .And.OnlyHaveUniqueItems(c => c.Value);
+            result.Claims.Should().OnlyHaveUniqueItems(c => c.Type + c.Value);
+            // ReSharper restore PossibleNullReferenceException
 
             foreach (var claim in result.Claims)
             {
                 Output.WriteLine(claim.Type);
                 Output.WriteLine(claim.Value);
             }
+        }
+
+        [Fact]
+        public async Task Will_contain_location_claim()
+        {
+            var user = UserGeneratorFixture.CreateValidUser();
+            var userManagerMock = CreateUserManagerMock(user);
+            var claims = new List<Claim>
+            {
+                new("Type_a", "value_a"),
+                new("Type_b", "value_a"),
+                new("Type_c", "value_c")
+            };
+            userManagerMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(claims);
+            var roleManagerMock = RoleManagerFixture.MockRoleManager();
+            var optionsAccessorMock = new Mock<IOptions<IdentityOptions>>();
+            var options = new IdentityOptions();
+            optionsAccessorMock.Setup(o => o.Value).Returns(options);
+            var dbContextId = "1";
+            var dbContextFactoryMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbContextId);
+            var userLocation = new UserLocation { LocationId = "111", UserId = user.Id };
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbContextId).Object.CreateDbContext())
+            {
+                ctx.UserLocations.Add(userLocation);
+                ctx.SaveChanges();
+            }
+
+            var sut = new ApplicationUserClaimsPrincipalFactory(userManagerMock.Object, roleManagerMock.Object, optionsAccessorMock.Object, dbContextFactoryMock.Object);
+
+            var result = await sut.CreateAsync(user);
+
+            // ReSharper disable PossibleNullReferenceException
+            result.Identity.Name.Should().Be(user.UserName);
+            result.FindFirst(Globals.ClaimTypes.Location).Value.Should().Be(userLocation.LocationId);
+            // ReSharper restore PossibleNullReferenceException
         }
 
         private Mock<UserManager<ApplicationUser>> CreateUserManagerMock(ApplicationUser user)
