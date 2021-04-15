@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Application.Common.Entities;
@@ -124,7 +123,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task Returns_failed_result_when_transaction_timeouts_when_adding_user()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
 
             var appusers = new List<ApplicationUser>();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers);
@@ -166,7 +165,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task Return_failed_result_if_could_not_add_user()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, null, IdentityResult.Failed());
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
@@ -179,7 +178,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task Deletes_user_if_existing()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: new ApplicationUser());
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
@@ -193,7 +192,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task Returns_not_found_result_if_tried_to_delete_non_existing_user()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: null);
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
@@ -208,7 +207,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task ChangePassword_will_change_password()
         {
             var user = UserGeneratorFixture.CreateValidUser();
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(m =>
                     m.ResetPasswordAsync(It.Is<ApplicationUser>(u => u.Id == user.Id), It.IsAny<string>(), It.Is<string>(s => s == "new password")))
@@ -223,7 +222,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task ChangePassword_returns_not_found_result_if_user_not_found()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
@@ -239,7 +238,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
             var result = await sut.ChangePassword(user.UserName, "new password", Version.Create("invalid"));
@@ -254,7 +253,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
             var passwordValidatorMock = new Mock<IPasswordValidator<ApplicationUser>>();
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
             var result = await sut.ValidatePassword("P@ssword1");
@@ -267,7 +266,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
             var passwordValidatorMock = new Mock<IPasswordValidator<ApplicationUser>>();
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
             var result = await sut.ValidatePassword("Password1");
@@ -278,10 +277,10 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         }
 
         [Fact]
-        public async Task ValidatePassword_will_throw_arg_null_if_given_null()
+        public void ValidatePassword_will_throw_arg_null_if_given_null()
         {
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
             Func<Task> act = async () => await sut.ValidatePassword(null);
@@ -469,7 +468,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task EditUserData_will_return_invalid_result_if_internal_user_update_fails()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
@@ -486,7 +485,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task EditUserData_will_return_concurrency_error_result_if_database_operation_fails_with_dbconcurrency_exc()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
@@ -504,7 +503,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task EditUserData_will_return_unknown_error_result_if_database_operation_fails_with_dbupdate_exc()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
@@ -522,7 +521,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task EditUserData_will_return_timeout_error_result_if_database_operation_fails_transaction_aborted_exc()
         {
-            var ctxFacMock = CreateSimpleFactoryMock();
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var appusers = new List<ApplicationUser>();
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
@@ -562,7 +561,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task EditUserData_will_update_only_provided_data(EditUserDto editData)
         {
             var databaseId = Guid.NewGuid().ToString();
-            var ctxFacMock = CreateSimpleFactoryMock(databaseId);
+            var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(databaseId);
             var comparedUser = UserGeneratorFixture.CreateValidUser();
             var user = UserGeneratorFixture.CreateValidUser();
             var appusers = new List<ApplicationUser> { user };
@@ -623,7 +622,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
             var location = new Location("1", "location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(location);
@@ -635,7 +634,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var appusers = new List<ApplicationUser> { user };
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
             var result = await sut.HasLocation(user.UserName);
 
             result.Conclusion.Should().BeTrue();
@@ -647,7 +646,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.SaveChanges();
@@ -656,7 +655,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var appusers = new List<ApplicationUser> { user };
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
             var result = await sut.HasLocation(user.UserName);
 
             result.Conclusion.Should().BeTrue();
@@ -669,7 +668,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
             var result = await sut.HasLocation(user.UserName);
 
             result.Conclusion.Should().BeFalse();
@@ -683,7 +682,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
             var location = new Location("1", "location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(location);
@@ -695,7 +694,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var appusers = new List<ApplicationUser> { user };
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
             var result = await sut.GetUserLocation(user.UserName);
 
             result.Conclusion.Should().BeTrue();
@@ -709,7 +708,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(new UserLocation() { LocationId = "location_id", UserId = "other_id" });
@@ -719,7 +718,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var appusers = new List<ApplicationUser> { user };
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
             var result = await sut.GetUserLocation(user.UserName);
 
             result.Conclusion.Should().BeTrue();
@@ -734,7 +733,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var appusers = new List<ApplicationUser> { user };
             var userMgrMock = UserManagerFixture.MockUserManager(appusers);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
             var result = await sut.GetUserLocation(user.UserName);
 
             result.Conclusion.Should().BeFalse();
@@ -747,7 +746,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
             var location = new Location("1", "location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(location);
@@ -758,12 +757,12 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
             userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
 
             var result = await sut.SetUserLocation(user.UserName, location, Version.Create(user.ConcurrencyStamp));
 
             result.Conclusion.Should().BeTrue();
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 var cstamp = ctx.Users.First().ConcurrencyStamp;
                 result.Output.Should().Be(Version.Create(cstamp));
@@ -777,7 +776,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var oldLocation = new Location("1", "location_name");
             var newLocation = new Location("2", "new_location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(oldLocation);
@@ -790,12 +789,12 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(appusers, findByNameResult: user);
             userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
 
             var result = await sut.SetUserLocation(user.UserName, newLocation, Version.Create(user.ConcurrencyStamp));
 
             result.Conclusion.Should().BeTrue();
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 var cstamp = ctx.Users.First().ConcurrencyStamp;
                 result.Output.Should().Be(Version.Create(cstamp));
@@ -809,7 +808,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task SetUserLocation_will_throw_arg_null_exc_when_null_given_instead_location()
         {
-            var factoryMock = CreateSimpleFactoryMock();
+            var factoryMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
 
             var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
@@ -821,7 +820,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public async Task SetUserLocation_will_return_not_found_invalid_result_if_there_is_no_user_with_given_name()
         {
-            var factoryMock = CreateSimpleFactoryMock();
+            var factoryMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
 
             var sut = new UserManagerService(userMgrMock.Object, factoryMock.Object);
@@ -836,11 +835,11 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task SetUserLocation_will_return_concurrency_error_invalid_result_if_given_version_is_not_valid()
         {
             var dbId = Guid.NewGuid().ToString();
-            var factoryMock = CreateSimpleFactoryMock(dbId);
+            var factoryMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId);
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(), findByNameResult: user);
 
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.SaveChanges();
@@ -858,12 +857,12 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task SetUserLocation_will_return_invalid_result_with_unknown_error_if_dbupdate_exc_was_thrown()
         {
             var dbId = Guid.NewGuid().ToString();
-            var factoryMock = CreateSimpleFactoryMock(dbId);
+            var factoryMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId);
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(), findByNameResult: user);
             userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ThrowsAsync(new DbUpdateException());
 
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.SaveChanges();
@@ -882,7 +881,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
             var location = new Location("1", "location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(location);
@@ -894,12 +893,12 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(appusers);
             userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
 
             var result = await sut.RemoveFromLocation(user.UserName, Version.Create(user.ConcurrencyStamp));
 
             result.Conclusion.Should().BeTrue();
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.UserLocations.Any(u => u.UserId == user.Id).Should().BeFalse();
                 var cstamp = ctx.Users.First(u => u.Id == user.Id).ConcurrencyStamp;
@@ -913,7 +912,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var dbId = Guid.NewGuid().ToString();
             var user = UserGeneratorFixture.CreateValidUser();
             var location = new Location("1", "location_name");
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.Add(user);
                 ctx.Add(location);
@@ -925,13 +924,13 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(appusers);
             userMgrMock.Setup(u => u.GenerateConcurrencyStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(Guid.NewGuid().ToString());
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock(dbId).Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object);
 
             var result = await sut.RemoveFromLocation(user.UserName, Version.Create("invalid"));
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
-            using (var ctx = CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
+            using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock(dbId).Object.CreateDbContext())
             {
                 ctx.UserLocations.Any(u => u.UserId == user.Id).Should().BeTrue();
                 result.Output.Should().Be(Version.Create(user.ConcurrencyStamp));
@@ -943,7 +942,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveFromLocation(user.UserName, Version.Create(user.ConcurrencyStamp));
 
@@ -957,7 +956,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create(user.ConcurrencyStamp));
 
@@ -971,7 +970,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.UpdateSecurityStampAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create("invalid"));
 
@@ -985,7 +984,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.ChangeUserSecurityStamp(user.UserName, Version.Create(user.ConcurrencyStamp));
 
@@ -1001,7 +1000,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var role = "role_name";
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.Is<string[]>(r => r.First() == role))).ReturnsAsync(IdentityResult.Success);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), role);
 
@@ -1017,7 +1016,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roles = new[] { "role_name", "new_role", "additional_role" };
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.Is<string[]>(r => r.SequenceEqual(roles)))).ReturnsAsync(IdentityResult.Success);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
 
@@ -1032,7 +1031,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var role = "role_name";
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddUserToRole(user.UserName, Version.Create("random"), role);
 
@@ -1048,7 +1047,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var role = "role_name";
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddUserToRole(user.UserName, Version.Create(user.ConcurrencyStamp), role);
 
@@ -1067,7 +1066,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.RemoveFromRolesAsync(It.Is<ApplicationUser>(u => u.UserName.Equals(user.UserName)),
                 It.Is<string[]>(m => m.SequenceEqual(roles)))).ReturnsAsync(IdentityResult.Success);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
 
@@ -1081,7 +1080,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), "a_role");
 
@@ -1096,7 +1095,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create("invalid"), "a_role");
 
@@ -1112,7 +1111,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0), findByNameResult: user);
             userMgrMock.Setup(u => u.IsInRoleAsync(It.Is<ApplicationUser>(u => u.Id == user.Id), It.Is<string>(u => u.Equals("role_name")))).ReturnsAsync(true);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.IsInRole(user.UserName, "role_name");
 
@@ -1126,7 +1125,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.IsInRole(user.UserName, "role_name");
 
@@ -1150,7 +1149,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .ReturnsAsync(IdentityResult.Success)
                 .Callback<ApplicationUser, System.Security.Claims.Claim>((_, c) => claimList.Add(c));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
 
@@ -1171,7 +1170,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(claimList);
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
 
@@ -1197,7 +1196,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddClaimToUser(user.UserName, type, value);
 
@@ -1216,7 +1215,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.AddClaimToUser(user.UserName, claim.Type, claim.Value);
 
@@ -1238,7 +1237,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .ReturnsAsync(IdentityResult.Success)
                 .Callback<ApplicationUser, System.Security.Claims.Claim>((_, c) => claimList.Remove(c));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
 
@@ -1257,7 +1256,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
 
@@ -1271,7 +1270,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var user = UserGeneratorFixture.CreateValidUser();
             var claim = new Claim("type", "value");
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveClaimFromUser(user.UserName, claim.Type, claim.Value);
 
@@ -1295,7 +1294,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             userMgrMock.Setup(u => u.GetClaimsAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(new List<System.Security.Claims.Claim>(0));
 
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.RemoveClaimFromUser(user.UserName, type, value);
 
@@ -1312,7 +1311,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .ReturnsAsync(IdentityResult.Success);
 
             var date = new DateTimeOffset(1999, 1, 1, 12, 0, 0, TimeSpan.Zero);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.SetLockoutDate(user.UserName, date);
 
@@ -1327,25 +1326,13 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
 
             var date = new DateTimeOffset(1999, 1, 1, 12, 0, 0, TimeSpan.Zero);
-            var sut = new UserManagerService(userMgrMock.Object, CreateSimpleFactoryMock().Object);
+            var sut = new UserManagerService(userMgrMock.Object, AppDbContextFactoryMockFixture.CreateSimpleFactoryMock().Object);
 
             var result = await sut.SetLockoutDate(user.UserName, date);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
             userMgrMock.Verify(u => u.SetLockoutEndDateAsync(It.IsAny<ApplicationUser>(), It.Is<DateTimeOffset>(d => d.Equals(date))), Times.Never);
-        }
-
-        private static Mock<IDbContextFactory<ApplicationDbContext>> CreateSimpleFactoryMock(string id = null)
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: id ?? Guid.NewGuid().ToString())
-                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options;
-
-            var ctxFacMock = new Mock<IDbContextFactory<ApplicationDbContext>>();
-            ctxFacMock.Setup(c => c.CreateDbContext()).Returns(new ApplicationDbContext(options));
-            return ctxFacMock;
         }
     }
 }

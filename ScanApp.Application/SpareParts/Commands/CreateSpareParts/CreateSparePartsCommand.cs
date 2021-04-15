@@ -35,7 +35,7 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
                 try
                 {
                     var spareParts = request.SpareParts.Select(s =>
-                        new SparePart(s.Name, s.Amount, s.SourceArticleId, s.StoragePlaceId));
+                        new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
 
                     await ctx.SpareParts.AddRangeAsync(spareParts, cancellationToken).ConfigureAwait(false);
                     await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

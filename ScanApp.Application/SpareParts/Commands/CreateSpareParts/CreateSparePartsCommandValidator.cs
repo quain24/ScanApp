@@ -26,7 +26,7 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
                     sparePart.RuleFor(s => s.SourceArticleId)
                         .NotEmpty()
                         .WithMessage("one of spare parts does not have a Source article ID");
-                    sparePart.RuleFor(s => s.StoragePlaceId)
+                    sparePart.RuleFor(s => s.SparePartStoragePlaceId)
                         .NotEmpty()
                         .WithMessage("one of spare parts does not have a Storage place ID");
                 });

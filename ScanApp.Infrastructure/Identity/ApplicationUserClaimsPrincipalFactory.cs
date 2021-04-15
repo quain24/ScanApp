@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ScanApp.Application.Common.Entities;
@@ -21,7 +22,7 @@ namespace ScanApp.Infrastructure.Identity
             IDbContextFactory<ApplicationDbContext> ctxFactory)
             : base(userManager, roleManager, optionsAccessor)
         {
-            _ctxFactory = ctxFactory;
+            _ctxFactory = ctxFactory ?? throw new ArgumentNullException(nameof(ctxFactory));
         }
 
         public override async Task<ClaimsPrincipal> CreateAsync(ApplicationUser user)

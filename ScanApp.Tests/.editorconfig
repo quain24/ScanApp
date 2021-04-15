@@ -1,0 +1,3 @@
+[*.cs]
+resharper_use_deconstruction_highlighting = none
+resharper_use_deconstruction_on_parameter_highlighting = none
