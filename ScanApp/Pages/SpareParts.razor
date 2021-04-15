@@ -1,0 +1,151 @@
+﻿@page "/spareparts"
+@using ScanApp.Domain.Entities;
+@using ScanApp.Components.Common.ScanAppTable
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Infrastructure.Services
+@using Microsoft.EntityFrameworkCore
+@using ScanApp.Application.SpareParts
+@using ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
+@using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
+@using ScanApp.Application.SpareParts.Commands.CreateSpareParts
+@using ScanApp.Models.SpareParts
+@inject IArticleService articleService
+@inject IScopedMediator mediator
+@inject ISnackbar Snackbar
+<style>
+    .mud-input-label-inputcontrol {
+        margin-left: 20px;
+    }
+</style>
+
+<MudPaper Elevation="4">
+    <MudGrid>
+        <MudItem Style="position:center" xs="12" sm="6" md="4">
+            <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop" Required="true" ResetValueOnEmptyText="true"
+                             Immediate="true" Style="margin-left: 15px; margin-right: 15px;" Variant="Variant.Outlined" />
+
+            <MudTextField @bind-Value="_article" Label="Article" Immediate="true"
+                          Style="margin-left: 15px; margin-right: 15px;" Variant="Variant.Outlined" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+&nbsp;
+<ScanAppTable Items="@_spareParts" Options="_tableOptions" Headers="@_headers" Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
+<MudDivider />
+<MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="width: 175px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
+           Color="Color.Error">Cancel</MudButton>
+<MudButton Variant="Variant.Filled" OnClick="@Submit" Style="position:absolute; right: 0px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
+           Color="Color.Primary">Submit</MudButton>
+
+@code {
+    private List<SparePartGUIModel> _spareParts;
+
+    private string[] _headersArray =
+    {
+        "Name","Amount"
+    };
+
+    private Header _headers { get; set; }
+    private ScanAppTableOptions _tableOptions { get; set; }
+
+    private string _height = "400px";
+    private string searchString = string.Empty;
+    private string[] _repairWorkshops;
+    private string _selectedRepairWorkshop;
+    private string _article;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _tableOptions = new ScanAppTableOptions();
+        _tableOptions.ShowToolBar = false;
+        var storagePlacesResult = await mediator.Send(new StoragePlacesForCurrentUserQuery());
+
+        if (storagePlacesResult.Conclusion is false)
+        {
+            Snackbar.Add("Could not fetch possible repair workshops", Severity.Error);
+            return;
+        }
+        var repairWorkshopModels = storagePlacesResult.Output;
+
+        _repairWorkshops = new string[repairWorkshopModels.Count];
+
+        for (int i = 0; i < repairWorkshopModels.Count(); i++)
+        {
+            _repairWorkshops[i] = repairWorkshopModels[i].Number;
+        }
+
+        _headers = new Header(_headersArray);
+        _headers.MakeNotEditable("Name");
+        _headers.MakeEditable("Amount");
+
+        base.OnInitialized();
+    }
+
+    public void Save(SparePartGUIModel sparePart)
+    {
+
+    }
+
+    public void Delete(IEnumerable<SparePartGUIModel> spareParts)
+    {
+
+    }
+
+    public async Task GetData()
+    {
+        // Call database to get data
+        var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
+        if (sparePartsTypesResult.Conclusion is false)
+        {
+            Snackbar.Add("Could not fetch spare part types.", Severity.Error);
+            return;
+        }
+
+        var sparePartTypes = sparePartsTypesResult.Output;
+
+        _spareParts = new List<SparePartGUIModel>();
+        foreach (var sparePartType in sparePartTypes)
+        {
+            _spareParts.Add(new SparePartGUIModel(sparePartType.Name, 0));
+        }
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<string>> SearchRepairWorkshop(string value)
+    {
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return _repairWorkshops;
+        return _repairWorkshops.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task Cancel()
+    {
+        await GetData();
+        _article = string.Empty;
+        _selectedRepairWorkshop = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task Submit()
+    {
+        if (_article == string.Empty || _article is null)
+        {
+            Snackbar.Add("Article field is empty!", Severity.Error);
+            return;
+        }
+        var models = new SparePartModel[_spareParts.Count];
+        for (int i = 0; i < _spareParts.Count; i++)
+        {
+            if (_spareParts[i].Amount <= 0)
+            {
+                continue;
+            }
+            models[i] = new SparePartModel(_spareParts[i].Name, _spareParts[i].Amount, _article, _selectedRepairWorkshop);
+        }
+
+        models = models.Where(m => m != null).ToArray();
+
+        var saveResult = await mediator.Send(new CreateSparePartsCommand(models));
+    }
+}
