@@ -82,7 +82,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         }
 
         [Fact]
-        public async Task @ill_not_contain_duplicates()
+        public async Task Will_not_contain_duplicates()
         {
             var user = UserGeneratorFixture.CreateValidUser();
             var userManagerMock = CreateUserManagerMock(user);
