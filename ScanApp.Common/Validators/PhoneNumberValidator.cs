@@ -13,7 +13,7 @@ namespace ScanApp.Common.Validators
             if (value is not string phone)
                 return false;
 
-            if (phone.Length < 6 || phone.Length > 25)
+            if (phone.Length is < 6 or > 25)
                 return false;
 
             if (char.IsNumber(phone[0]) || phone[0].Equals('+'))
