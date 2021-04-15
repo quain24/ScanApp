@@ -106,44 +106,45 @@ else
             </MudTable>
         </MudPaper>
     }
-
-    <MudToolBar>
-        @if (_multiselectionEnabled && _selectedItems.Count > 0)
-        {
-            <MudIconButton OnClick="() => OpenSelectionDialog()" Icon="@Icons.Material.Filled.ReadMore"></MudIconButton>
-        }
-        <MudToolBarSpacer />
-        @if (_menuOpened)
-        {
-            @if (_multiselectionEnabled)
+    @if (Options.ShowToolBar)
+    {
+        <MudToolBar>
+            @if (_multiselectionEnabled && _selectedItems.Count > 0)
             {
-                <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBox"></MudIconButton>
+                <MudIconButton OnClick="() => OpenSelectionDialog()" Icon="@Icons.Material.Filled.ReadMore"></MudIconButton>
+            }
+            <MudToolBarSpacer />
+            @if (_menuOpened)
+            {
+                @if (_multiselectionEnabled)
+                {
+                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBox"></MudIconButton>
+                }
+                else
+                {
+                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBoxOutlineBlank"></MudIconButton>
+                }
+                @if (!_groupingEnabled)
+                {
+                    <MudIconButton OnClick="() => OpenFilterDialog(_scanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                }
+                <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
+                @if (_dataIsFiltered && !_groupingEnabled)
+                {
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(_scanAppTableSorter)"></MudIconButton>
+                }
+                @if (_groupingEnabled)
+                {
+                    <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
+                }
+                <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
             }
             else
             {
-                <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBoxOutlineBlank"></MudIconButton>
+                <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Menu"></MudIconButton>
             }
-            @if (!_groupingEnabled)
-            {
-                <MudIconButton OnClick="() => OpenFilterDialog(_scanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
-            }
-            <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
-            @if (_dataIsFiltered && !_groupingEnabled)
-            {
-                <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(_scanAppTableSorter)"></MudIconButton>
-            }
-            @if (_groupingEnabled)
-            {
-                <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
-            }
-            <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
-        }
-        else
-        {
-            <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Menu"></MudIconButton>
-        }
-    </MudToolBar>
-
+        </MudToolBar>
+    }
 }
 
 
@@ -151,6 +152,9 @@ else
 {
     [Parameter]
     public IEnumerable<TItem> Items { get; set; }
+
+    [Parameter]
+    public ScanAppTableOptions Options { get; set; }
 
     [Parameter]
     public Header Headers { get; set; }
@@ -208,7 +212,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         await InvokeGetData();
-
         _scanAppTableSorter = new ScanAppTableSorter<TItem>();
         _subScanAppTableSorter = new ScanAppTableSorter<TItem>();
         if (dialogOptions is null)
