@@ -45,7 +45,7 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
                 {
                     return ex is DbUpdateConcurrencyException
                         ? new Result(ErrorType.ConcurrencyFailure, ex)
-                        : new Result(ErrorType.Unknown, ex);
+                        : new Result(ErrorType.DatabaseError, ex);
                 }
             }
         }

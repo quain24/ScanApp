@@ -34,7 +34,10 @@ namespace ScanApp.Application.Common.Helpers.Result
         ConfigurationError,
         NetworkError,
         ConcurrencyFailure,
-        Timeout
+        Timeout,
+
+        // Database common
+        DatabaseError
 
         ///// <summary>
         ///// Specific error code
