@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="10.0.2" />
+    <PackageReference Include="FluentValidation" Version="10.0.3" />
     <PackageReference Include="SharedExtensions" Version="1.0.4" />
   </ItemGroup>
 
