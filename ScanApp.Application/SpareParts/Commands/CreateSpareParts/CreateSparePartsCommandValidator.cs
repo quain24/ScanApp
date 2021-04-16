@@ -7,6 +7,7 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
         public CreateSparePartsCommandValidator()
         {
             RuleFor(c => c.SpareParts)
+                .Cascade(CascadeMode.Stop)
                 .NotNull()
                 .WithMessage("Instead of spare parts collection a null was passed inside command.")
                 .NotEmpty()
