@@ -71,11 +71,11 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
         }
 
         public static TheoryData<List<SparePartModel>> WrongAmountModels =>
-            CreateSparePartsCommandValidatorTestsData.WrongAmountSparePartModel;
+            CreateSparePartsCommandValidatorTestsData.WrongAmountSparePartModels;
 
         [Theory]
         [MemberData(nameof(WrongAmountModels))]
-        public void Every_spare_part_model_model_amount_must_be_between_min_and_max(List<SparePartModel> sparePartModels)
+        public void Every_spare_part_model_amount_must_be_between_min_and_max(List<SparePartModel> sparePartModels)
         {
             var command = new CreateSparePartsCommand(sparePartModels.ToArray());
             var sut = new CreateSparePartsCommandValidator();
@@ -85,6 +85,72 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             result.Errors.Should().HaveCount(sparePartModels.Count(s => s.Amount is <= 0 or > 1000));
             using var scope = new AssertionScope();
             result.Errors.ForEach(e => e.ErrorMessage.Should().Be("Spare part quantity must be between 1 and 1000"));
+        }
+
+        public static TheoryData<List<SparePartModel>> WrongNamesModels =>
+            CreateSparePartsCommandValidatorTestsData.MissingNameSparePartModels;
+
+        [Theory]
+        [MemberData(nameof(WrongNamesModels))]
+        public void Every_spare_part_model_must_have_a_name(List<SparePartModel> sparePartModels)
+        {
+            var command = new CreateSparePartsCommand(sparePartModels.ToArray());
+            var sut = new CreateSparePartsCommandValidator();
+
+            var result = sut.Validate(command);
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().HaveCount(sparePartModels.Count(s => string.IsNullOrWhiteSpace(s.Name)));
+            using var scope = new AssertionScope();
+            result.Errors.ForEach(e => e.ErrorMessage.Should().Be("one of spare parts does not have a Name"));
+        }
+
+        public static TheoryData<List<SparePartModel>> MissingArticleIdModels =>
+            CreateSparePartsCommandValidatorTestsData.MissingArticleIdSparePartModels;
+
+        [Theory]
+        [MemberData(nameof(MissingArticleIdModels))]
+        public void Every_spare_part_model_must_have_article_id(List<SparePartModel> sparePartModels)
+        {
+            var command = new CreateSparePartsCommand(sparePartModels.ToArray());
+            var sut = new CreateSparePartsCommandValidator();
+
+            var result = sut.Validate(command);
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().HaveCount(sparePartModels.Count(s => string.IsNullOrWhiteSpace(s.SourceArticleId)));
+            using var scope = new AssertionScope();
+            result.Errors.ForEach(e => e.ErrorMessage.Should().Be("one of spare parts does not have a Source article ID"));
+        }
+
+        public static TheoryData<List<SparePartModel>> MissingStoragePlaceIdModels =>
+            CreateSparePartsCommandValidatorTestsData.MissingStoragePlaceSparePartModels;
+
+        [Theory]
+        [MemberData(nameof(MissingStoragePlaceIdModels))]
+        public void Every_spare_part_model_must_have_storage_place_id(List<SparePartModel> sparePartModels)
+        {
+            var command = new CreateSparePartsCommand(sparePartModels.ToArray());
+            var sut = new CreateSparePartsCommandValidator();
+
+            var result = sut.Validate(command);
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().HaveCount(sparePartModels.Count(s => string.IsNullOrWhiteSpace(s.SparePartStoragePlaceId)));
+            using var scope = new AssertionScope();
+            result.Errors.ForEach(e => e.ErrorMessage.Should().Be("one of spare parts does not have a Storage place ID"));
+        }
+
+        public static TheoryData<List<SparePartModel>, int> CombinedErrorsModels =>
+            CreateSparePartsCommandValidatorTestsData.CombinedDifferentErrorsSparePartsModels;
+
+        [Theory]
+        [MemberData(nameof(CombinedErrorsModels))]
+        public void Detects_all_errors_in_given_data(List<SparePartModel> sparePartModels, int numberOfErrors)
+        {
+            var command = new CreateSparePartsCommand(sparePartModels?.ToArray());
+            var sut = new CreateSparePartsCommandValidator();
+
+            var result = sut.Validate(command);
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().HaveCount(numberOfErrors);
         }
     }
 }

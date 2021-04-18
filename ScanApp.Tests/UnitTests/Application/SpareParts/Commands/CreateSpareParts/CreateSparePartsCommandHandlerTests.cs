@@ -50,7 +50,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             var sparePart = new SparePartModel(sparePartType.Name, 1, "article_id", sparePartStoragePlace.Id);
             var request = new CreateSparePartsCommand(sparePart);
 
-            var sut = new CreateSparePartsCommand.CreateSparePartsCommandHandler(ctxFactoryMock.Object);
+            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
 
             var result = await sut.Handle(request, CancellationToken.None);
 
@@ -83,7 +83,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             var sparePart = new SparePartModel(sparePartType.Name, 1, "article_id", "unknown_id");
             var request = new CreateSparePartsCommand(sparePart);
 
-            var sut = new CreateSparePartsCommand.CreateSparePartsCommandHandler(ctxFactoryMock.Object);
+            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
 
             var result = await sut.Handle(request, CancellationToken.None);
 
@@ -116,7 +116,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             var sparePart = new SparePartModel("unknown_part_type_name", 1, "article_id", sparePartStoragePlace.Id);
             var request = new CreateSparePartsCommand(sparePart);
 
-            var sut = new CreateSparePartsCommand.CreateSparePartsCommandHandler(ctxFactoryMock.Object);
+            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
 
             var result = await sut.Handle(request, CancellationToken.None);
 
