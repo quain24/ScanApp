@@ -1,28 +1,27 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
-using ScanApp.Application.SpareParts.Queries.AllSparePartTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 
-namespace ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces
+namespace ScanApp.Application.SpareParts.Queries.GetAllSparePartStoragePlaces
 {
-    public record GetAllStoragePlacesQuery : IRequest<Result<List<RepairWorkshopModel>>>;
+    public record GetAllSparePartStoragePlacesQuery : IRequest<Result<List<RepairWorkshopModel>>>;
 
-    internal class GetAllStoragePlacesQueryHandler : IRequestHandler<GetAllStoragePlacesQuery, Result<List<RepairWorkshopModel>>>
+    internal class GetAllSparePartStoragePlacesQueryHandler : IRequestHandler<GetAllSparePartStoragePlacesQuery, Result<List<RepairWorkshopModel>>>
     {
         private readonly IContextFactory _contextFactory;
 
-        public GetAllStoragePlacesQueryHandler(IContextFactory contextFactory)
+        public GetAllSparePartStoragePlacesQueryHandler(IContextFactory contextFactory)
         {
-            _contextFactory = contextFactory;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
-        public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllStoragePlacesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllSparePartStoragePlacesQuery request, CancellationToken cancellationToken)
         {
             await using var ctx = _contextFactory.CreateDbContext();
             try
