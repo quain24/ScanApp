@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.ScanAppTable
+namespace ScanApp.Components.Common.ScanAppTable.Options
 {
-    public class Header
+    public class Headers
     {
-        public Header(IEnumerable<string> names)
+        public Headers(IEnumerable<string> names)
         {
             Names.AddRange(names);
             foreach (var name in names)

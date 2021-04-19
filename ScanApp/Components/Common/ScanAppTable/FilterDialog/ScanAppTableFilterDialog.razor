@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable.Options
 
 <MudDialog>
     <TitleContent>
@@ -66,7 +67,7 @@
     public IEnumerable<TItem> Items { get; set; }
 
     [Parameter]
-    public Header Headers { get; set; }
+    public Headers Headers { get; set; }
 
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
@@ -96,7 +97,7 @@
     {
         for (int i = 0; i < from.Length; i++)
         {
-            Items = ScanAppTableFilter<TItem>.FilterBetween<TItem>(Items, Properties[i].Name, from[i], to[i]);
+            Items = ScanAppTableFilter<TItem>.FilterBetween(Items, Properties[i].Name, from[i], to[i]);
         }
         for (int i = 0; i < contains.Length; i++)
         {

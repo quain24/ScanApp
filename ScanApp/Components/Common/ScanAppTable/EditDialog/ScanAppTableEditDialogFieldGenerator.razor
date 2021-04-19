@@ -1,0 +1,55 @@
+﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@typeparam TItem
+@if (!Headers.IsVisible(Iterator))
+{
+    return;
+}
+else if (!Headers.IsEditable(Iterator))
+{
+    <MudField Label="@Headers.Names[Iterator]" Variant="Variant.Filled">@ItemRepresentation.Objects[Iterator].ToString()</MudField>
+}
+else
+{
+    @switch (ItemRepresentation.Objects[Iterator])
+    {
+        case string str:
+            <MudTextField @bind-Value="@ItemRepresentation.Strings[Iterator]" @onkeypress="KeyPressed" Immediate="true"
+                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+            break;
+
+        case int integer:
+            <MudTextField @bind-Value="@ItemRepresentation.Ints[Iterator]" @onkeypress="KeyPressed" Immediate="true"
+                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+            break;
+
+        case DateTime datetime:
+            <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="@Headers.Names[Iterator]"
+                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Editable="true" ShowWeekNumbers="true" />
+            break;
+
+        case double dbl:
+            <MudTextField @bind-Value="@ItemRepresentation.Doubles[Iterator]" @onkeypress="KeyPressed" Immediate="true"
+                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+            break;
+
+        case decimal dec:
+            <MudTextField @bind-Value="@ItemRepresentation.Decimals[Iterator]" @onkeypress="KeyPressed" Immediate="true"
+                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+            break;
+    }
+}
+
+@code {
+
+    [Parameter]
+    public Headers Headers { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
+
+    [Parameter]
+    public int Iterator { get; set; }
+
+    [Parameter]
+    public ItemRepresentation<TItem> ItemRepresentation { get; set; }
+}

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.ScanAppTable
+namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ScanAppTableOptions
     {

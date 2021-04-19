@@ -2,13 +2,18 @@
 @inject IDialogService DialogService
 @inject ISnackbar SnackBar
 @using System.Reflection;
-@using ScanApp.Components.Common.ScanAppTable;
+@using ScanApp.Components.Common.ScanAppTable.EditDialog;
+@using ScanApp.Components.Common.ScanAppTable.FilterDialog;
+@using ScanApp.Components.Common.ScanAppTable.GroupDialog;
+@using ScanApp.Components.Common.ScanAppTable.SelectionDialog;
+@using ScanApp.Components.Common.ScanAppTable.Options;
+@using ScanApp.Components.Common.ScanAppTable.Sorter;
 
 @if (_loading)
 {
     <MudContainer Fixed="true" Style="width: 100%; height: 500px;">
         <MudProgressCircular Style="position: absolute; left: 50%; margin-left: -10px; top: 50%; margin-top: -10px;"
-                             Color="Color.Info" Size="Size.Large" Indeterminate="true" />
+                                  Color="Color.Info" Size="Size.Large" Indeterminate="true" />
     </MudContainer>
 }
 else
@@ -19,8 +24,8 @@ else
                  Class="mt-8" PanelClass="pa-6">
             @foreach (var group in _groupList)
             {
-                <MudTabPanel Text="@GetFormattedString(group.Key)">
-                    <MudTable Items="group.itemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
+                <MudTabPanel Text="@GetShorterString(group.Key)">
+                    <MudTable Style="@TableStyle" Items="group.itemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
                         <HeaderContent>
                             @for (int i = 0; i < Headers.Count; i++)
                             {
@@ -61,7 +66,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable MultiSelection="_multiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
+            <MudTable Style="@TableStyle" MultiSelection="_multiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @for (int i = 0; i < Headers.Count; i++)
@@ -86,22 +91,21 @@ else
                 </HeaderContent>
                 <RowTemplate>
                     @for (int i = 0; i < _properties.Length; i++)
-                            {
-                                int local = i;
-                                if (!Headers.IsVisible(local))
-                                {
-                                    continue;
-                                }
-                        @if (_multiselectionEnabled)
-                                {
+                    {
+                        int local = i;
+                        if (!Headers.IsVisible(local))
+                        {
+                            continue;
+                        }
+                        if (_multiselectionEnabled)
+                        {
                             <MudTd Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
-                                }
-                                else
-                                {
+                        }
+                        else
+                        {
                             <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
-
-                                }
-                            }
+                        }
+                    }
                 </RowTemplate>
             </MudTable>
         </MudPaper>
@@ -137,11 +141,11 @@ else
                 {
                     <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
                 }
-                <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+                <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
             }
             else
             {
-                <MudIconButton OnClick="ToggleOpenMenu" Icon="@Icons.Material.Outlined.Menu"></MudIconButton>
+                <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Menu"></MudIconButton>
             }
         </MudToolBar>
     }
@@ -151,16 +155,19 @@ else
 @code
 {
     [Parameter]
-    public IEnumerable<TItem> Items { get; set; }
+    public IEnumerable<TItem> Items { get; set; } = Array.Empty<TItem>();
 
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
 
     [Parameter]
-    public Header Headers { get; set; }
+    public Headers Headers { get; set; }
 
     [Parameter]
     public string Height { get; set; }
+
+    [Parameter]
+    public string TableStyle { get; set; }
 
     [Parameter]
     public RenderFragment<TItem> ChildContent { get; set; }
@@ -182,6 +189,7 @@ else
     private PropertyInfo[] _properties { get; set; }
     private ScanAppTableSorter<TItem> _scanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> _subScanAppTableSorter { get; set; }
+    private IEnumerable<TItem> _itemsOriginal { get; set; }
     private bool _dataIsFiltered { get; set; }
     private bool _menuOpened { get; set; }
     private bool _groupingEnabled { get; set; }
@@ -191,19 +199,19 @@ else
     private List<Group<TItem>> _groupList { get; set; } = new List<Group<TItem>>();
     private HashSet<TItem> _selectedItems = new HashSet<TItem>();
 
-    public void InvokeSaveChanges(TItem titem)
+    private void InvokeSaveChanges(TItem titem)
     {
         SaveChanges?.Invoke(titem);
     }
 
-    public async Task InvokeGetData()
+    private async Task InvokeGetData()
     {
         _loading = true;
         await GetData();
         _loading = false;
     }
 
-    public async Task InvokeDeleteData(IEnumerable<TItem> titemList)
+    private async Task InvokeDeleteData(IEnumerable<TItem> titemList)
     {
         DeleteData?.Invoke(titemList);
         await InvokeGetData();
@@ -212,6 +220,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await InvokeGetData();
+        _itemsOriginal = Items;
         _scanAppTableSorter = new ScanAppTableSorter<TItem>();
         _subScanAppTableSorter = new ScanAppTableSorter<TItem>();
         if (dialogOptions is null)
@@ -219,23 +228,27 @@ else
             dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Large };
         }
         _properties = Items.FirstOrDefault().GetType().GetProperties();
-
-        //return base.OnInitializedAsync();
     }
 
-    public void ToggleOpenMenu()
+    private void ToggleMenu()
     {
         _menuOpened = !_menuOpened;
     }
 
-    public void ToggleMultiSelection()
+    private void ToggleMultiSelection()
     {
         _multiselectionEnabled = !_multiselectionEnabled;
     }
 
-    public async Task OpenEditDialog(TItem titem)
+    private async Task OpenEditDialog(TItem titem)
     {
-        var parameter = new DialogParameters { ["Item"] = titem, ["Headers"] = Headers };
+        var parameter = new DialogParameters
+        { 
+            ["Item"] = titem, 
+            ["Headers"] = Headers,
+            ["Properties"] = _properties
+
+        };
         var dialog = DialogService.Show<ScanAppTableEditDialog<TItem>>("Edit", parameter, dialogOptions);
         var result = await dialog.Result;
         titem = (TItem)result.Data;
@@ -243,7 +256,7 @@ else
         StateHasChanged();
     }
 
-    public async Task OpenGroupDialog()
+    private async Task OpenGroupDialog()
     {
         var parameter = new DialogParameters
         {
@@ -272,7 +285,7 @@ else
         //StateHasChanged();
     }
 
-    public async Task OpenSelectionDialog()
+    private async Task OpenSelectionDialog()
     {
         var parameter = new DialogParameters
         {
@@ -307,7 +320,7 @@ else
         }
     }
 
-    public string GetFormattedString(string str)
+    private string GetShorterString(string str)
     {
         if (str.Length > 10)
         {
@@ -317,23 +330,15 @@ else
         return str;
     }
 
-    public void ToggleGroupingMenu()
+    private void ToggleGroupingMenu()
     {
         _groupingEnabled = !_groupingEnabled;
     }
 
-    public string GetToolbarStyle(bool groupingEnabled)
-    {
-        if (groupingEnabled)
-        {
-            return "margin-top: -90px; right:10px";
-        }
-        return "margin-top: -75px;";
-    }
 
-    public async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter, IEnumerable<TItem> items)
+    private async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter, IEnumerable<TItem> items)
     {
-        await InvokeGetData();
+        //await InvokeGetData();
         var parameter = new DialogParameters
         {
             ["Items"] = items,
@@ -356,7 +361,8 @@ else
     {
         _dataIsFiltered = false;
         sorter.ResetSortingStatus();
-        await InvokeGetData();
+        // await InvokeGetData(); // maybe not? ;)
+        Items = _itemsOriginal;
     }
 
     private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)

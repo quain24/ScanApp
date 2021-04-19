@@ -1,0 +1,78 @@
+﻿@typeparam TItem
+@using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable.Options
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.Edit"/>
+            Edit
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 500px; overflow-y: scroll;">
+            <MudGrid>
+                <MudItem >
+                    @for (int i = 0; i < _itemRepresentation.Objects.Length; i++)
+                    {
+                        <ScanAppTableEditDialogFieldGenerator Headers="Headers" ItemRepresentation="_itemRepresentation" Iterator="i"
+                                                              KeyPressed="@KeyPressed"/>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public TItem Item { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem> ChildContent { get; set; }
+
+    [Parameter]
+    public Headers Headers { get; set; }
+
+    [Parameter]
+    public PropertyInfo[] Properties { get; set; }
+
+    private ItemRepresentation<TItem> _itemRepresentation { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        _itemRepresentation = new ItemRepresentation<TItem>(Properties, Item);
+        return base.OnInitializedAsync();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Submit()
+    {
+        _itemRepresentation.SaveChanges();
+
+        for (int i = 0; i < Properties.Length; i++)
+        {
+            Properties[i].SetValue(Item, _itemRepresentation.Objects[i]);
+        }
+        MudDialog.Close(DialogResult.Ok(Item));
+    }
+
+    private void KeyPressed(KeyboardEventArgs keyboardEventArg)
+    {
+        if (keyboardEventArg.Key != "Enter")
+        {
+            return;
+        }
+        Submit();
+    }
+}
