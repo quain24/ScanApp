@@ -7,17 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 {
-    public class GetAllClaimsFromRoleQuery : IRequest<Result<List<ClaimModel>>>
-    {
-        public string RoleName { get; }
+    public record GetAllClaimsFromRoleQuery(string RoleName) : IRequest<Result<List<ClaimModel>>>;
 
-        public GetAllClaimsFromRoleQuery(string roleName)
-        {
-            RoleName = roleName;
-        }
-    }
-
-    public class GetAllClaimsFromRoleQueryHandler : IRequestHandler<GetAllClaimsFromRoleQuery, Result<List<ClaimModel>>>
+    internal class GetAllClaimsFromRoleQueryHandler : IRequestHandler<GetAllClaimsFromRoleQuery, Result<List<ClaimModel>>>
     {
         private readonly IRoleManager _roleManager;
 

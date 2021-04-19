@@ -3,7 +3,7 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUserToRole
 {
-    public class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
+    internal class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
     {
         private readonly IdentityNamingValidator<AddUserToRoleCommand, string> _standardChars = new();
 

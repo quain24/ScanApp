@@ -3,7 +3,7 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
-    public class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
+    internal class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
     {
         public AddNewUserRoleValidator()
         {

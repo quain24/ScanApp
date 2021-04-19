@@ -3,7 +3,7 @@ using ScanApp.Application.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 {
-    public class ChangeUserPasswordValidator : AbstractValidator<ChangeUserPasswordCommand>
+    internal class ChangeUserPasswordValidator : AbstractValidator<ChangeUserPasswordCommand>
     {
         public ChangeUserPasswordValidator(PasswordValidator validator)
         {

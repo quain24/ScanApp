@@ -10,45 +10,36 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Queries.StoragePlacesByLocation
 {
-    public class StoragePlacesByLocationQuery : IRequest<Result<List<RepairWorkshopModel>>>
-    {
-        public string LocationId { get; }
+    public record StoragePlacesByLocationQuery(string LocationId) : IRequest<Result<List<RepairWorkshopModel>>>;
 
-        public StoragePlacesByLocationQuery(string locationId)
+    internal class StoragePlacesByLocationQueryHandler : IRequestHandler<StoragePlacesByLocationQuery, Result<List<RepairWorkshopModel>>>
+    {
+        private readonly IContextFactory _contextFactory;
+
+        public StoragePlacesByLocationQueryHandler(IContextFactory contextFactory)
         {
-            LocationId = locationId;
+            _contextFactory = contextFactory;
         }
 
-        public class StoragePlacesByLocationQueryHandler : IRequestHandler<StoragePlacesByLocationQuery, Result<List<RepairWorkshopModel>>>
+        public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesByLocationQuery request, CancellationToken cancellationToken)
         {
-            private readonly IContextFactory _contextFactory;
-
-            public StoragePlacesByLocationQueryHandler(IContextFactory contextFactory)
+            await using var ctx = _contextFactory.CreateDbContext();
+            try
             {
-                _contextFactory = contextFactory;
+                var locations = await ctx.SparePartStoragePlaces
+                    .AsNoTracking()
+                    .Where(e => e.LocationId.Equals(request.LocationId))
+                    .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                return new Result<List<RepairWorkshopModel>>(locations);
             }
-
-            public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesByLocationQuery request, CancellationToken cancellationToken)
+            catch (Exception ex)
             {
-                await using var ctx = _contextFactory.CreateDbContext();
-
-                try
-                {
-                    var locations = await ctx.SparePartStoragePlaces
-                        .AsNoTracking()
-                        .Where(e => e.LocationId.Equals(request.LocationId))
-                        .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return new Result<List<RepairWorkshopModel>>(locations);
-                }
-                catch (Exception ex)
-                {
-                    return ex is DbUpdateConcurrencyException
-                        ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
-                        : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
-                }
+                return ex is DbUpdateConcurrencyException
+                    ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
+                    : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
             }
         }
     }

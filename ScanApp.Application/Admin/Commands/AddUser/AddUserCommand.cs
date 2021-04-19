@@ -6,17 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
-    public class AddUserCommand : IRequest<Result<BasicUserModel>>
-    {
-        public AddUserDto NewUser { get; }
+    public record AddUserCommand(AddUserDto NewUser) : IRequest<Result<BasicUserModel>>;
 
-        public AddUserCommand(AddUserDto newUser)
-        {
-            NewUser = newUser;
-        }
-    }
-
-    public class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<BasicUserModel>>
+    internal class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<BasicUserModel>>
     {
         private readonly IUserManager _userManager;
 

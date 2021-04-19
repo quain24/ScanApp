@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetLocationList
 {
-    public class GetLocationListQuery : IRequest<Result<List<Location>>>
-    {
-    }
+    public record GetLocationListQuery : IRequest<Result<List<Location>>>;
 
-    public class GetLocationListQueryHandler : IRequestHandler<GetLocationListQuery, Result<List<Location>>>
+    internal class GetLocationListQueryHandler : IRequestHandler<GetLocationListQuery, Result<List<Location>>>
     {
         private readonly ILocationManager _locationManager;
 

@@ -6,19 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 {
-    public class RemoveClaimFromRoleCommand : IRequest<Result>
-    {
-        public ClaimModel Claim { get; }
-        public string RoleName { get; }
+    public record RemoveClaimFromRoleCommand(ClaimModel Claim, string RoleName) : IRequest<Result>;
 
-        public RemoveClaimFromRoleCommand(ClaimModel claim, string roleName)
-        {
-            Claim = claim;
-            RoleName = roleName;
-        }
-    }
-
-    public class RemoveClaimFromRoleCommandHandler : IRequestHandler<RemoveClaimFromRoleCommand, Result>
+    internal class RemoveClaimFromRoleCommandHandler : IRequestHandler<RemoveClaimFromRoleCommand, Result>
     {
         private readonly IRoleManager _roleManager;
 

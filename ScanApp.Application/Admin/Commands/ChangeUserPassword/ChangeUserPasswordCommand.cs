@@ -7,21 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 {
-    public class ChangeUserPasswordCommand : IRequest<Result<Version>>
-    {
-        public string UserName { get; }
-        public string NewPassword { get; }
-        public Version Stamp { get; }
+    public record ChangeUserPasswordCommand(string UserName, string NewPassword, Version Version) : IRequest<Result<Version>>;
 
-        public ChangeUserPasswordCommand(string userName, string newPassword, Version stamp)
-        {
-            UserName = userName;
-            NewPassword = newPassword;
-            Stamp = stamp;
-        }
-    }
-
-    public class ChangeUserPasswordCommandHandler : IRequestHandler<ChangeUserPasswordCommand, Result<Version>>
+    internal class ChangeUserPasswordCommandHandler : IRequestHandler<ChangeUserPasswordCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 
@@ -32,7 +20,7 @@ namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 
         public Task<Result<Version>> Handle(ChangeUserPasswordCommand request, CancellationToken cancellationToken)
         {
-            return _userManager.ChangePassword(request.UserName, request.NewPassword, request.Stamp);
+            return _userManager.ChangePassword(request.UserName, request.NewPassword, request.Version);
         }
     }
 }

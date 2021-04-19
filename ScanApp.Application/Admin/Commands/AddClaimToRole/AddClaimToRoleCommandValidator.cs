@@ -4,7 +4,7 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
-    public class AddClaimToRoleCommandValidator : AbstractValidator<AddClaimToRoleCommand>
+    internal class AddClaimToRoleCommandValidator : AbstractValidator<AddClaimToRoleCommand>
     {
         private readonly PropertyValidator<AddClaimToRoleCommand, string> _allowedCharsValidator = new IdentityNamingValidator<AddClaimToRoleCommand, string>();
 

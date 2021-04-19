@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 {
-    public class GetAllUserRolesQuery : IRequest<Result<List<BasicRoleModel>>>
-    {
-    }
+    public record GetAllUserRolesQuery : IRequest<Result<List<BasicRoleModel>>>;
 
-    public class GetAllUserRolesQueryHandler : IRequestHandler<GetAllUserRolesQuery, Result<List<BasicRoleModel>>>
+    internal class GetAllUserRolesQueryHandler : IRequestHandler<GetAllUserRolesQuery, Result<List<BasicRoleModel>>>
     {
         private readonly IRoleManager _roleManager;
 

@@ -7,21 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.AddUserToRole
 {
-    public class AddUserToRoleCommand : IRequest<Result<Version>>
-    {
-        public string UserName { get; }
-        public Version Version { get; }
-        public string RoleName { get; }
+    public record AddUserToRoleCommand(string UserName, Version Version, string RoleName) : IRequest<Result<Version>>;
 
-        public AddUserToRoleCommand(string userName, Version version, string roleName)
-        {
-            UserName = userName;
-            Version = version;
-            RoleName = roleName;
-        }
-    }
-
-    public class AddUserToRoleCommandHandler : IRequestHandler<AddUserToRoleCommand, Result<Version>>
+    internal class AddUserToRoleCommandHandler : IRequestHandler<AddUserToRoleCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 

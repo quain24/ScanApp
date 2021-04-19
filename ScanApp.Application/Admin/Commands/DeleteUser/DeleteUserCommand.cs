@@ -6,17 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.DeleteUser
 {
-    public class DeleteUserCommand : IRequest<Result>
-    {
-        public string UserName { get; }
+    public record DeleteUserCommand(string UserName) : IRequest<Result>;
 
-        public DeleteUserCommand(string userName)
-        {
-            UserName = userName;
-        }
-    }
-
-    public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
+    internal class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>
     {
         private readonly IUserManager _userManager;
 

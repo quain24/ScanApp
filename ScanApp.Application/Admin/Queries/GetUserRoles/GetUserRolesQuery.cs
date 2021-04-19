@@ -10,19 +10,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetUserRoles
 {
-    public class GetUserRolesQuery : IRequest<Result<List<BasicRoleModel>>>
-    {
-        public GetUserRolesQuery(string userName, Version version)
-        {
-            UserName = userName;
-            Version = version;
-        }
+    public record GetUserRolesQuery(string UserName, Version Version) : IRequest<Result<List<BasicRoleModel>>>;
 
-        public string UserName { get; }
-        public Version Version { get; }
-    }
-
-    public class GetUserRolesQueryHandler : IRequestHandler<GetUserRolesQuery, Result<List<BasicRoleModel>>>
+    internal class GetUserRolesQueryHandler : IRequestHandler<GetUserRolesQuery, Result<List<BasicRoleModel>>>
     {
         private readonly IApplicationDbContext _context;
 
