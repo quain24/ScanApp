@@ -28,6 +28,17 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             result.Errors.Should().BeEmpty();
         }
 
+        [Fact]
+        public void Wont_validate_query_if_its_null()
+        {
+            var subject = new SparePartStoragePlacesByLocationQueryValidator();
+
+            var result = subject.Validate(null as SparePartStoragePlacesByLocationQuery);
+
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().HaveCount(1);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

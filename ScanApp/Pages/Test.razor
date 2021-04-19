@@ -9,7 +9,7 @@
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using System.IO
 @using Microsoft.AspNetCore.Hosting
-@using ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
+@using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 @using ScanApp.Components.Common
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IDbContextFactory<ApplicationDbContext> AppDbContextFactory
@@ -133,7 +133,7 @@
     {
         var t = await UserManager.DeleteUser("asdasd");
     //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
-    _rs = (await Mediator.Send(new StoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
+    _rs = (await Mediator.Send(new SparePartStoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
 
     //_cm = await CurrentUserService.AllClaims();
     //var ui = await CurrentUserService.IsInRole("Admin");

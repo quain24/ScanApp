@@ -2,29 +2,28 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Application.SpareParts.Queries.AllSparePartTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
+namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 {
-    public record StoragePlacesForCurrentUserQuery : IRequest<Result<List<RepairWorkshopModel>>>;
+    public record SparePartStoragePlacesForCurrentUserQuery : IRequest<Result<List<RepairWorkshopModel>>>;
 
-    internal class StoragePlacesForCurrentUserQueryHandler : IRequestHandler<StoragePlacesForCurrentUserQuery, Result<List<RepairWorkshopModel>>>
+    internal class SparePartStoragePlacesForCurrentUserHandler : IRequestHandler<SparePartStoragePlacesForCurrentUserQuery, Result<List<RepairWorkshopModel>>>
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly IContextFactory _contextFactory;
 
-        public StoragePlacesForCurrentUserQueryHandler(ICurrentUserService currentUserService, IContextFactory contextFactory)
+        public SparePartStoragePlacesForCurrentUserHandler(ICurrentUserService currentUserService, IContextFactory contextFactory)
         {
-            _currentUserService = currentUserService;
-            _contextFactory = contextFactory;
+            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
-        public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesForCurrentUserQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<RepairWorkshopModel>>> Handle(SparePartStoragePlacesForCurrentUserQuery request, CancellationToken cancellationToken)
         {
             try
             {
