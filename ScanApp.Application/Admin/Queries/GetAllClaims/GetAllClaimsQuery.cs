@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
@@ -16,12 +15,10 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
     internal class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly ILogger<GetAllClaimsQueryHandler> _logger;
 
-        public GetAllClaimsQueryHandler(IApplicationDbContext context, ILogger<GetAllClaimsQueryHandler> logger)
+        public GetAllClaimsQueryHandler(IApplicationDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public async Task<Result<List<ClaimModel>>> Handle(GetAllClaimsQuery request, CancellationToken cancellationToken)
@@ -36,11 +33,9 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
 
                 return new Result<List<ClaimModel>>(roles);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                var message = "Something went wrong when getting all role claims...";
-                _logger.LogError(ex, message);
-                return new Result<List<ClaimModel>>(ErrorType.Unknown, message, ex);
+                return new Result<List<ClaimModel>>(ErrorType.Cancelled, ex);
             }
         }
     }

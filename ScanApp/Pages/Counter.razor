@@ -9,6 +9,8 @@
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Infrastructure.Identity
 @using System.Diagnostics
+@using System.Threading
+@using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using ScanApp.Domain.Entities
 @using Version = ScanApp.Domain.ValueObjects.Version
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -67,7 +69,7 @@
 
     protected override void OnInitialized()
     {
-        base.OnInitializedAsync();
+        base.OnInitializedAsync();        
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,6 +91,10 @@
         var u = "";
         //await LocationManagerService.RemoveLocation(new Location("1", "Poznań"));
         //await LocationManagerService.AddNewLocation("Genewa");
+
+        var token = new CancellationTokenSource(5).Token;
+        var t = await Mediator.Send(new AllSparePartTypesQuery(), token);
+        var s = "";
     }
 
     public async Task Uclaim()

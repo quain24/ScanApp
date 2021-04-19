@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Application.SpareParts.Queries.AllSparePartTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,11 +35,9 @@ namespace ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces
 
                 return new Result<List<RepairWorkshopModel>>(places);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
-                    : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
+                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
             }
         }
     }

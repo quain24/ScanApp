@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Application.SpareParts.Queries.AllSparePartTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -24,20 +26,27 @@ namespace ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
 
         public async Task<Result<List<RepairWorkshopModel>>> Handle(StoragePlacesForCurrentUserQuery request, CancellationToken cancellationToken)
         {
-            await using var ctx = _contextFactory.CreateDbContext();
-            var places = ctx.SparePartStoragePlaces.AsNoTracking();
-            if (!await UserIgnoresLocationConstraint().ConfigureAwait(false))
+            try
             {
-                var userLocationIds = await GetUserLocationsIds().ConfigureAwait(false);
-                places = places.Where(s => userLocationIds.Contains(s.LocationId));
+                await using var ctx = _contextFactory.CreateDbContext();
+                var places = ctx.SparePartStoragePlaces.AsNoTracking();
+                if (!await UserIgnoresLocationConstraint().ConfigureAwait(false))
+                {
+                    var userLocationIds = await GetUserLocationsIds().ConfigureAwait(false);
+                    places = places.Where(s => userLocationIds.Contains(s.LocationId));
+                }
+
+                var selectedPlaces = await places
+                    .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                return new Result<List<RepairWorkshopModel>>(selectedPlaces);
             }
-
-            var selectedPlaces = await places
-                .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            return new Result<List<RepairWorkshopModel>>(selectedPlaces);
+            catch (OperationCanceledException ex)
+            {
+                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
+            }
         }
 
         private Task<bool> UserIgnoresLocationConstraint()

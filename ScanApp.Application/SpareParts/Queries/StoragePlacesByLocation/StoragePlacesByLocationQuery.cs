@@ -35,11 +35,9 @@ namespace ScanApp.Application.SpareParts.Queries.StoragePlacesByLocation
 
                 return new Result<List<RepairWorkshopModel>>(locations);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
-                    : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
+                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
             }
         }
     }
