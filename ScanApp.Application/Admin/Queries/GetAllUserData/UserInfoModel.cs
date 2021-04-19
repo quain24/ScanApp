@@ -1,5 +1,4 @@
-﻿using ScanApp.Common.Extensions;
-using ScanApp.Domain.Entities;
+﻿using ScanApp.Domain.Entities;
 using System;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
@@ -32,15 +31,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
 
         public DateTimeOffset? LockoutEnd { get; set; }
 
-        public DateTime? LockoutEndDate() => DateTimeExtensions.ConvertFromDateTimeOffset(LockoutEnd);
-
-        public TimeSpan? LockoutEndTime()
-        {
-            if (!LockoutEnd.HasValue)
-                return null;
-            var time = LockoutEndDate().Value;
-            return new TimeSpan(time.Hour, time.Minute, time.Second);
-        }
+        public DateTime? LockoutEndDate() => LockoutEnd?.LocalDateTime;
 
         public bool EqualWithDate(UserInfoModel other)
         {

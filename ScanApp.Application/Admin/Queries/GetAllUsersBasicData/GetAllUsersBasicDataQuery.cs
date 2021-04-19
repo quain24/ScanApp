@@ -12,11 +12,9 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 {
-    public class GetAllUsersBasicDataQuery : IRequest<Result<List<BasicUserModel>>>
-    {
-    }
+    public record GetAllUsersBasicDataQuery : IRequest<Result<List<BasicUserModel>>>;
 
-    public class GetAllUsersBasicDataQueryHandler : IRequestHandler<GetAllUsersBasicDataQuery, Result<List<BasicUserModel>>>
+    internal class GetAllUsersBasicDataQueryHandler : IRequestHandler<GetAllUsersBasicDataQuery, Result<List<BasicUserModel>>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ILogger<GetAllUsersBasicDataQueryHandler> _logger;

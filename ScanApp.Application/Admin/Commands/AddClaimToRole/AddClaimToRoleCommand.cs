@@ -6,19 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
-    public class AddClaimToRoleCommand : IRequest<Result>
-    {
-        public string RoleName { get; }
-        public ClaimModel Claim { get; }
+    public record AddClaimToRoleCommand(string RoleName, ClaimModel Claim) : IRequest<Result>;
 
-        public AddClaimToRoleCommand(string roleName, ClaimModel claim)
-        {
-            RoleName = roleName;
-            Claim = claim;
-        }
-    }
-
-    public class AddClaimToRoleCommandHandler : IRequestHandler<AddClaimToRoleCommand, Result>
+    internal class AddClaimToRoleCommandHandler : IRequestHandler<AddClaimToRoleCommand, Result>
     {
         private readonly IRoleManager _roleManager;
 

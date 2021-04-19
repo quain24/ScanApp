@@ -207,13 +207,12 @@
 
     private async Task SaveHandler()
     {
-        var res = await Mediator.SendScoped(new EditUserDataCommand(SelectedUser.Name)
+        var res = await Mediator.SendScoped(new EditUserDataCommand(SelectedUser.Name, SelectedUser.Version)
         {
             Phone = _userData.Phone,
             Email = _userData.Email,
             NewName = _userData.Name,
-            Location = _userData.Location,
-            ConcurrencyStamp = SelectedUser.Version
+            Location = _userData.Location
         });
 
         if (!res.Conclusion)

@@ -3,50 +3,41 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 {
-    public class CreateSparePartsCommand : IRequest<Result>
-    {
-        public IEnumerable<SparePartModel> SpareParts { get; }
+    public record CreateSparePartsCommand(params SparePartModel[] SpareParts) : IRequest<Result>;
 
-        public CreateSparePartsCommand(params SparePartModel[] spareParts)
+    internal class CreateSparePartsCommandHandler : IRequestHandler<CreateSparePartsCommand, Result>
+    {
+        private readonly IContextFactory _contextFactory;
+
+        public CreateSparePartsCommandHandler(IContextFactory contextFactory)
         {
-            SpareParts = spareParts;
+            _contextFactory = contextFactory;
         }
 
-        public class CreateSparePartsCommandHandler : IRequestHandler<CreateSparePartsCommand, Result>
+        public async Task<Result> Handle(CreateSparePartsCommand request, CancellationToken cancellationToken)
         {
-            private readonly IContextFactory _contextFactory;
+            await using var ctx = _contextFactory.CreateDbContext();
 
-            public CreateSparePartsCommandHandler(IContextFactory contextFactory)
+            try
             {
-                _contextFactory = contextFactory;
+                var spareParts = request.SpareParts.Select(s =>
+                    new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
+
+                await ctx.SpareParts.AddRangeAsync(spareParts, cancellationToken).ConfigureAwait(false);
+                await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return new Result(ResultType.Created);
             }
-
-            public async Task<Result> Handle(CreateSparePartsCommand request, CancellationToken cancellationToken)
+            catch (DbUpdateException ex)
             {
-                await using var ctx = _contextFactory.CreateDbContext();
-
-                try
-                {
-                    var spareParts = request.SpareParts.Select(s =>
-                        new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
-
-                    await ctx.SpareParts.AddRangeAsync(spareParts, cancellationToken).ConfigureAwait(false);
-                    await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                    return new Result(ResultType.Created);
-                }
-                catch (DbUpdateException ex)
-                {
-                    return ex is DbUpdateConcurrencyException
-                        ? new Result(ErrorType.ConcurrencyFailure, ex)
-                        : new Result(ErrorType.Unknown, ex);
-                }
+                return ex is DbUpdateConcurrencyException
+                    ? new Result(ErrorType.ConcurrencyFailure, ex)
+                    : new Result(ErrorType.DatabaseError, ex);
             }
         }
     }

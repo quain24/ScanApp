@@ -10,36 +10,35 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Queries.GetAllStoragePlaces
 {
-    public class GetAllStoragePlacesQuery : IRequest<Result<List<RepairWorkshopModel>>>
+    public record GetAllStoragePlacesQuery : IRequest<Result<List<RepairWorkshopModel>>>;
+
+    internal class GetAllStoragePlacesQueryHandler : IRequestHandler<GetAllStoragePlacesQuery, Result<List<RepairWorkshopModel>>>
     {
-        public class GetAllStoragePlacesQueryHandler : IRequestHandler<GetAllStoragePlacesQuery, Result<List<RepairWorkshopModel>>>
+        private readonly IContextFactory _contextFactory;
+
+        public GetAllStoragePlacesQueryHandler(IContextFactory contextFactory)
         {
-            private readonly IContextFactory _contextFactory;
+            _contextFactory = contextFactory;
+        }
 
-            public GetAllStoragePlacesQueryHandler(IContextFactory contextFactory)
+        public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllStoragePlacesQuery request, CancellationToken cancellationToken)
+        {
+            await using var ctx = _contextFactory.CreateDbContext();
+            try
             {
-                _contextFactory = contextFactory;
+                var places = await ctx.SparePartStoragePlaces
+                    .AsNoTracking()
+                    .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                return new Result<List<RepairWorkshopModel>>(places);
             }
-
-            public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllStoragePlacesQuery request, CancellationToken cancellationToken)
+            catch (Exception ex)
             {
-                await using var ctx = _contextFactory.CreateDbContext();
-                try
-                {
-                    var places = await ctx.SparePartStoragePlaces
-                        .AsNoTracking()
-                        .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-
-                    return new Result<List<RepairWorkshopModel>>(places);
-                }
-                catch (Exception ex)
-                {
-                    return ex is DbUpdateConcurrencyException
-                        ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
-                        : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
-                }
+                return ex is DbUpdateConcurrencyException
+                    ? new Result<List<RepairWorkshopModel>>(ErrorType.ConcurrencyFailure, ex)
+                    : new Result<List<RepairWorkshopModel>>(ErrorType.Unknown, ex);
             }
         }
     }

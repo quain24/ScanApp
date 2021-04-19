@@ -3,13 +3,13 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
-    public class EditUserDataCommandValidator : AbstractValidator<EditUserDataCommand>
+    internal class EditUserDataCommandValidator : AbstractValidator<EditUserDataCommand>
     {
         private readonly IdentityNamingValidator<EditUserDataCommand, string> _standardChars = new();
 
         public EditUserDataCommandValidator()
         {
-            RuleFor(c => c.ConcurrencyStamp)
+            RuleFor(c => c.Version)
                 .NotEmpty();
 
             RuleFor(c => c.NewName)

@@ -7,19 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
 {
-    public class ChangeUserSecurityStampCommand : IRequest<Result<Version>>
-    {
-        public string UserName { get; }
-        public Version Version { get; }
+    public record ChangeUserSecurityStampCommand(string UserName, Version Version) : IRequest<Result<Version>>;
 
-        public ChangeUserSecurityStampCommand(string userName, Version version)
-        {
-            UserName = userName;
-            Version = version;
-        }
-    }
-
-    public class ChangeUserSecurityStampCommandHandler : IRequestHandler<ChangeUserSecurityStampCommand, Result<Version>>
+    internal class ChangeUserSecurityStampCommandHandler : IRequestHandler<ChangeUserSecurityStampCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 

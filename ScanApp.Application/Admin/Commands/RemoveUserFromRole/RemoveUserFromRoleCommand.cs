@@ -7,21 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
 {
-    public class RemoveUserFromRoleCommand : IRequest<Result<Version>>
-    {
-        public string UserName { get; }
-        public string RoleName { get; }
-        public Version Version { get; }
+    public record RemoveUserFromRoleCommand(string UserName, Version Version, string RoleName) : IRequest<Result<Version>>;
 
-        public RemoveUserFromRoleCommand(string userName, Version version, string roleName)
-        {
-            UserName = userName;
-            RoleName = roleName;
-            Version = version;
-        }
-    }
-
-    public class RemoveUserFromRoleCommandHandler : IRequestHandler<RemoveUserFromRoleCommand, Result<Version>>
+    internal class RemoveUserFromRoleCommandHandler : IRequestHandler<RemoveUserFromRoleCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 

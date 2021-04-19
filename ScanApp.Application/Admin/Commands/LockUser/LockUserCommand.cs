@@ -7,19 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.LockUser
 {
-    public class LockUserCommand : IRequest<Result>
-    {
-        public string UserName { get; }
-        public DateTimeOffset LockoutDate { get; }
+    public record LockUserCommand(string UserName, DateTimeOffset LockoutDate) : IRequest<Result>;
 
-        public LockUserCommand(string userName, DateTimeOffset lockoutDate)
-        {
-            UserName = userName;
-            LockoutDate = lockoutDate;
-        }
-    }
-
-    public class LockUserCommandHandler : IRequestHandler<LockUserCommand, Result>
+    internal class LockUserCommandHandler : IRequestHandler<LockUserCommand, Result>
     {
         private readonly IUserManager _manager;
 
