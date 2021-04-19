@@ -6,28 +6,20 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.DeleteRole
 {
-    public class DeleteRoleCommand : IRequest<Result>
-    {
-        public string RoleName { get; }
+    public record DeleteRoleCommand(string RoleName) : IRequest<Result>;
 
-        public DeleteRoleCommand(string roleName)
+    internal class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Result>
+    {
+        private readonly IRoleManager _roleManager;
+
+        public DeleteRoleCommandHandler(IRoleManager roleManager)
         {
-            RoleName = roleName;
+            _roleManager = roleManager;
         }
 
-        public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Result>
+        public Task<Result> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
         {
-            private readonly IRoleManager _roleManager;
-
-            public DeleteRoleCommandHandler(IRoleManager roleManager)
-            {
-                _roleManager = roleManager;
-            }
-
-            public Task<Result> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
-            {
-                return _roleManager.RemoveRole(request.RoleName);
-            }
+            return _roleManager.RemoveRole(request.RoleName);
         }
     }
 }

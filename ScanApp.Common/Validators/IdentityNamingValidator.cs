@@ -6,6 +6,7 @@ namespace ScanApp.Common.Validators
 {
     /// <summary>
     /// Validator containing rules for user names, role names and other naming conventions used in asp identity management.
+    /// Allows 'A-Z' chars, numbers, '.', '_' and '-' with length from 3 to 450 chars
     /// </summary>
     public class IdentityNamingValidator<T, TProperty> : PropertyValidator<T, TProperty>
     {

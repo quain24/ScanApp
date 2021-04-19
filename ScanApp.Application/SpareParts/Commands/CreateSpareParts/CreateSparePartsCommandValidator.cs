@@ -2,11 +2,12 @@
 
 namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 {
-    public class CreateSparePartsCommandValidator : AbstractValidator<CreateSparePartsCommand>
+    internal class CreateSparePartsCommandValidator : AbstractValidator<CreateSparePartsCommand>
     {
         public CreateSparePartsCommandValidator()
         {
             RuleFor(c => c.SpareParts)
+                .Cascade(CascadeMode.Stop)
                 .NotNull()
                 .WithMessage("Instead of spare parts collection a null was passed inside command.")
                 .NotEmpty()
@@ -19,7 +20,7 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
                 {
                     sparePart.RuleFor(s => s.Amount)
                         .InclusiveBetween(1, 1000)
-                        .WithMessage("Cannot add spare parts in quantity of less then 1 or higher than 1000");
+                        .WithMessage("Spare part quantity must be between 1 and 1000");
                     sparePart.RuleFor(s => s.Name)
                         .NotEmpty()
                         .WithMessage("one of spare parts does not have a Name");

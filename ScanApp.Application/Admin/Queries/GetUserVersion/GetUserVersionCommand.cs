@@ -7,17 +7,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetUserVersion
 {
-    public class GetUserVersionCommand : IRequest<Result<Version>>
-    {
-        public string UserName { get; }
+    public record GetUserVersionCommand(string UserName) : IRequest<Result<Version>>;
 
-        public GetUserVersionCommand(string userName)
-        {
-            UserName = userName;
-        }
-    }
-
-    public class GetUserVersionCommandHandler : IRequestHandler<GetUserVersionCommand, Result<Version>>
+    internal class GetUserVersionCommandHandler : IRequestHandler<GetUserVersionCommand, Result<Version>>
     {
         private readonly IUserInfo _userInfo;
 

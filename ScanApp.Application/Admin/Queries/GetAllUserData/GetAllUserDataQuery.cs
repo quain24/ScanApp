@@ -6,17 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
-    public class GetAllUserDataQuery : IRequest<Result<UserInfoModel>>
-    {
-        public string UserName { get; }
+    public record GetAllUserDataQuery(string UserName) : IRequest<Result<UserInfoModel>>;
 
-        public GetAllUserDataQuery(string userName)
-        {
-            UserName = userName;
-        }
-    }
-
-    public class GetAllUserDataQueryHandler : IRequestHandler<GetAllUserDataQuery, Result<UserInfoModel>>
+    internal class GetAllUserDataQueryHandler : IRequestHandler<GetAllUserDataQuery, Result<UserInfoModel>>
     {
         private readonly IUserInfo _userInfo;
 

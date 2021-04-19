@@ -11,11 +11,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllClaims
 {
-    public class GetAllClaimsQuery : IRequest<Result<List<ClaimModel>>>
-    {
-    }
+    public record GetAllClaimsQuery : IRequest<Result<List<ClaimModel>>>;
 
-    public class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
+    internal class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
     {
         private readonly IApplicationDbContext _context;
         private readonly ILogger<GetAllClaimsQueryHandler> _logger;

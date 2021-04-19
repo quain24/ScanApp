@@ -6,17 +6,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
-    public class AddNewUserRoleCommand : IRequest<Result>
-    {
-        public string RoleName { get; }
+    public record AddNewUserRoleCommand(string RoleName) : IRequest<Result>;
 
-        public AddNewUserRoleCommand(string roleName)
-        {
-            RoleName = roleName;
-        }
-    }
-
-    public class AddNewUserRoleHandler : IRequestHandler<AddNewUserRoleCommand, Result>
+    internal class AddNewUserRoleHandler : IRequestHandler<AddNewUserRoleCommand, Result>
     {
         private readonly IRoleManager _roleManager;
 

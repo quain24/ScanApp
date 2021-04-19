@@ -8,22 +8,15 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
-    public class EditUserDataCommand : IRequest<Result<Version>>
+    public record EditUserDataCommand(string Name, Version Version) : IRequest<Result<Version>>
     {
-        public string Name { get; }
         public string NewName { get; init; }
         public string Phone { get; init; }
         public string Email { get; init; }
         public Location Location { get; init; }
-        public Version ConcurrencyStamp { get; init; }
-
-        public EditUserDataCommand(string name)
-        {
-            Name = name;
-        }
     }
 
-    public class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result<Version>>
+    internal class EditUserDataCommandHandler : IRequestHandler<EditUserDataCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
 
@@ -38,7 +31,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             {
                 Phone = request.Phone,
                 Email = request.Email,
-                Version = request.ConcurrencyStamp,
+                Version = request.Version,
                 NewName = request.NewName,
                 Location = request.Location
             };

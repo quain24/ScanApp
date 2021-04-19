@@ -10,11 +10,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsers
 {
-    public class GetAllUsersQuery : IRequest<Result<List<ApplicationUser>>>
-    {
-    }
+    public record GetAllUsersQuery : IRequest<Result<List<ApplicationUser>>>;
 
-    public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<List<ApplicationUser>>>
+    internal class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<List<ApplicationUser>>>
     {
         private readonly IApplicationDbContext _context;
 
