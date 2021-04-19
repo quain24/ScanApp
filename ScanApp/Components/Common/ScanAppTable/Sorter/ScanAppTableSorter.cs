@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.ScanAppTable
+namespace ScanApp.Components.Common.ScanAppTable.Sorter
 {
     public class ScanAppTableSorter<TItem>
     {

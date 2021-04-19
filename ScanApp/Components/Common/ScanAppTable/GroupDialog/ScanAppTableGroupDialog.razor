@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable.Options
 
 <MudDialog>
     <TitleContent>
@@ -35,7 +36,7 @@
     public IEnumerable<TItem> Items { get; set; }
 
     [Parameter]
-    public Header Headers { get; set; }
+    public Headers Headers { get; set; }
 
     [Parameter]
     public PropertyInfo[] Properties { get; set; }

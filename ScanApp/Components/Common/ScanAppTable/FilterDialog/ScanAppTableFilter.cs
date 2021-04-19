@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.ScanAppTable
+namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
 {
     public static class ScanAppTableFilter<TItem>
     {
-        public static IEnumerable<TItem> FilterBetween<Titem>(IEnumerable<TItem> items, string propertyName, int? from, int? to)
+        public static IEnumerable<TItem> FilterBetween(IEnumerable<TItem> items, string propertyName, int? from, int? to)
         {
             if ((from is null && to is null) || from >= to)
             {
@@ -20,7 +20,7 @@ namespace ScanApp.Components.Common.ScanAppTable
                 .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
                 .ToList();
             }
-            else if (from is not null && to is null)
+            if (from is not null && to is null)
             {
                 return items
                 .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from)
@@ -34,10 +34,9 @@ namespace ScanApp.Components.Common.ScanAppTable
 
         public static IEnumerable<TItem> FilterContains<Titem>(IEnumerable<TItem> items, string propertyName, string containTerm)
         {
-            if (containTerm is null)
-            {
+            if (string.IsNullOrEmpty(containTerm))
                 return items;
-            }
+            
             var propInfo = typeof(TItem).GetProperty(propertyName);
             return items
                 .Where(x => propInfo.GetValue(x, null)

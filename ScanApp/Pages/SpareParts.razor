@@ -8,6 +8,7 @@
 @using ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
+@using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Models.SpareParts
 @inject IArticleService articleService
 @inject IScopedMediator mediator
@@ -22,19 +23,20 @@
     <MudGrid>
         <MudItem Style="position:center" xs="12" sm="6" md="4">
             <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop" Required="true" ResetValueOnEmptyText="true"
-                             Immediate="true" Style="margin-left: 15px; margin-right: 15px;" Variant="Variant.Outlined" />
+                             Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
 
             <MudTextField @bind-Value="_article" Label="Article" Immediate="true"
-                          Style="margin-left: 15px; margin-right: 15px;" Variant="Variant.Outlined" />
+                          Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" />
         </MudItem>
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable Items="@_spareParts" Options="_tableOptions" Headers="@_headers" Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
+<ScanAppTable Items="@_spareParts" TableStyle="@_tableStyle" Options="@_tableOptions" Headers="@Headers" 
+              Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
 <MudDivider />
-<MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="width: 175px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
+<MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
            Color="Color.Error">Cancel</MudButton>
-<MudButton Variant="Variant.Filled" OnClick="@Submit" Style="position:absolute; right: 0px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
+<MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
            Color="Color.Primary">Submit</MudButton>
 
 @code {
@@ -45,10 +47,12 @@
         "Name","Amount"
     };
 
-    private Header _headers { get; set; }
+    private Headers Headers { get; set; }
     private ScanAppTableOptions _tableOptions { get; set; }
 
+    private string _repairWorkshopId;
     private string _height = "400px";
+    private string _tableStyle = "max-width: 500px;";
     private string searchString = string.Empty;
     private string[] _repairWorkshops;
     private string _selectedRepairWorkshop;
@@ -57,9 +61,8 @@
     protected override async Task OnInitializedAsync()
     {
         _tableOptions = new ScanAppTableOptions();
-        _tableOptions.ShowToolBar = false;
+        //_tableOptions.ShowToolBar = false;
         var storagePlacesResult = await mediator.Send(new StoragePlacesForCurrentUserQuery());
-
         if (storagePlacesResult.Conclusion is false)
         {
             Snackbar.Add("Could not fetch possible repair workshops", Severity.Error);
@@ -67,6 +70,7 @@
         }
         var repairWorkshopModels = storagePlacesResult.Output;
 
+        _repairWorkshopId = repairWorkshopModels[0].Id;
         _repairWorkshops = new string[repairWorkshopModels.Count];
 
         for (int i = 0; i < repairWorkshopModels.Count(); i++)
@@ -74,11 +78,12 @@
             _repairWorkshops[i] = repairWorkshopModels[i].Number;
         }
 
-        _headers = new Header(_headersArray);
-        _headers.MakeNotEditable("Name");
-        _headers.MakeEditable("Amount");
-
         base.OnInitialized();
+    }
+
+    private async Task<IEnumerable<string>> SearchRepairWorkshop(string value)
+    {
+        return _repairWorkshops;
     }
 
     public void Save(SparePartGUIModel sparePart)
@@ -93,6 +98,9 @@
 
     public async Task GetData()
     {
+        Headers = new Headers(_headersArray);
+        Headers.MakeNotEditable("Name");
+
         // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
         if (sparePartsTypesResult.Conclusion is false)
@@ -111,20 +119,9 @@
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<string>> SearchRepairWorkshop(string value)
-    {
-        // if text is null or empty, show complete list
-        if (string.IsNullOrEmpty(value))
-            return _repairWorkshops;
-        return _repairWorkshops.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
-    }
-
     private async Task Cancel()
     {
-        await GetData();
-        _article = string.Empty;
-        _selectedRepairWorkshop = string.Empty;
-        StateHasChanged();
+        await Flush();
     }
 
     private async Task Submit()
@@ -141,11 +138,35 @@
             {
                 continue;
             }
-            models[i] = new SparePartModel(_spareParts[i].Name, _spareParts[i].Amount, _article, _selectedRepairWorkshop);
+            models[i] = new SparePartModel(_spareParts[i].Name, _spareParts[i].Amount, _article, _repairWorkshopId);
         }
 
         models = models.Where(m => m != null).ToArray();
 
         var saveResult = await mediator.Send(new CreateSparePartsCommand(models));
+
+        if (saveResult.Conclusion is false)
+        {
+            Snackbar.Add("Creation of spare parts has failed!");
+            return;
+        }
+
+        int newSpareParts = 0;
+        foreach (var model in models)
+        {
+            newSpareParts =+ model.Amount;
+        }
+
+        Snackbar.Add(newSpareParts.ToString() + " new spare parts created!", Severity.Success);
+
+        await Flush();
+    }
+
+    private async Task Flush()
+    {
+        await GetData();
+        _article = string.Empty;
+        _selectedRepairWorkshop = string.Empty;
+        StateHasChanged();
     }
 }

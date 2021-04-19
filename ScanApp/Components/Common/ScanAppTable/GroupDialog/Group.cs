@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.ScanAppTable
+namespace ScanApp.Components.Common.ScanAppTable.GroupDialog
 {
     public class Group<TItem>
     {
