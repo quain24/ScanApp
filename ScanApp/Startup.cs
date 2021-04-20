@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.Validators;
 using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,8 @@ using MudBlazor.Extensions;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Installers;
 using ScanApp.Common.Installers;
+using ScanApp.Common.Services;
+using ScanApp.Common.Validators;
 using ScanApp.Data;
 using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
@@ -44,9 +47,8 @@ namespace ScanApp
             services.AddMudBlazor();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
-
             services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeExtensions).Assembly });
-
+            services.AddCommonFluentValidationPropertyValidators();
             services.AddSingleton<WeatherForecastService>();
         }
 

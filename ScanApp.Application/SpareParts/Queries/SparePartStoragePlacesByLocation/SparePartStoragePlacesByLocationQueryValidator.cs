@@ -3,7 +3,7 @@ using FluentValidation.Results;
 
 namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation
 {
-    internal class SparePartStoragePlacesByLocationQueryValidator : AbstractValidator<SparePartStoragePlacesByLocationQuery>
+    public class SparePartStoragePlacesByLocationQueryValidator : AbstractValidator<SparePartStoragePlacesByLocationQuery>
     {
         public SparePartStoragePlacesByLocationQueryValidator()
         {

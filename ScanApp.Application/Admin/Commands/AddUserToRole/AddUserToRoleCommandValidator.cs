@@ -3,21 +3,19 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUserToRole
 {
-    internal class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
+    public class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
     {
-        private readonly IdentityNamingValidator<AddUserToRoleCommand, string> _standardChars = new();
-
-        public AddUserToRoleCommandValidator()
+        public AddUserToRoleCommandValidator(IdentityNamingValidator<AddUserToRoleCommand, string> standardChars)
         {
             RuleFor(c => c.RoleName)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(_standardChars);
+                .SetValidator(standardChars);
 
             RuleFor(c => c.UserName)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(_standardChars);
+                .SetValidator(standardChars);
         }
     }
 }

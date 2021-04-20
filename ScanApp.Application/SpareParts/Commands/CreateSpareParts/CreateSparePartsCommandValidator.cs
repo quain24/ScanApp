@@ -2,7 +2,7 @@
 
 namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 {
-    internal class CreateSparePartsCommandValidator : AbstractValidator<CreateSparePartsCommand>
+    public class CreateSparePartsCommandValidator : AbstractValidator<CreateSparePartsCommand>
     {
         public CreateSparePartsCommandValidator()
         {

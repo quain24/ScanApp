@@ -9,6 +9,8 @@
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using System.IO
 @using Microsoft.AspNetCore.Hosting
+@using ScanApp.Application.Admin.Commands.AddNewUserRole
+@using ScanApp.Application.Admin.Queries.GetAllUsers
 @using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 @using ScanApp.Components.Common
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -131,7 +133,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var t = await UserManager.DeleteUser("asdasd");
+        var t = await Mediator.Send(new AddNewUserRoleCommand("@#$"));
     //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
     _rs = (await Mediator.Send(new SparePartStoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
 

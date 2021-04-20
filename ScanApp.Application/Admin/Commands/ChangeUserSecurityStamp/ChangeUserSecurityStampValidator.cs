@@ -2,7 +2,7 @@
 
 namespace ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
 {
-    internal class ChangeUserSecurityStampValidator : AbstractValidator<ChangeUserSecurityStampCommand>
+    public class ChangeUserSecurityStampValidator : AbstractValidator<ChangeUserSecurityStampCommand>
     {
         public ChangeUserSecurityStampValidator()
         {
