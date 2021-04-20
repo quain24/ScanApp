@@ -3,9 +3,9 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
-    public class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
+    public class AddNewUserRoleCommandValidator : AbstractValidator<AddNewUserRoleCommand>
     {
-        public AddNewUserRoleValidator(IdentityNamingValidator<AddNewUserRoleCommand, string> identityNamingValidator)
+        public AddNewUserRoleCommandValidator(IdentityNamingValidator<AddNewUserRoleCommand, string> identityNamingValidator)
         {
             RuleFor(c => c.RoleName)
                 .SetValidator(identityNamingValidator)
