@@ -1,19 +1,22 @@
 ﻿using FluentValidation;
+using ScanApp.Application.Common.Validators;
 using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
-    public class AddUserValidator : AbstractValidator<AddUserCommand>
+    public class AddUserCommandValidator : AbstractValidator<AddUserCommand>
     {
-        public AddUserValidator(IdentityNamingValidator<AddUserCommand, string> identityNamingValidator,
+        public AddUserCommandValidator(
+            IdentityNamingValidator<AddUserCommand, string> identityNamingValidator,
             EmailValidator<AddUserCommand, string> emailValidator,
-            PhoneNumberValidator<AddUserCommand, string> phoneValidator)
+            PhoneNumberValidator<AddUserCommand, string> phoneValidator,
+            PasswordValidator passwordValidator)
         {
             RuleFor(c => c.NewUser.Name)
                 .SetValidator(identityNamingValidator);
 
             RuleFor(c => c.NewUser.Password)
-                .NotEmpty();
+                .SetValidator(passwordValidator);
 
             RuleFor(c => c.NewUser.Email)
                 .Cascade(CascadeMode.Stop)
