@@ -7,7 +7,7 @@ using ScanApp.Application.Admin.Commands.AddClaimToRole;
 using ScanApp.Common.Validators;
 using Xunit;
 
-namespace ScanApp.Tests.UnitTests.Application.Admin.AddClaimToRole
+namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddClaimToRole
 {
     public class AddClaimToRoleCommandValidatorTests
     {

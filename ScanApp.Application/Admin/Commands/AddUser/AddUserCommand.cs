@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
 
         public AddUserCommandHandler(IUserManager userManager)
         {
-            _userManager = userManager;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public async Task<Result<BasicUserModel>> Handle(AddUserCommand request, CancellationToken cancellationToken)

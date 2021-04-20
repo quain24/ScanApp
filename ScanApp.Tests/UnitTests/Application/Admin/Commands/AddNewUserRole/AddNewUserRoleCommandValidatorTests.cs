@@ -5,7 +5,7 @@ using ScanApp.Application.Admin.Commands.AddNewUserRole;
 using ScanApp.Common.Validators;
 using Xunit;
 
-namespace ScanApp.Tests.UnitTests.Application.Admin.AddNewUserRole
+namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddNewUserRole
 {
     public class AddNewUserRoleCommandValidatorTests
     {
