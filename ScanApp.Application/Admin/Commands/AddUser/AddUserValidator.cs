@@ -3,14 +3,14 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
-    internal class AddUserValidator : AbstractValidator<AddUserCommand>
+    public class AddUserValidator : AbstractValidator<AddUserCommand>
     {
-        private readonly IdentityNamingValidator<AddUserCommand, string> _standardChars = new();
-
-        public AddUserValidator()
+        public AddUserValidator(IdentityNamingValidator<AddUserCommand, string> identityNamingValidator,
+            EmailValidator<AddUserCommand, string> emailValidator,
+            PhoneNumberValidator<AddUserCommand, string> phoneValidator)
         {
             RuleFor(c => c.NewUser.Name)
-                .SetValidator(_standardChars);
+                .SetValidator(identityNamingValidator);
 
             RuleFor(c => c.NewUser.Password)
                 .NotEmpty();
@@ -18,10 +18,10 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             RuleFor(c => c.NewUser.Email)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .SetValidator(new EmailValidator<AddUserCommand, string>());
+                .SetValidator(emailValidator);
 
             RuleFor(c => c.NewUser.Phone)
-            .SetValidator(new PhoneNumberValidator<AddUserCommand, string>())
+            .SetValidator(phoneValidator)
             .When(p => p.NewUser.Phone is not null);
         }
     }

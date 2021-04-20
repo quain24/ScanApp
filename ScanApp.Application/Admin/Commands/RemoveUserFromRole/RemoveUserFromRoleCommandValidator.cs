@@ -2,7 +2,7 @@
 
 namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
 {
-    internal class RemoveUserFromRoleCommandValidator : AbstractValidator<RemoveUserFromRoleCommand>
+    public class RemoveUserFromRoleCommandValidator : AbstractValidator<RemoveUserFromRoleCommand>
     {
         public RemoveUserFromRoleCommandValidator()
         {

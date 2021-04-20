@@ -3,12 +3,12 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddNewUserRole
 {
-    internal class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
+    public class AddNewUserRoleValidator : AbstractValidator<AddNewUserRoleCommand>
     {
-        public AddNewUserRoleValidator()
+        public AddNewUserRoleValidator(IdentityNamingValidator<AddNewUserRoleCommand, string> identityNamingValidator)
         {
             RuleFor(c => c.RoleName)
-                .SetValidator(new IdentityNamingValidator<AddNewUserRoleCommand, string>())
+                .SetValidator(identityNamingValidator)
                 .WithMessage("Role name contained not allowed characters");
         }
     }
