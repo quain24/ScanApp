@@ -17,7 +17,7 @@ namespace ScanApp.Application.Common.Validators
                     var results = await userManager.ValidatePassword(pass).ConfigureAwait(false);
                     foreach (var (code, message) in results)
                     {
-                        context.AddFailure(new ValidationFailure(string.Empty, message)
+                        context.AddFailure(new ValidationFailure(context.PropertyName, message)
                         {
                             ErrorCode = code
                         });
