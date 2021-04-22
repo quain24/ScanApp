@@ -10,7 +10,9 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             PhoneNumberValidator<EditUserDataCommand, string> phoneValidator)
         {
             RuleFor(c => c.Version)
-                .NotEmpty();
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty()
+                .Must(v => !v.IsEmpty);
 
             RuleFor(c => c.NewName)
                 .SetValidator(standardChars);

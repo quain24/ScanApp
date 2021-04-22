@@ -2,9 +2,10 @@
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
-using ScanApp.Domain.ValueObjects;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
@@ -22,7 +23,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 
         public EditUserDataCommandHandler(IUserManager userManager)
         {
-            _userManager = userManager;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public async Task<Result<Version>> Handle(EditUserDataCommand request, CancellationToken cancellationToken)
