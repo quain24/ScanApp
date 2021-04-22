@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.DeleteRole
 
         public DeleteRoleCommandHandler(IRoleManager roleManager)
         {
-            _roleManager = roleManager;
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         public Task<Result> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
