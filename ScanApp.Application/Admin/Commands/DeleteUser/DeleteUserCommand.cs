@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.DeleteUser
 
         public DeleteUserCommandHandler(IUserManager userManager)
         {
-            _userManager = userManager;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
