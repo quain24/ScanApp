@@ -9,18 +9,27 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
             EmailValidator<EditUserDataCommand, string> emailValidator,
             PhoneNumberValidator<EditUserDataCommand, string> phoneValidator)
         {
+            RuleFor(c => c.Name)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty()
+                .SetValidator(standardChars);
+
             RuleFor(c => c.Version)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .Must(v => !v.IsEmpty);
 
             RuleFor(c => c.NewName)
-                .SetValidator(standardChars);
+                .SetValidator(standardChars)
+                .When(p => p.NewName is not null);
 
-            RuleFor(c => c.Email)
-                .Cascade(CascadeMode.Stop)
-                .NotEmpty()
-                .SetValidator(emailValidator);
+            When(c => c.Email is not null, () =>
+            {
+                RuleFor(c => c.Email)
+                    .Cascade(CascadeMode.Stop)
+                    .NotEmpty()
+                    .SetValidator(emailValidator);
+            });
 
             RuleFor(c => c.Phone)
                 .SetValidator(phoneValidator)

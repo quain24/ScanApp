@@ -11,6 +11,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     public record EditUserDataCommand(string Name, Version Version) : IRequest<Result<Version>>
     {
+        public string Name { get; } = Name;
         public string NewName { get; init; }
         public string Phone { get; init; }
         public string Email { get; init; }

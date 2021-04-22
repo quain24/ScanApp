@@ -33,21 +33,24 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var dtoPropertyName = nameof(command.NewUser) + '.';
 
             var descriptor = subject.CreateDescriptor();
-            var nameValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Name).Name);
-            var emailValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Email).Name);
-            var phoneValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Phone).Name);
-            var passwordValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Password).Name);
+            var nameValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Name).Name)
+                .Select(r => r.Validator).ToList();
+            var emailValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Email).Name)
+                .Select(r => r.Validator).ToList();
+            var phoneValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Phone).Name)
+                .Select(r => r.Validator).ToList();
+            var passwordValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Password).Name)
+                .Select(r => r.Validator).ToList();
 
             nameValidators.Should().HaveCount(1)
-                .And.Subject.First().Validator.Should().BeAssignableTo<IdentityNamingValidator<AddUserCommand, string>>();
-            var emValidators = emailValidators.Select(v => v.Validator).ToArray();
-            emValidators.Should().HaveCount(2);
-            emValidators.Should().ContainSingle(v => v.GetType().BaseType == typeof(EmailValidator<AddUserCommand, string>))
-                .And.Subject.Should().ContainSingle(v => v.GetType().BaseType.IsAssignableFrom(typeof(NotEmptyValidator<AddUserCommand, string>)));
+                .And.Subject.First().Should().BeAssignableTo<IdentityNamingValidator<AddUserCommand, string>>();
+            emailValidators.Should().HaveCount(2);
+            emailValidators.Should().ContainSingle(v => v.GetType().BaseType == typeof(EmailValidator<AddUserCommand, string>))
+                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableFrom(typeof(NotEmptyValidator<AddUserCommand, string>)));
             phoneValidators.Should().HaveCount(1)
-                .And.Subject.First().Validator.Should().BeAssignableTo<PhoneNumberValidator<AddUserCommand, string>>();
+                .And.Subject.First().Should().BeAssignableTo<PhoneNumberValidator<AddUserCommand, string>>();
             passwordValidators.Should().HaveCount(1)
-                .And.Subject.First().Validator.Should().BeAssignableTo<ChildValidatorAdaptor<AddUserCommand, string>>()
+                .And.Subject.First().Should().BeAssignableTo<ChildValidatorAdaptor<AddUserCommand, string>>()
                 .And.Subject.As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PasswordValidator>();
         }
 

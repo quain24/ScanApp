@@ -11,9 +11,9 @@ namespace ScanApp.Common.Validators
 
         public override bool IsValid(ValidationContext<T> context, TProperty value)
         {
-            if (value is string name)
+            if (value is string email)
             {
-                return _emailRegex.IsMatch(name);
+                return _emailRegex.IsMatch(email);
             }
 
             return false;
