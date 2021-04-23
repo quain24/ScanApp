@@ -10,16 +10,16 @@ namespace ScanApp.Components.Common.ScanAppTable.GroupDialog
         public Group(string key, List<TItem> itemList)
         {
             Key = key;
-            itemGroup = itemList;
+            ItemGroup = itemList;
         }
 
         public Group(string key, IGrouping<object, TItem> itemList)
         {
             Key = key;
-            itemGroup = itemList.ToList();
+            ItemGroup = itemList.ToList();
         }
 
         public string Key { get; set; }
-        public List<TItem> itemGroup { get; set; } = new List<TItem>();
+        public List<TItem> ItemGroup { get; set; } = new List<TItem>();
     }
 }

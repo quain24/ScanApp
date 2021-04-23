@@ -7,6 +7,12 @@ namespace ScanApp.Models.SpareParts
 {
     public class SparePartGUIModel
     {
+
+        public SparePartGUIModel()
+        {
+            Name = String.Empty;
+            Amount = 0;
+        }
         public SparePartGUIModel(string name, int amount)
         {
             Name = name;

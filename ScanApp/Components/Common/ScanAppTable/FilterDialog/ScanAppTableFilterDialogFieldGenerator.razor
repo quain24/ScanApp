@@ -1,0 +1,63 @@
+﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@using System.Reflection
+
+@for (int i = 0; i < Properties.Length; i++)
+{
+    int localIterator = i;
+
+    @if (!Headers.IsVisible(localIterator))
+    {
+        continue;
+    }
+    
+    if(Properties[localIterator].PropertyType == typeof(int))
+    {
+        <MudExpansionPanel Text="@Headers.Names[localIterator]"  Style="margin-left: 5px; margin-right: 5px;">
+            <MudTextField @bind-Value="@From[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="From"
+                          Variant="Variant.Outlined"></MudTextField>
+            <MudTextField @bind-Value="@To[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="To" 
+                          Variant="Variant.Outlined"></MudTextField>
+        </MudExpansionPanel>
+    }
+    else if(Properties[localIterator].PropertyType == typeof(string))
+    {
+        <MudExpansionPanel Text="@Headers.Names[localIterator]" Style="margin-left: 5px; margin-right: 5px;">
+            <MudTextField @bind-Value="@Contains[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="Contains"
+                          Variant="Variant.Outlined"></MudTextField>
+        </MudExpansionPanel>
+    }
+    else if (Properties[localIterator].PropertyType == typeof(DateTime))
+    {
+        <MudExpansionPanel Text="@Headers.Names[localIterator]" Style="margin-left: 5px; margin-right: 5px;">
+            <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="From"
+                           @bind-Date="@FromDate[localIterator]" Editable="true" ShowWeekNumbers="true" />
+            <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="To"
+                           @bind-Date="@ToDate[localIterator]" Editable="true" ShowWeekNumbers="true" />
+        </MudExpansionPanel>
+    }
+}
+@code {
+    [Parameter]
+    public Headers Headers { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
+
+    [Parameter]
+    public PropertyInfo[] Properties { get; set; }
+
+    [Parameter]
+    public int?[] From { get; set; }
+
+    [Parameter]
+    public int?[] To { get; set; }
+
+    [Parameter]
+    public string[] Contains { get; set; }
+
+    [Parameter]
+    public DateTime?[] FromDate { get; set; }
+
+    [Parameter]
+    public DateTime?[] ToDate { get; set; }
+}

@@ -9,23 +9,23 @@
 @using ScanApp.Components.Common.ScanAppTable.Options;
 @using ScanApp.Components.Common.ScanAppTable.Sorter;
 
-@if (_loading)
+@if (Loading)
 {
     <MudContainer Fixed="true" Style="width: 100%; height: 500px;">
         <MudProgressCircular Style="position: absolute; left: 50%; margin-left: -10px; top: 50%; margin-top: -10px;"
-                                  Color="Color.Info" Size="Size.Large" Indeterminate="true" />
+                             Color="Color.Info" Size="Size.Large" Indeterminate="true" />
     </MudContainer>
 }
 else
 {
-    @if (_groupingEnabled)
+    @if (GroupingEnabled)
     {
         <MudTabs Position="@Position.Left" Rounded="true" MaxHeight="600" ApplyEffectsToContainer="true" AlwaysShowScrollButtons="true"
                  Class="mt-8" PanelClass="pa-6">
             @foreach (var group in _groupList)
             {
                 <MudTabPanel Text="@GetShorterString(group.Key)">
-                    <MudTable Style="@TableStyle" Items="group.itemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
+                    <MudTable Style="@TableStyle" Items="group.ItemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
                         <HeaderContent>
                             @for (int i = 0; i < Headers.Count; i++)
                             {
@@ -34,13 +34,13 @@ else
                                 {
                                     continue;
                                 }
-                                <MudTh @onclick="() => SubSortBy(group.itemGroup, _subScanAppTableSorter, _properties[local], Headers.Names[local])">
+                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, Properties[local], Headers.Names[local])">
                                     @Headers.Names[local]
-                                    @if (_subScanAppTableSorter.AscendingOrder == _properties[local].Name)
+                                    @if (SubScanAppTableSorter.AscendingOrder == Properties[local].Name)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
                                     }
-                                    else if (_subScanAppTableSorter.DescendingOrder == _properties[local].Name)
+                                    else if (SubScanAppTableSorter.DescendingOrder == Properties[local].Name)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
                                     }
@@ -48,14 +48,14 @@ else
                             }
                         </HeaderContent>
                         <RowTemplate>
-                            @for (int i = 0; i < _properties.Length; i++)
+                            @for (int i = 0; i < Properties.Length; i++)
                                         {
                                             int local = i;
                                             if (!Headers.IsVisible(local))
                                             {
                                                 continue;
                                             }
-                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
+                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
                                         }
                         </RowTemplate>
                     </MudTable>
@@ -66,7 +66,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable Style="@TableStyle" MultiSelection="_multiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
+            <MudTable Style="@TableStyle" MultiSelection="MultiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @for (int i = 0; i < Headers.Count; i++)
@@ -76,13 +76,13 @@ else
                                 {
                                     continue;
                                 }
-                        <MudTh @onclick="() => SortBy(_scanAppTableSorter, _properties[local], Headers.Names[local])">
+                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, Properties[local], Headers.Names[local])">
                             @Headers.Names[local]
-                            @if (_scanAppTableSorter.AscendingOrder == _properties[local].Name)
+                            @if (ScanAppTableSorter.AscendingOrder == Properties[local].Name)
                                     {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
                                     }
-                                    else if (_scanAppTableSorter.DescendingOrder == _properties[local].Name)
+                                    else if (ScanAppTableSorter.DescendingOrder == Properties[local].Name)
                                     {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
                                     }
@@ -90,22 +90,22 @@ else
                             }
                 </HeaderContent>
                 <RowTemplate>
-                    @for (int i = 0; i < _properties.Length; i++)
-                    {
-                        int local = i;
-                        if (!Headers.IsVisible(local))
-                        {
-                            continue;
-                        }
-                        if (_multiselectionEnabled)
-                        {
-                            <MudTd Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
-                        }
-                        else
-                        {
-                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@_properties[local].GetValue(context)</MudTd>
-                        }
-                    }
+                    @for (int i = 0; i < Properties.Length; i++)
+                            {
+                                int local = i;
+                                if (!Headers.IsVisible(local))
+                                {
+                                    continue;
+                                }
+                                if (MultiselectionEnabled)
+                                {
+                            <MudTd Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
+                                }
+                                else
+                                {
+                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
+                                }
+                            }
                 </RowTemplate>
             </MudTable>
         </MudPaper>
@@ -113,14 +113,14 @@ else
     @if (Options.ShowToolBar)
     {
         <MudToolBar>
-            @if (_multiselectionEnabled && _selectedItems.Count > 0)
+            @if (MultiselectionEnabled && _selectedItems.Count > 0)
             {
                 <MudIconButton OnClick="() => OpenSelectionDialog()" Icon="@Icons.Material.Filled.ReadMore"></MudIconButton>
             }
             <MudToolBarSpacer />
-            @if (_menuOpened)
+            @if (MenuOpened)
             {
-                @if (_multiselectionEnabled)
+                @if (MultiselectionEnabled)
                 {
                     <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBox"></MudIconButton>
                 }
@@ -128,16 +128,16 @@ else
                 {
                     <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBoxOutlineBlank"></MudIconButton>
                 }
-                @if (!_groupingEnabled)
+                @if (!GroupingEnabled)
                 {
-                    <MudIconButton OnClick="() => OpenFilterDialog(_scanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                    <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
                 }
                 <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
-                @if (_dataIsFiltered && !_groupingEnabled)
+                @if (DataIsFiltered && !GroupingEnabled)
                 {
-                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(_scanAppTableSorter)"></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(ScanAppTableSorter)"></MudIconButton>
                 }
-                @if (_groupingEnabled)
+                @if (GroupingEnabled)
                 {
                     <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
                 }
@@ -150,7 +150,6 @@ else
         </MudToolBar>
     }
 }
-
 
 @code
 {
@@ -182,19 +181,17 @@ else
     public Action<IEnumerable<TItem>> DeleteData { get; set; }
 
     [Parameter]
-    public DialogOptions dialogOptions { get; set; }
+    public DialogOptions DialogOptions { get; set; }
 
-
-
-    private PropertyInfo[] _properties { get; set; }
-    private ScanAppTableSorter<TItem> _scanAppTableSorter { get; set; }
-    private ScanAppTableSorter<TItem> _subScanAppTableSorter { get; set; }
-    private IEnumerable<TItem> _itemsOriginal { get; set; }
-    private bool _dataIsFiltered { get; set; }
-    private bool _menuOpened { get; set; }
-    private bool _groupingEnabled { get; set; }
-    private bool _multiselectionEnabled { get; set; }
-    private bool _loading { get; set; } = true;
+    private PropertyInfo[] Properties { get; set; }
+    private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
+    private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
+    private IEnumerable<TItem> ItemsOriginal { get; set; }
+    private bool DataIsFiltered { get; set; }
+    private bool MenuOpened { get; set; }
+    private bool GroupingEnabled { get; set; }
+    private bool MultiselectionEnabled { get; set; }
+    private bool Loading { get; set; } = true;
 
     private List<Group<TItem>> _groupList { get; set; } = new List<Group<TItem>>();
     private HashSet<TItem> _selectedItems = new HashSet<TItem>();
@@ -206,9 +203,9 @@ else
 
     private async Task InvokeGetData()
     {
-        _loading = true;
+        Loading = true;
         await GetData();
-        _loading = false;
+        Loading = false;
     }
 
     private async Task InvokeDeleteData(IEnumerable<TItem> titemList)
@@ -220,39 +217,45 @@ else
     protected override async Task OnInitializedAsync()
     {
         await InvokeGetData();
-        _itemsOriginal = Items;
-        _scanAppTableSorter = new ScanAppTableSorter<TItem>();
-        _subScanAppTableSorter = new ScanAppTableSorter<TItem>();
-        if (dialogOptions is null)
-        {
-            dialogOptions = new DialogOptions() { MaxWidth = MaxWidth.Large };
-        }
-        _properties = Items.FirstOrDefault().GetType().GetProperties();
+        ItemsOriginal = Items;
+        ScanAppTableSorter = new ScanAppTableSorter<TItem>();
+        SubScanAppTableSorter = new ScanAppTableSorter<TItem>();
+
+        DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
+
+        Properties = Items.FirstOrDefault()?.GetType().GetProperties();
     }
 
     private void ToggleMenu()
     {
-        _menuOpened = !_menuOpened;
+        MenuOpened = !MenuOpened;
     }
 
     private void ToggleMultiSelection()
     {
-        _multiselectionEnabled = !_multiselectionEnabled;
+        MultiselectionEnabled = !MultiselectionEnabled;
     }
 
-    private async Task OpenEditDialog(TItem titem)
+    private async Task OpenEditDialog(TItem item)
     {
+        var itemClone = ItemCloner<TItem>.Clone(item, Properties);
         var parameter = new DialogParameters
-        { 
-            ["Item"] = titem, 
+        {
+            ["Item"] = itemClone,
             ["Headers"] = Headers,
-            ["Properties"] = _properties
+            ["Properties"] = Properties
 
         };
-        var dialog = DialogService.Show<ScanAppTableEditDialog<TItem>>("Edit", parameter, dialogOptions);
+        var dialog = DialogService.Show<ScanAppTableEditDialog<TItem>>("Edit", parameter, DialogOptions);
         var result = await dialog.Result;
-        titem = (TItem)result.Data;
-        InvokeSaveChanges(titem);
+        if (result.Cancelled)
+        {
+            return;
+        }
+
+        // The changes are not visible in the table! 
+
+        item = (TItem)result.Data;
         StateHasChanged();
     }
 
@@ -260,29 +263,29 @@ else
     {
         var parameter = new DialogParameters
         {
-            ["Properties"] = _properties,
+            ["Properties"] = Properties,
             ["Headers"] = Headers,
             ["Items"] = Items
         };
         var dialog = DialogService.Show<ScanAppTableGroupDialog<TItem>>("Group By", parameter);
         var result = await dialog.Result;
+
         if (result.Cancelled)
         {
             return;
         }
-        var groups = (List<IGrouping<object, TItem>>)result.Data;
-        if (groups.Count == 0)
+
+        _groupList.Clear();
+
+        _groupList = (List<Group<TItem>>)result.Data;
+
+        if (_groupList.Count == 0)
         {
             return;
         }
-        _groupList.Clear();
-        foreach (var group in groups)
-        {
-            _groupList.Add(new Group<TItem>(group.Key.ToString(), group.ToList()));
-        }
-        _subScanAppTableSorter.ResetSortingStatus();
-        _groupingEnabled = true;
-        //StateHasChanged();
+
+        SubScanAppTableSorter.ResetSortingStatus();
+        GroupingEnabled = true;
     }
 
     private async Task OpenSelectionDialog()
@@ -332,37 +335,34 @@ else
 
     private void ToggleGroupingMenu()
     {
-        _groupingEnabled = !_groupingEnabled;
+        GroupingEnabled = !GroupingEnabled;
     }
-
 
     private async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter, IEnumerable<TItem> items)
     {
-        //await InvokeGetData();
         var parameter = new DialogParameters
         {
             ["Items"] = items,
             ["Headers"] = Headers,
-            ["Properties"] = _properties
+            ["Properties"] = Properties
         };
-        var dialog = DialogService.Show<ScanAppTableFilterDialog<TItem>>("Filter", parameter, dialogOptions);
+        var dialog = DialogService.Show<ScanAppTableFilterDialog<TItem>>("Filter", parameter, DialogOptions);
         var result = await dialog.Result;
         if (result.Cancelled)
         {
             return;
         }
         Items = (IEnumerable<TItem>)result.Data;
-        _dataIsFiltered = true;
+        DataIsFiltered = true;
         sorter.ResetSortingStatus();
         StateHasChanged();
     }
 
     private async Task ResetFilter(ScanAppTableSorter<TItem> sorter)
     {
-        _dataIsFiltered = false;
+        DataIsFiltered = false;
         sorter.ResetSortingStatus();
-        // await InvokeGetData(); // maybe not? ;)
-        Items = _itemsOriginal;
+        Items = ItemsOriginal;
     }
 
     private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
@@ -379,11 +379,11 @@ else
         // Recognise which item group it is
         for (int i = 0; i < _groupList.Count; i++)
         {
-            if (_groupList[i].itemGroup[0].Equals(items.First<TItem>()))
+            if (_groupList[i].ItemGroup[0].Equals(items.First<TItem>()))
             {
                 sorter.CurrentlySorted = header;
                 var direction = sorter.ResolveSortDirection(propertyInfo);
-                _groupList[i].itemGroup = sorter.OrderByPropertyName<TItem>(_groupList[i].itemGroup, propertyInfo.Name, direction).ToList();
+                _groupList[i].ItemGroup = sorter.OrderByPropertyName<TItem>(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
                 break;
             }
         }
