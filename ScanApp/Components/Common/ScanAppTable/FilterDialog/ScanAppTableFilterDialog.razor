@@ -1,6 +1,8 @@
 ﻿@typeparam TItem
 @using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @using ScanApp.Components.Common.ScanAppTable.Options
+@using ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 
 <MudDialog>
     <TitleContent>
@@ -12,41 +14,10 @@
     <DialogContent>
         <MudContainer Style="max-height: 500px; overflow-y: scroll;">
             <MudGrid>
-                <MudItem >
+                <MudItem>
                     <MudExpansionPanels MultiExpansion="true">
-                        @for (int i = 0; i < Properties.Length; i++)
-                        {
-                            int local = i;
-                            if (!Headers.IsVisible(local))
-                            {
-                                continue;
-                            }
-                            if (Properties[local].PropertyType == typeof(int))
-                            {
-                            <MudExpansionPanel Text="@Headers.Names[local]"  Style="margin-left: 5px; margin-right: 5px;">
-                                <MudTextField @bind-Value="@from[local]" @onkeypress="KeyPressed" Immediate="true" Label="From"
-                                              Variant="Variant.Outlined"></MudTextField>
-                                <MudTextField @bind-Value="@to[local]" @onkeypress="KeyPressed" Immediate="true" Label="To" 
-                                              Variant="Variant.Outlined"></MudTextField>
-                            </MudExpansionPanel>
-                            }
-                            else if (Properties[local].PropertyType == typeof(string))
-                            {
-                            <MudExpansionPanel Text="@Headers.Names[local]" Style="margin-left: 5px; margin-right: 5px;">
-                                <MudTextField @bind-Value="@contains[local]" @onkeypress="KeyPressed" Immediate="true" Label="Contains"
-                                              Variant="Variant.Outlined"></MudTextField>
-                            </MudExpansionPanel>
-                            }
-                            else if (Properties[local].PropertyType == typeof(DateTime))
-                            {
-                            <MudExpansionPanel Text="@Headers.Names[local]" Style="margin-left: 5px; margin-right: 5px;">
-                                <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="From"
-                                               @bind-Date="@fromDate[local]" Editable="true" ShowWeekNumbers="true" />
-                                <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="To"
-                                               @bind-Date="@toDate[local]" Editable="true" ShowWeekNumbers="true" />
-                            </MudExpansionPanel>
-                            }
-                        }
+                        <ScanAppTableFilterDialogFieldGenerator Headers="Headers" KeyPressed="KeyPressed" Properties="Properties"
+                                                                From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate" />
                     </MudExpansionPanels>
                 </MudItem>
             </MudGrid>
@@ -57,7 +28,6 @@
         <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
     </DialogActions>
 </MudDialog>
-
 
 @code {
     [CascadingParameter]
@@ -72,19 +42,19 @@
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
 
-    private int?[] from { get; set; }
-    private int?[] to { get; set; }
-    private string[] contains { get; set; }
-    private DateTime?[] fromDate { get; set; }
-    private DateTime?[] toDate { get; set; }
+    private int?[] From { get; set; }
+    private int?[] To { get; set; }
+    private string[] Contains { get; set; }
+    private DateTime?[] FromDate { get; set; }
+    private DateTime?[] ToDate { get; set; }
 
     protected override Task OnInitializedAsync()
     {
-        from = new int?[Properties.Length];
-        to = new int?[Properties.Length];
-        contains = new string[Properties.Length];
-        fromDate = new DateTime?[Properties.Length];
-        toDate = new DateTime?[Properties.Length];
+        From = new int?[Properties.Length];
+        To = new int?[Properties.Length];
+        Contains = new string[Properties.Length];
+        FromDate = new DateTime?[Properties.Length];
+        ToDate = new DateTime?[Properties.Length];
         return base.OnInitializedAsync();
     }
 
@@ -95,18 +65,14 @@
 
     private void Submit()
     {
-        for (int i = 0; i < from.Length; i++)
+        var filteringOperationFactory = new FilteringOperationsFactory(Properties, From, To, Contains, FromDate, ToDate);
+        var filteringOperations = filteringOperationFactory.CreateOperations();
+
+        foreach (var operation in filteringOperations)
         {
-            Items = ScanAppTableFilter<TItem>.FilterBetween(Items, Properties[i].Name, from[i], to[i]);
+            Items = operation.Run(Items);
         }
-        for (int i = 0; i < contains.Length; i++)
-        {
-            Items = ScanAppTableFilter<TItem>.FilterContains<TItem>(Items, Properties[i].Name, contains[i]);
-        }
-        for (int i = 0; i < fromDate.Length; i++)
-        {
-            Items = ScanAppTableFilter<TItem>.FilterBetweenDates<TItem>(Items, Properties[i].Name, fromDate[i], toDate[i]);
-        }
+        
         MudDialog.Close(DialogResult.Ok(Items));
     }
 

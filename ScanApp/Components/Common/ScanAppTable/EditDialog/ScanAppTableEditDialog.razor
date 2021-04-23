@@ -12,9 +12,9 @@
         <MudContainer Style="max-height: 500px; overflow-y: scroll;">
             <MudGrid>
                 <MudItem >
-                    @for (int i = 0; i < _itemRepresentation.Objects.Length; i++)
+                    @for (int i = 0; i < ItemRepresentation.Objects.Length; i++)
                     {
-                        <ScanAppTableEditDialogFieldGenerator Headers="Headers" ItemRepresentation="_itemRepresentation" Iterator="i"
+                        <ScanAppTableEditDialogFieldGenerator Headers="Headers" ItemRepresentation="ItemRepresentation" Iterator="i"
                                                               KeyPressed="@KeyPressed"/>
                     }
                 </MudItem>
@@ -43,11 +43,11 @@
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
 
-    private ItemRepresentation<TItem> _itemRepresentation { get; set; }
+    private ItemRepresentation<TItem> ItemRepresentation { get; set; }
 
     protected override Task OnInitializedAsync()
     {
-        _itemRepresentation = new ItemRepresentation<TItem>(Properties, Item);
+        ItemRepresentation = new ItemRepresentation<TItem>(Properties, Item);
         return base.OnInitializedAsync();
     }
 
@@ -58,11 +58,11 @@
 
     private void Submit()
     {
-        _itemRepresentation.SaveChanges();
+        ItemRepresentation.SaveChanges();
 
         for (int i = 0; i < Properties.Length; i++)
         {
-            Properties[i].SetValue(Item, _itemRepresentation.Objects[i]);
+            Properties[i].SetValue(Item, ItemRepresentation.Objects[i]);
         }
         MudDialog.Close(DialogResult.Ok(Item));
     }

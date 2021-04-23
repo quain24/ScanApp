@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Reflection;
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @using ScanApp.Components.Common.ScanAppTable.Options
 
 <MudDialog>
@@ -13,12 +14,12 @@
         <MudSelect T="string" Label="Group By" @bind-Value="_selectedGroupBy">
             @for (int i = 0; i < Properties.Length; i++)
             {
-                int local = i;
-                if (!Headers.IsGroupable(local))
+                int localIterator = i;
+                if (!Headers.IsGroupable(localIterator))
                 {
                     continue;
                 }
-                <MudSelectItem Value="@Headers.Names[local]" />
+                <MudSelectItem Value="@Headers.Names[localIterator]" />
             }
         </MudSelect>
     </DialogContent>
@@ -42,15 +43,15 @@
     public PropertyInfo[] Properties { get; set; }
 
     private string _selectedGroupBy;
-    private Dictionary<string, string> headersPropertiesPairs;
+    private Dictionary<string, string> _headersPropertiesPairs;
 
 
     protected override Task OnInitializedAsync()
     {
-        headersPropertiesPairs = new Dictionary<string, string>();
+        _headersPropertiesPairs = new Dictionary<string, string>();
         for (int i = 0; i < Properties.Length; i++)
         {
-            headersPropertiesPairs.Add(Headers.Names[i], Properties[i].Name);
+            _headersPropertiesPairs.Add(Headers.Names[i], Properties[i].Name);
         }
         return base.OnInitializedAsync();
     }
@@ -63,13 +64,14 @@
 
     public void Submit()
     {
-        string name;
-        if (!headersPropertiesPairs.TryGetValue(_selectedGroupBy, out name))
+        if (!_headersPropertiesPairs.TryGetValue(_selectedGroupBy, out string propertyName))
         {
             return;
         }
-        var groupingList = ScanAppTableGroup<TItem>.GroupBy(Items, name).ToList();
+        var groupingList = Items.GroupByReflected(propertyName).ToList();
+        var groupList = GroupingToGroupConverter.Convert(groupingList);
 
-        MudDialog.Close(DialogResult.Ok(groupingList));
+        MudDialog.Close(DialogResult.Ok(groupList));
+
     }
 }
