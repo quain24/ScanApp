@@ -14,18 +14,19 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
 
     internal class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IContextFactory _contextFactory;
 
-        public GetAllClaimsQueryHandler(IApplicationDbContext context)
+        public GetAllClaimsQueryHandler(IContextFactory contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result<List<ClaimModel>>> Handle(GetAllClaimsQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var roles = await _context.ClaimsSource
+                await using var context = _contextFactory.CreateDbContext();
+                var roles = await context.ClaimsSource
                     .AsNoTracking()
                     .Select(rc => new ClaimModel(rc.Type, rc.Value))
                     .Distinct()
