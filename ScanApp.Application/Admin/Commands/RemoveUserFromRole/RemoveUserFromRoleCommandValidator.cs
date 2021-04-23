@@ -6,12 +6,15 @@ namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
     {
         public RemoveUserFromRoleCommandValidator()
         {
-            RuleFor(c => c.RoleName)
-                .Cascade(CascadeMode.Stop)
+            RuleFor(c => c.UserName)
                 .NotEmpty();
 
-            RuleFor(c => c.UserName)
+            RuleFor(c => c.Version)
                 .Cascade(CascadeMode.Stop)
+                .NotNull()
+                .Must(v => v.IsEmpty is false);
+
+            RuleFor(c => c.RoleName)
                 .NotEmpty();
         }
     }
