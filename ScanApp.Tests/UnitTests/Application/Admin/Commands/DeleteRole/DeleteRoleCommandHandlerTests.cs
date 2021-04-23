@@ -23,7 +23,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.DeleteRole
         }
 
         [Fact]
-        public void Throws_arg_null_exc_when_missing_IUserManager()
+        public void Throws_arg_null_exc_when_missing_IRoleManager()
         {
             Action act = () => _ = new DeleteRoleCommandHandler(null);
 

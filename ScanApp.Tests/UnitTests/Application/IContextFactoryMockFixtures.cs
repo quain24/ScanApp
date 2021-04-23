@@ -1,7 +1,7 @@
 ﻿using Moq;
 using ScanApp.Application.Common.Interfaces;
 
-namespace ScanApp.Tests.UnitTests.Application.Admin.Queries
+namespace ScanApp.Tests.UnitTests.Application
 {
     public class IContextFactoryMockFixtures
     {

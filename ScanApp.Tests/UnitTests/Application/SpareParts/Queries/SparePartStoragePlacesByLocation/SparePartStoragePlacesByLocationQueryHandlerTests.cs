@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using MediatR;
 using MockQueryable.Moq;
-using Moq;
 using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
 using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation;
 using ScanApp.Domain.Entities;
 using System;
@@ -15,13 +13,12 @@ using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStoragePlacesByLocation
 {
-    public class SparePartStoragePlacesByLocationQueryHandlerTests
+    public class SparePartStoragePlacesByLocationQueryHandlerTests : IContextFactoryMockFixtures
     {
         [Fact]
         public void Will_create_instance()
         {
-            var contextFactoryMock = new Mock<IContextFactory>();
-            var subject = new SparePartStoragePlacesByLocationQueryHandler(contextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesByLocationQueryHandler(ContextFactoryMock.Object);
 
             subject.Should().BeOfType<SparePartStoragePlacesByLocationQueryHandler>()
                 .And.BeAssignableTo(typeof(IRequestHandler<,>));
@@ -45,14 +42,10 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
         [Fact]
         public async Task Returns_all_spare_part_storage_places_for_given_location_as_valid_result_containing_RepairWorkshopModel_collection()
         {
-            var contextFactoryMock = new Mock<IContextFactory>();
-            var contextMock = new Mock<IApplicationDbContext>();
-            contextFactoryMock.Setup(c => c.CreateDbContext()).Returns(contextMock.Object);
-
             var dataMock = StoragePlaces.AsQueryable().BuildMockDbSet();
-            contextMock.SetupGet(c => c.SparePartStoragePlaces).Returns(dataMock.Object);
+            ContextMock.SetupGet(c => c.SparePartStoragePlaces).Returns(dataMock.Object);
 
-            var subject = new SparePartStoragePlacesByLocationQueryHandler(contextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesByLocationQueryHandler(ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesByLocationQuery("location_a"), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -64,13 +57,10 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
         [InlineData("unknown_location_id")]
         public async Task Returns_valid_result_containing_empty_collection_if_no_records_match_given_location_id(string locationId)
         {
-            var contextFactoryMock = new Mock<IContextFactory>();
-            var contextMock = new Mock<IApplicationDbContext>();
-            contextFactoryMock.Setup(c => c.CreateDbContext()).Returns(contextMock.Object);
             var dataMock = StoragePlaces.AsQueryable().BuildMockDbSet();
-            contextMock.SetupGet(c => c.SparePartStoragePlaces).Returns(dataMock.Object);
+            ContextMock.SetupGet(c => c.SparePartStoragePlaces).Returns(dataMock.Object);
 
-            var subject = new SparePartStoragePlacesByLocationQueryHandler(contextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesByLocationQueryHandler(ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesByLocationQuery(locationId), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -80,10 +70,9 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
         [Fact]
         public async Task Throws_if_exception_was_thrown_when_receiving_data()
         {
-            var contextFactoryMock = new Mock<IContextFactory>();
-            contextFactoryMock.Setup(c => c.CreateDbContext()).Throws<ArgumentNullException>();
+            ContextFactoryMock.Setup(c => c.CreateDbContext()).Throws<ArgumentNullException>();
 
-            var subject = new SparePartStoragePlacesByLocationQueryHandler(contextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesByLocationQueryHandler(ContextFactoryMock.Object);
             Func<Task> act = async () => await subject.Handle(new SparePartStoragePlacesByLocationQuery("location_id"), CancellationToken.None);
 
             await act.Should().ThrowAsync<ArgumentNullException>();
@@ -92,13 +81,10 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
         [Fact]
         public async Task Returns_invalid_result_of_cancelled_if_cancellation_occurred()
         {
-            var contextFactoryMock = new Mock<IContextFactory>();
-            var contextMock = new Mock<IApplicationDbContext>();
-            contextFactoryMock.Setup(c => c.CreateDbContext()).Returns(contextMock.Object);
             var token = new CancellationTokenSource(0).Token;
-            contextMock.SetupGet(c => c.SparePartStoragePlaces).Throws<OperationCanceledException>();
+            ContextMock.SetupGet(c => c.SparePartStoragePlaces).Throws<OperationCanceledException>();
 
-            var subject = new SparePartStoragePlacesByLocationQueryHandler(contextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesByLocationQueryHandler(ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesByLocationQuery("location_id"), token);
 
             result.Conclusion.Should().BeFalse();
