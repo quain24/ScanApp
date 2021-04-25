@@ -2,12 +2,9 @@
 @using ScanApp.Domain.Entities;
 @using ScanApp.Components.Common.ScanAppTable
 @using ScanApp.Application.Common.Interfaces
-@using ScanApp.Infrastructure.Services
-@using Microsoft.EntityFrameworkCore
-@using ScanApp.Application.SpareParts
-@using ScanApp.Application.SpareParts.Queries.StoragePlacesForCurrentUser
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
+@using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 @using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Models.SpareParts
 @inject IArticleService articleService
@@ -61,7 +58,7 @@
     {
         _tableOptions = new ScanAppTableOptions();
         //_tableOptions.ShowToolBar = false;
-        var storagePlacesResult = await mediator.Send(new StoragePlacesForCurrentUserQuery());
+        var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery());
         if (storagePlacesResult.Conclusion is false)
         {
             Snackbar.Add("Could not fetch possible repair workshops", Severity.Error);
