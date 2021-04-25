@@ -39,11 +39,6 @@
     [Parameter]
     public HashSet<TItem> SelectedItems { get; set; }
 
-    protected override Task OnInitializedAsync()
-    {
-        return base.OnInitializedAsync();
-    }
-
     private void Cancel()
     {
         MudDialog.Cancel();
@@ -51,16 +46,23 @@
 
     private void Copy()
     {
-        MudDialog.Close(DialogResult.Ok("Copy"));
+        MudDialog.Close(DialogResult.Ok(Action.Copy));
     }
 
     private void Delete()
     {
-        MudDialog.Close(DialogResult.Ok("Delete"));
+        MudDialog.Close(DialogResult.Ok(Action.Delete));
     }
 
     private void Export()
     {
-        MudDialog.Close(DialogResult.Ok("Export"));
+        MudDialog.Close(DialogResult.Ok(Action.Export));
+    }
+
+    public enum Action
+    {
+        Copy,
+        Delete,
+        Export
     }
 }
