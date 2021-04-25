@@ -178,7 +178,7 @@ else
     public Func<Task> GetData { get; set; }
 
     [Parameter]
-    public Action<IEnumerable<TItem>> DeleteData { get; set; }
+    public Action<IList<TItem>> DeleteData { get; set; }
 
     [Parameter]
     public DialogOptions DialogOptions { get; set; }
@@ -193,8 +193,8 @@ else
     private bool MultiselectionEnabled { get; set; }
     private bool Loading { get; set; } = true;
 
-    private List<Group<TItem>> _groupList { get; set; } = new List<Group<TItem>>();
-    private HashSet<TItem> _selectedItems = new HashSet<TItem>();
+    private List<Group<TItem>> _groupList { get; set; } = new();
+    private HashSet<TItem> _selectedItems = new();
 
     private void InvokeSaveChanges(TItem titem)
     {
@@ -208,9 +208,9 @@ else
         Loading = false;
     }
 
-    private async Task InvokeDeleteData(IEnumerable<TItem> titemList)
+    private async Task InvokeDeleteData(IList<TItem> itemList)
     {
-        DeleteData?.Invoke(titemList);
+        DeleteData?.Invoke(itemList);
         await InvokeGetData();
     }
 
@@ -238,7 +238,7 @@ else
 
     private async Task OpenEditDialog(TItem item)
     {
-        var itemClone = ItemCloner<TItem>.Clone(item, Properties);
+        var itemClone = ItemCloner.Clone(item);
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,
@@ -253,8 +253,8 @@ else
             return;
         }
 
-        // The changes are not visible in the table! 
-        Items[Items.IndexOf(item)] = (TItem) result.Data;
+        // The changes are not visible in the table!
+        Items[Items.IndexOf(item)] = (TItem)result.Data;
         StateHasChanged();
     }
 
@@ -289,37 +289,28 @@ else
 
     private async Task OpenSelectionDialog()
     {
-        var parameter = new DialogParameters
-        {
-            ["SelectedItems"] = _selectedItems
-        };
-        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>("Selection", parameter);
+        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>
+        (
+            "Selection",
+            new DialogParameters { ["SelectedItems"] = _selectedItems }
+        );
+
         var result = await dialog.Result;
         if (result.Cancelled)
         {
             return;
         }
-        var action = (string)result.Data;
 
-        if (action == "Delete")
+        var action = (ScanAppTableSelectionDialog<TItem>.Action)result.Data;
+        foreach (var selectedItem in _selectedItems)
         {
-            var itemsList = Items.ToList();
-            foreach (var selectedItem in _selectedItems)
-            {
-                itemsList.Remove(selectedItem);
-            }
-            Items = itemsList;
+            if (action is ScanAppTableSelectionDialog<TItem>.Action.Copy)
+                Items.Add(selectedItem);
+            else if (action is ScanAppTableSelectionDialog<TItem>.Action.Delete)
+                Items.Remove(selectedItem);
         }
-        else if (action == "Copy")
-        {
-            var itemsList = Items.ToList();
-            var selectedItemsList = _selectedItems.ToList();
-            //itemsList.AddRange(_selectedItems);
-            itemsList.AddRange(selectedItemsList);
-            //Items = null;
-            Items = itemsList;
-            StateHasChanged();
-        }
+
+        StateHasChanged();
     }
 
     private string GetShorterString(string str)
