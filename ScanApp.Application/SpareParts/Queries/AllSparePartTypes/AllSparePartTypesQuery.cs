@@ -18,14 +18,14 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 
         public AllSparePartTypesQueryHandler(IContextFactory contextFactory)
         {
-            _contextFactory = contextFactory;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result<List<SparePartTypeModel>>> Handle(AllSparePartTypesQuery request, CancellationToken cancellationToken)
         {
-            await using var ctx = _contextFactory.CreateDbContext();
             try
             {
+                await using var ctx = _contextFactory.CreateDbContext();
                 var parts = await ctx.SparePartTypes
                     .AsNoTracking()
                     .Select(s => new SparePartTypeModel(s.Name))
@@ -34,11 +34,9 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 
                 return new Result<List<SparePartTypeModel>>(parts);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<List<SparePartTypeModel>>(ErrorType.ConcurrencyFailure, ex)
-                    : new Result<List<SparePartTypeModel>>(ErrorType.Unknown, ex);
+                return new Result<List<SparePartTypeModel>>(ErrorType.Cancelled, ex);
             }
         }
     }

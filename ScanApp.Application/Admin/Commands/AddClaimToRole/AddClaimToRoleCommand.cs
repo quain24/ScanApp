@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 
         public AddClaimToRoleCommandHandler(IRoleManager roleManager)
         {
-            _roleManager = roleManager;
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         public async Task<Result> Handle(AddClaimToRoleCommand request, CancellationToken cancellationToken)

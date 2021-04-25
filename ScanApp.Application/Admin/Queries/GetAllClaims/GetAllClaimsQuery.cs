@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
@@ -15,20 +14,19 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
 
     internal class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
     {
-        private readonly IApplicationDbContext _context;
-        private readonly ILogger<GetAllClaimsQueryHandler> _logger;
+        private readonly IContextFactory _contextFactory;
 
-        public GetAllClaimsQueryHandler(IApplicationDbContext context, ILogger<GetAllClaimsQueryHandler> logger)
+        public GetAllClaimsQueryHandler(IContextFactory contextFactory)
         {
-            _context = context;
-            _logger = logger;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result<List<ClaimModel>>> Handle(GetAllClaimsQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var roles = await _context.ClaimsSource
+                await using var context = _contextFactory.CreateDbContext();
+                var roles = await context.ClaimsSource
                     .AsNoTracking()
                     .Select(rc => new ClaimModel(rc.Type, rc.Value))
                     .Distinct()
@@ -36,11 +34,9 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
 
                 return new Result<List<ClaimModel>>(roles);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                var message = "Something went wrong when getting all role claims...";
-                _logger.LogError(ex, message);
-                return new Result<List<ClaimModel>>(ErrorType.Unknown, message, ex);
+                return new Result<List<ClaimModel>>(ErrorType.Cancelled, ex);
             }
         }
     }

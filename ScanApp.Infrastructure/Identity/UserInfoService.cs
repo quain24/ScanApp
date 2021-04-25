@@ -8,6 +8,7 @@ using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
@@ -31,39 +32,39 @@ namespace ScanApp.Infrastructure.Identity
             return await _userManager.Users.AnyAsync(u => u.UserName.Equals(userName)).ConfigureAwait(false);
         }
 
-        public async Task<string> GetUserNameById(string userId)
+        public async Task<string> GetUserNameById(string userId, CancellationToken token = default)
         {
             return await _userManager.Users
                 .AsNoTracking()
                 .Where(u => u.Id.Equals(userId))
                 .Select(u => u.UserName)
-                .SingleOrDefaultAsync()
+                .SingleOrDefaultAsync(token)
                 .ConfigureAwait(false);
         }
 
-        public async Task<string> GetUserIdByName(string userName)
+        public async Task<string> GetUserIdByName(string userName, CancellationToken token = default)
         {
             return await _userManager.Users
                 .AsNoTracking()
                 .Where(u => u.UserName.Equals(userName))
                 .Select(u => u.Id)
-                .SingleOrDefaultAsync()
+                .SingleOrDefaultAsync(token)
                 .ConfigureAwait(false);
         }
 
-        public async Task<string> GetUserConcurrencyStamp(string userName)
+        public async Task<string> GetUserConcurrencyStamp(string userName, CancellationToken token = default)
         {
             return await _userManager.Users
                 .AsNoTracking()
                 .Where(u => u.UserName.Equals(userName))
                 .Select(u => u.ConcurrencyStamp)
-                .SingleOrDefaultAsync()
+                .SingleOrDefaultAsync(token)
                 .ConfigureAwait(false);
         }
 
-        public async Task<Version> GetUserVersion(string userName)
+        public async Task<Version> GetUserVersion(string userName, CancellationToken token = default)
         {
-            var stamp = await GetUserConcurrencyStamp(userName).ConfigureAwait(false);
+            var stamp = await GetUserConcurrencyStamp(userName, token).ConfigureAwait(false);
             return stamp is null
                 ? Version.Empty()
                 : Version.Create(stamp);

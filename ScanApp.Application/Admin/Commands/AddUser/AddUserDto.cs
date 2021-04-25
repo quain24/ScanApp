@@ -9,5 +9,6 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         public string Phone { get; set; }
         public string Email { get; set; }
         public Location Location { get; set; }
+        public bool CanBeLockedOut { get; set; } = true;
     }
 }

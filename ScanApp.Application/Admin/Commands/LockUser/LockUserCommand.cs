@@ -15,7 +15,7 @@ namespace ScanApp.Application.Admin.Commands.LockUser
 
         public LockUserCommandHandler(IUserManager manager)
         {
-            _manager = manager;
+            _manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
         public Task<Result> Handle(LockUserCommand request, CancellationToken cancellationToken)

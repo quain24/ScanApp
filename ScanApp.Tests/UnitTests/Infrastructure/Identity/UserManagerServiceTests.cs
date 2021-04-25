@@ -265,7 +265,6 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         public async Task ValidatePassword_will_return_list_of_errors()
         {
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
-            var passwordValidatorMock = new Mock<IPasswordValidator<ApplicationUser>>();
             var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
             var sut = new UserManagerService(userMgrMock.Object, ctxFacMock.Object);
 
@@ -604,11 +603,11 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 var orgProp = userProps.FirstOrDefault(p => p.Name == up.Name);
                 if (dtoProp?.GetValue(editData) is not null)
                 {
-                    dtoProp.GetValue(editData).Should().BeEquivalentTo(up.GetValue(user), $"dto have {dtoProp?.Name ?? "unknown name"} value, so it should replace user {up?.Name ?? "unknown name"} value.");
+                    dtoProp.GetValue(editData).Should().BeEquivalentTo(up.GetValue(user), $"dto have {dtoProp?.Name} value, so it should replace user {up?.Name} value.");
                 }
                 else
                 {
-                    up.GetValue(user).Should().BeEquivalentTo(orgProp.GetValue(comparedUser), $"dto does not have {dtoProp?.Name ?? "unknown name"} value, so  user {up?.Name ?? "unknown name"} value should match compared user {orgProp?.Name ?? "unknown name"}");
+                    up.GetValue(user).Should().BeEquivalentTo(orgProp.GetValue(comparedUser), $"dto does not have {dtoProp?.Name ?? "unknown name"} value, so  user {up?.Name} value should match compared user {orgProp?.Name ?? "unknown name"}");
                 }
             }
 
@@ -627,7 +626,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 ctx.Add(user);
                 ctx.Add(location);
                 ctx.SaveChanges();
-                ctx.Add(new UserLocation() { LocationId = location.Id, UserId = user.Id });
+                ctx.Add(new UserLocation { LocationId = location.Id, UserId = user.Id });
                 ctx.SaveChanges();
             }
 

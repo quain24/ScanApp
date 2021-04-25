@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
+using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +40,10 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
                 return ex is DbUpdateConcurrencyException
                     ? new Result(ErrorType.ConcurrencyFailure, ex)
                     : new Result(ErrorType.DatabaseError, ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                return new Result(ErrorType.Cancelled, ex);
             }
         }
     }
