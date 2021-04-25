@@ -154,7 +154,7 @@ else
 @code
 {
     [Parameter]
-    public IEnumerable<TItem> Items { get; set; } = Array.Empty<TItem>();
+    public IList<TItem> Items { get; set; } = new List<TItem>(0);
 
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
@@ -186,7 +186,7 @@ else
     private PropertyInfo[] Properties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
-    private IEnumerable<TItem> ItemsOriginal { get; set; }
+    private IList<TItem> ItemsOriginal { get; set; }
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
@@ -254,8 +254,7 @@ else
         }
 
         // The changes are not visible in the table! 
-
-        item = (TItem)result.Data;
+        Items[Items.IndexOf(item)] = (TItem) result.Data;
         StateHasChanged();
     }
 
@@ -352,7 +351,7 @@ else
         {
             return;
         }
-        Items = (IEnumerable<TItem>)result.Data;
+        Items = (IList<TItem>)result.Data;
         DataIsFiltered = true;
         sorter.ResetSortingStatus();
         StateHasChanged();
@@ -369,7 +368,7 @@ else
     {
         sorter.CurrentlySorted = header;
         var direction = sorter.ResolveSortDirection(propertyInfo);
-        Items = sorter.OrderByPropertyName<TItem>(Items, propertyInfo.Name, direction);
+        Items = sorter.OrderByPropertyName(Items, propertyInfo.Name, direction);
 
         return EventCallback.Empty;
     }
@@ -383,7 +382,7 @@ else
             {
                 sorter.CurrentlySorted = header;
                 var direction = sorter.ResolveSortDirection(propertyInfo);
-                _groupList[i].ItemGroup = sorter.OrderByPropertyName<TItem>(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
+                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
                 break;
             }
         }

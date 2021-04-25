@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace ScanApp.Components.Common.ScanAppTable.Sorter
 {
@@ -24,21 +22,21 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
             }
             return null;
         }
-        
-        public IOrderedEnumerable<TItem> OrderByPropertyName<Titem>(IEnumerable<TItem> items, string propertyName, string direction)
+
+        public IList<TItem> OrderByPropertyName(IEnumerable<TItem> items, string propertyName, string direction)
         {
             var propInfo = typeof(TItem).GetProperty(propertyName);
             if (direction == "descending")
             {
                 AscendingOrder = null;
                 DescendingOrder = propertyName;
-                return items.OrderByDescending(x => propInfo.GetValue(x, null));
+                return items.OrderByDescending(x => propInfo.GetValue(x, null)).ToList();
             }
             else
             {
                 AscendingOrder = propertyName;
                 DescendingOrder = null;
-                return items.OrderBy(x => propInfo.GetValue(x, null));
+                return items.OrderBy(x => propInfo.GetValue(x, null)).ToList();
             }
         }
 
