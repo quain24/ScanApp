@@ -1,20 +1,13 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Text.Json;
 
 namespace ScanApp.Components.Common.ScanAppTable.EditDialog
 {
-    public static class ItemCloner<TItem>
+    public static class ItemCloner
     {
-        public static TItem Clone(TItem item, PropertyInfo[] properties)
+        public static TItem Clone<TItem>(TItem item)
         {
-            TItem itemClone = (TItem)Activator.CreateInstance(item.GetType());
-
-            foreach (var property in properties)
-            {
-                property.SetValue(itemClone, property.GetValue(item));
-            }
-
-            return itemClone;
+            var serialized = JsonSerializer.Serialize(item);
+            return JsonSerializer.Deserialize<TItem>(serialized);
         }
     }
 }
