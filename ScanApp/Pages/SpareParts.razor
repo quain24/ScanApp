@@ -22,7 +22,7 @@
 <MudPaper Elevation="4">
     <MudGrid>
         <MudItem Style="position:center" xs="12" sm="6" md="4">
-            <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop" Required="true" ResetValueOnEmptyText="true"
+            <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
                              Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
 
             <MudTextField @bind-Value="_article" Label="Article" Immediate="true"
@@ -31,7 +31,7 @@
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable Items="@_spareParts" TableStyle="@_tableStyle" Options="@_tableOptions" Headers="@Headers" 
+<ScanAppTable Items="@_spareParts" TableStyle="@_tableStyle" Options="@_tableOptions" Headers="@Headers"
               Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
 <MudDivider />
 <MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
@@ -53,7 +53,6 @@
     private string _repairWorkshopId;
     private string _height = "400px";
     private string _tableStyle = "max-width: 500px;";
-    private string searchString = string.Empty;
     private string[] _repairWorkshops;
     private string _selectedRepairWorkshop;
     private string _article;
@@ -73,17 +72,17 @@
         _repairWorkshopId = repairWorkshopModels[0].Id;
         _repairWorkshops = new string[repairWorkshopModels.Count];
 
-        for (int i = 0; i < repairWorkshopModels.Count(); i++)
+        for (int i = 0; i < repairWorkshopModels.Count; i++)
         {
             _repairWorkshops[i] = repairWorkshopModels[i].Number;
         }
 
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
-    private async Task<IEnumerable<string>> SearchRepairWorkshop(string value)
+    private Task<IEnumerable<string>> SearchRepairWorkshop(string value)
     {
-        return _repairWorkshops;
+        return Task.FromResult(_repairWorkshops.AsEnumerable());
     }
 
     public void Save(SparePartGUIModel sparePart)
@@ -109,13 +108,10 @@
             return;
         }
 
-        var sparePartTypes = sparePartsTypesResult.Output;
+        _spareParts = sparePartsTypesResult.Output
+            .Select(m => new SparePartGUIModel(m.Name))
+            .ToList();
 
-        _spareParts = new List<SparePartGUIModel>();
-        foreach (var sparePartType in sparePartTypes)
-        {
-            _spareParts.Add(new SparePartGUIModel(sparePartType.Name, 0));
-        }
         StateHasChanged();
     }
 
@@ -126,24 +122,18 @@
 
     private async Task Submit()
     {
-        if (_article == string.Empty || _article is null)
+        if (string.IsNullOrWhiteSpace(_article))
         {
             Snackbar.Add("Article field is empty!", Severity.Error);
             return;
         }
-        var models = new SparePartModel[_spareParts.Count];
-        for (int i = 0; i < _spareParts.Count; i++)
-        {
-            if (_spareParts[i].Amount <= 0)
-            {
-                continue;
-            }
-            models[i] = new SparePartModel(_spareParts[i].Name, _spareParts[i].Amount, _article, _repairWorkshopId);
-        }
 
-        models = models.Where(m => m != null).ToArray();
+        var parts = _spareParts
+            .Where(s => s.Amount > 0)
+            .Select(s => new SparePartModel(s.Name, s.Amount, _article, _repairWorkshopId))
+            .ToArray();
 
-        var saveResult = await mediator.Send(new CreateSparePartsCommand(models));
+        var saveResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
         if (saveResult.Conclusion is false)
         {
@@ -151,14 +141,7 @@
             return;
         }
 
-        int newSpareParts = 0;
-        foreach (var model in models)
-        {
-            newSpareParts =+ model.Amount;
-        }
-
-        Snackbar.Add(newSpareParts.ToString() + " new spare parts created!", Severity.Success);
-
+        Snackbar.Add(parts.Sum(p => p.Amount) + " new spare parts created!", Severity.Success);
         await Flush();
     }
 
