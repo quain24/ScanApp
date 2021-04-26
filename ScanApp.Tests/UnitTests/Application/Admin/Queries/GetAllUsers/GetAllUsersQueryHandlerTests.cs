@@ -55,18 +55,20 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetAllUsers
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
-        [Fact]
-        public async Task Returns_invalid_result_of_cancelled_if_cancellation_occurred()
+        [Theory]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(TaskCanceledException))]
+        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
         {
-            var token = new CancellationTokenSource(0).Token;
-            ContextMock.SetupGet(c => c.Users).Throws<OperationCanceledException>();
+            dynamic exc = Activator.CreateInstance(type);
+            ContextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
 
             var subject = new GetAllUsersQueryHandler(ContextFactoryMock.Object);
-            var result = await subject.Handle(new GetAllUsersQuery(), token);
+            var result = await subject.Handle(new GetAllUsersQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType<OperationCanceledException>();
+            result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }
 }

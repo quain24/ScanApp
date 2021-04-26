@@ -54,6 +54,7 @@
 
     private void OnSwipe(SwipeDirection direction)
     {
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
         switch (direction)
         {
             case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < 2:
