@@ -5,7 +5,6 @@
 @using ScanApp.Components.Common.ScanAppTable.EditDialog;
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog;
 @using ScanApp.Components.Common.ScanAppTable.GroupDialog;
-@using ScanApp.Components.Common.ScanAppTable.SelectionDialog;
 @using ScanApp.Components.Common.ScanAppTable.Options;
 @using ScanApp.Components.Common.ScanAppTable.Sorter;
 
@@ -66,7 +65,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable Style="@TableStyle" MultiSelection="MultiselectionEnabled" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
+            <MudTable Style="@TableStyle" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @for (int i = 0; i < Headers.Count; i++)
@@ -97,14 +96,7 @@ else
                                 {
                                     continue;
                                 }
-                                if (MultiselectionEnabled)
-                                {
-                            <MudTd Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
-                                }
-                                else
-                                {
-                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
-                                }
+                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
                             }
                 </RowTemplate>
             </MudTable>
@@ -113,21 +105,9 @@ else
     @if (Options.ShowToolBar)
     {
         <MudToolBar>
-            @if (MultiselectionEnabled && _selectedItems.Count > 0)
-            {
-                <MudIconButton OnClick="() => OpenSelectionDialog()" Icon="@Icons.Material.Filled.ReadMore"></MudIconButton>
-            }
             <MudToolBarSpacer />
             @if (MenuOpened)
             {
-                @if (MultiselectionEnabled)
-                {
-                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBox"></MudIconButton>
-                }
-                else
-                {
-                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.CheckBoxOutlineBlank"></MudIconButton>
-                }
                 @if (!GroupingEnabled)
                 {
                     <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
@@ -190,7 +170,6 @@ else
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
-    private bool MultiselectionEnabled { get; set; }
     private bool Loading { get; set; } = true;
 
     private List<Group<TItem>> _groupList { get; set; } = new();
@@ -229,11 +208,6 @@ else
     private void ToggleMenu()
     {
         MenuOpened = !MenuOpened;
-    }
-
-    private void ToggleMultiSelection()
-    {
-        MultiselectionEnabled = !MultiselectionEnabled;
     }
 
     private async Task OpenEditDialog(TItem item)
@@ -288,32 +262,6 @@ else
 
         SubScanAppTableSorter.ResetSortingStatus();
         GroupingEnabled = true;
-    }
-
-    private async Task OpenSelectionDialog()
-    {
-        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>
-        (
-            "Selection",
-            new DialogParameters { ["SelectedItems"] = _selectedItems }
-        );
-
-        var result = await dialog.Result;
-        if (result.Cancelled)
-        {
-            return;
-        }
-
-        var action = (ScanAppTableSelectionDialog<TItem>.Action)result.Data;
-        foreach (var selectedItem in _selectedItems)
-        {
-            if (action is ScanAppTableSelectionDialog<TItem>.Action.Copy)
-                Items.Add(selectedItem);
-            else if (action is ScanAppTableSelectionDialog<TItem>.Action.Delete)
-                Items.Remove(selectedItem);
-        }
-
-        StateHasChanged();
     }
 
     private string GetShorterString(string str)

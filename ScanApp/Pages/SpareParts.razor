@@ -59,7 +59,7 @@
     protected override async Task OnInitializedAsync()
     {
         _tableOptions = new ScanAppTableOptions();
-        //_tableOptions.ShowToolBar = false;
+        _tableOptions.ShowToolBar = false;
         var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery());
         if (storagePlacesResult.Conclusion is false)
         {
