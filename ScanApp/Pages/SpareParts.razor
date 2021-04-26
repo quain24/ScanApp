@@ -38,6 +38,7 @@
 
 @code {
     private List<SparePartGUIModel> _spareParts;
+    private List<SparePartGUIModel> _sparePartsEmpty;
 
     private string[] _headersArray =
     {
@@ -109,6 +110,8 @@
             .Select(m => new SparePartGUIModel(m.Name))
             .ToList();
 
+       _sparePartsEmpty = ClearSparePartList(_spareParts);
+
         StateHasChanged();
     }
 
@@ -144,9 +147,16 @@
 
     private async Task Flush()
     {
-        await GetData();
         _article = string.Empty;
         _selectedRepairWorkshop = string.Empty;
+        _spareParts = null;
+        _spareParts = ClearSparePartList(_sparePartsEmpty);
         StateHasChanged();
+    }
+
+    private List<SparePartGUIModel> ClearSparePartList(List<SparePartGUIModel> sparePartList)
+    {
+
+        return sparePartList.Select(s => new SparePartGUIModel(s.Name)).ToList();
     }
 }
