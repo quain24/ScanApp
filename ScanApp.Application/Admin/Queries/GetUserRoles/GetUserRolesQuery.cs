@@ -1,8 +1,8 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,18 +15,19 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
 
     internal class GetUserRolesQueryHandler : IRequestHandler<GetUserRolesQuery, Result<List<BasicRoleModel>>>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IContextFactory _contextFactory;
 
-        public GetUserRolesQueryHandler(IApplicationDbContext context)
+        public GetUserRolesQueryHandler(IContextFactory contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result<List<BasicRoleModel>>> Handle(GetUserRolesQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var user = await _context.Users
+                await using var ctx = _contextFactory.CreateDbContext();
+                var user = await ctx.Users
                     .AsNoTracking()
                     .Where(u => u.UserName.Equals(request.UserName))
                     .Select(u => new
@@ -43,10 +44,10 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
                 if (user.Version != request.Version)
                     return new Result<List<BasicRoleModel>>(ErrorType.ConcurrencyFailure);
 
-                var roles = await _context.UserRoles
+                var roles = await ctx.UserRoles
                     .AsNoTracking()
                     .Where(u => u.UserId.Equals(user.Id))
-                    .Join(_context.Roles, role => role.RoleId, identityRole => identityRole.Id,
+                    .Join(ctx.Roles, role => role.RoleId, identityRole => identityRole.Id,
                         (_, identityRole) => new BasicRoleModel(identityRole.Name, Version.Create(identityRole.ConcurrencyStamp)))
                     .ToListAsync(cancellationToken)
                     .ConfigureAwait(false);
