@@ -253,6 +253,10 @@ else
             return;
         }
 
+        if (DataIsFiltered)
+        {
+            ItemsOriginal[ItemsOriginal.IndexOf(item)] = (TItem) result.Data;
+        }
         Items[Items.IndexOf(item)] = (TItem)result.Data;
         StateHasChanged();
     }
@@ -341,6 +345,7 @@ else
         {
             return;
         }
+        ItemsOriginal = Items;
         Items = (IList<TItem>)result.Data;
         DataIsFiltered = true;
         sorter.ResetSortingStatus();
