@@ -2,6 +2,7 @@
 @using ScanApp.Domain.Entities;
 @using ScanApp.Components.Common.ScanAppTable
 @using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.SpareParts
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
 @using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
@@ -48,7 +49,7 @@
     private Headers Headers { get; set; }
     private ScanAppTableOptions _tableOptions { get; set; }
 
-    private string _repairWorkshopId;
+    private List<RepairWorkshopModel> _repairWorkshopModels = new List<RepairWorkshopModel>();
     private string _height = "400px";
     private string _tableStyle = "max-width: 500px;";
     private string[] _repairWorkshops;
@@ -65,14 +66,13 @@
             Snackbar.Add("Could not fetch possible repair workshops", Severity.Error);
             return;
         }
-        var repairWorkshopModels = storagePlacesResult.Output;
+        _repairWorkshopModels = storagePlacesResult.Output;
 
-        _repairWorkshopId = repairWorkshopModels[0].Id;
-        _repairWorkshops = new string[repairWorkshopModels.Count];
+        _repairWorkshops = new string[_repairWorkshopModels.Count];
 
-        for (int i = 0; i < repairWorkshopModels.Count; i++)
+        for (int i = 0; i < _repairWorkshopModels.Count; i++)
         {
-            _repairWorkshops[i] = repairWorkshopModels[i].Number;
+            _repairWorkshops[i] = _repairWorkshopModels[i].Number;
         }
 
         await base.OnInitializedAsync();
@@ -110,7 +110,7 @@
             .Select(m => new SparePartGUIModel(m.Name))
             .ToList();
 
-       _sparePartsEmpty = ClearSparePartList(_spareParts);
+        _sparePartsEmpty = ClearSparePartList(_spareParts);
 
         StateHasChanged();
     }
@@ -130,7 +130,7 @@
 
         var parts = _spareParts
             .Where(s => s.Amount > 0)
-            .Select(s => new SparePartModel(s.Name, s.Amount, _article, _repairWorkshopId))
+            .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
             .ToArray();
 
         var saveResult = await mediator.Send(new CreateSparePartsCommand(parts));
@@ -158,5 +158,10 @@
     {
 
         return sparePartList.Select(s => new SparePartGUIModel(s.Name)).ToList();
+    }
+
+    private string GetRepairWorkshopId(string selectedWorkshop)
+    {
+        return _repairWorkshopModels.Where(s => s.Number == selectedWorkshop).Select(s => s.Id).ToArray().First();
     }
 }
