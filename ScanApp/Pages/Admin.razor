@@ -56,7 +56,7 @@
     {
         switch (direction)
         {
-            case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < _tabPanel.Panels.Count - 1:
+            case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < 2:
                 _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex + 1);
                 break;
             case SwipeDirection.LeftToRight when _tabPanel.ActivePanelIndex > 0:
