@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
 
         public GetAllUserDataQueryHandler(IUserInfo userInfo)
         {
-            _userInfo = userInfo;
+            _userInfo = userInfo ?? throw new ArgumentNullException(nameof(userInfo));
         }
 
         public async Task<Result<UserInfoModel>> Handle(GetAllUserDataQuery request, CancellationToken cancellationToken)

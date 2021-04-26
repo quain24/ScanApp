@@ -36,10 +36,9 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
                     .ConfigureAwait(false);
                 return new Result<List<BasicUserModel>>().SetOutput(data);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                _logger.LogWarning(ex.Message);
-                return new Result<List<BasicUserModel>>(ErrorType.Unknown, "Something went wrong when tried to retrieve basic user data.", ex);
+                return new Result<List<BasicUserModel>>(ErrorType.Timeout, ex);
             }
         }
     }

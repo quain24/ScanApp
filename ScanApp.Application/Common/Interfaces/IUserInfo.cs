@@ -4,6 +4,7 @@ using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ScanApp.Domain.ValueObjects;
+using System.Threading;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -11,11 +12,11 @@ namespace ScanApp.Application.Common.Interfaces
     {
         Task<bool> UserExists(string userName);
 
-        Task<string> GetUserNameById(string userId);
+        Task<string> GetUserNameById(string userId, CancellationToken token = default);
 
-        Task<string> GetUserIdByName(string userName);
+        Task<string> GetUserIdByName(string userName, CancellationToken token = default);
 
-        Task<string> GetUserConcurrencyStamp(string userName);
+        Task<string> GetUserConcurrencyStamp(string userName, CancellationToken token = default);
 
         Task<UserInfoModel> GetData(string userName);
 
@@ -28,6 +29,6 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result<List<ClaimModel>>> GetClaims(string userName, params string[] claimTypes);
 
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
-        Task<Version> GetUserVersion(string userName);
+        Task<Version> GetUserVersion(string userName, CancellationToken token = default);
     }
 }

@@ -35,6 +35,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         NetworkError,
         ConcurrencyFailure,
         Timeout,
+        Cancelled,
 
         // Database common
         DatabaseError

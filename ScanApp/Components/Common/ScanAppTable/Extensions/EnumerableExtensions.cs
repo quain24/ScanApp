@@ -4,18 +4,18 @@ using System.Linq;
 
 namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
-    public static class ReflectedEnumerableExtensionMethods
+    public static class EnumerableExtensions
     {
         public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, string propertyName, int? from, int? to)
         {
-            if (ArgumentsAreValid(@from, to) == false)
+            if (ArgumentsAreValid(from, to) is false)
             {
                 return enumerable;
             }
 
             var propInfo = typeof(T).GetProperty(propertyName);
 
-            if (@from is null)
+            if (from is null)
             {
                 return enumerable
                     .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
@@ -25,12 +25,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
             if (to is null)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= @from)
+                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from)
                     .ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= @from && Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
+                .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from && Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
                 .ToList();
         }
 
@@ -44,32 +44,31 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
             return enumerable
                 .Where(x => propInfo.GetValue(x, null)
                     .ToString()
-                    .ToLowerInvariant()
-                    .Contains(containTerm.ToLowerInvariant()))
-                    .ToList();
+                    .Contains(containTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
         public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, string propertyName, DateTime? from, DateTime? to)
         {
-            if (ArgumentsAreValid(@from, to) == false)
+            if (ArgumentsAreValid(from, to) is false)
             {
                 return enumerable;
             }
 
             var propInfo = typeof(T).GetProperty(propertyName);
 
-            if (@from is null)
+            if (from is null)
             {
                 return enumerable.Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) <= to).ToList();
             }
 
             if (to is null)
             {
-                return enumerable.Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= @from).ToList();
+                return enumerable.Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= from).ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= @from &&
+                .Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= from &&
                             Convert.ToDateTime(propInfo.GetValue(x, null)) <= to).ToList();
         }
 
@@ -80,24 +79,18 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 
         private static bool ArgumentsAreValid(int? from, int? to)
         {
-            if (from > to)
+            if (!from.HasValue || !to.HasValue)
                 return false;
 
-            if (from is null || to is null)
-                return false;
-
-            return true;
+            return from <= to;
         }
 
         private static bool ArgumentsAreValid(DateTime? from, DateTime? to)
         {
-            if (from > to)
+            if (!from.HasValue || !to.HasValue)
                 return false;
 
-            if (from is null || to is null)
-                return false;
-
-            return true;
+            return from <= to;
         }
     }
 }

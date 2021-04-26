@@ -154,7 +154,7 @@ else
 @code
 {
     [Parameter]
-    public IEnumerable<TItem> Items { get; set; } = Array.Empty<TItem>();
+    public IList<TItem> Items { get; set; } = new List<TItem>(0);
 
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
@@ -178,7 +178,7 @@ else
     public Func<Task> GetData { get; set; }
 
     [Parameter]
-    public Action<IEnumerable<TItem>> DeleteData { get; set; }
+    public Action<IList<TItem>> DeleteData { get; set; }
 
     [Parameter]
     public DialogOptions DialogOptions { get; set; }
@@ -186,15 +186,15 @@ else
     private PropertyInfo[] Properties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
-    private IEnumerable<TItem> ItemsOriginal { get; set; }
+    private IList<TItem> ItemsOriginal { get; set; }
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
     private bool MultiselectionEnabled { get; set; }
     private bool Loading { get; set; } = true;
 
-    private List<Group<TItem>> _groupList { get; set; } = new List<Group<TItem>>();
-    private HashSet<TItem> _selectedItems = new HashSet<TItem>();
+    private List<Group<TItem>> _groupList { get; set; } = new();
+    private HashSet<TItem> _selectedItems = new();
 
     private void InvokeSaveChanges(TItem titem)
     {
@@ -208,9 +208,9 @@ else
         Loading = false;
     }
 
-    private async Task InvokeDeleteData(IEnumerable<TItem> titemList)
+    private async Task InvokeDeleteData(IList<TItem> itemList)
     {
-        DeleteData?.Invoke(titemList);
+        DeleteData?.Invoke(itemList);
         await InvokeGetData();
     }
 
@@ -238,7 +238,7 @@ else
 
     private async Task OpenEditDialog(TItem item)
     {
-        var itemClone = ItemCloner<TItem>.Clone(item, Properties);
+        var itemClone = ItemCloner.Clone(item);
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,
@@ -253,9 +253,7 @@ else
             return;
         }
 
-        // The changes are not visible in the table! 
-
-        item = (TItem)result.Data;
+        Items[Items.IndexOf(item)] = (TItem)result.Data;
         StateHasChanged();
     }
 
@@ -290,37 +288,28 @@ else
 
     private async Task OpenSelectionDialog()
     {
-        var parameter = new DialogParameters
-        {
-            ["SelectedItems"] = _selectedItems
-        };
-        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>("Selection", parameter);
+        var dialog = DialogService.Show<ScanAppTableSelectionDialog<TItem>>
+        (
+            "Selection",
+            new DialogParameters { ["SelectedItems"] = _selectedItems }
+        );
+
         var result = await dialog.Result;
         if (result.Cancelled)
         {
             return;
         }
-        var action = (string)result.Data;
 
-        if (action == "Delete")
+        var action = (ScanAppTableSelectionDialog<TItem>.Action)result.Data;
+        foreach (var selectedItem in _selectedItems)
         {
-            var itemsList = Items.ToList();
-            foreach (var selectedItem in _selectedItems)
-            {
-                itemsList.Remove(selectedItem);
-            }
-            Items = itemsList;
+            if (action is ScanAppTableSelectionDialog<TItem>.Action.Copy)
+                Items.Add(selectedItem);
+            else if (action is ScanAppTableSelectionDialog<TItem>.Action.Delete)
+                Items.Remove(selectedItem);
         }
-        else if (action == "Copy")
-        {
-            var itemsList = Items.ToList();
-            var selectedItemsList = _selectedItems.ToList();
-            //itemsList.AddRange(_selectedItems);
-            itemsList.AddRange(selectedItemsList);
-            //Items = null;
-            Items = itemsList;
-            StateHasChanged();
-        }
+
+        StateHasChanged();
     }
 
     private string GetShorterString(string str)
@@ -352,7 +341,7 @@ else
         {
             return;
         }
-        Items = (IEnumerable<TItem>)result.Data;
+        Items = (IList<TItem>)result.Data;
         DataIsFiltered = true;
         sorter.ResetSortingStatus();
         StateHasChanged();
@@ -369,7 +358,7 @@ else
     {
         sorter.CurrentlySorted = header;
         var direction = sorter.ResolveSortDirection(propertyInfo);
-        Items = sorter.OrderByPropertyName<TItem>(Items, propertyInfo.Name, direction);
+        Items = sorter.OrderByPropertyName(Items, propertyInfo.Name, direction);
 
         return EventCallback.Empty;
     }
@@ -383,7 +372,7 @@ else
             {
                 sorter.CurrentlySorted = header;
                 var direction = sorter.ResolveSortDirection(propertyInfo);
-                _groupList[i].ItemGroup = sorter.OrderByPropertyName<TItem>(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
+                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
                 break;
             }
         }

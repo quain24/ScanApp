@@ -31,7 +31,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
         {
             var mediatorMock = new Mock<IMediator>();
 
-            Action act = () => new ScopedMediator(null, mediatorMock.Object);
+            Action act = () => _ = new ScopedMediator(null, mediatorMock.Object);
 
             act.Should().Throw<ArgumentNullException>();
         }
@@ -41,7 +41,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
 
-            Action act = () => new ScopedMediator(scopeFactoryMock.Object, null);
+            Action act = () => _ = new ScopedMediator(scopeFactoryMock.Object, null);
 
             act.Should().Throw<ArgumentNullException>();
         }

@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ScanApp.Models.SpareParts
+﻿namespace ScanApp.Models.SpareParts
 {
     public class SparePartGUIModel
     {
-
         public SparePartGUIModel()
         {
-            Name = String.Empty;
-            Amount = 0;
         }
-        public SparePartGUIModel(string name, int amount)
+
+        public SparePartGUIModel(string name)
         {
             Name = name;
+        }
+
+        public SparePartGUIModel(string name, int amount) : this(name)
+        {
             Amount = amount;
         }
 
