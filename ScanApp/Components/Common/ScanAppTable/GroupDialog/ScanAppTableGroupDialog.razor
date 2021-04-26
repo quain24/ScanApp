@@ -2,6 +2,7 @@
 @using System.Reflection;
 @using ScanApp.Components.Common.ScanAppTable.Extensions
 @using ScanApp.Components.Common.ScanAppTable.Options
+@using SharedExtensions
 
 <MudDialog>
     <TitleContent>
@@ -25,7 +26,14 @@
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        @if (_selectedGroupBy.IsNullOrEmpty())
+        {
+            <MudButton Color="Color.Primary" Disabled="true">Ok</MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        }
     </DialogActions>
 </MudDialog>
 
@@ -43,8 +51,8 @@
     public PropertyInfo[] Properties { get; set; }
 
     private string _selectedGroupBy;
+    private bool SubmitDisabled;
     private Dictionary<string, string> _headersPropertiesPairs;
-
 
     protected override Task OnInitializedAsync()
     {
@@ -56,7 +64,6 @@
         return base.OnInitializedAsync();
     }
 
-
     public void Cancel()
     {
         MudDialog.Close(DialogResult.Cancel());
@@ -64,6 +71,11 @@
 
     public void Submit()
     {
+        if (_selectedGroupBy.IsNullOrEmpty())
+        {
+            return;
+        }
+
         if (!_headersPropertiesPairs.TryGetValue(_selectedGroupBy, out string propertyName))
         {
             return;
