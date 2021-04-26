@@ -23,7 +23,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetAllUserRoles
         }
 
         [Fact]
-        public void Throws_arg_null_exc_when_missing_IContextFactory()
+        public void Throws_arg_null_exc_when_missing_IRoleManager()
         {
             Action act = () => _ = new GetAllUserRolesQueryHandler(null);
 
