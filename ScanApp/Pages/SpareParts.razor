@@ -157,11 +157,17 @@
     private List<SparePartGUIModel> ClearSparePartList(List<SparePartGUIModel> sparePartList)
     {
 
-        return sparePartList.Select(s => new SparePartGUIModel(s.Name)).ToList();
+        return sparePartList
+            .Select(s => new SparePartGUIModel(s.Name))
+            .ToList();
     }
 
     private string GetRepairWorkshopId(string selectedWorkshop)
     {
-        return _repairWorkshopModels.Where(s => s.Number == selectedWorkshop).Select(s => s.Id).ToArray().First();
+        return _repairWorkshopModels
+            .Where(s => s.Number == selectedWorkshop)
+            .Select(s => s.Id)
+            .ToArray()
+            .First();
     }
 }

@@ -96,7 +96,7 @@ else
                                 {
                                     continue;
                                 }
-                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
+                        <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
                             }
                 </RowTemplate>
             </MudTable>
@@ -227,10 +227,22 @@ else
             return;
         }
 
+        if (GroupingEnabled)
+        {
+            var groupWithEditedItem = _groupList
+                .Select(g => g.ItemGroup)
+                .Where(g => g.Contains(item))
+                .ToList()
+                .First();
+
+            groupWithEditedItem[groupWithEditedItem.IndexOf(item)] = (TItem) result.Data;
+        }
+
         if (DataIsFiltered)
         {
-            ItemsOriginal[ItemsOriginal.IndexOf(item)] = (TItem) result.Data;
+            ItemsOriginal[ItemsOriginal.IndexOf(item)] = (TItem)result.Data;
         }
+        Console.WriteLine(Items.IndexOf(item));
         Items[Items.IndexOf(item)] = (TItem)result.Data;
         StateHasChanged();
     }
