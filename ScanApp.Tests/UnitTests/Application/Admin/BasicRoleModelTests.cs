@@ -51,7 +51,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin
         [InlineData("name_a", "name_a", "v1", "v2")]
         [InlineData("name_a", "name_a", "v2", "v1")]
         [InlineData("name_a", "name_a", "v1", "v1")]
-        public void Is_compared_only_by_name(string nameOne, string nameTwo, string versionOneStr, string versionTwoStr)
+        public void Is_compared_only_by_name_case_insensitive(string nameOne, string nameTwo, string versionOneStr, string versionTwoStr)
         {
             var subjectOne = new BasicRoleModel(nameOne, Version.Create(versionOneStr));
             var subjectTwo = new BasicRoleModel(nameTwo, Version.Create(versionTwoStr));
