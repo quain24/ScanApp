@@ -16,22 +16,22 @@ using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 {
-    public class SparePartStoragePlacesForCurrentUserHandlerTests : IContextFactoryMockFixtures
+    public class SparePartStoragePlacesForCurrentUserQueryHandlerTests : IContextFactoryMockFixtures
     {
         [Fact]
         public void Will_create_instance()
         {
             var userServiceMock = new Mock<ICurrentUserService>();
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
 
-            subject.Should().BeOfType<SparePartStoragePlacesForCurrentUserHandler>()
+            subject.Should().BeOfType<SparePartStoragePlacesForCurrentUserQueryHandler>()
                 .And.BeAssignableTo(typeof(IRequestHandler<,>));
         }
 
         [Fact]
         public void Will_throw_arg_null_exc_if_not_given_CurrentUserService()
         {
-            Action act = () => _ = new SparePartStoragePlacesForCurrentUserHandler(null, ContextFactoryMock.Object);
+            Action act = () => _ = new SparePartStoragePlacesForCurrentUserQueryHandler(null, ContextFactoryMock.Object);
 
             act.Should().Throw<ArgumentNullException>();
         }
@@ -40,7 +40,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
         public void Will_throw_arg_null_exc_if_not_given_ContextFactory()
         {
             var userServiceMock = new Mock<ICurrentUserService>();
-            Action act = () => _ = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, null);
+            Action act = () => _ = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, null);
 
             act.Should().Throw<ArgumentNullException>();
         }
@@ -66,7 +66,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             userServiceMock.Setup(u => u.AllClaims(Globals.ClaimTypes.Location))
                 .ReturnsAsync(new List<ClaimModel> { new(Globals.ClaimTypes.Location, userLocation) });
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -86,7 +86,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             userServiceMock.Setup(u => u.AllClaims(Globals.ClaimTypes.Location))
                 .ReturnsAsync(new List<ClaimModel> { new(Globals.ClaimTypes.Location, "unknown_location_id") });
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -105,7 +105,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             userServiceMock.Setup(u => u.AllClaims(Globals.ClaimTypes.Location))
                 .ReturnsAsync(new List<ClaimModel>(0));
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -122,7 +122,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
                 .Setup(u => u.HasClaim(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule))
                 .ReturnsAsync(true);
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
             var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
@@ -135,29 +135,28 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             var userServiceMock = new Mock<ICurrentUserService>();
             ContextFactoryMock.Setup(f => f.CreateDbContext()).Throws<Exception>();
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
 
             Func<Task> act = async () => await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             await act.Should().ThrowAsync<Exception>();
         }
 
-        [Fact]
-        public async Task Returns_invalid_result_of_cancelled_with_empty_collection_if_cancelled()
+        [Theory]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(TaskCanceledException))]
+        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
         {
-            ContextMock.SetupGet(c => c.SparePartStoragePlaces).Throws<OperationCanceledException>();
+            dynamic exc = Activator.CreateInstance(type);
             var userServiceMock = new Mock<ICurrentUserService>();
-            userServiceMock
-                .Setup(u => u.HasClaim(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule))
-                .ReturnsAsync(true);
-            var token = new CancellationTokenSource(0).Token;
+            ContextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
 
-            var subject = new SparePartStoragePlacesForCurrentUserHandler(userServiceMock.Object, ContextFactoryMock.Object);
-            var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), token);
+            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
+            var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType<OperationCanceledException>();
+            result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }
 }

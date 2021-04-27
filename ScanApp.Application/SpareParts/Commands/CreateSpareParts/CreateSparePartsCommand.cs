@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
-using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading;
@@ -19,15 +18,14 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 
         public CreateSparePartsCommandHandler(IContextFactory contextFactory)
         {
-            _contextFactory = contextFactory;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result> Handle(CreateSparePartsCommand request, CancellationToken cancellationToken)
         {
-            await using var ctx = _contextFactory.CreateDbContext();
-
             try
             {
+                await using var ctx = _contextFactory.CreateDbContext();
                 var spareParts = request.SpareParts.Select(s =>
                     new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
 

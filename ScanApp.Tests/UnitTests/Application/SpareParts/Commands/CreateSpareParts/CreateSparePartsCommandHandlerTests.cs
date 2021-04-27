@@ -5,6 +5,7 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Application.SpareParts.Commands.CreateSpareParts;
 using ScanApp.Domain.Entities;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -125,6 +126,23 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             result.ErrorDescription.Exception.Should().BeOfType<DbUpdateException>();
             using var context = NewDbContext;
             context.SpareParts.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData(typeof(OperationCanceledException))]
+        [InlineData(typeof(TaskCanceledException))]
+        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
+        {
+            dynamic exc = Activator.CreateInstance(type);
+            var contextFactoryMock = new IContextFactoryMockFixtures().ContextFactoryMock;
+            contextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
+
+            var subject = new CreateSparePartsCommandHandler(contextFactoryMock.Object);
+            var result = await subject.Handle(new CreateSparePartsCommand(), CancellationToken.None);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }
 }

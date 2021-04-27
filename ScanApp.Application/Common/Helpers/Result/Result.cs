@@ -52,7 +52,7 @@ namespace ScanApp.Application.Common.Helpers.Result
     public class Result
     {
         /// <summary>
-        /// Is set to true if the method ran correcty.
+        /// Is set to true if the method ran correctly.
         /// </summary>
         public bool Conclusion { get; private set; }
 
@@ -69,7 +69,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         public object Output { get; private set; }
 
         /// <summary>
-        /// Positive result. Conclusion is true and result type is Ok.
+        /// Positive result. Conclusion is true and result type is OK.
         /// </summary>
         public Result()
         {
@@ -143,7 +143,7 @@ namespace ScanApp.Application.Common.Helpers.Result
     }
 
     /// <summary>
-    /// Generic Result, which is able to return the desired object. So instead of return typ "Customer", it would be Result &lt;Customer>
+    /// Generic Result, which is able to return the desired object. So instead of return type "Customer", it would be Result &lt;Customer>
     /// </summary>
     /// <typeparam name="T">Type that this <see cref="Result{T}"/> will try to deliver in <seealso cref="Output"/> property</typeparam>
     public class Result<T> : Result
