@@ -79,18 +79,18 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 
         private static bool ArgumentsAreValid(int? from, int? to)
         {
-            if (!from.HasValue || !to.HasValue)
+            if (!from.HasValue && !to.HasValue)
                 return false;
 
-            return from <= to;
+            return true;
         }
 
         private static bool ArgumentsAreValid(DateTime? from, DateTime? to)
         {
-            if (!from.HasValue || !to.HasValue)
+            if (!from.HasValue && !to.HasValue)
                 return false;
 
-            return from <= to;
+            return true;
         }
     }
 }
