@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
@@ -16,20 +15,19 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 
     internal class GetAllUsersBasicDataQueryHandler : IRequestHandler<GetAllUsersBasicDataQuery, Result<List<BasicUserModel>>>
     {
-        private readonly IApplicationDbContext _context;
-        private readonly ILogger<GetAllUsersBasicDataQueryHandler> _logger;
+        private readonly IContextFactory _contextFactory;
 
-        public GetAllUsersBasicDataQueryHandler(IApplicationDbContext context, ILogger<GetAllUsersBasicDataQueryHandler> logger)
+        public GetAllUsersBasicDataQueryHandler(IContextFactory contextFactory)
         {
-            _context = context;
-            _logger = logger;
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
         public async Task<Result<List<BasicUserModel>>> Handle(GetAllUsersBasicDataQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var data = await _context.Users
+                await using var ctx = _contextFactory.CreateDbContext();
+                var data = await ctx.Users
                     .AsNoTracking()
                     .Select(u => new BasicUserModel(u.UserName, Version.Create(u.ConcurrencyStamp)))
                     .ToListAsync(cancellationToken)
@@ -38,7 +36,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<BasicUserModel>>(ErrorType.Timeout, ex);
+                return new Result<List<BasicUserModel>>(ErrorType.Cancelled, ex);
             }
         }
     }

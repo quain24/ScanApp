@@ -16,7 +16,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserVersion
 
         public GetUserVersionCommandHandler(IUserInfo userInfo)
         {
-            _userInfo = userInfo;
+            _userInfo = userInfo ?? throw new ArgumentNullException(nameof(userInfo));
         }
 
         public async Task<Result<Version>> Handle(GetUserVersionCommand request, CancellationToken cancellationToken)

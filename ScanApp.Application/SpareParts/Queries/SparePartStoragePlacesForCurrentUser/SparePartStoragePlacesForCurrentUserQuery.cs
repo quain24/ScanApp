@@ -12,12 +12,12 @@ namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurren
 {
     public record SparePartStoragePlacesForCurrentUserQuery : IRequest<Result<List<RepairWorkshopModel>>>;
 
-    internal class SparePartStoragePlacesForCurrentUserHandler : IRequestHandler<SparePartStoragePlacesForCurrentUserQuery, Result<List<RepairWorkshopModel>>>
+    internal class SparePartStoragePlacesForCurrentUserQueryHandler : IRequestHandler<SparePartStoragePlacesForCurrentUserQuery, Result<List<RepairWorkshopModel>>>
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly IContextFactory _contextFactory;
 
-        public SparePartStoragePlacesForCurrentUserHandler(ICurrentUserService currentUserService, IContextFactory contextFactory)
+        public SparePartStoragePlacesForCurrentUserQueryHandler(ICurrentUserService currentUserService, IContextFactory contextFactory)
         {
             _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
             _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation
 {
@@ -23,9 +23,9 @@ namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocatio
 
         public async Task<Result<List<RepairWorkshopModel>>> Handle(SparePartStoragePlacesByLocationQuery request, CancellationToken cancellationToken)
         {
-            await using var ctx = _contextFactory.CreateDbContext();
             try
             {
+                await using var ctx = _contextFactory.CreateDbContext();
                 var locations = await ctx.SparePartStoragePlaces
                     .AsNoTracking()
                     .Where(e => e.LocationId.Equals(request.LocationId))

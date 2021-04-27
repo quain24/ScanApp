@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserRoles
 
         public GetAllUserRolesQueryHandler(IRoleManager roleManager)
         {
-            _roleManager = roleManager;
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
         public Task<Result<List<BasicRoleModel>>> Handle(GetAllUserRolesQuery request, CancellationToken cancellationToken)
