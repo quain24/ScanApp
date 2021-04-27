@@ -244,6 +244,7 @@ else
         }
         Console.WriteLine(Items.IndexOf(item));
         Items[Items.IndexOf(item)] = (TItem)result.Data;
+        InvokeSaveChanges(item);
         StateHasChanged();
     }
 
