@@ -120,7 +120,7 @@
 
     private async Task Cancel()
     {
-        await Flush();
+        await Flush(true);
     }
 
     private async Task Submit()
@@ -144,13 +144,16 @@
         }
 
         Snackbar.Add(parts.Sum(p => p.Amount) + " new spare parts created!", Severity.Success);
-        await Flush();
+        await Flush(false);
     }
 
-    private async Task Flush()
+    private async Task Flush(bool flushLHM)
     {
         _article = string.Empty;
-        _selectedRepairWorkshop = string.Empty;
+        if (flushLHM)
+        {
+            _selectedRepairWorkshop = string.Empty;
+        }
         _spareParts = null;
         _spareParts = ClearSparePartList(_sparePartsEmpty);
         StateHasChanged();
