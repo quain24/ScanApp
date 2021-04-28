@@ -9,6 +9,7 @@
 @using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Models.SpareParts
 @using SharedExtensions
+@using System.Transactions
 @inject IArticleService articleService
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
@@ -124,20 +125,19 @@
 
     private async Task Submit()
     {
-        if (string.IsNullOrWhiteSpace(_article))
-        {
-            Snackbar.Add("Article field is empty!", Severity.Error);
-            return;
-        }
-
         var parts = _spareParts
             .Where(s => s.Amount > 0)
             .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
             .ToArray();
 
-        var saveResult = await mediator.Send(new CreateSparePartsCommand(parts));
+        if (!IsSparePartFormValid(parts))
+        {
+            return;
+        }
 
-        if (saveResult.Conclusion is false)
+        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+
+        if (createResult.Conclusion is false)
         {
             Snackbar.Add("Creation of spare parts has failed!");
             return;
@@ -173,9 +173,35 @@
             .First();
     }
 
+    private bool IsSparePartFormValid(SparePartModel[] parts)
+    {
+        bool valid = true;
+
+        if (string.IsNullOrWhiteSpace(_article))
+        {
+            Snackbar.Add("Article field is empty!", Severity.Error);
+            valid = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_selectedRepairWorkshop))
+        {
+            Snackbar.Add("LHM field is empty!", Severity.Error);
+            valid = false;
+        }
+
+        if (parts.Length == 0)
+        {
+            Snackbar.Add("Add spare parts before submitting!", Severity.Error);
+            valid = false;
+        }
+
+        return valid;
+    }
+
+
     private bool IsCancelButtonDisabled()
     {
-        if (!_selectedRepairWorkshop.IsNullOrEmpty() || !_article.IsNullOrEmpty())
+        if (!string.IsNullOrWhiteSpace(_selectedRepairWorkshop) || !string.IsNullOrWhiteSpace(_article))
         {
             return false;
         }
