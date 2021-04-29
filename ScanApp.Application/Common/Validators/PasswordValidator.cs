@@ -19,7 +19,8 @@ namespace ScanApp.Application.Common.Validators
                     {
                         context.AddFailure(new ValidationFailure(context.PropertyName, message)
                         {
-                            ErrorCode = code
+                            ErrorCode = code,
+                            AttemptedValue = pass
                         });
                     }
                 });
