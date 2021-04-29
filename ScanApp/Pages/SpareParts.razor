@@ -222,25 +222,32 @@
 
     private bool IsSubmitButtonDisabled()
     {
-        bool disableSubmit = true;
+        if (!TableIncludesNonZeroSpareParts())
+        {
+            return true;
+        }
 
-        disableSubmit = !TableIncludesNonZeroSpareParts();
+        if (string.IsNullOrWhiteSpace(_article))
+        {
+            return true;
+        }
 
-        disableSubmit = string.IsNullOrWhiteSpace(_article);
-
-        disableSubmit = string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
+        if (string.IsNullOrWhiteSpace(_selectedRepairWorkshop))
+        {
+            return true;
+        }
 
         if (_article is null)
         {
-            return disableSubmit;
+            return true;
         }
 
         if (!_articleValidator.Validate(_article).IsValid)
         {
-            disableSubmit = true;
+            return true;
         }
 
-        return disableSubmit;
+        return false;
     }
 
     private bool TableIncludesNonZeroSpareParts()
