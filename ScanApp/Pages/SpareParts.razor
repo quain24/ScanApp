@@ -12,11 +12,13 @@
 @using System.Transactions
 @using FluentValidation
 @using ScanApp.Common
+@using ScanApp.Common.Extensions
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @inject IArticleService articleService
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
+@inject ArticleNumberValidator ArticleNumberValidator
 <style>
     .mud-input-label-inputcontrol {
         margin-left: 20px;
@@ -29,28 +31,32 @@
 
 <MudPaper Elevation="4">
     <MudGrid>
-        <MudItem Style="position:center" xs="12" sm="6" md="4">
-            <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop"
-                             Required="true" CoerceText="true" ResetValueOnEmptyText="true"
-                             Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
+        <MudItem Style="position: center" xs="12" sm="6" md="4">
+            <MudForm @ref="_form" IsValidChanged="@(OnValidationChanged)">
+                <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" SearchFunc="@SearchRepairWorkshop"
+                                 Required="true" CoerceText="true" ResetValueOnEmptyText="true"
+                                 Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
 
-            <MudTextField @bind-Value="_article" Validation="@_articleValidator.Validation" Label="Article" Immediate="true"
-                          Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
+                              Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" val />
+            </MudForm>
         </MudItem>
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable Items="@_spareParts" TableStyle="@_tableStyle" Options="@_tableOptions" Headers="@Headers"
-              Height="@_height" DeleteData="@Delete" SaveChanges="@Save" GetData="@(async () => await GetData())" />
+<ScanAppTable @bind-Items="@_spareParts" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@_tableOptions" Headers="@Headers"
+              Height="@_height" DeleteData="@Delete" SaveChanges="@(item => Save(item))" GetData="@(async () => await GetData())" />
 <MudDivider />
 <MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
            Disabled="@IsCancelButtonDisabled()" Color="Color.Error">Cancel</MudButton>
 <MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
-           Disabled="@IsSubmitButtonDisabled()" Color="Color.Primary">Submit</MudButton>
+           Disabled="@_submitDisabled" Color="Color.Primary">Submit</MudButton>
 
 @code {
     private List<SparePartGUIModel> _spareParts;
     private List<SparePartGUIModel> _sparePartsEmpty;
+    private MudForm _form;
+    private bool _submitDisabled = true;
 
     private string[] _headersArray =
     {
@@ -60,22 +66,14 @@
     private Headers Headers { get; set; }
     private ScanAppTableOptions _tableOptions { get; set; }
 
-    private List<RepairWorkshopModel> _repairWorkshopModels = new List<RepairWorkshopModel>();
+    private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
     private string _tableStyle = "max-width: 500px;";
     private string[] _repairWorkshops;
     private string _selectedRepairWorkshop;
     private string _article = string.Empty;
     private bool _submitInProgress = false;
-
-    private readonly FluentValidationWrapper<string> _articleValidator = new(x => x
-        .NotEmpty()
-        .WithMessage("Article number cannot be empty")
-        .MinimumLength(5)
-        .WithMessage("Article number is too short. Minimum 5 digits required.")
-        .MaximumLength(20)
-        .WithMessage("Article number is too long. Maximum 20 digits required.")
-        .SetValidator(new ArticleNumberValidator<string, string>()));
+    private Func<string, IEnumerable<string>> _articleValidator;
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,6 +93,8 @@
         {
             _repairWorkshops[i] = _repairWorkshopModels[i].Number;
         }
+
+        _articleValidator = ArticleNumberValidator.ToMudFormFieldValidator();
 
         await base.OnInitializedAsync();
     }
@@ -220,6 +220,25 @@
         return true;
     }
 
+    private void OnValidationChanged(bool valid)
+    {
+        if (RequiredFieldsAreEmpty() || IsAnyAmountOverZero() is false)
+        {
+            _submitDisabled = true;
+            return;
+        }
+        _submitDisabled = !valid;
+    }
+
+    private void OnItemsChanged()
+    {
+        OnValidationChanged(_form.IsValid);
+    }
+
+    private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) || string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
+
+    private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s.Amount > 0) ?? false;
+
     private bool IsSubmitButtonDisabled()
     {
         bool disableSubmit = true;
@@ -235,7 +254,7 @@
             return disableSubmit;
         }
 
-        if (!_articleValidator.Validate(_article).IsValid)
+        if (!ArticleNumberValidator.Validate(_article).IsValid)
         {
             disableSubmit = true;
         }
