@@ -44,7 +44,7 @@ namespace ScanApp
             services.AddMudBlazor();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
-            services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeExtensions).Assembly });
+            services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeService).Assembly });
             services.AddCommonFluentValidationPropertyValidators();
             services.AddSingleton<WeatherForecastService>();
         }

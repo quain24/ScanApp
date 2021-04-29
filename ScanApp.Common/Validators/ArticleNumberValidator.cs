@@ -1,43 +1,21 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
 
 namespace ScanApp.Common.Validators
 {
-    public class ArticleNumberValidator<T, TProperty> : PropertyValidator<T, TProperty>
+    public class ArticleNumberValidator : AbstractValidator<string>
     {
-        public override string Name => "Article number validator";
-
-        public override bool IsValid(ValidationContext<T> context, TProperty value)
+        public ArticleNumberValidator()
         {
-            if (value is not string articleNumber)
-            {
-                return false;
-            }
-
-            if (articleNumber.StartsWith(' ') || articleNumber.EndsWith(' '))
-            {
-                return false;
-            }
-
-            for (int i = 0; i < articleNumber.Length; i++)
-            {
-                if (i == articleNumber.Length - 1)
-                {
-                    break;
-                }
-
-                if (articleNumber[i].Equals(' ') && articleNumber[i+1].Equals(' '))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        protected override string GetDefaultMessageTemplate(string errorCode)
-        {
-            return "\"{PropertyValue}\" is not a valid article number.";
+            RuleFor(n => n)
+                .NotEmpty()
+                .WithMessage("Article number cannot be empty")
+                .MinimumLength(5)
+                .WithMessage("Article number is too short. Minimum 5 digits required.")
+                .MaximumLength(20)
+                .WithMessage("Article number is too long. Maximum 20 digits required.")
+                .Must(n => !(n[0].Equals(' ') || n[^1].Equals(' ') || n.Contains("  ")))
+                .When(n => string.IsNullOrEmpty(n) is false)
+                .WithMessage("\"{PropertyValue}\" is not a valid article number.");
         }
     }
 }
