@@ -22,7 +22,7 @@ namespace ScanApp.Application.Common.Behaviors
 
         public LoggingBehaviour(ILogger<LoggingBehaviour<TRequest, TResponse>> logger, IHttpContextAccessor accessor)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _accessor = accessor;
         }
 

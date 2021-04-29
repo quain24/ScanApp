@@ -5,8 +5,8 @@ namespace ScanApp.Application.Admin
 {
     public class BasicRoleModel : IComparable<BasicRoleModel>
     {
-        public string Name { get; set; }
-        public Version Version { get; set; }
+        public string Name { get; }
+        public Version Version { get; }
 
         public BasicRoleModel(string roleName, Version version)
         {
