@@ -108,11 +108,21 @@ else
             <MudToolBarSpacer />
             @if (MenuOpened)
             {
-                @if (!GroupingEnabled)
+                @if (Options.AllowGrouping)
                 {
-                    <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                    @if (!GroupingEnabled && Options.AllowFiltering)
+                    {
+                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                    }
+                    <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
                 }
-                <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
+                else
+                {
+                    if (Options.AllowFiltering)
+                    {
+                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                    }
+                }
                 @if (DataIsFiltered && !GroupingEnabled)
                 {
                     <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(ScanAppTableSorter)"></MudIconButton>
