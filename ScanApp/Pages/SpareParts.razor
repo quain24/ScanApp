@@ -10,11 +10,19 @@
 @using ScanApp.Models.SpareParts
 @using SharedExtensions
 @using System.Transactions
+@using FluentValidation
+@using ScanApp.Common
+@using ScanApp.Common.Validators
+@using Severity = MudBlazor.Severity
 @inject IArticleService articleService
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 <style>
     .mud-input-label-inputcontrol {
+        margin-left: 20px;
+    }
+
+    .mud-input-control-helper-container {
         margin-left: 20px;
     }
 </style>
@@ -26,7 +34,7 @@
                              Required="true" CoerceText="true" ResetValueOnEmptyText="true"
                              Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
 
-            <MudTextField @bind-Value="_article" Label="Article" Immediate="true"
+            <MudTextField @bind-Value="_article" Validation="@_articleValidator.Validation" Label="Article" Immediate="true"
                           Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" />
         </MudItem>
     </MudGrid>
@@ -38,7 +46,7 @@
 <MudButton Variant="Variant.Filled" OnClick="@Cancel" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
            Disabled="@IsCancelButtonDisabled()" Color="Color.Error">Cancel</MudButton>
 <MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
-           Color="Color.Primary">Submit</MudButton>
+           Disabled="@IsSubmitButtonDisabled()" Color="Color.Primary">Submit</MudButton>
 
 @code {
     private List<SparePartGUIModel> _spareParts;
@@ -57,7 +65,17 @@
     private string _tableStyle = "max-width: 500px;";
     private string[] _repairWorkshops;
     private string _selectedRepairWorkshop;
-    private string _article;
+    private string _article = string.Empty;
+    private bool _submitInProgress = false;
+
+    private readonly FluentValidationWrapper<string> _articleValidator = new(x => x
+        .NotEmpty()
+        .WithMessage("Article number cannot be empty")
+        .MinimumLength(5)
+        .WithMessage("Article number is too short. Minimum 5 digits required.")
+        .MaximumLength(20)
+        .WithMessage("Article number is too long. Maximum 20 digits required.")
+        .SetValidator(new ArticleNumberValidator<string, string>()));
 
     protected override async Task OnInitializedAsync()
     {
@@ -125,15 +143,12 @@
 
     private async Task Submit()
     {
-        var parts = _spareParts
-            .Where(s => s.Amount > 0)
-            .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
-            .ToArray();
-
-        if (!IsSparePartFormValid(parts))
+        if (_submitInProgress)
         {
             return;
         }
+        _submitInProgress = true;
+        var parts = GetEditedSpareParts();
 
         var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
@@ -145,6 +160,7 @@
 
         Snackbar.Add(parts.Sum(p => p.Amount) + " new spare parts created!", Severity.Success);
         await Flush(false);
+        _submitInProgress = false;
     }
 
     private async Task Flush(bool flushLHM)
@@ -169,38 +185,16 @@
 
     private string GetRepairWorkshopId(string selectedWorkshop)
     {
+        if (selectedWorkshop.IsNullOrEmpty())
+        {
+            return null;
+        }
         return _repairWorkshopModels
             .Where(s => s.Number == selectedWorkshop)
             .Select(s => s.Id)
             .ToArray()
             .First();
     }
-
-    private bool IsSparePartFormValid(SparePartModel[] parts)
-    {
-        bool valid = true;
-
-        if (string.IsNullOrWhiteSpace(_article))
-        {
-            Snackbar.Add("Article field is empty!", Severity.Error);
-            valid = false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_selectedRepairWorkshop))
-        {
-            Snackbar.Add("LHM field is empty!", Severity.Error);
-            valid = false;
-        }
-
-        if (parts.Length == 0)
-        {
-            Snackbar.Add("Add spare parts before submitting!", Severity.Error);
-            valid = false;
-        }
-
-        return valid;
-    }
-
 
     private bool IsCancelButtonDisabled()
     {
@@ -224,5 +218,51 @@
             return false;
         }
         return true;
+    }
+
+    private bool IsSubmitButtonDisabled()
+    {
+        bool disableSubmit = true;
+
+        disableSubmit = !TableIncludesNonZeroSpareParts();
+
+        disableSubmit = string.IsNullOrWhiteSpace(_article);
+
+        disableSubmit = string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
+
+        if (_article is null)
+        {
+            return disableSubmit;
+        }
+
+        if (!_articleValidator.Validate(_article).IsValid)
+        {
+            disableSubmit = true;
+        }
+
+        return disableSubmit;
+    }
+
+    private bool TableIncludesNonZeroSpareParts()
+    {
+        var parts = GetEditedSpareParts();
+        if (parts.IsNullOrEmpty())
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private SparePartModel[] GetEditedSpareParts()
+    {
+        if (_spareParts.IsNullOrEmpty())
+        {
+            return null;
+        }
+
+        return _spareParts
+            .Where(s => s.Amount > 0)
+            .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
+            .ToArray();
     }
 }
