@@ -144,7 +144,13 @@ else
 @code
 {
     [Parameter]
-    public IList<TItem> Items { get; set; } = new List<TItem>(0);
+    public List<TItem> Items { get; set; } = new List<TItem>(0);
+
+    [Parameter]
+    public EventCallback<List<TItem>> ItemsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback ValuesChanged { get; set;}
 
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
@@ -168,7 +174,7 @@ else
     public Func<Task> GetData { get; set; }
 
     [Parameter]
-    public Action<IList<TItem>> DeleteData { get; set; }
+    public Action<List<TItem>> DeleteData { get; set; }
 
     [Parameter]
     public DialogOptions DialogOptions { get; set; }
@@ -176,7 +182,7 @@ else
     private PropertyInfo[] Properties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
-    private IList<TItem> ItemsOriginal { get; set; }
+    private List<TItem> ItemsOriginal { get; set; }
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
@@ -188,16 +194,18 @@ else
     private void InvokeSaveChanges(TItem titem)
     {
         SaveChanges?.Invoke(titem);
+        ValuesChanged.InvokeAsync();
     }
 
     private async Task InvokeGetData()
     {
         Loading = true;
         await GetData();
+        await ValuesChanged.InvokeAsync();
         Loading = false;
     }
 
-    private async Task InvokeDeleteData(IList<TItem> itemList)
+    private async Task InvokeDeleteData(List<TItem> itemList)
     {
         DeleteData?.Invoke(itemList);
         await InvokeGetData();
@@ -317,7 +325,7 @@ else
             return;
         }
         ItemsOriginal = Items;
-        Items = (IList<TItem>)result.Data;
+        Items = (List<TItem>)result.Data;
         DataIsFiltered = true;
         sorter.ResetSortingStatus();
         StateHasChanged();

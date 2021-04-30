@@ -23,7 +23,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
             return null;
         }
 
-        public IList<TItem> OrderByPropertyName(IEnumerable<TItem> items, string propertyName, string direction)
+        public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, string propertyName, string direction)
         {
             var propInfo = typeof(TItem).GetProperty(propertyName);
             if (direction == "descending")
