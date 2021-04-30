@@ -7,24 +7,22 @@ namespace ScanApp.Application.Common.Helpers.Result
     /// </summary>
     public class ErrorDescription
     {
-        public ErrorType ErrorType { get; set; }
+        public ErrorType ErrorType { get; init; }
 
-        public string ErrorMessage { get; set; }
-        public string StackTrace { get; set; }
+        public string ErrorMessage { get; init; }
+        public string StackTrace { get; private init; }
 
-        private Exception _exception;
+        private readonly Exception _exception;
 
-        internal Exception Exc
+        public Exception Exception
         {
             get => _exception;
-            set
+            init
             {
                 _exception = value;
                 StackTrace = _exception?.StackTrace;
             }
         }
-
-        public Exception Exception => _exception;
 
         public Guid Guid { get; }
 

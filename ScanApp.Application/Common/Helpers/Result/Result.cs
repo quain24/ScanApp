@@ -94,44 +94,57 @@ namespace ScanApp.Application.Common.Helpers.Result
         public Result(ErrorType errorType)
         {
             Conclusion = false;
-            ErrorDescription = new();
-            ErrorDescription.ErrorType = errorType;
+            ErrorDescription = new ErrorDescription
+            {
+                ErrorType = errorType
+            };
         }
 
         public Result(ErrorType errorType, Exception exception)
         {
             Conclusion = false;
-            ErrorDescription = new();
-            ErrorDescription.ErrorMessage = exception.Message;
-            ErrorDescription.Exc = exception;
-            ErrorDescription.ErrorType = errorType;
+            ErrorDescription = new ErrorDescription
+            {
+                ErrorMessage = exception.Message,
+                Exception = exception,
+                ErrorType = errorType
+            };
         }
 
         public Result(ErrorType errorType, string errorMessage, Exception exception = null)
         {
             Conclusion = false;
-            ErrorDescription = new();
-            ErrorDescription.ErrorMessage = errorMessage;
-            ErrorDescription.Exc = exception;
-            ErrorDescription.ErrorType = errorType;
+            ErrorDescription = new ErrorDescription
+            {
+                ErrorMessage = errorMessage,
+                Exception = exception,
+                ErrorType = errorType
+            };
         }
 
         public Result(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
-            ErrorDescription = new();
-            ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
-            ErrorDescription.Exc = exception;
-            ErrorDescription.ErrorType = errorType;
+            ErrorDescription = new ErrorDescription
+            {
+                ErrorMessage = string.Join("\n", errorMessages),
+                Exception = exception,
+                ErrorType = errorType
+            };
         }
+
+        public Result Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
+            Set(errorType, new[] { errorMessage }, exception);
 
         public Result Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
-            ErrorDescription = new ErrorDescription();
-            ErrorDescription.ErrorMessage = string.Join("\n", errorMessages);
-            ErrorDescription.Exc = exception;
-            ErrorDescription.ErrorType = errorType;
+            ErrorDescription = new ErrorDescription
+            {
+                ErrorMessage = string.Join("\n", errorMessages),
+                Exception = exception,
+                ErrorType = errorType
+            };
             return this;
         }
 
@@ -177,16 +190,12 @@ namespace ScanApp.Application.Common.Helpers.Result
         {
         }
 
-        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exc)
+        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exception)
         {
         }
 
-        public Result<T> AddMethodInfo(params string[] infos)
-        {
-            // Prepend error message with additional info
-            base.ErrorDescription.ErrorMessage = $"{typeof(T).Name} {string.Join(", ", infos)}, {ErrorDescription.ErrorMessage}";
-            return this;
-        }
+        public new Result<T> Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
+            Set(errorType, new[] { errorMessage }, exception);
 
         public new Result<T> Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
