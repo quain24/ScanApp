@@ -23,32 +23,21 @@ namespace ScanApp.Common.Extensions
             return state?.User?.Identity?.Name ?? throw new ArgumentNullException(nameof(state), NoStateOrUserExcText);
         }
 
-        public static string LocationId(this AuthenticationState state, string locationClaimType = "Location")
+        public static string LocationId(this AuthenticationState state, string locationClaimType = Globals.ClaimTypes.Location)
         {
-            try
-            {
-                return state.GetFirstClaimValue(locationClaimType);
-            }
-            catch (KeyNotFoundException)
-            {
-                return null;
-            }
+            return state.GetFirstClaimValue(locationClaimType);
         }
 
         public static bool HasClaim(this AuthenticationState state, ClaimModel claim)
         {
-            _ = claim ?? throw new ArgumentNullException(nameof(claim), $"Passed {nameof(ClaimModel)}  was NULL");
-            return string.IsNullOrWhiteSpace(claim.Value)
-                ? HasClaim(state, claim.Type)
-                : HasClaim(state, claim.Type, claim.Value);
+            _ = claim ?? throw new ArgumentNullException(nameof(claim), $"Passed {nameof(ClaimModel)} was NULL");
+            return HasClaim(state, claim.Type, claim.Value);
         }
 
         public static bool HasClaim(this AuthenticationState state, Claim claim)
         {
             _ = claim ?? throw new ArgumentNullException(nameof(claim), $"Passed {nameof(Claim)} entity was NULL");
-            return string.IsNullOrEmpty(claim.Value)
-                ? HasClaim(state, claim.Type)
-                : HasClaim(state, claim.Type, claim.Value);
+            return HasClaim(state, claim.Type, claim.Value);
         }
 
         public static bool HasClaim(this AuthenticationState state, string claimType)
@@ -66,7 +55,7 @@ namespace ScanApp.Common.Extensions
         private static string GetFirstClaimValue(this AuthenticationState state, string claimType)
         {
             _ = state?.User ?? throw new ArgumentNullException(nameof(state), NoStateOrUserExcText);
-            return state.User.FindFirstValue(claimType) ?? throw new KeyNotFoundException($"Either there is no \"User\" in this {nameof(AuthenticationState)} or no value for passed {nameof(claimType)} ({claimType}) was found.");
+            return state.User.FindFirstValue(claimType);
         }
 
         private static IEnumerable<string> GetClaimValues(this AuthenticationState state, string claimType)
