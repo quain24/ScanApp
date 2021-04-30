@@ -5,6 +5,6 @@ namespace Globals
 {
     public static class Gui
     {
-        public static DialogOptions DefaultDialogOptions => new() { CloseButton = false, FullWidth = true, DisableBackdropClick = true };
+        public static DialogOptions DefaultDialogOptions { get; } = new() { CloseButton = false, FullWidth = true, DisableBackdropClick = true };
     }
 }

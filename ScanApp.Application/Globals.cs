@@ -6,16 +6,16 @@ namespace Globals
     /// </summary>
     public static class ClaimTypes
     {
-        public static string Location { get; } = "Location";
-        public static string IgnoreLocation { get; } = "IgnoreLocation";
-        public static string CanAdd { get; } = "CanAdd";
-        public static string CanEdit { get; } = "CanEdit";
-        public static string CanDelete { get; } = "CanDelete";
+        public const string Location = "Location";
+        public const string IgnoreLocation = "IgnoreLocation";
+        public const string CanAdd = "CanAdd";
+        public const string CanEdit = "CanEdit";
+        public const string CanDelete = "CanDelete";
     }
 
     public static class ModuleNames
     {
-        public static string AdminModule { get; } = "Admin";
-        public static string SparePartsModule { get; } = "SpareParts";
+        public const string AdminModule = "Admin";
+        public const string SparePartsModule = "SpareParts";
     }
 }
