@@ -42,24 +42,29 @@ namespace ScanApp.Common.Extensions
 
         public static bool HasClaim(this AuthenticationState state, string claimType)
         {
+            _ = claimType ?? throw new ArgumentNullException(nameof(claimType));
             return state?.User.HasClaim(c => c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase))
                    ?? throw new ArgumentNullException(nameof(state));
         }
 
         public static bool HasClaim(this AuthenticationState state, string claimType, string claimValue)
         {
+            _ = claimType ?? throw new ArgumentNullException(nameof(claimType));
+            _ = claimValue ?? throw new ArgumentNullException(nameof(claimValue));
             return state?.User.HasClaim(claimType, claimValue)
                    ?? throw new ArgumentNullException(nameof(state));
         }
 
-        private static string GetFirstClaimValue(this AuthenticationState state, string claimType)
+        public static string GetFirstClaimValue(this AuthenticationState state, string claimType)
         {
+            _ = claimType ?? throw new ArgumentNullException(nameof(claimType));
             _ = state?.User ?? throw new ArgumentNullException(nameof(state), NoStateOrUserExcText);
             return state.User.FindFirstValue(claimType);
         }
 
-        private static IEnumerable<string> GetClaimValues(this AuthenticationState state, string claimType)
+        public static IEnumerable<string> GetClaimValues(this AuthenticationState state, string claimType)
         {
+            _ = claimType ?? throw new ArgumentNullException(nameof(claimType));
             _ = state?.User ?? throw new ArgumentNullException(nameof(state), NoStateOrUserExcText);
             return state.User
                 .FindAll(c => c.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase))
