@@ -17,6 +17,7 @@ namespace ScanApp.Common
         /// <param name="nullMessage">Error message used when validated property is <see langword="null"/></param>
         public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule, string nullMessage = null)
         {
+            _ = rule ?? throw new ArgumentNullException(nameof(rule), "Validator wrapper should be given at least one rule to validate");
             rule(RuleFor(x => x));
             _nullMessage = nullMessage ?? string.Empty;
         }
