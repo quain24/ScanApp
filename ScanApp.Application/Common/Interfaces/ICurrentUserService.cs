@@ -9,7 +9,7 @@ namespace ScanApp.Application.Common.Interfaces
     {
         Task<List<ClaimModel>> AllClaims();
         Task<List<ClaimModel>> AllClaims(string claimType);
-        Task<ClaimModel> FinFirstClaim(string claimType);
+        Task<ClaimModel> FindFirstClaim(string claimType);
         Task<bool> HasClaim(Claim claim);
         Task<bool> HasClaim(ClaimModel claim);
         Task<bool> HasClaim(string claimType);

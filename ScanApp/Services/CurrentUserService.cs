@@ -42,7 +42,7 @@ namespace ScanApp.Services
 
         public async Task<List<ClaimModel>> AllClaims(string claimType) => (await GetState().ConfigureAwait(false)).User.FindAll(claimType).Select(c => new ClaimModel(c.Type, c.Value)).ToList();
 
-        public async Task<ClaimModel> FinFirstClaim(string claimType)
+        public async Task<ClaimModel> FindFirstClaim(string claimType)
         {
             var claim = (await GetState().ConfigureAwait(false)).User.FindFirst(claimType);
             return claim is null ? null : new ClaimModel(claim.Type, claim.Value);

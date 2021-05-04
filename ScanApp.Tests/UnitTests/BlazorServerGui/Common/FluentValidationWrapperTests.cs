@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using FluentValidation.Results;
 using FluentValidation.Validators;
+using Moq;
 using ScanApp.Common;
 using System;
 using System.Collections.Generic;
@@ -78,13 +80,15 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common
         [Fact]
         public void Returns_string_collection_of_error_messages_if_given_property_is_invalid()
         {
-            var subject = new FluentValidationWrapper<string>(x => x.MaximumLength(10).Must(s => s.Contains("3")), "is null");
+            var validatorMock = new Mock<FluentValidationWrapper<string>>(Mock.Of<Action<IRuleBuilderInitial<string, string>>>(), "");
+            validatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>()))
+                .Returns(new ValidationResult(new[] { new ValidationFailure("name", "message") }));
 
-            var action = subject.Validation;
-            var result = action("A longer than expected string without '3' symbol");
+            var action = validatorMock.Object.Validation;
+            var result = action("invalid data");
 
-            result.Should().HaveCount(2)
-                .And.Subject.All(s => !string.IsNullOrWhiteSpace(s)).Should().BeTrue();
+            result.Should().HaveCount(1)
+                .And.Subject.First().Should().Be("message");
         }
     }
 }
