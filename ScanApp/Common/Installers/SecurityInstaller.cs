@@ -12,6 +12,9 @@ using System;
 
 namespace ScanApp.Common.Installers
 {
+    /// <summary>
+    /// Provides convenient way to setup all ASP Core security options to be used in <see cref="Startup"/>
+    /// </summary>
     public static class SecurityInstaller
     {
         /// <summary>
