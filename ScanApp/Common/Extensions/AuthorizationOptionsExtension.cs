@@ -8,15 +8,18 @@ using System.Reflection;
 
 namespace ScanApp.Common.Extensions
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="AuthorizationOptions"/><br/>
+    /// to be used when creating custom security policies
+    /// </summary>
     public static class AuthorizationOptionsExtension
     {
         /// <summary>
-        /// This method will scan and apply all custom policies found in <see cref="Policies"/> object
+        /// Scans for and applies all custom policies found in <see cref="Policies"/> instance
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="logger"></param>
-        public static void AddSharedPolicies(this AuthorizationOptions options,
-            ILogger logger)
+        /// <param name="options">Object that will be configured with found policies</param>
+        /// <param name="logger">Logs status of scanning process</param>
+        public static void AddSharedPolicies(this AuthorizationOptions options, ILogger logger)
         {
             logger.LogInformation($"{nameof(AuthorizationPolicy)} Configuration started ...");
             var policies = FindPolicies();
