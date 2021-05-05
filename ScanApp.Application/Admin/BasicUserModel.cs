@@ -3,11 +3,29 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin
 {
+    /// <summary>
+    /// Represents model of a user, typically used in GUI or as a return type when using <see cref="MediatR.Mediator"/>
+    /// </summary>
     public class BasicUserModel : IComparable<BasicUserModel>, IEquatable<BasicUserModel>
     {
+        /// <summary>
+        /// Gets or sets name of user
+        /// </summary>
+        /// <value>User name if set, otherwise <see langword="null"/></value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets <see cref="Domain.ValueObjects.Version"/> of user
+        /// </summary>
+        /// <value><seealso cref="Domain.ValueObjects.Version"/> of this user if set, otherwise <see cref="Domain.ValueObjects.Version.Empty()"/></value>
         public Version Version { get; set; }
 
+        /// <summary>
+        /// Creates new instance of <see cref="BasicUserModel"/>
+        /// </summary>
+        /// <remarks>If no <paramref name="version"/> is provided, <seealso cref="Domain.ValueObjects.Version.Empty"/> will be used</remarks>
+        /// <param name="name">User name</param>
+        /// <param name="version">User <see cref="Version"/></param>
         public BasicUserModel(string name, Version version)
         {
             Name = name;
