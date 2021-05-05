@@ -42,7 +42,7 @@ namespace ScanApp.Application.Common.Behaviors
         /// <param name="request">Incoming request</param>
         /// <param name="cancellationToken">(not used) A token that can be used to request cancellation of the asynchronous operation</param>
         /// <param name="next">Awaitable delegate for the next action in the pipeline. Eventually this delegate represents the handler.</param>
-        /// <returns>Awaited result of <paramref name="next"/> delegate</returns>
+        /// <returns>Awaitable task returning the <typeparamref name="TResponse"/></returns>
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
