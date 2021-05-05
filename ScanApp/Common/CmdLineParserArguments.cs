@@ -2,6 +2,9 @@
 
 namespace ScanApp.Common
 {
+    /// <summary>
+    /// Provides place for <see cref="CommandLineParser"/> configuration
+    /// </summary>
     public class CmdLineParserArguments
     {
         /// <summary>
