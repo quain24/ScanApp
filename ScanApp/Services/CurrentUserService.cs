@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using ScanApp.Application.Admin;
+using ScanApp.Application.Common.Interfaces;
 using ScanApp.Common.Exceptions;
 using ScanApp.Common.Extensions;
 using ScanApp.Domain.Entities;
@@ -7,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Services
 {
+    /// <inheritdoc cref="ICurrentUserService"/>
     public class CurrentUserService : ICurrentUserService
     {
         private readonly AuthenticationStateProvider _provider;
@@ -19,6 +20,7 @@ namespace ScanApp.Services
         /// Creates new instance of <see cref="CurrentUserService"/>
         /// </summary>
         /// <param name="provider">Provides information about currently logged-in user</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="provider"/> is <see langword="null"/></exception>
         public CurrentUserService(AuthenticationStateProvider provider)
         {
             _provider = provider ?? throw new ArgumentNullException(nameof(provider), $"DI could not resolve proper {nameof(AuthenticationStateProvider)} instance");
