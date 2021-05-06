@@ -16,8 +16,9 @@
             <MudGrid>
                 <MudItem>
                     <MudExpansionPanels MultiExpansion="true">
-                        <ScanAppTableFilterDialogFieldGenerator Headers="Headers" KeyPressed="KeyPressed" Properties="Properties"
-                                                                From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate" />
+                        <ScanAppTableFilterDialogFieldGenerator @ref="_fieldGenerator" Headers="Headers" KeyPressed="KeyPressed" Properties="Properties"
+                                                                From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
+                                                                Options="Options"/>
                     </MudExpansionPanels>
                 </MudItem>
             </MudGrid>
@@ -42,11 +43,15 @@
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
 
+    [Parameter]
+    public ScanAppTableOptions Options { get; set; }
+
     private int?[] From { get; set; }
     private int?[] To { get; set; }
     private string[] Contains { get; set; }
     private DateTime?[] FromDate { get; set; }
     private DateTime?[] ToDate { get; set; }
+    private ScanAppTableFilterDialogFieldGenerator _fieldGenerator;
 
     protected override Task OnInitializedAsync()
     {
@@ -65,6 +70,10 @@
 
     private void Submit()
     {
+        if (!_fieldGenerator.AreFilterFieldsValid())
+        {
+            return;
+        }
         var filteringOperationFactory = new FilteringOperationsFactory(Properties, From, To, Contains, FromDate, ToDate);
         var filteringOperations = filteringOperationFactory.CreateOperations();
 

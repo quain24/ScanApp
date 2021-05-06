@@ -61,7 +61,7 @@
     };
 
     private Headers Headers { get; set; }
-    private ScanAppTableOptions TableOptions { get; set; } = new() { ShowToolBar = true, AllowGrouping = false};
+    private ScanAppTableOptions TableOptions { get; set; } = new() {AllowGrouping = false, AllowNegativeNumbersInFiltering = false};
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
