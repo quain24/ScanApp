@@ -316,7 +316,8 @@ else
         {
             ["Items"] = items,
             ["Headers"] = Headers,
-            ["Properties"] = Properties
+            ["Properties"] = Properties,
+            ["Options"] = Options
         };
         var dialog = DialogService.Show<ScanAppTableFilterDialog<TItem>>("Filter", parameter, DialogOptions);
         var result = await dialog.Result;
