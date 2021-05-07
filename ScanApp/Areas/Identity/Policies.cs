@@ -12,6 +12,11 @@ namespace ScanApp.Areas.Identity
     public static class Policies
     {
         // You CANNOT use this policy in your controllers or pages.
+        /// <summary>
+        /// <strong>Not to be used by developer directly!</strong><br/>
+        /// This is a auto policy so that automatic policy searching and default fallback will work
+        /// </summary>
+        /// <param name="builder"></param>
         internal static void PolicyConfigurationFailedFallback(AuthorizationPolicyBuilder builder)
             => builder.RequireAssertion(_ => false);
 

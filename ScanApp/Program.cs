@@ -8,31 +8,30 @@ using ScanApp.Common;
 using Serilog;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ScanApp
 {
     public class Program
     {
+        private static string CurrentEnvAppSettingsName { get; } = $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json";
+
         public static async Task Main(string[] args)
         {
             // Default logger
             var builder = new ConfigurationBuilder();
             BuildConfig(builder);
+            BuildConfigPcWideCustomGlobals(builder);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Build())
                 .CreateLogger();
 
-            // Command line parser
-            var cmdArgs = new CmdLineParserArguments();
-            CreateParser(cmdArgs, args);
-
             try
             {
                 Log.Information("Starting up...");
-                var host = CreateHostBuilder(args).Build();
+                var cmdArgs = ParseCommandLineArgs(args);
 
+                var host = CreateHostBuilder(args).Build();
                 using (var scope = host.Services.CreateScope())
                 {
                     var seeder = scope.ServiceProvider.GetService<IInitialDataSeeder>();
@@ -53,7 +52,7 @@ namespace ScanApp
 
         private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(BuildConfig)
+                .ConfigureAppConfiguration(BuildConfigPcWideCustomGlobals)
                 .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -62,18 +61,27 @@ namespace ScanApp
 
         private static void BuildConfig(IConfigurationBuilder builder)
         {
-            var pcWideAppsettingsLocation = $"{Environment.GetEnvironmentVariable("APPSETT_FILE_LOCATION")}\\";
-            var currentEnvAppSettingsFileName = $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json";
-
             builder.SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile(pcWideAppsettingsLocation + currentEnvAppSettingsFileName, optional: true)
-                .AddJsonFile(currentEnvAppSettingsFileName, optional: true)
+                .AddJsonFile(CurrentEnvAppSettingsName, optional: true)
                 .AddEnvironmentVariables()
                 .AddUserSecrets(typeof(Program).Assembly, optional: true);
         }
 
-        private static CommandLineParser.CommandLineParser CreateParser(CmdLineParserArguments arguments, string[] args)
+        private static void BuildConfigPcWideCustomGlobals(IConfigurationBuilder builder)
+        {
+            var filePath = Environment.GetEnvironmentVariable("APPSETT_FILE_LOCATION") switch
+            {
+                { } loc when loc.EndsWith("\\") => loc + CurrentEnvAppSettingsName,
+                { } loc => loc + "\\" + CurrentEnvAppSettingsName,
+                _ => null
+            };
+
+            if (filePath is not null)
+                builder.AddJsonFile(filePath, optional: true, reloadOnChange: true);
+        }
+
+        private static CmdLineParserArguments ParseCommandLineArgs(string[] args)
         {
             var parser = new CommandLineParser.CommandLineParser
             {
@@ -81,11 +89,12 @@ namespace ScanApp
                 AcceptEqualSignSyntaxForValueArguments = true
             };
 
+            var arguments = new CmdLineParserArguments();
             parser.ExtractArgumentAttributes(arguments);
             try
             {
                 parser.ParseCommandLine(args);
-                return parser;
+                return arguments;
             }
             catch (CommandLineException ex)
             {

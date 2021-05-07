@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Common.Behaviors
 {
     /// <summary>
-    /// Logs every MediatR request made - Provide user name of user that executed this request and<br/>
-    /// data included in request, if any
+    /// Logs every <see cref="Mediator"/> request made - Provide name of user that executed this request and data included in request, if any.
+    /// <para>Will log finished requests result and, if request result is of type <see cref="Result"/> or <see cref="Result{T}"/> - also it's result / error code and message</para>
     /// </summary>
+    /// <typeparam name="TRequest">Type of handled request</typeparam>
+    /// <typeparam name="TResponse">Type of response that will be returned by this behavior</typeparam>
     public class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
     {
@@ -20,12 +22,27 @@ namespace ScanApp.Application.Common.Behaviors
         private readonly ILogger<LoggingBehaviour<TRequest, TResponse>> _logger;
         private readonly IHttpContextAccessor _accessor;
 
+        /// <summary>
+        /// Creates new instance of <see cref="LoggingBehaviour{TRequest,TResponse}"/>
+        /// </summary>
+        /// <param name="logger">Logger instance that will be used to log passing requests data</param>
+        /// <param name="accessor">accessor that will provide user data, such as name</param>
+        /// <exception cref="ArgumentNullException">When <paramref name="logger"/> is <see langword="null"/></exception>
         public LoggingBehaviour(ILogger<LoggingBehaviour<TRequest, TResponse>> logger, IHttpContextAccessor accessor)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _accessor = accessor;
         }
 
+        /// <summary>
+        /// Handles <typeparamref name="TRequest"/> passing through mediator pipeline - logs start and end time, name of user that run the <typeparamref name="TRequest"/><br/>
+        /// If possible, will try to log serialized data from the <typeparamref name="TRequest"/> as well as status /  message / error code if given <typeparamref name="TResponse"/> is of type <see cref="Result"/> or <see cref="Result{T}"/>.
+        /// </summary>
+        /// <remarks><paramref name="cancellationToken"/> is not used in this implementation of <see cref="IPipelineBehavior{TRequest,TResponse}"/></remarks>
+        /// <param name="request">Incoming request</param>
+        /// <param name="cancellationToken">(not used) A token that can be used to request cancellation of the asynchronous operation</param>
+        /// <param name="next">Awaitable delegate for the next action in the pipeline. Eventually this delegate represents the handler.</param>
+        /// <returns>Awaitable task returning the <typeparamref name="TResponse"/></returns>
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
