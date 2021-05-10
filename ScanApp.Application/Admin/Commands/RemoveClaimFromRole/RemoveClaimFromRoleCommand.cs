@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.RemoveClaimFromRole
 {
+    /// <summary>
+    /// When handled, will remove <paramref name="Claim"/> from a role with given <paramref name="RoleName"/>.
+    /// </summary>
+    /// <param name="Claim">Claim to be removed.</param>
+    /// <param name="RoleName">Name of role from which to remove given <paramref name="Claim"/>.</param>
     public record RemoveClaimFromRoleCommand(ClaimModel Claim, string RoleName) : IRequest<Result>;
 
     internal class RemoveClaimFromRoleCommandHandler : IRequestHandler<RemoveClaimFromRoleCommand, Result>

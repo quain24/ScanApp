@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.LockUser
 {
+    /// <summary>
+    /// When handled, will lock user with given <paramref name="UserName"/> until given <paramref name="LockoutDate"/> passes.
+    /// </summary>
+    /// <param name="UserName">Name of user that should be locked out from the system.</param>
+    /// <param name="LockoutDate">End date for user lock out.</param>
     public record LockUserCommand(string UserName, DateTimeOffset LockoutDate) : IRequest<Result>;
 
     internal class LockUserCommandHandler : IRequestHandler<LockUserCommand, Result>

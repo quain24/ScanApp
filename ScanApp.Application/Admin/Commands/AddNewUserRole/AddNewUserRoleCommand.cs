@@ -11,7 +11,6 @@ namespace ScanApp.Application.Admin.Commands.AddNewUserRole
     /// Will add new user role with given <paramref name="RoleName"/> when handled.
     /// </summary>
     /// <param name="RoleName">Name of role to be added.</param>
-    /// <returns><see cref="ScanApp.Application.Common.Helpers.Result.Result"/> of the operation</returns>
     public record AddNewUserRoleCommand(string RoleName) : IRequest<Result>;
 
     internal class AddNewUserRoleCommandHandler : IRequestHandler<AddNewUserRoleCommand, Result>

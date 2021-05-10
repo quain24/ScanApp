@@ -12,7 +12,6 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
     /// </summary>
     /// <param name="RoleName">Name of role that the <paramref name="Claim"/> will be added to.</param>
     /// <param name="Claim">Claim to be added to role.</param>
-    /// <returns><see cref="ScanApp.Application.Common.Helpers.Result.Result"/> of the operation</returns>
     public record AddClaimToRoleCommand(string RoleName, ClaimModel Claim) : IRequest<Result>;
 
     internal class AddClaimToRoleCommandHandler : IRequestHandler<AddClaimToRoleCommand, Result>

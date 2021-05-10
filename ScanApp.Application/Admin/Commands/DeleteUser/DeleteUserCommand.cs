@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.DeleteUser
 {
+    /// <summary>
+    /// When handled, removes user with given <paramref name="UserName"/>.
+    /// </summary>
+    /// <param name="UserName">Name of user to be deleted.</param>
     public record DeleteUserCommand(string UserName) : IRequest<Result>;
 
     internal class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Result>

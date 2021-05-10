@@ -11,8 +11,6 @@ namespace ScanApp.Application.Admin.Commands.AddUser
     /// Adds new user to the database when handled.
     /// </summary>
     /// <param name="NewUser">Data of new user to be added</param>
-    /// <returns><see cref="ScanApp.Application.Common.Helpers.Result.Result{BasicUserModel}"/> of the operation, where <typeparamref name="T"/>
-    /// is <see cref="ScanApp.Application.Admin.BasicUserModel"/></returns>
     public record AddUserCommand(AddUserDto NewUser) : IRequest<Result<BasicUserModel>>;
 
     internal class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<BasicUserModel>>

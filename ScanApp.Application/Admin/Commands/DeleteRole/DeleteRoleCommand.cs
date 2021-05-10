@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Commands.DeleteRole
 {
+    /// <summary>
+    /// When handled, removes role with given <paramref name="RoleName"/>.
+    /// </summary>
+    /// <param name="RoleName">Name of role to be deleted.</param>
     public record DeleteRoleCommand(string RoleName) : IRequest<Result>;
 
     internal class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Result>
@@ -23,4 +27,4 @@ namespace ScanApp.Application.Admin.Commands.DeleteRole
             return _roleManager.RemoveRole(request.RoleName);
         }
     }
-}
+} 
