@@ -16,7 +16,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
 
             RuleFor(c => c.Version)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty()
+                .NotNull()
                 .Must(v => !v.IsEmpty);
 
             RuleFor(c => c.NewName)

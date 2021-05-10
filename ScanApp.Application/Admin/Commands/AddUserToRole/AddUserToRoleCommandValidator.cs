@@ -23,6 +23,11 @@ namespace ScanApp.Application.Admin.Commands.AddUserToRole
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(standardChars);
+
+            RuleFor(c => c.Version)
+                .Cascade(CascadeMode.Stop)
+                .NotNull()
+                .Must(v => v.IsEmpty is false);
         }
     }
 }

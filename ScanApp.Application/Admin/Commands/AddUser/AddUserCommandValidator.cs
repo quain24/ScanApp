@@ -23,6 +23,7 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             PasswordValidator passwordValidator)
         {
             RuleFor(c => c.NewUser)
+                .Cascade(CascadeMode.Stop)
                 .NotNull();
 
             RuleFor(c => c.NewUser.Name)
