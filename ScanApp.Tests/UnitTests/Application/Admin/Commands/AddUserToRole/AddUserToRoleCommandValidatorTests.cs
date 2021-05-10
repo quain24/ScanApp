@@ -1,13 +1,14 @@
 ﻿using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Internal;
 using FluentValidation.TestHelper;
 using FluentValidation.Validators;
 using Moq;
 using ScanApp.Application.Admin.Commands.AddUserToRole;
 using ScanApp.Common.Validators;
+using ScanApp.Tests.TestExtensions;
 using System;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
@@ -38,22 +39,75 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
         {
             var namingValidatorMock = new Mock<IdentityNamingValidator<AddUserToRoleCommand, string>>();
             var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
+            var validators = subject.ExtractPropertyValidators();
+            var propertyNames = typeof(AddUserToRoleCommand)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Select(p => p.Name);
 
-            var descriptor = subject.CreateDescriptor();
-            var roleNameValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<AddUserToRoleCommand, string>(x => x.UserName).Name)
-                .Select(f => f.Validator)
-                .ToList();
-            var userNameValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<AddUserToRoleCommand, string>(x => x.RoleName).Name)
-                .Select(f => f.Validator)
-                .ToList();
+            validators.Should().ContainKeys(propertyNames);
+        }
 
-            roleNameValidators.Should().HaveCount(2);
-            roleNameValidators.Should().ContainSingle(v => v.GetType().BaseType == typeof(IdentityNamingValidator<AddUserToRoleCommand, string>))
-                .And.Subject.Should().ContainSingle(v => v.GetType().BaseType.IsAssignableFrom(typeof(NotEmptyValidator<AddUserToRoleCommand, string>)));
+        [Fact]
+        public void UserName_has_proper_validators()
+        {
+            var namingValidatorMock = new Mock<IdentityNamingValidator<AddUserToRoleCommand, string>>();
+            var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
 
-            userNameValidators.Should().HaveCount(2);
-            userNameValidators.Should().ContainSingle(v => v.GetType().BaseType == typeof(IdentityNamingValidator<AddUserToRoleCommand, string>))
-                .And.Subject.Should().ContainSingle(v => v.GetType().BaseType.IsAssignableFrom(typeof(NotEmptyValidator<AddUserToRoleCommand, string>)));
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserToRoleCommand.UserName))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(IdentityNamingValidator<AddUserToRoleCommand, string>)))
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserToRoleCommand, string>));
+        }
+
+        [Fact]
+        public void RoleName_has_proper_validators()
+        {
+            var namingValidatorMock = new Mock<IdentityNamingValidator<AddUserToRoleCommand, string>>();
+            var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
+
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserToRoleCommand.RoleName))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(IdentityNamingValidator<AddUserToRoleCommand, string>)))
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserToRoleCommand, string>));
+        }
+
+        [Fact]
+        public void Version_has_proper_validators()
+        {
+            var namingValidatorMock = new Mock<IdentityNamingValidator<AddUserToRoleCommand, string>>();
+            var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
+
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserToRoleCommand.Version))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(PredicateValidator<AddUserToRoleCommand, Version>))
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotNullValidator<AddUserToRoleCommand, Version>));
+        }
+
+        public static TheoryData<Version> InvalidVersion => new()
+        {
+            Version.Empty(),
+            null
+        };
+
+        [Theory]
+        [MemberData(nameof(InvalidVersion))]
+        public void Invalid_version_is_not_accepted(Version version)
+        {
+            var namingValidatorMock = new Mock<IdentityNamingValidator<AddUserToRoleCommand, string>>();
+            namingValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<AddUserToRoleCommand>>(), It.IsAny<string>())).Returns(true);
+            var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
+            var command = new AddUserToRoleCommand("name", version, "role_name");
+            var result = subject.TestValidate(command);
+
+            result.IsValid.Should().BeFalse();
+            result.ShouldHaveValidationErrorFor(nameof(command.Version));
+            result.ShouldNotHaveValidationErrorFor(nameof(command.UserName));
         }
 
         [Fact]

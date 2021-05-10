@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Internal;
 using FluentValidation.TestHelper;
 using FluentValidation.Validators;
 using Moq;
@@ -8,8 +7,10 @@ using ScanApp.Application.Admin.Commands.AddUser;
 using ScanApp.Application.Common.Validators;
 using ScanApp.Common.Validators;
 using ScanApp.Domain.Entities;
+using ScanApp.Tests.TestExtensions;
 using System;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
@@ -17,41 +18,80 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
     public class AddUserCommandValidatorTests
     {
         [Fact]
-        public void All_properties_have_assigned_validators()
+        public void Properties_have_assigned_validators()
         {
             var validatorFixture = new AddUserCommandValidatorFixture();
-            var user = new AddUserDto
-            {
-                Location = new Location("location"),
-                Email = "email@dot.com",
-                Name = "Name",
-                Password = "password",
-                Phone = "123456"
-            };
-            var command = new AddUserCommand(user);
             var subject = validatorFixture.Validator;
-            var dtoPropertyName = nameof(command.NewUser) + '.';
+            var validators = subject.ExtractPropertyValidators();
+            var propertyNames = typeof(AddUserDto)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                // no validator for location and CnaBeLockedOut
+                .Where(p => !p.PropertyType.IsAssignableTo(typeof(Location)) && p.Name != nameof(AddUserDto.CanBeLockedOut))
+                .Select(p => nameof(AddUserCommand.NewUser) + '.' + p.Name);
+            propertyNames = propertyNames.Append(nameof(AddUserCommand.NewUser));
 
-            var descriptor = subject.CreateDescriptor();
-            var nameValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Name).Name)
-                .Select(r => r.Validator).ToList();
-            var emailValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Email).Name)
-                .Select(r => r.Validator).ToList();
-            var phoneValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Phone).Name)
-                .Select(r => r.Validator).ToList();
-            var passwordValidators = descriptor.GetValidatorsForMember(dtoPropertyName + Extensions.GetMember<AddUserCommand, string>(x => x.NewUser.Password).Name)
-                .Select(r => r.Validator).ToList();
+            validators.Should().ContainKeys(propertyNames);
+        }
 
-            nameValidators.Should().HaveCount(1)
+        [Fact]
+        public void DTO_is_validated()
+        {
+            var validatorFixture = new AddUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserCommand.NewUser))
+                .WhichValue.Should().HaveCount(1)
+                .And.Subject.First().Should().BeOfType<NotNullValidator<AddUserCommand, AddUserDto>>();
+        }
+
+        [Fact]
+        public void Name_has_proper_validators()
+        {
+            var validatorFixture = new AddUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Name))
+                .WhichValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeAssignableTo<IdentityNamingValidator<AddUserCommand, string>>();
-            emailValidators.Should().HaveCount(2);
-            emailValidators.Should().ContainSingle(v => v.GetType().BaseType == typeof(EmailValidator<AddUserCommand, string>))
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableFrom(typeof(NotEmptyValidator<AddUserCommand, string>)));
-            phoneValidators.Should().HaveCount(1)
+        }
+
+        [Fact]
+        public void Email_has_proper_validators()
+        {
+            var validatorFixture = new AddUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Email))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserCommand, string>))
+                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(EmailValidator<AddUserCommand, string>)));
+        }
+
+        [Fact]
+        public void Password_has_proper_validators()
+        {
+            var validatorFixture = new AddUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Password))
+                .WhichValue.Should().HaveCount(1)
+                .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PasswordValidator>();
+        }
+
+        [Fact]
+        public void Phone_has_proper_validators()
+        {
+            var validatorFixture = new AddUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Phone))
+                .WhichValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeAssignableTo<PhoneNumberValidator<AddUserCommand, string>>();
-            passwordValidators.Should().HaveCount(1)
-                .And.Subject.First().Should().BeAssignableTo<ChildValidatorAdaptor<AddUserCommand, string>>()
-                .And.Subject.As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PasswordValidator>();
         }
 
         [Fact]

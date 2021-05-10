@@ -1,8 +1,14 @@
 ﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.TestHelper;
+using Moq;
+using ScanApp.Application.Admin.Commands.ChangeUserPassword;
 using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp;
+using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.ValueObjects;
+using ScanApp.Tests.TestExtensions;
+using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserSecurityStamp
@@ -27,6 +33,18 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserSecurityS
             var result = subject.Validate(command);
 
             result.IsValid.Should().BeTrue();
+        }
+
+        [Fact]
+        public void All_properties_have_assigned_validators()
+        {
+            var subject = new ChangeUserSecurityStampCommandValidator();
+            var validators = subject.ExtractPropertyValidators();
+            var propertyNames = typeof(ChangeUserSecurityStampCommand)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Select(p => p.Name);
+
+            validators.Should().ContainKeys(propertyNames);
         }
 
         [Theory]
