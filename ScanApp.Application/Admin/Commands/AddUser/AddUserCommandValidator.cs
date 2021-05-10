@@ -22,6 +22,9 @@ namespace ScanApp.Application.Admin.Commands.AddUser
             PhoneNumberValidator<AddUserCommand, string> phoneValidator,
             PasswordValidator passwordValidator)
         {
+            RuleFor(c => c.NewUser)
+                .NotNull();
+
             RuleFor(c => c.NewUser.Name)
                 .SetValidator(identityNamingValidator);
 
