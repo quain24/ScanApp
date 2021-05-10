@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
+    /// <summary>
+    /// Requests data of user with given <paramref name="UserName"/> from handler.
+    /// </summary>
+    /// <param name="UserName">User name.</param>
     public record GetAllUserDataQuery(string UserName) : IRequest<Result<UserInfoModel>>;
 
     internal class GetAllUserDataQueryHandler : IRequestHandler<GetAllUserDataQuery, Result<UserInfoModel>>

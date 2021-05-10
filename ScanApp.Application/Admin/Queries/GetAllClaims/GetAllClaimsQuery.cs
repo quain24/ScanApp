@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllClaims
 {
+    /// <summary>
+    /// Requests all claims from data source as <see cref="List{ClaimModel}"/> from handler.
+    /// </summary>
     public record GetAllClaimsQuery : IRequest<Result<List<ClaimModel>>>;
 
     internal class GetAllClaimsQueryHandler : IRequestHandler<GetAllClaimsQuery, Result<List<ClaimModel>>>
