@@ -12,22 +12,22 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
 {
-    public class GetUserVersionCommandHandlerTests
+    public class GetUserVersionQueryHandlerTests
     {
         [Fact]
         public void Creates_instance()
         {
             var userInfoMock = new Mock<IUserInfo>();
-            var subject = new GetUserVersionCommandHandler(userInfoMock.Object);
+            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
 
-            subject.Should().BeOfType<GetUserVersionCommandHandler>()
+            subject.Should().BeOfType<GetUserVersionQueryHandler>()
                 .And.BeAssignableTo(typeof(IRequestHandler<,>));
         }
 
         [Fact]
         public void Throws_arg_null_exc_when_missing_IUserInfo()
         {
-            Action act = () => _ = new GetUserVersionCommandHandler(null);
+            Action act = () => _ = new GetUserVersionQueryHandler(null);
 
             act.Should().Throw<ArgumentNullException>();
         }
@@ -38,9 +38,9 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
             var userInfoMock = new Mock<IUserInfo>();
             var stamp = Guid.NewGuid().ToString();
             userInfoMock.Setup(m => m.GetUserConcurrencyStamp(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(stamp);
-            var subject = new GetUserVersionCommandHandler(userInfoMock.Object);
+            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
 
-            var result = await subject.Handle(new GetUserVersionCommand("name"), CancellationToken.None);
+            var result = await subject.Handle(new GetUserVersionQuery("name"), CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
             result.Output.Should().Be(Version.Create(stamp));
@@ -51,9 +51,9 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
         {
             var userInfoMock = new Mock<IUserInfo>();
             userInfoMock.Setup(m => m.GetUserConcurrencyStamp(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(null as string);
-            var subject = new GetUserVersionCommandHandler(userInfoMock.Object);
+            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
 
-            var result = await subject.Handle(new GetUserVersionCommand("name"), CancellationToken.None);
+            var result = await subject.Handle(new GetUserVersionQuery("name"), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
@@ -69,8 +69,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
             var userInfoMock = new Mock<IUserInfo>();
             userInfoMock.Setup(m => m.GetUserConcurrencyStamp("name", It.IsAny<CancellationToken>())).Throws(exc);
 
-            var subject = new GetUserVersionCommandHandler(userInfoMock.Object);
-            var result = await subject.Handle(new GetUserVersionCommand("name"), CancellationToken.None);
+            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
+            var result = await subject.Handle(new GetUserVersionQuery("name"), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
@@ -83,8 +83,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
             var userInfoMock = new Mock<IUserInfo>();
             userInfoMock.Setup(m => m.GetUserConcurrencyStamp("user_name", It.IsAny<CancellationToken>())).Throws<Exception>();
 
-            var subject = new GetUserVersionCommandHandler(userInfoMock.Object);
-            Func<Task> act = async () => await subject.Handle(new GetUserVersionCommand("user_name"), CancellationToken.None);
+            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
+            Func<Task> act = async () => await subject.Handle(new GetUserVersionQuery("user_name"), CancellationToken.None);
 
             await act.Should().ThrowAsync<Exception>();
         }

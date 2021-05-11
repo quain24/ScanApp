@@ -10,7 +10,8 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
     /// <summary>
-    /// When handled, edits data of user with provided <paramref name="Name"/>.
+    /// Represents a command used to request data edition of a user with given <paramref name="Name"/>
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="Name">Name user that will have its data edited.</param>
     public record EditUserDataCommand(string Name, Version Version) : IRequest<Result<Version>>
@@ -42,7 +43,7 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         /// <summary>
         /// Gets new <see cref="ScanApp.Domain.Entities.Location"/> for the edited user.
         /// </summary>
-        /// <value>New <see cref="ScanApp.Domain.Entities.Location"/> if set, otherwise <see langword="null"/></value>
+        /// <value>New user <see cref="ScanApp.Domain.Entities.Location"/> if set, otherwise <see langword="null"/></value>
         public Location Location { get; init; }
     }
 

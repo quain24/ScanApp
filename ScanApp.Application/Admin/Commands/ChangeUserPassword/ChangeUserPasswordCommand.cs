@@ -9,7 +9,8 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 namespace ScanApp.Application.Admin.Commands.ChangeUserPassword
 {
     /// <summary>
-    /// When handled, changes user with name <paramref name="UserName"/> password to <paramref name="NewPassword"/>.
+    /// Represents a command used to request password change for user with given <paramref name="UserName"/>
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="UserName">Name of user to have password changed.</param>
     /// <param name="NewPassword">New password for user.</param>

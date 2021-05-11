@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Commands.LockUser
 {
     /// <summary>
-    /// When handled, will lock user with given <paramref name="UserName"/> until given <paramref name="LockoutDate"/> passes.
+    /// Represents a command used to request locking account of user named <paramref name="UserName"/> until <paramref name="LockoutDate"/> has passed
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="UserName">Name of user that should be locked out from the system.</param>
-    /// <param name="LockoutDate">End date for user lock out.</param>
+    /// <param name="LockoutDate">End date for user's account lock-down.</param>
     public record LockUserCommand(string UserName, DateTimeOffset LockoutDate) : IRequest<Result>;
 
     internal class LockUserCommandHandler : IRequestHandler<LockUserCommand, Result>

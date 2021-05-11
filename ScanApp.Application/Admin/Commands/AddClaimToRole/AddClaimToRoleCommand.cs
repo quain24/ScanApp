@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole
 {
     /// <summary>
-    /// Will add <paramref name="Claim"/> to a role with given <paramref name="RoleName"/> when handled.
+    /// Represents a command used to request for adding a <paramref name="Claim"/> to a role with given <paramref name="RoleName"/>
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="RoleName">Name of role that the <paramref name="Claim"/> will be added to.</param>
     /// <param name="Claim">Claim to be added to role.</param>

@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
     /// <summary>
-    /// Adds new user to the database when handled.
+    /// Represents a command used to request for adding a new user to application's data source
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
-    /// <param name="NewUser">Data of new user to be added</param>
+    /// <param name="NewUser">Data of new user to be processed.</param>
     public record AddUserCommand(AddUserDto NewUser) : IRequest<Result<BasicUserModel>>;
 
     internal class AddUserCommandHandler : IRequestHandler<AddUserCommand, Result<BasicUserModel>>
