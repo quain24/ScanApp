@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using ScanApp.Application.Common.Helpers.Result;
 using System;
-using System.Security.Cryptography;
 using Xunit;
 using Xunit.Abstractions;
 

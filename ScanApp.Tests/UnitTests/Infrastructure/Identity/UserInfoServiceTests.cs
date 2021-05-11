@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Globals;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using ScanApp.Application.Admin.Queries.GetAllUserData;
@@ -11,12 +10,9 @@ using ScanApp.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
-using Claim = System.Security.Claims.Claim;
-using ClaimTypes = System.Security.Claims.ClaimTypes;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Infrastructure.Identity

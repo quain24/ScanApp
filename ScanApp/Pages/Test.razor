@@ -68,7 +68,7 @@
         <img src="@($"{uploader2.UploadedFile.DirectoryName.Substring(Environment.WebRootPath.Length)}\\{uploader2.UploadedFile.Name}?ts={uploader2.UploadedFile.LastWriteTime.Ticks}")" />
     }
 
-    @foreach(var o in lis ?? new List<FileInfo>(0))
+    @foreach (var o in lis ?? new List<FileInfo>(0))
     {
         <img src="@($"{o.DirectoryName.Substring(Environment.WebRootPath.Length)}\\{o.Name}?ts={o.CreationTime.Ticks}")" />
     }
@@ -134,15 +134,15 @@
     protected override async Task OnInitializedAsync()
     {
         var t = await Mediator.Send(new AddNewUserRoleCommand("@#$"));
-    //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
-    _rs = (await Mediator.Send(new SparePartStoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
+        //_types = (await Mediator.Send(new AllSparePartTypesQuery())).Output;
+        _rs = (await Mediator.Send(new SparePartStoragePlacesForCurrentUserQuery())).Output; //(await Mediator.Send(new StoragePlacesByLocationQuery((await AuthenticationStateTask).LocationId()))).Output;
 
-    //_cm = await CurrentUserService.AllClaims();
-    //var ui = await CurrentUserService.IsInRole("Admin");
-    //var t = "";
-    //var name = (await AuthenticationStateTask).Name();
-    //var t = await Info.GetClaims(name);
-    //var y = "";
+        //_cm = await CurrentUserService.AllClaims();
+        //var ui = await CurrentUserService.IsInRole("Admin");
+        //var t = "";
+        //var name = (await AuthenticationStateTask).Name();
+        //var t = await Info.GetClaims(name);
+        //var y = "";
     }
 
     protected override void OnInitialized()

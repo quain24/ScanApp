@@ -7,7 +7,6 @@ using ScanApp.Infrastructure.Services;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Helpers.Result;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Infrastructure.Services

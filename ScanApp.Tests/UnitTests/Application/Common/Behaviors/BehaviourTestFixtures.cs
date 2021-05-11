@@ -1,6 +1,6 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 

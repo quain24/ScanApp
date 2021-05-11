@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Validators;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScanApp.Tests.TestExtensions
 {

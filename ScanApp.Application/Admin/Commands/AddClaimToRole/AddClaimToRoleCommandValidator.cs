@@ -1,5 +1,4 @@
-﻿using System;
-using FluentValidation;
+﻿using FluentValidation;
 using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddClaimToRole

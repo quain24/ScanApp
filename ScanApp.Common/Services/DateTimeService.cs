@@ -1,5 +1,5 @@
-﻿using System;
-using ScanApp.Common.Interfaces;
+﻿using ScanApp.Common.Interfaces;
+using System;
 
 namespace ScanApp.Common.Services
 {

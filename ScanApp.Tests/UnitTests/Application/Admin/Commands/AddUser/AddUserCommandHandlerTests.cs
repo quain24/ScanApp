@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Moq;
 using ScanApp.Application.Admin.Commands.AddUser;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser

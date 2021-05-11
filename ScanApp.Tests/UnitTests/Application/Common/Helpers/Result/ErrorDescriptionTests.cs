@@ -1,6 +1,6 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using ScanApp.Application.Common.Helpers.Result;
+using System;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
@@ -48,12 +48,12 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
             {
                 throw new Exception();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 exception = ex;
             }
 
-            var subject = new ErrorDescription {Exception = exception};
+            var subject = new ErrorDescription { Exception = exception };
 
             subject.StackTrace.Should().Be(exception.StackTrace);
         }

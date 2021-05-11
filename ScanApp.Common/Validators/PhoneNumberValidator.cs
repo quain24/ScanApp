@@ -1,6 +1,6 @@
-﻿using FluentValidation.Validators;
+﻿using FluentValidation;
+using FluentValidation.Validators;
 using System.Linq;
-using FluentValidation;
 
 namespace ScanApp.Common.Validators
 {

@@ -1,10 +1,7 @@
 ﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.TestHelper;
-using Moq;
-using ScanApp.Application.Admin.Commands.ChangeUserPassword;
 using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp;
-using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.ValueObjects;
 using ScanApp.Tests.TestExtensions;
 using System.Linq;

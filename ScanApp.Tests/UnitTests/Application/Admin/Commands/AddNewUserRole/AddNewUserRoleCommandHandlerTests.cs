@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Moq;
 using ScanApp.Application.Admin.Commands.AddNewUserRole;
 using ScanApp.Application.Common.Interfaces;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddNewUserRole

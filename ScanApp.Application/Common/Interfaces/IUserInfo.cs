@@ -1,10 +1,10 @@
 ﻿using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Queries.GetAllUserData;
 using ScanApp.Application.Common.Helpers.Result;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using ScanApp.Domain.ValueObjects;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.Interfaces
 {
@@ -29,6 +29,7 @@ namespace ScanApp.Application.Common.Interfaces
         Task<Result<List<ClaimModel>>> GetClaims(string userName, params string[] claimTypes);
 
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
+
         Task<Version> GetUserVersion(string userName, CancellationToken token = default);
     }
 }

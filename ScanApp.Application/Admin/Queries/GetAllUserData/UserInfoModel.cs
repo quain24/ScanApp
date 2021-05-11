@@ -1,6 +1,5 @@
 ﻿using ScanApp.Domain.Entities;
 using System;
-using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData

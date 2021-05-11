@@ -1,6 +1,6 @@
-﻿using FluentValidation.Validators;
+﻿using FluentValidation;
+using FluentValidation.Validators;
 using System.Text.RegularExpressions;
-using FluentValidation;
 
 namespace ScanApp.Common.Validators
 {
