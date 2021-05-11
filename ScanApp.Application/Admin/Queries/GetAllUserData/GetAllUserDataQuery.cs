@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
     /// <summary>
-    /// Requests data of user with given <paramref name="UserName"/> from handler.
+    /// Represents a query used to request data of user with given <paramref name="UserName"/>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="UserName">User name.</param>
     public record GetAllUserDataQuery(string UserName) : IRequest<Result<UserInfoModel>>;

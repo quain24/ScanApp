@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Queries.GetAllClaimsFromRole
 {
     /// <summary>
-    /// Requests all claims that are assigned to role with given <paramref name="RoleName"/> from handler.
+    /// Represents a query used to request all claims that are assigned to role with given <paramref name="RoleName"/>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     /// <param name="RoleName">Name of role to which assigned claims will be returned.</param>
     public record GetAllClaimsFromRoleQuery(string RoleName) : IRequest<Result<List<ClaimModel>>>;

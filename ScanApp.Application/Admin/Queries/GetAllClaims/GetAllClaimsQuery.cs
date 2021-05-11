@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 namespace ScanApp.Application.Admin.Queries.GetAllClaims
 {
     /// <summary>
-    /// Requests all claims from data source as <see cref="List{ClaimModel}"/> from handler.
+    /// Represents a query used to request all claims from data source as <see cref="System.Collections.Generic.List{T}"/>,
+    /// where <typeparamref name="T"/> is <see cref="ScanApp.Application.Admin.ClaimModel"/>,
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
     /// </summary>
     public record GetAllClaimsQuery : IRequest<Result<List<ClaimModel>>>;
 

@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetLocationList
 {
+    /// <summary>
+    /// Represents a query used to request all possible <see cref="ScanApp.Domain.Entities.Location">Locations</see>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
     public record GetLocationListQuery : IRequest<Result<List<Location>>>;
 
     internal class GetLocationListQueryHandler : IRequestHandler<GetLocationListQuery, Result<List<Location>>>
