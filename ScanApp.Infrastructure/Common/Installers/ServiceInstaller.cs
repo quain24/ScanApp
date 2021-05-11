@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using KeePass;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Common.Interfaces;
 using ScanApp.Common.Services;
@@ -9,7 +11,7 @@ namespace ScanApp.Infrastructure.Common.Installers
 {
     public static class ServiceInstaller
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IScopedMediator, ScopedMediator>();
             services.AddTransient<IUserManager, UserManagerService>();
@@ -18,7 +20,7 @@ namespace ScanApp.Infrastructure.Common.Installers
             services.AddTransient<ILocationManager, LocationManagerService>();
             services.AddSingleton<IDateTime, DateTimeService>();
             services.AddScoped<IInitialDataSeeder, InitialDataSeeder>();
-
+            services.SetupKeePassServices(configuration);
             return services;
         }
     }
