@@ -17,7 +17,7 @@ namespace ScanApp.Application.Common.Interfaces
         /// Checks whether user with given <paramref name="userName"/> exists in application data storage.
         /// </summary>
         /// <param name="userName">Name of user.</param>
-        /// <returns><see Langword="true"/> if user exists; Otherwise <see Langword="false"/></returns>
+        /// <returns><see langword="true"/> if user exists; Otherwise <see langword="false"/></returns>
         Task<bool> UserExists(string userName);
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace ScanApp.Application.Common.Interfaces
         /// </summary>
         /// <param name="userName">Name of user.</param>
         /// <param name="roleName">Name of role to be checked.</param>
-        /// <returns><see Langword="true"/> if user belongs to given role; Otherwise <see Langword="false"/></returns>
+        /// <returns><see langword="true"/> if user belongs to given role; Otherwise <see langword="false"/></returns>
         Task<Result<bool>> IsInRole(string userName, string roleName);
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace ScanApp.Application.Common.Interfaces
         /// <param name="userName">Name of user.</param>
         /// <param name="claimType">Type of claim to be checked.</param>
         /// <param name="claimValue">Value of claim to be checked.</param>
-        /// <returns><see Langword="true"/> if user belongs to given role; Otherwise <see Langword="false"/></returns>
+        /// <returns><see langword="true"/> if user belongs to given role; Otherwise <see langword="false"/></returns>
         Task<Result<bool>> HasClaim(string userName, string claimType, string claimValue);
 
         /// <summary>
