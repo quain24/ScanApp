@@ -7,7 +7,7 @@ namespace ScanApp.Application.Common.Installers
     public static class MediatRInstaller
     {
         /// <summary>
-        /// All MediatR DI Configurations, including behaviors are setup here
+        /// All <see cref="MediatR.Mediator"/> DI Configurations, including behaviors that are setup here.
         /// </summary>
         /// <param name="services"></param>
         public static IServiceCollection AddMediatR(this IServiceCollection services)
