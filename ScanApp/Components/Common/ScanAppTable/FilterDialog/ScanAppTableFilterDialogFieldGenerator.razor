@@ -1,4 +1,6 @@
-﻿@using ScanApp.Components.Common.ScanAppTable.Options
+﻿@typeparam TItem
+
+@using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
 @using System.Security.Cryptography.X509Certificates
 @using FluentValidation
@@ -10,14 +12,9 @@
 {
     int localIterator = i;
 
-    @if (!Headers.IsVisible(localIterator))
-    {
-        continue;
-    }
-
     if (Properties[localIterator].PropertyType == typeof(int))
     {
-        <MudExpansionPanel @ref="@_expansionPanels[localIterator]" Text="@Headers.Names[localIterator]" Style="margin-left: 5px; margin-right: 5px;">
+        <MudExpansionPanel @ref="@_expansionPanels[localIterator]" Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
             <MudTextField @ref="@_fromTextFields[localIterator]" @bind-Value="@From[localIterator]" @onkeypress="KeyPressed" @onkeydown="() => ResetErrorState(localIterator)"
                           @onfocus="() => ResetErrorState(localIterator)" Error="@GetError(localIterator)" Immediate="true" Label="From"
                           Variant="Variant.Outlined"></MudTextField>
@@ -28,14 +25,14 @@
     }
     else if (Properties[localIterator].PropertyType == typeof(string))
     {
-        <MudExpansionPanel Text="@Headers.Names[localIterator]" Style="margin-left: 5px; margin-right: 5px;">
+        <MudExpansionPanel Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
             <MudTextField @bind-Value="@Contains[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="Contains"
                           Variant="Variant.Outlined"></MudTextField>
         </MudExpansionPanel>
     }
     else if (Properties[localIterator].PropertyType == typeof(DateTime))
     {
-        <MudExpansionPanel Text="@Headers.Names[localIterator]" Style="margin-left: 5px; margin-right: 5px;">
+        <MudExpansionPanel Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
             <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="From"
                            @bind-Date="@FromDate[localIterator]" Editable="true"
                            ShowWeekNumbers="true" />
@@ -46,8 +43,9 @@
     }
 }
 @code {
+
     [Parameter]
-    public Headers Headers { get; set; }
+    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
     public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }

@@ -16,7 +16,7 @@
             <MudGrid>
                 <MudItem>
                     <MudExpansionPanels MultiExpansion="true">
-                        <ScanAppTableFilterDialogFieldGenerator @ref="_fieldGenerator" Headers="Headers" KeyPressed="KeyPressed" Properties="Properties"
+                        <ScanAppTableFilterDialogFieldGenerator @ref="_fieldGenerator" ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" Properties="Properties"
                                                                 From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
                                                                 Options="Options"/>
                     </MudExpansionPanels>
@@ -38,7 +38,7 @@
     public IEnumerable<TItem> Items { get; set; }
 
     [Parameter]
-    public Headers Headers { get; set; }
+    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
@@ -51,7 +51,7 @@
     private string[] Contains { get; set; }
     private DateTime?[] FromDate { get; set; }
     private DateTime?[] ToDate { get; set; }
-    private ScanAppTableFilterDialogFieldGenerator _fieldGenerator;
+    private ScanAppTableFilterDialogFieldGenerator<TItem> _fieldGenerator;
 
     protected override Task OnInitializedAsync()
     {
@@ -81,7 +81,7 @@
         {
             Items = operation.Run(Items);
         }
-        
+
         MudDialog.Close(DialogResult.Ok(Items));
     }
 
