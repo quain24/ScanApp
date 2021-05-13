@@ -9,6 +9,7 @@ using MudBlazor.Extensions;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Installers;
 using ScanApp.Common.Installers;
+using ScanApp.Common.Services;
 using ScanApp.Data;
 using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
