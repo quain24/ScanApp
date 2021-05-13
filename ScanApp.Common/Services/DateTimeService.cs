@@ -3,6 +3,9 @@ using System;
 
 namespace ScanApp.Common.Services
 {
+    /// <summary>
+    /// Provides basic implementation of <see cref="IDateTime"/> interface.
+    /// </summary>
     public class DateTimeService : IDateTime
     {
         public DateTime Now => DateTime.Now;
