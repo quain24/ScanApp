@@ -14,8 +14,8 @@
                 <MudItem >
                     @for (int i = 0; i < ItemRepresentation.Objects.Length; i++)
                     {
-                        <ScanAppTableEditDialogFieldGenerator Headers="Headers" ItemRepresentation="ItemRepresentation" Iterator="i"
-                                                              KeyPressed="@KeyPressed"/>
+                        <ScanAppTableEditDialogFieldGenerator ColumnConfigs="@ColumnConfigs" ColumnValidators="@ColumnValidators" ItemRepresentation="ItemRepresentation"
+                                                              Iterator="i" KeyPressed="@KeyPressed"/>
                     }
                 </MudItem>
             </MudGrid>
@@ -38,7 +38,10 @@
     public RenderFragment<TItem> ChildContent { get; set; }
 
     [Parameter]
-    public Headers Headers { get; set; }
+    public List<ColumnConfig<TItem>> ColumnConfigs {get; set;}
+
+    [Parameter]
+    public List<object> ColumnValidators { get; set; }
 
     [Parameter]
     public PropertyInfo[] Properties { get; set; }

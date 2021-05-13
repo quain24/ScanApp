@@ -1,12 +1,15 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@using ScanApp.Models.SpareParts
+@using FluentValidation
+@using System.Data
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using ScanApp.Common
+@using ScanApp.Common.Extensions
 @typeparam TItem
-@if (!Headers.IsVisible(Iterator))
+
+@if (!ColumnConfigs[Iterator].IsEditable)
 {
-    return;
-}
-else if (!Headers.IsEditable(Iterator))
-{
-    <MudField Label="@Headers.Names[Iterator]" Variant="Variant.Filled">@ItemRepresentation.Objects[Iterator].ToString()</MudField>
+    <MudField Label="@ColumnConfigs[Iterator].DisplayName" Variant="Variant.Filled">@ItemRepresentation.Objects[Iterator].ToString()</MudField>
 }
 else
 {
@@ -14,27 +17,32 @@ else
     {
         case string str:
             <MudTextField @bind-Value="@ItemRepresentation.Strings[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Variant="Variant.Outlined"></MudTextField>
             break;
 
         case int integer:
             <MudTextField @bind-Value="@ItemRepresentation.Ints[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Variant="Variant.Outlined"></MudTextField>
             break;
 
         case DateTime datetime:
-            <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="@Headers.Names[Iterator]"
-                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Editable="true" ShowWeekNumbers="true" />
+            <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="@ColumnConfigs[Iterator].DisplayName"
+                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                           Editable="true" ShowWeekNumbers="true" />
             break;
 
         case double dbl:
             <MudTextField @bind-Value="@ItemRepresentation.Doubles[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Variant="Variant.Outlined"></MudTextField>
             break;
 
         case decimal dec:
             <MudTextField @bind-Value="@ItemRepresentation.Decimals[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@Headers.Names[Iterator]" Variant="Variant.Outlined"></MudTextField>
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Variant="Variant.Outlined"></MudTextField>
             break;
     }
 }
@@ -42,7 +50,10 @@ else
 @code {
 
     [Parameter]
-    public Headers Headers { get; set; }
+    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+
+    [Parameter]
+    public List<object> ColumnValidators { get; set; }
 
     [Parameter]
     public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
@@ -52,4 +63,17 @@ else
 
     [Parameter]
     public ItemRepresentation<TItem> ItemRepresentation { get; set; }
+
+    private dynamic GetValidator(string propertyName)
+    {
+        foreach (var columnValidator in ColumnValidators)
+        {
+            dynamic columnValidatorDyn = columnValidator;
+            if (propertyName == columnValidatorDyn.PropertyName)
+            {
+                return columnValidatorDyn.Validator.Validation;
+            }
+        }
+        return null;
+    }
 }
