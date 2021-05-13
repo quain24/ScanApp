@@ -26,15 +26,11 @@ else
                 <MudTabPanel Text="@GetShorterString(group.Key)">
                     <MudTable Style="@TableStyle" Items="group.ItemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
                         <HeaderContent>
-                            @for (int i = 0; i < Headers.Count; i++)
+                            @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                                if (!Headers.IsVisible(local))
-                                {
-                                    continue;
-                                }
-                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, Properties[local], Headers.Names[local])">
-                                    @Headers.Names[local]
+                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, Properties[local], ColumnConfigs[local].DisplayName)">
+                                    @ColumnConfigs[local].DisplayName
                                     @if (SubScanAppTableSorter.AscendingOrder == Properties[local].Name)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
@@ -50,10 +46,6 @@ else
                             @for (int i = 0; i < Properties.Length; i++)
                                         {
                                             int local = i;
-                                            if (!Headers.IsVisible(local))
-                                            {
-                                                continue;
-                                            }
                                 <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
                                         }
                         </RowTemplate>
@@ -68,15 +60,11 @@ else
             <MudTable Style="@TableStyle" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
-                    @for (int i = 0; i < Headers.Count; i++)
+                    @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                                if (!Headers.IsVisible(local))
-                                {
-                                    continue;
-                                }
-                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, Properties[local], Headers.Names[local])">
-                            @Headers.Names[local]
+                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, Properties[local], ColumnConfigs[local].DisplayName)">
+                            @ColumnConfigs[local].DisplayName
                             @if (ScanAppTableSorter.AscendingOrder == Properties[local].Name)
                                     {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
@@ -92,10 +80,6 @@ else
                     @for (int i = 0; i < Properties.Length; i++)
                             {
                                 int local = i;
-                                if (!Headers.IsVisible(local))
-                                {
-                                    continue;
-                                }
                         <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@Properties[local].GetValue(context)</MudTd>
                             }
                 </RowTemplate>
@@ -150,13 +134,16 @@ else
     public EventCallback<List<TItem>> ItemsChanged { get; set; }
 
     [Parameter]
-    public EventCallback ValuesChanged { get; set;}
+    public EventCallback ValuesChanged { get; set; }
+
+    [Parameter]
+    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+
+    [Parameter]
+    public List<object> ColumnValidators { get; set; }
 
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
-
-    [Parameter]
-    public Headers Headers { get; set; }
 
     [Parameter]
     public string Height { get; set; }
@@ -221,6 +208,8 @@ else
         DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
 
         Properties = Items.FirstOrDefault()?.GetType().GetProperties();
+
+        ColumnValidators = GetColumnValidatorObjects();
     }
 
     private void ToggleMenu()
@@ -234,7 +223,8 @@ else
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,
-            ["Headers"] = Headers,
+            ["ColumnConfigs"] = ColumnConfigs,
+            ["ColumnValidators"] = ColumnValidators,
             ["Properties"] = Properties
 
         };
@@ -253,7 +243,7 @@ else
                 .ToList()
                 .First();
 
-            groupWithEditedItem[groupWithEditedItem.IndexOf(item)] = (TItem) result.Data;
+            groupWithEditedItem[groupWithEditedItem.IndexOf(item)] = (TItem)result.Data;
         }
 
         if (DataIsFiltered)
@@ -271,7 +261,7 @@ else
         var parameter = new DialogParameters
         {
             ["Properties"] = Properties,
-            ["Headers"] = Headers,
+            ["ColumnConfigs"] = ColumnConfigs,
             ["Items"] = Items
         };
         var dialog = DialogService.Show<ScanAppTableGroupDialog<TItem>>("Group By", parameter);
@@ -315,7 +305,7 @@ else
         var parameter = new DialogParameters
         {
             ["Items"] = items,
-            ["Headers"] = Headers,
+            ["ColumnConfigs"] = ColumnConfigs,
             ["Properties"] = Properties,
             ["Options"] = Options
         };
@@ -364,4 +354,16 @@ else
         return EventCallback.Empty;
     }
 
+    private List<object> GetColumnValidatorObjects()
+    {
+        List<object> CorrectValidators = new List<object>();
+        foreach (var columnValidator in ColumnValidators)
+        {
+            if (columnValidator.GetType().Name == "ColumnValidator`1")
+            {
+                CorrectValidators.Add(columnValidator);
+            }
+        }
+        return CorrectValidators;
+    }
 }
