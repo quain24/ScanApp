@@ -14,14 +14,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public Expression<Func<T, object>> _columnNameSelector { get; init; }
         public string PropertyName { get; }
         public string DisplayName { get;}
-        public bool IsFilterable { get; private init; }
-        public bool IsEditable { get; private init; }
-        public bool IsSelectable { get; private init; }
-        public bool IsGroupable { get; private init; }
-        private IValidator cc;
+        public bool IsFilterable { get; init; } = true;
+        public bool IsEditable { get; init; } = true;
+        public bool IsSelectable { get; init; } = true;
+        public bool IsGroupable { get; init; } = true;
 
-        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, bool isFilterable = true,
-            bool isEditable = true, bool isSelectable = true, bool isGroupable = true)
+        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName)
         {
             _columnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
 
@@ -32,11 +30,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 var s when string.IsNullOrWhiteSpace(s) => throw new ArgumentException("Display name cannot contain only whitespaces.", nameof(displayName)),
                 _ => displayName
             };
-
-            IsFilterable = isFilterable;
-            IsEditable = isEditable;
-            IsSelectable = isSelectable;
-            IsGroupable = isGroupable;
         }
 
         private string ExtractPropertyName()
