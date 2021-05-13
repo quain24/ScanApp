@@ -113,7 +113,10 @@
     private async Task GetData()
     {
         // Set up columns
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Name, "Name", isEditable: false));
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
+        {
+            IsEditable = false
+        });
         ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount"));
 
         // Set up validators for columns

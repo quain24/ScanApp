@@ -49,7 +49,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
         [Fact]
         public void Will_create_instance_with_optional_parameters()
         {
-            var subject = new ColumnConfig<MyClass>(s => s.A, "A", isEditable: false, isGroupable: false);
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A")
+            {
+                IsEditable = false,
+                IsGroupable = false
+            };
 
             subject.Should().BeOfType<ColumnConfig<MyClass>>();
             Assert.False(subject.IsEditable);
