@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 {
+    /// <summary>
+    /// Represents a query used to request all Spare Part Types
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
     public record AllSparePartTypesQuery : IRequest<Result<List<SparePartTypeModel>>>;
 
     internal class AllSparePartTypesQueryHandler : IRequestHandler<AllSparePartTypesQuery, Result<List<SparePartTypeModel>>>
