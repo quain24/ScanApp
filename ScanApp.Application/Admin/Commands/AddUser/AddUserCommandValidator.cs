@@ -5,12 +5,12 @@ using ScanApp.Common.Validators;
 namespace ScanApp.Application.Admin.Commands.AddUser
 {
     /// <summary>
-    /// Provides validation for <see cref="AddUserCommand"/>
+    /// Provides validation for <see cref="AddUserCommand"/>.
     /// </summary>
     public class AddUserCommandValidator : AbstractValidator<AddUserCommand>
     {
         /// <summary>
-        /// Creates new instance of <see cref="AddUserCommandValidator"/>
+        /// Creates new instance of <see cref="AddUserCommandValidator"/>.
         /// </summary>
         /// <param name="identityNamingValidator">Validator enforcing naming rules</param>
         /// <param name="emailValidator">Object validating email addresses</param>

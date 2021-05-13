@@ -2,8 +2,14 @@
 
 namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 {
+    /// <summary>
+    /// Provides validation for <see cref="CreateSparePartsCommand"/>.
+    /// </summary>
     public class CreateSparePartsCommandValidator : AbstractValidator<CreateSparePartsCommand>
     {
+        /// <summary>
+        /// Creates new instance of <see cref="CreateSparePartsCommandValidator"/>.
+        /// </summary>
         public CreateSparePartsCommandValidator()
         {
             RuleFor(c => c.SpareParts)
