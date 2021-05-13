@@ -12,6 +12,8 @@
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
+@using System.Text
+@using System.Collections
 @inject IArticleService articleService
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
@@ -41,7 +43,7 @@
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable @bind-Items="@_spareParts" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions" Headers="@Headers"
+<ScanAppTable @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ColumnValidators="@ColumnValidators" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
 <MudDivider />
 <MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
@@ -55,13 +57,8 @@
     private MudForm _form;
     private bool _submitDisabled = true;
 
-    private string[] _headersArray =
-{
-        "Name","Amount"
-    };
-
-    private Headers Headers { get; set; }
-    private ScanAppTableOptions TableOptions { get; set; } = new() {AllowGrouping = false, AllowNegativeNumbersInFiltering = false};
+    private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = false, AllowNegativeNumbersInFiltering = false };
+    List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
@@ -71,14 +68,21 @@
     private string _article = string.Empty;
     private bool _submitInProgress;
 
+    List<object> ColumnValidators = new List<object>();
     private Func<string, IEnumerable<string>> _articleValidator;
     private FluentValidationWrapper<string> _lhmValidator;
+    private FluentValidationWrapper<int?> _amountValidator;
+    private FluentValidationWrapper<string> _nameValidator;
 
     protected override async Task OnInitializedAsync()
     {
+        _val = new FluentValidationWrapper<int>(x => x.
+            GreaterThan(20));
         SetUpValidators();
         await RetrieveRepairWorkshops();
     }
+
+    private FluentValidationWrapper<int> _val;
 
     private void SetUpValidators()
     {
@@ -87,6 +91,9 @@
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
             .WithMessage("Only predefined repair workshops are allowed"), "Select one of workshops");
+        _amountValidator = new(x => x
+            .Must(x => x >= 0)
+            .WithMessage("Negative amounts are not allowed."));
     }
 
     private async Task RetrieveRepairWorkshops()
@@ -105,10 +112,15 @@
 
     private async Task GetData()
     {
-        Headers = new Headers(_headersArray);
-        Headers.MakeNotEditable("Name");
+        // Set up columns
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Name, "Name", isEditable: false));
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount"));
 
-        // Call database to get data
+        // Set up validators for columns
+
+        ColumnValidators.Add(new ColumnValidator<int?>("Amount", _amountValidator));
+
+    // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
         if (sparePartsTypesResult.Conclusion is false)
         {
@@ -192,4 +204,13 @@
     private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 
     private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s.Amount > 0) ?? false;
+
+    //public class MustBePositiveValidator : AbstractValidator<SparePartGUIModel>
+    //{
+    //   public MustBePositiveValidator()
+    //  {
+    //    RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount cannot be negative.");
+    // }
+    //}
+
 }
