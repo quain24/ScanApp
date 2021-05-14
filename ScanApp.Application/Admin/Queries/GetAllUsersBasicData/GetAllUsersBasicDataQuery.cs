@@ -11,6 +11,10 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 {
+    /// <summary>
+    /// Represents a query used to request all of basic user data (as <see cref="ScanApp.Application.Admin.BasicUserModel"/>)
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
     public record GetAllUsersBasicDataQuery : IRequest<Result<List<BasicUserModel>>>;
 
     internal class GetAllUsersBasicDataQueryHandler : IRequestHandler<GetAllUsersBasicDataQuery, Result<List<BasicUserModel>>>

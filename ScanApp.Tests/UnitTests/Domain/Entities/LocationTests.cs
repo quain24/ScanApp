@@ -1,9 +1,7 @@
-﻿using System;
-using FluentAssertions;
-using FluentAssertions.Common;
-using Microsoft.EntityFrameworkCore.Query.Internal;
+﻿using FluentAssertions;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.Exceptions;
+using System;
 using Xunit;
 using Xunit.Abstractions;
 

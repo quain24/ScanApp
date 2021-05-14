@@ -1,14 +1,15 @@
 ﻿using FluentAssertions;
 using FluentValidation;
-using FluentValidation.Internal;
 using FluentValidation.TestHelper;
 using FluentValidation.Validators;
 using Moq;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Common.Validators;
 using ScanApp.Domain.Entities;
+using ScanApp.Tests.TestExtensions;
 using System;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
@@ -41,36 +42,69 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
         }
 
         [Fact]
-        public void All_properties_have_assigned_validators()
+        public void Properties_have_assigned_validators()
         {
             var validatorFixture = new EditUserCommandValidatorFixture();
             var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+            var propertyNames = typeof(EditUserDataCommand)
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                // no validator for location
+                .Where(p => !p.PropertyType.IsAssignableTo(typeof(Location)))
+                .Select(p => p.Name);
 
-            var descriptor = subject.CreateDescriptor();
-            var nameValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<EditUserDataCommand, string>(x => x.Name).Name)
-                .Select(r => r.Validator).ToList();
-            var newNameValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<EditUserDataCommand, string>(x => x.NewName).Name)
-                .Select(r => r.Validator).ToList();
-            var emailValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<EditUserDataCommand, string>(x => x.Email).Name)
-                .Select(r => r.Validator).ToList();
-            var phoneValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<EditUserDataCommand, string>(x => x.Phone).Name)
-                .Select(r => r.Validator).ToList();
-            var versionValidators = descriptor.GetValidatorsForMember(Extensions.GetMember<EditUserDataCommand, string>(x => x.Version).Name)
-                .Select(r => r.Validator).ToList();
+            validators.Should().ContainKeys(propertyNames);
+        }
 
-            nameValidators.Should().HaveCount(2)
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableFrom(typeof(NotEmptyValidator<EditUserDataCommand, string>)))
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableTo(typeof(IdentityNamingValidator<EditUserDataCommand, string>)));
-            newNameValidators.Should().HaveCount(1)
-                .And.Subject.First().Should().BeAssignableTo<IdentityNamingValidator<EditUserDataCommand, string>>();
-            emailValidators.Should().HaveCount(2)
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableFrom(typeof(NotEmptyValidator<EditUserDataCommand, string>)))
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableTo(typeof(EmailValidator<EditUserDataCommand, string>)));
-            phoneValidators.Should().HaveCount(1)
+        [Fact]
+        public void Name_has_proper_validators()
+        {
+            var validatorFixture = new EditUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(EditUserDataCommand.Name))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
+                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(IdentityNamingValidator<EditUserDataCommand, string>)));
+        }
+
+        [Fact]
+        public void Email_has_proper_validators()
+        {
+            var validatorFixture = new EditUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(EditUserDataCommand.Email))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
+                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(EmailValidator<EditUserDataCommand, string>)));
+        }
+
+        [Fact]
+        public void Phone_has_proper_validators()
+        {
+            var validatorFixture = new EditUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(EditUserDataCommand.Phone))
+                .WhichValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeAssignableTo<PhoneNumberValidator<EditUserDataCommand, string>>();
-            versionValidators.Should().HaveCount(2)
-                .And.Subject.Should().ContainSingle(v => v.GetType().IsAssignableFrom(typeof(NotEmptyValidator<EditUserDataCommand, Version>)))
-                .And.Subject.Should().ContainSingle(v => v.GetType() == typeof(PredicateValidator<EditUserDataCommand, Version>));
+        }
+
+        [Fact]
+        public void Version_has_proper_validators()
+        {
+            var validatorFixture = new EditUserCommandValidatorFixture();
+            var subject = validatorFixture.Validator;
+            var validators = subject.ExtractPropertyValidators();
+
+            validators.Should().ContainKey(nameof(EditUserDataCommand.Version))
+                .WhichValue.Should().HaveCount(2)
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotNullValidator<EditUserDataCommand, Version>))
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(PredicateValidator<EditUserDataCommand, Version>));
         }
 
         public static TheoryData<Version> InvalidVersion => new()

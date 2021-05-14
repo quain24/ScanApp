@@ -3,8 +3,14 @@ using FluentValidation.Results;
 
 namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation
 {
+    /// <summary>
+    /// Provides validation for <see cref="SparePartStoragePlacesByLocationQuery"/>.
+    /// </summary>
     public class SparePartStoragePlacesByLocationQueryValidator : AbstractValidator<SparePartStoragePlacesByLocationQuery>
     {
+        /// <summary>
+        /// Creates new instance of <see cref="SparePartStoragePlacesByLocationQueryValidator"/>.
+        /// </summary>
         public SparePartStoragePlacesByLocationQueryValidator()
         {
             RuleFor(e => e.LocationId)

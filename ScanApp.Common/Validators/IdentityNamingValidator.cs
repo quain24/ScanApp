@@ -1,13 +1,31 @@
-﻿using FluentValidation.Validators;
+﻿using FluentValidation;
+using FluentValidation.Validators;
 using System.Text.RegularExpressions;
-using FluentValidation;
 
 namespace ScanApp.Common.Validators
 {
     /// <summary>
-    /// Validator containing rules for user names, role names and other naming conventions used in asp identity management.
-    /// Allows 'A-Z' chars, numbers, '.', '_' and '-' with length from 3 to 450 chars
+    /// Represents an <see cref="string"/> validator containing rules for user names, role names and other naming conventions used in Asp Identity Management.
+    /// <para>
+    /// This implementation have following rules:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>Length between <strong>3</strong> and <strong>450</strong> (inclusive).</description>
+    /// </item>
+    /// <item>
+    /// <description>Only standard letters are allowed - no accents etc.</description>
+    /// </item>
+    /// <item>
+    /// <description>Digits are allowed.</description>
+    /// </item>
+    /// <item>
+    /// <description>Dashes, dots and underscores are allowed.</description>
+    /// </item>
+    /// </list>
+    /// </para>
     /// </summary>
+    /// <typeparam name="T">Type of validation context.</typeparam>
+    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
     public class IdentityNamingValidator<T, TProperty> : PropertyValidator<T, TProperty>
     {
         private readonly Regex _namingRegex = new(@"^[a-zA-Z0-9\.\-\\_]{3,450}$");

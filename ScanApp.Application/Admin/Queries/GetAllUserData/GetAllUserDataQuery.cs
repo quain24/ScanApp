@@ -1,12 +1,17 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUserData
 {
+    /// <summary>
+    /// Represents a query used to request data of user with given <paramref name="UserName"/>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="UserName">User name.</param>
     public record GetAllUserDataQuery(string UserName) : IRequest<Result<UserInfoModel>>;
 
     internal class GetAllUserDataQueryHandler : IRequestHandler<GetAllUserDataQuery, Result<UserInfoModel>>

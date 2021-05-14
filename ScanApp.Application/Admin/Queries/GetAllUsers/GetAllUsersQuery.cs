@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.Admin.Queries.GetAllUsers
 {
+    /// <summary>
+    /// Represents a query used to request all user data (as <see cref="ScanApp.Application.Common.Entities.ApplicationUser"/>)
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
     public record GetAllUsersQuery : IRequest<Result<List<ApplicationUser>>>;
 
     internal class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Result<List<ApplicationUser>>>

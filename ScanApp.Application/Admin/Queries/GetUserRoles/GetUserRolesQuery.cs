@@ -11,6 +11,12 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetUserRoles
 {
+    /// <summary>
+    /// Represents a query used to request user's with name <paramref name="UserName"/> basic roles informations
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="UserName">Name of user.</param>
+    /// <param name="Version">User's <see cref="ScanApp.Domain.ValueObjects.Version()"/> to be compared to a concurrency stamp in data source.</param>
     public record GetUserRolesQuery(string UserName, Version Version) : IRequest<Result<List<BasicRoleModel>>>;
 
     internal class GetUserRolesQueryHandler : IRequestHandler<GetUserRolesQuery, Result<List<BasicRoleModel>>>

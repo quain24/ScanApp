@@ -8,18 +8,23 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Queries.GetUserVersion
 {
-    public record GetUserVersionCommand(string UserName) : IRequest<Result<Version>>;
+    /// <summary>
+    /// Represents a query used to request user's with name <paramref name="UserName"/> current <see cref="ScanApp.Domain.ValueObjects.Version()"/>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="UserName">Name of user.</param>
+    public record GetUserVersionQuery(string UserName) : IRequest<Result<Version>>;
 
-    internal class GetUserVersionCommandHandler : IRequestHandler<GetUserVersionCommand, Result<Version>>
+    internal class GetUserVersionQueryHandler : IRequestHandler<GetUserVersionQuery, Result<Version>>
     {
         private readonly IUserInfo _userInfo;
 
-        public GetUserVersionCommandHandler(IUserInfo userInfo)
+        public GetUserVersionQueryHandler(IUserInfo userInfo)
         {
             _userInfo = userInfo ?? throw new ArgumentNullException(nameof(userInfo));
         }
 
-        public async Task<Result<Version>> Handle(GetUserVersionCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(GetUserVersionQuery request, CancellationToken cancellationToken)
         {
             try
             {

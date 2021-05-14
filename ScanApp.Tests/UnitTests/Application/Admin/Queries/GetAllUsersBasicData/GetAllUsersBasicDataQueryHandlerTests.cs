@@ -2,16 +2,15 @@
 using MediatR;
 using MockQueryable.Moq;
 using ScanApp.Application.Admin.Queries.GetAllUsersBasicData;
+using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Helpers.Result;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Entities;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
-using ScanApp.Application.Admin.Queries.GetAllClaims;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetAllUsersBasicData
 {

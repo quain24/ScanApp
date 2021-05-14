@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 {
+    /// <summary>
+    /// Represents a command used to create new spare part(s) in application's data source
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="SpareParts">Spare Parts to be inserted into data source.</param>
     public record CreateSparePartsCommand(params SparePartModel[] SpareParts) : IRequest<Result>;
 
     internal class CreateSparePartsCommandHandler : IRequestHandler<CreateSparePartsCommand, Result>

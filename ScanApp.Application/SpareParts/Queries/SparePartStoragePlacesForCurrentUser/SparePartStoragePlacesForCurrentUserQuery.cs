@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 {
+    /// <summary>
+    /// Represents a query used to request all Spare Part Storage Places to which user performing this query has access granted.
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
     public record SparePartStoragePlacesForCurrentUserQuery : IRequest<Result<List<RepairWorkshopModel>>>;
 
     internal class SparePartStoragePlacesForCurrentUserQueryHandler : IRequestHandler<SparePartStoragePlacesForCurrentUserQuery, Result<List<RepairWorkshopModel>>>

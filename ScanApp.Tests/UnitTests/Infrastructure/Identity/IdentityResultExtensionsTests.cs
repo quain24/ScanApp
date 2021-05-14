@@ -1,8 +1,8 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Infrastructure.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;

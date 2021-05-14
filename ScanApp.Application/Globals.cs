@@ -13,6 +13,10 @@ namespace Globals
         public const string CanDelete = "CanDelete";
     }
 
+    /// <summary>
+    /// Provides names of modules, to be used throughout application.<br/>
+    /// For example they can be used when setting up a custom policy.
+    /// </summary>
     public static class ModuleNames
     {
         public const string AdminModule = "Admin";

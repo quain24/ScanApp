@@ -7,8 +7,15 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence
 {
+    /// <summary>
+    /// Represents main DbContext of this application.
+    /// </summary>
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
     {
+        /// <summary>
+        /// Creates new instance of <see cref="ApplicationDbContext"/> configured by <paramref name="options"/>.
+        /// </summary>
+        /// <param name="options">Options used to configure this DbContext.</param>
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

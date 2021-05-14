@@ -5,8 +5,15 @@ using System;
 
 namespace ScanApp.Application.Common.Validators
 {
+    /// <summary>
+    /// Provides validation for password inputs - checks them against all rules set for Identity Services (part of ASP Core).
+    /// </summary>
     public class PasswordValidator : AbstractValidator<string>
     {
+        /// <summary>
+        /// Creates new instance of <see cref="PasswordValidator"/>.
+        /// </summary>
+        /// <param name="userManager">User manager used to gain access to Identity service rules.</param>
         public PasswordValidator(IUserManager userManager)
         {
             _ = userManager ?? throw new ArgumentNullException(nameof(userManager));

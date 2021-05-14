@@ -3,41 +3,126 @@ using System.Collections.Generic;
 
 namespace ScanApp.Application.Common.Helpers.Result
 {
+    /// <summary>
+    /// Types of valid <see cref="Result"/>
+    /// </summary>
     public enum ResultType
     {
+        /// <summary>
+        /// Generic "Everything went fine" type.
+        /// </summary>
         Ok,
+
+        /// <summary>
+        /// Object / instance has been created, typically used describing when database or file operations.
+        /// </summary>
         Created,
+
+        /// <summary>
+        /// Object / instance has been updated, typically used describing when database or file operations.
+        /// </summary>
         Updated,
+
+        /// <summary>
+        /// Data has been inserted - typically used when describing database operations.
+        /// </summary>
         Inserted,
+
+        /// <summary>
+        /// Data has been replaced - typically used when describing database operations.
+        /// </summary>
         Replaced,
+
+        /// <summary>
+        /// Data has been deleted successfully.
+        /// </summary>
+        /// <remarks>Can be used when targeted data has been already deleted and such state does not constitute an error in this particular operation.</remarks>
         Deleted,
+
+        /// <summary>
+        /// Data has not been changed.
+        /// </summary>
         NotChanged
     }
 
+    /// <summary>
+    /// Types of invalid <see cref="Result"/>
+    /// </summary>
     public enum ErrorType
     {
         // User related
 
+        /// <summary>
+        /// Data has not been found.
+        /// </summary>
         NotFound,
+
+        /// <summary>
+        /// Arguments given to operation were invalid, out of range, possibly forced exception to be thrown.
+        /// </summary>
         WrongArguments,
+
+        /// <summary>
+        /// Generic invalid result to be used when no other can describe problem better.
+        /// </summary>
         NotValid,
+
+        /// <summary>
+        /// Tried to insert data when no overwrite are allowed, filtration should report one result but found more etc.
+        /// </summary>
         Duplicated,
 
         // Auth
 
+        /// <summary>
+        /// User should be authenticated to perform operation, but was not.
+        /// </summary>
         NoAuthentication,
+
+        /// <summary>
+        /// User should be authorized (including claims and roles) to perform operation, but was not.
+        /// </summary>
         NotAuthorized,
 
         // Logic related
 
+        /// <summary>
+        /// Something unexpected happened - this should be used instead of generic error when caller needs to be informed, that something
+        /// completely unexpected happened, like some exception that never should be thrown.
+        /// </summary>
         Unknown,
+
+        /// <summary>
+        /// Typically related to connection configuration error - database or API.
+        /// </summary>
         ConfigurationError,
+
+        /// <summary>
+        /// Connection dropped out, socket failed etc.
+        /// </summary>
         NetworkError,
+
+        /// <summary>
+        /// Multiple operations tried to access non thread-safe data - common in database operations.
+        /// </summary>
         ConcurrencyFailure,
+
+        /// <summary>
+        /// Operation has ended due to timeout.
+        /// </summary>
         Timeout,
+
+        /// <summary>
+        /// Operation has been canceled.
+        /// </summary>
         Cancelled,
 
         // Database common
+
+        /// <summary>
+        /// Generic Database error to be used when no other can describe problem better.
+        /// <remarks>To be used when caller is sure, that error is caused by database - otherwise use <see cref="NotValid"/></remarks>
+        /// </summary>
         DatabaseError
 
         ///// <summary>
@@ -47,29 +132,38 @@ namespace ScanApp.Application.Common.Helpers.Result
     }
 
     /// <summary>
-    /// The Result itself.
+    /// Represents the result of operation, be it command, query or any other operation that need a standardized return format.
     /// </summary>
     public class Result
     {
         /// <summary>
-        /// Is set to true if the method ran correctly.
+        /// Gets <see cref="Result"/> conclusion.
         /// </summary>
+        /// <value><see langword="True"/> if the operation that gave this <see cref="Result"/> ran correctly; Otherwise, <see langword="False"/> </value>
         public bool Conclusion { get; private set; }
 
         /// <summary>
-        /// ResultType of the method.
+        /// Gets <see cref="Helpers.Result.ResultType?"/> of the operation that provided this <see cref="Result"/> instance.
         /// </summary>
+        /// <remarks><see cref="Helpers.Result.ResultType?"/> is always assigned to positive outcome.</remarks>
+        /// <value>Type of result that best describes completion state of operation that provided this <see cref="Result"/> instance.</value>
         public ResultType? ResultType { get; private set; }
 
         /// <summary>
-        /// Description of the error. Can be null.
+        /// Gets description of the error.
         /// </summary>
+        /// <value>Description of error if there is any, otherwise <see langword="null"/></value>
         public ErrorDescription ErrorDescription { get; private set; }
 
+        /// <summary>
+        /// Gets the output provided by operation.
+        /// </summary>
+        /// <value><see cref="object"/> representing <see cref="Result"/> output value, or <see langword="null"/> if none was provided.</value>
         public object Output { get; private set; }
 
         /// <summary>
-        /// Positive result. Conclusion is true and result type is OK.
+        /// Creates new positive instance of <see cref="Result"/>. <see cref="Conclusion"/> is set to <see langword="True"/> and <see cref="ResultType"/>
+        /// to <see cref="Helpers.Result.ResultType.Ok"/>.
         /// </summary>
         public Result()
         {
@@ -78,9 +172,10 @@ namespace ScanApp.Application.Common.Helpers.Result
         }
 
         /// <summary>
-        /// Positive result. Conclusion is true and result type is given as argument.
+        /// Creates new positive instance of <see cref="Result"/>. <see cref="Conclusion"/> is set to <see langword="True"/> and <see cref="ResultType"/>
+        /// to given <paramref name="resultType"/>.
         /// </summary>
-        /// <param name="resultType"></param>
+        /// <param name="resultType">Type of result's positive outcome</param>
         public Result(ResultType resultType)
         {
             Conclusion = true;
@@ -88,9 +183,10 @@ namespace ScanApp.Application.Common.Helpers.Result
         }
 
         /// <summary>
-        /// Negative result. Conclusion is false.
+        /// Creates new negative instance of <see cref="Result"/>. <see cref="Conclusion"/> is set to <see langword="False"/> and <see cref="ErrorDescription"/>
+        /// is created with given <paramref name="errorType"/>.
         /// </summary>
-        /// <param name="errorType"></param>
+        /// <param name="errorType">Type of result's negative outcome</param>
         public Result(ErrorType errorType)
         {
             Conclusion = false;
@@ -100,6 +196,12 @@ namespace ScanApp.Application.Common.Helpers.Result
             };
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result(ErrorType)"/><br/>
+        /// In addition, given <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
         public Result(ErrorType errorType, Exception exception)
         {
             Conclusion = false;
@@ -111,6 +213,13 @@ namespace ScanApp.Application.Common.Helpers.Result
             };
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result(ErrorType)"/><br/>
+        /// In addition, given <paramref name="errorMessage"/> and <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessage">Message describing error</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
         public Result(ErrorType errorType, string errorMessage, Exception exception = null)
         {
             Conclusion = false;
@@ -122,6 +231,13 @@ namespace ScanApp.Application.Common.Helpers.Result
             };
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result(ErrorType)"/><br/>
+        /// In addition, given <paramref name="errorMessages"/> and <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
         public Result(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
@@ -133,9 +249,25 @@ namespace ScanApp.Application.Common.Helpers.Result
             };
         }
 
+        /// <summary>
+        /// Sets source <see cref="Result"/> as negative and overrides its <paramref name="errorType"/>, <paramref name="errorMessage"/> and <paramref name="exception"/>
+        /// with new values.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessage">Message describing error</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
+        /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
         public Result Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
             Set(errorType, new[] { errorMessage }, exception);
 
+        /// <summary>
+        /// Sets source <see cref="Result"/> as negative and overrides its <paramref name="errorType"/>, <paramref name="errorMessages"/> and <paramref name="exception"/>
+        /// with new values.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
+        /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
         public Result Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             Conclusion = false;
@@ -148,6 +280,11 @@ namespace ScanApp.Application.Common.Helpers.Result
             return this;
         }
 
+        /// <summary>
+        /// Sets output of this <see cref="Result"/>
+        /// </summary>
+        /// <param name="value">Object of type <see cref="object"/> to be stored.</param>
+        /// <returns>Instance of type <see cref="Result{T}"/> upon which this method has been run.</returns>
         public Result SetOutput(object value)
         {
             Output = value;
@@ -162,47 +299,100 @@ namespace ScanApp.Application.Common.Helpers.Result
     public class Result<T> : Result
     {
         /// <summary>
-        /// The desired output.
+        /// Gets the output provided by operation.
         /// </summary>
+        /// <value>Object of type <typeparamref name="T"/> representing <see cref="Result"/> output value, or <see langword="null"/> if none was provided.</value>
         public new T Output { get; private set; }
 
+        /// <summary>
+        /// Creates new positive instance of <see cref="Result{T}"/>. <see cref="Result{T}.Conclusion"/> is set to <see langword="True"/> and <see cref="ResultType"/>
+        /// to <see cref="Helpers.Result.ResultType.Ok"/>.
+        /// </summary>
         public Result() : base()
         {
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result{T}()"/>
+        /// </summary>
+        /// <param name="value">Output object to be stored in this <see cref="Result{T}"/>.</param>
         public Result(T value) : base() => Output = value;
 
+        /// <summary>
+        /// Creates new positive instance of <see cref="Result{T}"/>. <see cref="Result{T}.Conclusion"/> is set to <see langword="True"/> and <see cref="ResultType"/>
+        /// to given <paramref name="resultType"/>.
+        /// </summary>
+        /// <param name="resultType">Type of result's positive outcome</param>
         public Result(ResultType resultType) : base(resultType)
         {
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result{T}(T)"/>
+        /// </summary>
+        /// <param name="resultType">Type of result's positive outcome</param>
+        /// <param name="value">Output object to be stored in this <see cref="Result{T}"/>.</param>
         public Result(ResultType resultType, T value) : base(resultType) => Output = value;
 
+        /// <summary>
+        /// Creates new negative instance of <see cref="Result{T}"/>. <see cref="Result{T}.Conclusion"/> is set to <see langword="False"/> and <see cref="ErrorDescription"/>
+        /// is created with given <paramref name="errorType"/>.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
         public Result(ErrorType errorType) : base(errorType)
         {
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result{T}(ErrorType)"/><br/>
+        /// In addition, given <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
         public Result(ErrorType errorType, Exception exception) : base(errorType, exception)
         {
         }
 
+        /// <summary>
+        /// <inheritdoc cref="Result{T}(ErrorType)"/><br/>
+        /// In addition, given <paramref name="errorMessage"/> and <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessage">Message describing error</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
         public Result(ErrorType errorType, string errorMessage, Exception exception = null) : base(errorType, errorMessage, exception)
         {
         }
 
-        public Result(ErrorDescription errorDescription) : base(errorDescription.ErrorType, errorDescription.ErrorMessage, errorDescription.Exception)
-        {
-        }
-
+        /// <summary>
+        /// Sets source <see cref="Result{T}"/> as negative and overrides its <paramref name="errorType"/>, <paramref name="errorMessage"/> and <paramref name="exception"/>
+        /// with new values.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome.</param>
+        /// <param name="errorMessage">Message describing error.</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
+        /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
         public new Result<T> Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
             Set(errorType, new[] { errorMessage }, exception);
 
+        /// <summary>
+        /// <inheritdoc cref="Result{T}(ErrorType)"/><br/>
+        /// In addition, given <paramref name="errorMessages"/> and <paramref name="exception"/> will also be stored.
+        /// </summary>
+        /// <param name="errorType">Type of result's negative outcome</param>
+        /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
         public new Result<T> Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
         {
             base.Set(errorType, errorMessages, exception);
             return this;
         }
 
+        /// <summary>
+        /// Sets output of this <see cref="Result{T}"/>
+        /// </summary>
+        /// <param name="value">Object of type <typeparamref name="T"/> to be stored.</param>
+        /// <returns>Instance of <see cref="Result{T}"/> upon which this method has been run.</returns>
         public Result<T> SetOutput(T value)
         {
             Output = value;

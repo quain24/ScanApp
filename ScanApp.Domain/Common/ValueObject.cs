@@ -4,13 +4,13 @@ using System.Linq;
 namespace ScanApp.Domain.Common
 {
     /// <summary>
-    /// Base class used to simplify creation of value objects
+    /// Represents a base class used to simplify creation of value objects.
     /// </summary>
     public abstract class ValueObject
     {
         /// <summary>
-        /// Override with values used to compare equality
-        /// <para></para>When overriding remember to return values as a 'yield' return
+        /// When overwritten, provides values used to compare equality.
+        /// <para>When overriding remember to return values as a <see langword="yield"/> <see langword="return"/></para>
         /// </summary>
         protected abstract IEnumerable<object> GetEqualityComponents();
 

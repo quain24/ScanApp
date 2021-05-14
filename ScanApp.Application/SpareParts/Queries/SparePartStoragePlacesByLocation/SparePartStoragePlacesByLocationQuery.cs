@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation
 {
+    /// <summary>
+    /// Represents a query used to request all Spare Part Storage Places with location set to <paramref name="LocationId"/>
+    /// from corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="LocationId">Storage places assigned to this ID will be returned.</param>
     public record SparePartStoragePlacesByLocationQuery(string LocationId) : IRequest<Result<List<RepairWorkshopModel>>>;
 
     internal class SparePartStoragePlacesByLocationQueryHandler : IRequestHandler<SparePartStoragePlacesByLocationQuery, Result<List<RepairWorkshopModel>>>

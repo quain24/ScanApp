@@ -3,8 +3,15 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.Admin.Commands.AddUserToRole
 {
-    internal class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
+    /// <summary>
+    /// Provides validation for <see cref="AddUserToRoleCommand"/>.
+    /// </summary>
+    public class AddUserToRoleCommandValidator : AbstractValidator<AddUserToRoleCommand>
     {
+        /// <summary>
+        /// Creates new instance of <see cref="AddUserToRoleCommandValidator"/>.
+        /// </summary>
+        /// <param name="standardChars">Validator enforcing naming rules.</param>
         public AddUserToRoleCommandValidator(IdentityNamingValidator<AddUserToRoleCommand, string> standardChars)
         {
             RuleFor(c => c.RoleName)
@@ -16,6 +23,11 @@ namespace ScanApp.Application.Admin.Commands.AddUserToRole
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
                 .SetValidator(standardChars);
+
+            RuleFor(c => c.Version)
+                .Cascade(CascadeMode.Stop)
+                .NotNull()
+                .Must(v => v.IsEmpty is false);
         }
     }
 }

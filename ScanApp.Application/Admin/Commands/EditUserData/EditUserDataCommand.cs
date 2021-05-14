@@ -9,12 +9,41 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.Admin.Commands.EditUserData
 {
+    /// <summary>
+    /// Represents a command used to request data edition of a user with given <paramref name="Name"/>
+    /// by corresponding <see cref="MediatR.IRequestHandler{TRequest,TResponse}"/>.
+    /// </summary>
+    /// <param name="Name">Name user that will have its data edited.</param>
     public record EditUserDataCommand(string Name, Version Version) : IRequest<Result<Version>>
     {
+        /// <summary>
+        /// Gets name of user that will have its data edited.
+        /// </summary>
+        /// <value>Name of user if set, otherwise <see langword="null"/></value>
         public string Name { get; } = Name;
+
+        /// <summary>
+        /// Gets new name for the edited user.
+        /// </summary>
+        /// <value>New user name if set, otherwise <see langword="null"/></value>
         public string NewName { get; init; }
+
+        /// <summary>
+        /// Gets new phone number for the edited user.
+        /// </summary>
+        /// <value>New phone number if set, otherwise <see langword="null"/></value>
         public string Phone { get; init; }
+
+        /// <summary>
+        /// Gets new Email address for the edited user.
+        /// </summary>
+        /// <value>New Email address if set, otherwise <see langword="null"/></value>
         public string Email { get; init; }
+
+        /// <summary>
+        /// Gets new <see cref="ScanApp.Domain.Entities.Location"/> for the edited user.
+        /// </summary>
+        /// <value>New user <see cref="ScanApp.Domain.Entities.Location"/> if set, otherwise <see langword="null"/></value>
         public Location Location { get; init; }
     }
 

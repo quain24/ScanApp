@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using MockQueryable.Moq;
 using Moq;
 using System.Collections.Generic;
 using System.Linq;
-using MockQueryable.Moq;
-using ScanApp.Application.Common.Entities;
 
 namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 {

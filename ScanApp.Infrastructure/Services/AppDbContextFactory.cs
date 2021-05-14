@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
+using System;
 
 namespace ScanApp.Infrastructure.Services
 {
