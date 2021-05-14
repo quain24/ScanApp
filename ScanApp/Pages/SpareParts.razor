@@ -12,8 +12,6 @@
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
-@using System.Text
-@using System.Collections
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
@@ -122,7 +120,7 @@
 
         ColumnValidators.Add(new ColumnValidator<int?>("Amount", _amountValidator));
 
-    // Call database to get data
+        // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
         if (sparePartsTypesResult.Conclusion is false)
         {
@@ -206,13 +204,4 @@
     private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 
     private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s.Amount > 0) ?? false;
-
-    //public class MustBePositiveValidator : AbstractValidator<SparePartGUIModel>
-    //{
-    //   public MustBePositiveValidator()
-    //  {
-    //    RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount cannot be negative.");
-    // }
-    //}
-
 }
