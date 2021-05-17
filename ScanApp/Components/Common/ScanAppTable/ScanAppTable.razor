@@ -140,9 +140,6 @@ else
     public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
-    public List<object> ColumnValidators { get; set; }
-
-    [Parameter]
     public ScanAppTableOptions Options { get; set; }
 
     [Parameter]
@@ -208,8 +205,6 @@ else
         DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
 
         Properties = Items.FirstOrDefault()?.GetType().GetProperties();
-
-        ColumnValidators = GetColumnValidatorObjects();
     }
 
     private void ToggleMenu()
@@ -224,7 +219,6 @@ else
         {
             ["Item"] = itemClone,
             ["ColumnConfigs"] = ColumnConfigs,
-            ["ColumnValidators"] = ColumnValidators,
             ["Properties"] = Properties
 
         };
@@ -352,18 +346,5 @@ else
             }
         }
         return EventCallback.Empty;
-    }
-
-    private List<object> GetColumnValidatorObjects()
-    {
-        List<object> CorrectValidators = new List<object>();
-        foreach (var columnValidator in ColumnValidators)
-        {
-            if (columnValidator.GetType().Name == "ColumnValidator`1")
-            {
-                CorrectValidators.Add(columnValidator);
-            }
-        }
-        return CorrectValidators;
     }
 }

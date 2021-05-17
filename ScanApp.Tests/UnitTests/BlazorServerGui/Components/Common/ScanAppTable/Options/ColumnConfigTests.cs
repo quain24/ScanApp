@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using ScanApp.Common;
 using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Collections.Generic;
-using ScanApp.Common.Extensions;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.Options
@@ -76,6 +76,24 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             Action act = () => _ = new ColumnConfig<MyClass>(s => s.A, "   ");
 
             act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void Will_create_instance_with_fluent_validation_wrapper()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
+                new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
+
+            subject.Validator.Should().BeOfType<Func<object, IEnumerable<string>>>();
+        }
+
+        [Fact]
+        public void Will_create_instance_with_fluent_validator()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
+                new ColumnConfigTestsValidatorFixture());
+
+            subject.Validator.Should().BeOfType<Func<object, IEnumerable<string>>>();
         }
     }
 }

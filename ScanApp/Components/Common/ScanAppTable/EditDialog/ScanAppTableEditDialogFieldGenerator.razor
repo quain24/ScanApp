@@ -17,31 +17,31 @@ else
     {
         case string str:
             <MudTextField @bind-Value="@ItemRepresentation.Strings[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case int integer:
             <MudTextField @bind-Value="@ItemRepresentation.Ints[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case DateTime datetime:
             <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="@ColumnConfigs[Iterator].DisplayName"
-                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Validation="@ColumnConfigs[Iterator].Validator"
                            Editable="true" ShowWeekNumbers="true" />
             break;
 
         case double dbl:
             <MudTextField @bind-Value="@ItemRepresentation.Doubles[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case decimal dec:
             <MudTextField @bind-Value="@ItemRepresentation.Decimals[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@GetValidator(ColumnConfigs[Iterator].PropertyName)"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
                           Variant="Variant.Outlined"></MudTextField>
             break;
     }
@@ -53,9 +53,6 @@ else
     public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
-    public List<object> ColumnValidators { get; set; }
-
-    [Parameter]
     public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
 
     [Parameter]
@@ -63,17 +60,4 @@ else
 
     [Parameter]
     public ItemRepresentation<TItem> ItemRepresentation { get; set; }
-
-    private dynamic GetValidator(string propertyName)
-    {
-        foreach (var columnValidator in ColumnValidators)
-        {
-            dynamic columnValidatorDyn = columnValidator;
-            if (propertyName == columnValidatorDyn.PropertyName)
-            {
-                return columnValidatorDyn.Validator.Validation;
-            }
-        }
-        return null;
-    }
 }
