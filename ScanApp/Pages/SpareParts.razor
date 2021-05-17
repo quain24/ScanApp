@@ -34,13 +34,13 @@
                                  Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
 
                 <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
-                              Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" val />
+                              Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" />
             </MudForm>
         </MudItem>
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ColumnValidators="@ColumnValidators" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
+<ScanAppTable @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
 <MudDivider />
 <MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
@@ -65,21 +65,15 @@
     private string _article = string.Empty;
     private bool _submitInProgress;
 
-    List<object> ColumnValidators = new List<object>();
     private Func<string, IEnumerable<string>> _articleValidator;
     private FluentValidationWrapper<string> _lhmValidator;
     private FluentValidationWrapper<int?> _amountValidator;
-    private FluentValidationWrapper<string> _nameValidator;
 
     protected override async Task OnInitializedAsync()
     {
-        _val = new FluentValidationWrapper<int>(x => x.
-            GreaterThan(20));
         SetUpValidators();
         await RetrieveRepairWorkshops();
     }
-
-    private FluentValidationWrapper<int> _val;
 
     private void SetUpValidators()
     {
@@ -89,7 +83,7 @@
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
             .WithMessage("Only predefined repair workshops are allowed"), "Select one of workshops");
         _amountValidator = new(x => x
-            .Must(x => x >= 0)
+            .GreaterThan(0)
             .WithMessage("Negative amounts are not allowed."));
     }
 
@@ -114,13 +108,9 @@
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount"));
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
 
-        // Set up validators for columns
-
-        ColumnValidators.Add(new ColumnValidator<int?>("Amount", _amountValidator));
-
-        // Call database to get data
+    // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
         if (sparePartsTypesResult.Conclusion is false)
         {
@@ -191,15 +181,17 @@
 
     private void OnItemsChanged() => OnValidationChanged(_form.IsValid);
 
-    private void OnValidationChanged(bool valid)
+    private void OnValidationChanged(bool isFormValid)
     {
-        if (RequiredFieldsAreEmpty() || IsAnyAmountOverZero() is false)
+        if (AnyOfRequiredFieldsIsEmpty() || IsAnyAmountOverZero() is false || isFormValid is false)
         {
             _submitDisabled = true;
             return;
         }
-        _submitDisabled = !valid;
+        _submitDisabled = false;
     }
+
+    private bool AnyOfRequiredFieldsIsEmpty() => string.IsNullOrWhiteSpace(_article) || string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 
     private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 

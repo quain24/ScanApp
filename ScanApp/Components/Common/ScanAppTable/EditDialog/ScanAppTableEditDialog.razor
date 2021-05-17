@@ -14,7 +14,7 @@
                 <MudItem >
                     @for (int i = 0; i < ItemRepresentation.Objects.Length; i++)
                     {
-                        <ScanAppTableEditDialogFieldGenerator ColumnConfigs="@ColumnConfigs" ColumnValidators="@ColumnValidators" ItemRepresentation="ItemRepresentation"
+                        <ScanAppTableEditDialogFieldGenerator ColumnConfigs="@ColumnConfigs" ItemRepresentation="ItemRepresentation"
                                                               Iterator="i" KeyPressed="@KeyPressed"/>
                     }
                 </MudItem>
@@ -39,9 +39,6 @@
 
     [Parameter]
     public List<ColumnConfig<TItem>> ColumnConfigs {get; set;}
-
-    [Parameter]
-    public List<object> ColumnValidators { get; set; }
 
     [Parameter]
     public PropertyInfo[] Properties { get; set; }
