@@ -1,5 +1,6 @@
 ﻿@typeparam TItem
 @using System.Reflection;
+@using Newtonsoft.Json.Bson
 @using ScanApp.Components.Common.ScanAppTable.Options
 <MudDialog>
     <TitleContent>
@@ -9,13 +10,13 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudContainer Style="max-height: 500px; overflow-y: scroll;">
+        <MudContainer Style="@DialogStyle.GetDialogStyle(Properties.Length)">
             <MudGrid>
-                <MudItem >
+                <MudItem>
                     @for (int i = 0; i < ItemRepresentation.Objects.Length; i++)
                     {
                         <ScanAppTableEditDialogFieldGenerator ColumnConfigs="@ColumnConfigs" ItemRepresentation="ItemRepresentation"
-                                                              Iterator="i" KeyPressed="@KeyPressed"/>
+                                                              Iterator="i" KeyPressed="@KeyPressed" />
                     }
                 </MudItem>
             </MudGrid>
