@@ -40,7 +40,7 @@
     </MudGrid>
 </MudPaper>
 &nbsp;
-<ScanAppTable @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
+<ScanAppTable @ref="_table" @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
 <MudDivider />
 <MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
@@ -54,6 +54,7 @@
     private MudForm _form;
     private bool _submitDisabled = true;
 
+    private ScanAppTable<SparePartGUIModel> _table;
     private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = false, AllowNegativeNumbersInFiltering = false };
     List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
 
@@ -168,6 +169,7 @@
         _spareParts = ClearSparePartList(_sparePartsEmpty);
         OnItemsChanged();
         StateHasChanged();
+        _table.UpdateTable(_spareParts);
         return Task.CompletedTask;
     }
 

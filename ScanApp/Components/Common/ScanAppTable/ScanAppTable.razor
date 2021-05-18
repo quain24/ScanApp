@@ -57,7 +57,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable Style="@TableStyle" @bind-SelectedItems="_selectedItems" Items="Items" Dense="true"
+            <MudTable Style="@TableStyle" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @for (int i = 0; i < ColumnConfigs.Count; i++)
@@ -96,7 +96,7 @@ else
                 {
                     @if (!GroupingEnabled && Options.AllowFiltering)
                     {
-                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
                     }
                     <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
                 }
@@ -104,7 +104,7 @@ else
                 {
                     if (Options.AllowFiltering)
                     {
-                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter, Items)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
                     }
                 }
                 @if (DataIsFiltered && !GroupingEnabled)
@@ -136,9 +136,17 @@ else
     [Parameter]
     public EventCallback ValuesChanged { get; set; }
 
+    /// <summary>
+    /// Required: List of <paramref name="ColumnConfig"/> objects used for column configuration including
+    /// validators and permissions for editing, filtering and grouping for each column.
+    /// </summary>
     [Parameter]
     public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
+    /// <summary>
+    /// Required: <paramref name="ScanAppTableOptions"/> object that defines basic and global
+    /// settings for the <paramref name="ScanAppTable"/>.
+    /// </summary>
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
 
@@ -166,7 +174,7 @@ else
     private PropertyInfo[] Properties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
-    private List<TItem> ItemsOriginal { get; set; }
+    private List<TItem> ShownItems { get; set; }
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
@@ -174,6 +182,18 @@ else
 
     private List<Group<TItem>> _groupList { get; set; } = new();
     private HashSet<TItem> _selectedItems = new();
+
+    /// <summary>
+    /// Updates the table with provided <paramref name="items"/>. Disables filtering and grouping to prevent
+    /// errors/not up to date data being displayed.
+    /// </summary>
+    /// <param name="items"></param>
+    public void UpdateTable(List<TItem> items)
+    {
+        ShownItems = ItemCloner.Clone(items);
+        DataIsFiltered = false;
+        GroupingEnabled = false;
+    }
 
     private void InvokeSaveChanges(TItem titem)
     {
@@ -198,7 +218,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await InvokeGetData();
-        ItemsOriginal = Items;
+        ShownItems = ItemCloner.Clone(Items);
         ScanAppTableSorter = new ScanAppTableSorter<TItem>();
         SubScanAppTableSorter = new ScanAppTableSorter<TItem>();
 
@@ -215,6 +235,11 @@ else
     private async Task OpenEditDialog(TItem item)
     {
         var itemClone = ItemCloner.Clone(item);
+        int originalIndex = FindIndex(Items, item);
+
+        if (originalIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(item), "Could not find cloned item in the original collection");
+
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,
@@ -240,14 +265,9 @@ else
             groupWithEditedItem[groupWithEditedItem.IndexOf(item)] = (TItem)result.Data;
         }
 
-        if (DataIsFiltered)
-        {
-            ItemsOriginal[ItemsOriginal.IndexOf(item)] = (TItem)result.Data;
-        }
-        Console.WriteLine(Items.IndexOf(item));
-        Items[Items.IndexOf(item)] = (TItem)result.Data;
+        Items[originalIndex] = (TItem)result.Data;
+        ShownItems[ShownItems.IndexOf(item)] = (TItem)result.Data;
         InvokeSaveChanges(item);
-        StateHasChanged();
     }
 
     private async Task OpenGroupDialog()
@@ -256,7 +276,7 @@ else
         {
             ["Properties"] = Properties,
             ["ColumnConfigs"] = ColumnConfigs,
-            ["Items"] = Items
+            ["Items"] = ShownItems
         };
         var dialog = DialogService.Show<ScanAppTableGroupDialog<TItem>>("Group By", parameter);
         var result = await dialog.Result;
@@ -294,11 +314,11 @@ else
         GroupingEnabled = !GroupingEnabled;
     }
 
-    private async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter, IEnumerable<TItem> items)
+    private async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter)
     {
         var parameter = new DialogParameters
         {
-            ["Items"] = items,
+            ["Items"] = ShownItems,
             ["ColumnConfigs"] = ColumnConfigs,
             ["Properties"] = Properties,
             ["Options"] = Options
@@ -309,25 +329,23 @@ else
         {
             return;
         }
-        ItemsOriginal = Items;
-        Items = (List<TItem>)result.Data;
+        ShownItems = (List<TItem>)result.Data;
         DataIsFiltered = true;
         sorter.ResetSortingStatus();
-        StateHasChanged();
     }
 
     private async Task ResetFilter(ScanAppTableSorter<TItem> sorter)
     {
         DataIsFiltered = false;
         sorter.ResetSortingStatus();
-        Items = ItemsOriginal;
+        ShownItems = ItemCloner.Clone(Items);
     }
 
     private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
     {
         sorter.CurrentlySorted = header;
         var direction = sorter.ResolveSortDirection(propertyInfo);
-        Items = sorter.OrderByPropertyName(Items, propertyInfo.Name, direction);
+        ShownItems = sorter.OrderByPropertyName(ShownItems, propertyInfo.Name, direction);
 
         return EventCallback.Empty;
     }
@@ -346,5 +364,25 @@ else
             }
         }
         return EventCallback.Empty;
+    }
+
+    private int FindIndex(List<TItem> items, TItem item)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (ItemsAreIdentical(items[i], item))
+                return i;
+        }
+        return -1;
+    }
+
+    private bool ItemsAreIdentical(TItem item1, TItem item2)
+    {
+        foreach (var prop in Properties)
+        {
+            if (prop.GetValue(item1)?.ToString() != prop.GetValue(item2)?.ToString())
+                return false;
+        }
+        return true;
     }
 }
