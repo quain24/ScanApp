@@ -1,39 +1,37 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
+using FluentValidation.Results;
+using ScanApp.Common.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ColumnConfig<T>
     {
-        private readonly string _errorMessage;
-        private readonly Expression<Func<T, object>> _columnNameSelector;
+        private Expression<Func<T, object>> ColumnNameSelector { get; }
 
-        public Func<dynamic, IEnumerable<string>> Validator { get; }
+        private IValidator Validator { get; }
         public string PropertyName { get; }
+        public IReadOnlyList<MemberInfo> PropertyPath { get; private set; }
         public string DisplayName { get; }
         public Type PropertyType { get; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsSelectable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
-
-        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IPropertyValidator validator, string errorMessage) : this(columnNameSelector, displayName)
-        {
-            _errorMessage = errorMessage;
-            Validator = CreateStrongTypeValidatorFrom(validator);
-        }
+        public Guid Identifier { get; } = Guid.NewGuid();
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator) : this(columnNameSelector, displayName)
         {
-            Validator = validator is not null ? CreateStrongTypeValidatorFrom(validator) : null;
+            Validator = validator;
         }
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName)
         {
-            _columnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
+            ColumnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
+            PropertyPath = PropertyPath<T>.GetFrom(ColumnNameSelector);
 
             PropertyName = ExtractPropertyName();
             DisplayName = SetDisplayName(displayName);
@@ -43,13 +41,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
 
         private string ExtractPropertyName()
         {
-            return _columnNameSelector.Body switch
-            {
-                UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } unary => unary.Operand.Type.Name,
-                UnaryExpression { Operand: MemberExpression m } => m.Member.Name,
-                MemberExpression m => m.Member.Name,
-                { } m => m.Type.Name
-            };
+            return PropertyPath.Count == 0
+                ? typeof(T)?.Name
+                : PropertyPath[^1]?.Name ?? throw new ArgumentException("Could not extract property name!");
         }
 
         private string SetDisplayName(string name)
@@ -64,54 +58,48 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
 
         private Type ExtractValidatedType()
         {
-            return _columnNameSelector.Body switch
+            if (PropertyPath.Count == 0)
+                return typeof(T);
+
+            return PropertyPath[^1].MemberType switch
             {
-                { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } and UnaryExpression unary => unary.Operand.Type,
-                { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } and MemberExpression member => member.Type,
-                _ => _columnNameSelector.Body.Type
+                MemberTypes.Property => (PropertyPath[^1] as PropertyInfo)?.PropertyType,
+                MemberTypes.Field => (PropertyPath[^1] as FieldInfo)?.FieldType,
+                _ => throw new ArgumentException("Could not extract property type!")
             };
         }
 
         private Func<dynamic, IEnumerable<string>> CreateStrongTypeValidatorFrom(IValidator validator)
         {
-            var emptyContextType = typeof(ValidationContext<>);
-            var contextType = emptyContextType.MakeGenericType(PropertyType);
+            _ = validator ?? throw new ArgumentNullException(nameof(validator));
 
             return value =>
             {
-                var context = Activator.CreateInstance(contextType, value);
-                var res = validator.Validate(context);
-
-                if (res.IsValid)
-                    return Array.Empty<string>();
-
-                var errors = new List<string>(res.Errors.Count);
-                foreach (var failure in res.Errors)
-                {
-                    errors.Add(failure.ErrorMessage);
-                }
-
-                return errors;
+                Type contextType = typeof(ValidationContext<>).MakeGenericType(PropertyType);
+                ValidationResult result = validator.Validate(Activator.CreateInstance(contextType, value));
+                return result.IsValid
+                    ? Array.Empty<string>()
+                    : ExtractErrorsFrom(result);
             };
         }
 
-        private Func<dynamic, IEnumerable<string>> CreateStrongTypeValidatorFrom(IPropertyValidator validator)
+        public IEnumerable<string> Validate<TValueType>(TValueType value)
         {
-            var emptyContextType = typeof(PropertyValidator<,>);
-            var contextType = emptyContextType.MakeGenericType(PropertyType, PropertyType);
+            var context = new ValidationContext<TValueType>(value);
+            var result = Validator.Validate(context);
+            return result.IsValid
+                ? Array.Empty<string>()
+                : ExtractErrorsFrom(result);
+        }
 
-            return value =>
+        private static IEnumerable<string> ExtractErrorsFrom(ValidationResult result)
+        {
+            var errors = new List<string>(result.Errors.Count);
+            foreach (var failure in result.Errors)
             {
-                dynamic vali = Convert.ChangeType(validator, validator.GetType());
-                var res = vali.IsValid(null, value);
-
-                if (res is true)
-                    return Array.Empty<string>();
-                return new List<string>(1)
-                {
-                    _errorMessage
-                };
-            };
+                errors.Add(failure.ErrorMessage);
+            }
+            return errors;
         }
     }
 }
