@@ -1,0 +1,172 @@
+﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@using System.Linq.Expressions
+@using System.Reflection
+@typeparam TTableType
+
+<MudTable Items="Data" @bind-SelectedItem="@SelectedItem" Dense="true">
+    <HeaderContent>
+        @foreach (var cfg in Configs)
+        {
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<TTableType, object>(e => Services.PropertyPath<TTableType>.GetValue(cfg, e))">
+                    @cfg.DisplayName
+                </MudTableSortLabel>
+            </MudTh>
+        }
+    </HeaderContent>
+    <RowTemplate>
+        @foreach (var cfg in Configs)
+        {
+            <MudTd DataLabel="@cfg.DisplayName">@(Services.PropertyPath<TTableType>.GetValue(cfg, context))</MudTd>
+        }
+    </RowTemplate>
+</MudTable>
+
+@if (Configs?.Count > 0 && Data?.Count > 0 && SelectedItem is not null)
+{
+    <MudForm @ref="_form" @bind-IsValid="@_success">
+        @foreach (var col in columns)
+        {
+            @col.Value
+        }
+    </MudForm>
+    <MudButton Disabled="@(!_success)">Validation ok</MudButton>
+    <MudButton OnClick="@((_) => Delete(SelectedItem))">Delete</MudButton>
+}
+
+@code
+{
+    private Dictionary<Guid, Delegate> Validators = new();
+    private Dictionary<ColumnConfig<TTableType>, RenderFragment> columns = new();
+    private HashSet<Guid> _comparable = new();
+
+    private MudForm _form;
+    private bool _success;
+    private TTableType SelectedItem { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        CacheValidators();
+        CacheColumnRenderFragments();
+        MarkComparableColumns();
+    }
+
+    private void MarkComparableColumns()
+    {
+        foreach (var config in Configs)
+        {
+            var interfaces = config.PropertyType.GetInterfaces();
+            if (interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>)))
+            {
+                _comparable.Add(config.Identifier);
+            }
+        }
+    }
+
+    RenderFragment CreateHeaders(ColumnConfig<TTableType> config) => builder =>
+    {
+        if (_comparable.Contains(config.Identifier))
+        {
+            builder.OpenComponent<MudTh>(100);
+            builder.AddAttribute(101, "ChildContent", (RenderFragment)(builder2 =>
+            {
+                builder2.OpenComponent(200, typeof(MudTableSortLabel<>).MakeGenericType(typeof(TTableType)));
+                builder2.AddAttribute(201);
+
+                builder2.AddAttribute(202, "ChildContent", (RenderFragment)(builder3 =>
+                {
+                    builder3.AddContent(300, config.DisplayName);
+                }));
+
+
+
+
+
+                builder2.AddContent(13, Services.PropertyPath<TTableType>.GetValue(config, new TTableType()));
+            }));
+
+
+            builder.OpenComponent(101, typeof(MudTableSortLabel<>).MakeGenericType(typeof(TTableType)));
+            builder.AddAttribute(12, "ChildContent", (RenderFragment)(builder3 =>
+        {
+            builder3.AddContent(13, Services.PropertyPath<TTableType>.GetValue(config, new TTableType()));
+        }));
+        }
+
+        builder.OpenComponent(10, typeof(MudTd));
+        builder.AddAttribute(11, "DataLabel", config.DisplayName);
+        builder.AddAttribute(12, "ChildContent", (RenderFragment)(builder3 =>
+        {
+            builder3.AddContent(13, Services.PropertyPath<TTableType>.GetValue(config, new TTableType()));
+        }));
+
+        builder.CloseComponent();
+    };
+
+    private void CacheValidators()
+    {
+        foreach (var config in Configs)
+        {
+            var methodType = config.GetType().GetMethod(nameof(config.Validate))?.MakeGenericMethod(config.PropertyType)
+                             ?? throw new ArgumentException("Method for validator func creation is not accessible / not existing - check source class of this method.");
+            var validatorFuncType = Expression.GetDelegateType(config.PropertyType, typeof(IEnumerable<string>));
+            var validationDelegate = Delegate.CreateDelegate(validatorFuncType, config, methodType);
+
+            Validators.Add(config.Identifier, validationDelegate);
+        }
+    }
+
+    private void CacheColumnRenderFragments()
+    {
+        foreach (var config in Configs)
+        {
+            var column = CreateEditFields(config);
+            columns.Add(config, column);
+        }
+    }
+
+
+
+    RenderFragment CreateEditFields(ColumnConfig<TTableType> config) => builder =>
+    {
+        // Type of mud blazor text field (int, string, etc)
+        var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
+
+        // Start creating text field
+        builder.OpenComponent(0, textFieldType);
+        builder.AddAttribute(1, "Value", (object)Services.PropertyPath<TTableType>.GetValue(config, SelectedItem));
+
+        // Set callback for edit action
+        var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
+        Action<dynamic> editDelegate = obj => Editor(obj, config.Identifier);
+        dynamic callback = Activator.CreateInstance(callbackType, this, editDelegate);
+        builder.AddAttribute(2, "ValueChanged", callback);
+
+        builder.AddAttribute(3, "Validation", Validators[config.Identifier]);
+        builder.AddAttribute(4, "Immediate", true);
+        builder.AddAttribute(4, "Disabled", !config.IsEditable);
+        builder.CloseComponent();
+    };
+
+    private void Editor(dynamic o, Guid guid)
+    {
+        Services.PropertyPath<TTableType>.SetValue(Configs.First(c => c.Identifier == guid), SelectedItem, o);
+    }
+
+    private void Delete(TTableType element)
+    {
+        Data.Remove(element);
+    }
+
+    [Parameter]
+    public List<TTableType> Data { get; set; }
+
+    [Parameter]
+    public List<ColumnConfig<TTableType>> Configs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+}

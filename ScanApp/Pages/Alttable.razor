@@ -1,0 +1,54 @@
+﻿@page "/Alttable"
+@using ScanApp.Data
+@using ScanApp.Components.Common.ScanAppTable.Options
+@using ScanApp.Components.Common.AltTableTest
+@using ScanApp.Common.Interfaces
+@using ScanApp.Common
+@using FluentValidation
+@using Version = ScanApp.Domain.ValueObjects.Version
+@inject WeatherForecastService ForecastService
+@inject IDateTime DateTime
+
+<h1>Alt table</h1>
+
+<Alttablecomponent TTableType="WeatherForecast" Data="@forecasts.ToList()" Configs="@cc.ToList()" />
+
+@code
+{
+    public ColumnConfig<WeatherForecast>[] cc = new[]
+    {
+        new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary", new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20))),
+        new ColumnConfig<WeatherForecast>(c => c.TemperatureC, "Temperature in C", new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10))),
+        new ColumnConfig<WeatherForecast>(c => c.Date, null, new FluentValidationWrapper<DateTime>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(10)))),
+        new ColumnConfig<WeatherForecast>(c => c.Version, "A version", new FluentValidationWrapper<ScanApp.Domain.ValueObjects.Version>(x => x.Must(c => c.IsEmpty != true)))
+        {
+            IsEditable = false
+        }
+    };
+
+    private List<WeatherForecast> forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
+        forecasts.Add(new WeatherForecast()
+        {
+            Version = Version.Empty(),
+            TemperatureC = 10,
+            Summary = "adad",
+            Date = System.DateTime.Today
+        });
+        //for (int i = 0; i < 1000; i++)
+        //{
+        //    forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = new Random(1234).Next(5000000).ToString(), TemperatureC = 24 });
+        //}
+    }
+
+    public class WeatherValidator : AbstractValidator<WeatherForecast>
+    {
+        public WeatherValidator()
+        {
+            RuleFor(c => c.TemperatureC).GreaterThan(1);
+        }
+    }
+}
