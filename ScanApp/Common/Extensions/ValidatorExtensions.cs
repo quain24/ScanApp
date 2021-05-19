@@ -3,7 +3,6 @@ using FluentValidation.Results;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace ScanApp.Common.Extensions
@@ -56,14 +55,14 @@ namespace ScanApp.Common.Extensions
         public static Func<dynamic, IEnumerable<string>> ToMudFormFieldValidator(this IValidator validator)
         {
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
-            
-            return  value =>
-             {
+
+            return value =>
+            {
                 Type contextType = typeof(ValidationContext<>).MakeGenericType(value.GetType());
                 ValidationResult result = validator.Validate(Activator.CreateInstance(contextType, value));
                 return result.IsValid
-                    ? Array.Empty<string>()
-                    : ExtractErrorsFrom(result);
+                     ? Array.Empty<string>()
+                     : ExtractErrorsFrom(result);
             };
         }
 
