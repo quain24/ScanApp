@@ -42,9 +42,22 @@ namespace ScanApp.Services
         /// <exception cref="ArgumentException">Given <paramref name="value"/> is of different type that one selected in <paramref name="columnConfig"/>.</exception>
         public static void SetValue(ColumnConfig<TSource> columnConfig, object source, object value)
         {
-            if (columnConfig.PropertyType != value.GetType())
-                throw new ArgumentException($"Given value type ({value.GetType()}) is different than property / field type being set ({columnConfig.PropertyType}).", nameof(value));
+            if (CheckValueCompatibility(columnConfig.PropertyType, value.GetType()) is false)
+                throw new ArgumentException($"Given value type ({value.GetType()}) is different than property" +
+                                            $" / field type being set ({columnConfig.PropertyType}).", nameof(value));
+
             _ = SetValuePrivate(columnConfig.PropertyPath.ToList(), source, value);
+        }
+
+        private static bool CheckValueCompatibility(Type storedType, Type valueType)
+        {
+            return storedType switch
+            {
+                var pt when Nullable.GetUnderlyingType(pt) is null && Nullable.GetUnderlyingType(valueType) is null => pt == valueType,
+                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(valueType) is not null => pt == valueType,
+                var pt when Nullable.GetUnderlyingType(pt) is not null => valueType == Nullable.GetUnderlyingType(pt),
+                _ => false
+            };
         }
 
         public static void SetValue(IEnumerable<MemberInfo> path, TSource source, object value)
@@ -100,6 +113,8 @@ namespace ScanApp.Services
 
             if (infos.Count == 1)
             {
+                if (source == null)
+                    return null;
                 var current = Array.Find(source.GetType().GetMember(currentInfo.Name), m => m.MemberType == currentInfo.MemberType);
 
                 return current?.MemberType switch
