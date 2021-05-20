@@ -72,7 +72,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private Func<dynamic, IEnumerable<string>> CreateStrongTypeValidatorFrom(IValidator validator)
         {
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
-
             return value =>
             {
                 Type contextType = typeof(ValidationContext<>).MakeGenericType(PropertyType);
