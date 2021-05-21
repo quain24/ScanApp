@@ -1,4 +1,5 @@
-﻿using ScanApp.Components.Common.ScanAppTable.Options;
+﻿using ScanApp.Components.Common.AltTableTest;
+using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,66 +24,77 @@ namespace ScanApp.Services
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (node.Member is not PropertyInfo)
-                {
-                    throw new ArgumentException("The path can only contain properties", nameof(node));
-                }
-
-                this.Path.Add(node.Member);
+                Path.Add(node.Member);
                 return base.VisitMember(node);
             }
         }
 
         /// <summary>
-        /// Provides simple way to modify value of given column row - to be used with <see cref="ScanAppTable{TItem}"/>
+        /// Provides simple way to modify value of given column's row - to be used with <see cref="Alttablecomponent{TTableType}"/>
         /// </summary>
         /// <param name="columnConfig">Source column in which value should be changed.</param>
         /// <param name="source">Model representing single row of data displayed in table, which will have its data modified.</param>
-        /// <param name="value">New data for given <paramref name="source"/>"/></param>
+        /// <param name="value">New data for given <paramref name="source"/></param>
         /// <exception cref="ArgumentException">Given <paramref name="value"/> is of different type that one selected in <paramref name="columnConfig"/>.</exception>
-        public static void SetValue(ColumnConfig<TSource> columnConfig, object source, object value)
+        public static void SetValue(ColumnConfig<TSource> columnConfig, TSource source, dynamic value)
         {
-            if (CheckValueCompatibility(columnConfig.PropertyType, value.GetType()) is false)
-                throw new ArgumentException($"Given value type ({value.GetType()}) is different than property" +
-                                            $" / field type being set ({columnConfig.PropertyType}).", nameof(value));
+            if (CheckValueCompatibility(columnConfig.PropertyType, value) is false)
+            {
+                throw new ArgumentException($"Given {nameof(value)}'s type ({value?.GetType().Name ?? $"{nameof(value)} was NULL"}) is different than property" +
+                                            $" / field type being set ({columnConfig.PropertyType}) using {nameof(columnConfig)} for variable named {columnConfig.DisplayName}" +
+                                            $" (Identifier - {columnConfig.Identifier}).", nameof(value));
+            }
 
-            _ = SetValuePrivate(columnConfig.PropertyPath.ToList(), source, value);
+            _ = SetValueRecursive(columnConfig.PropertyPath as List<MemberInfo>, source, value);
         }
 
-        private static bool CheckValueCompatibility(Type storedType, Type valueType)
+        private static bool CheckValueCompatibility(Type storedType, dynamic value)
         {
             return storedType switch
             {
-                var pt when Nullable.GetUnderlyingType(pt) is null && Nullable.GetUnderlyingType(valueType) is null => pt == valueType,
-                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(valueType) is not null => pt == valueType,
-                var pt when Nullable.GetUnderlyingType(pt) is not null => valueType == Nullable.GetUnderlyingType(pt),
+                var pt when Nullable.GetUnderlyingType(pt) is null && value is null => false,
+                var pt when Nullable.GetUnderlyingType(pt) is null && Nullable.GetUnderlyingType(value.GetType()) is null => pt == value.GetType(),
+                var pt when Nullable.GetUnderlyingType(pt) is not null && value is null => true,
+                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(value.GetType()) is not null => pt == value.GetType(),
+                var pt when Nullable.GetUnderlyingType(pt) is not null => value.GetType() == Nullable.GetUnderlyingType(pt),
+                var pt when pt.IsValueType && value is null => false,
                 _ => false
             };
         }
 
-        public static void SetValue(IEnumerable<MemberInfo> path, TSource source, object value)
+        public static void SetValue(IList<MemberInfo> path, TSource source, dynamic value)
         {
-            if (path.Last() != value.GetType())
-                throw new ArgumentException("Given value is of a different type than property / field being set.", nameof(value));
-            _ = SetValuePrivate(path.ToList(), source, value);
+            var checkedType = path.Last().GetUnderlyingType();
+            if (CheckValueCompatibility(checkedType, value))
+            {
+                throw new ArgumentException($"Given {nameof(value)}'s type ({value?.GetType().Name ?? $"{nameof(value)} was NULL"})" +
+                                            $" is different than property / field type being set ({checkedType}).");
+            }
+
+            _ = SetValueRecursive(path as List<MemberInfo>, source, value);
         }
 
-        private static object SetValuePrivate(List<MemberInfo> infos, object source, object value)
+        private static dynamic SetValueRecursive(List<MemberInfo> infos, dynamic source, dynamic value)
         {
             var currentInfo = infos[0];
-
             if (infos.Count == 1)
             {
-                var current = Array.Find(source.GetType().GetMember(currentInfo.Name), m => m.MemberType == currentInfo.MemberType);
+                MemberInfo memberToBeSet = null;
+                MemberInfo[] members = source.GetType().GetMember(currentInfo.Name, BindingFlags.ExactBinding | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (var member in members)
+                {
+                    if (member.MemberType == currentInfo.MemberType)
+                        memberToBeSet = member;
+                }
 
-                switch (current?.MemberType)
+                switch (memberToBeSet?.MemberType)
                 {
                     case MemberTypes.Field:
-                        ((FieldInfo)currentInfo).SetValue(source, value);
+                        ((FieldInfo)memberToBeSet).SetValue(source, value);
                         break;
 
                     case MemberTypes.Property:
-                        ((PropertyInfo)currentInfo).SetValue(source, value, null);
+                        ((PropertyInfo)memberToBeSet).SetValue(source, value, null);
                         break;
 
                     default:
@@ -95,32 +107,39 @@ namespace ScanApp.Services
             {
                 MemberTypes.Field => ((FieldInfo)currentInfo).GetValue(source),
                 MemberTypes.Property => ((PropertyInfo)currentInfo).GetValue(source),
-                _ => throw new ArgumentException("Only properties and fields are supported as writable.")
+                _ => throw new ArgumentException("Can only iterate through properties or variables while trying to set values.")
             };
             var newInfos = infos.GetRange(1, infos.Count - 1);
 
-            return SetValuePrivate(newInfos, currentValue, value);
+            return SetValueRecursive(newInfos, currentValue, value);
         }
 
         public static dynamic GetValue(ColumnConfig<TSource> columnConfig, TSource source)
         {
-            return GetValuePrv(columnConfig.PropertyPath.ToList(), source);
+            return GetValueRecursive(columnConfig.PropertyPath as List<MemberInfo>, source);
         }
 
-        private static dynamic GetValuePrv(List<MemberInfo> infos, object source)
+        private static dynamic GetValueRecursive(List<MemberInfo> infos, dynamic source)
         {
+            if (source is null)
+                return null;
+
             var currentInfo = infos[0];
 
             if (infos.Count == 1)
             {
-                if (source == null)
-                    return null;
-                var current = Array.Find(source.GetType().GetMember(currentInfo.Name), m => m.MemberType == currentInfo.MemberType);
-
-                return current?.MemberType switch
+                MemberInfo memberToBeRead = null;
+                MemberInfo[] members = source.GetType().GetMember(currentInfo.Name, BindingFlags.ExactBinding | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (var member in members)
                 {
-                    MemberTypes.Field => ((FieldInfo)currentInfo).GetValue(source),
-                    MemberTypes.Property => ((PropertyInfo)currentInfo).GetValue(source),
+                    if (member.MemberType == currentInfo.MemberType)
+                        memberToBeRead = member;
+                }
+
+                return memberToBeRead?.MemberType switch
+                {
+                    MemberTypes.Field => ((FieldInfo)memberToBeRead).GetValue(source),
+                    MemberTypes.Property => ((PropertyInfo)memberToBeRead).GetValue(source),
                     _ => throw new ArgumentException("Only properties or fields are readable.")
                 };
             }
@@ -129,11 +148,11 @@ namespace ScanApp.Services
             {
                 MemberTypes.Field => ((FieldInfo)currentInfo).GetValue(source),
                 MemberTypes.Property => ((PropertyInfo)currentInfo).GetValue(source),
-                _ => throw new ArgumentException("Only properties and fields are supported as writable.")
+                _ => throw new ArgumentException("Can only iterate through properties or variables while trying to read values.")
             };
             var newInfos = infos.GetRange(1, infos.Count - 1);
 
-            return GetValuePrv(newInfos, currentValue);
+            return GetValueRecursive(newInfos, currentValue);
         }
     }
 }
