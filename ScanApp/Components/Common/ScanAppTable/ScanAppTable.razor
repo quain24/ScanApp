@@ -222,6 +222,12 @@ else
         ScanAppTableSorter = new ScanAppTableSorter<TItem>();
         SubScanAppTableSorter = new ScanAppTableSorter<TItem>();
 
+        Options ??= new ScanAppTableOptions()
+        {
+            AllowFiltering = true,
+            AllowGrouping = true
+        };
+
         DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
 
         Properties = Items.FirstOrDefault()?.GetType().GetProperties();

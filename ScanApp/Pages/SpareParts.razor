@@ -15,6 +15,8 @@
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 <style>
     .mud-input-label-inputcontrol {
         margin-left: 20px;
@@ -23,18 +25,22 @@
     .mud-input-control-helper-container {
         margin-left: 20px;
     }
+
+    .mud-toolbar{
+        max-width: 530px;
+    }
 </style>
 
 <MudPaper Elevation="4">
     <MudGrid>
-        <MudItem Style="position: center" xs="12" sm="6" md="4">
+        <MudItem Style="position: center">
             <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
                 <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
                                  SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
-                                 Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 470px" Variant="Variant.Outlined" />
+                                 Immediate="true" Style="margin-left: 15px; margin-right: 15px; width: 100%; min-width: 400px;" Variant="Variant.Outlined" />
 
                 <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
-                              Style="margin-left: 15px; margin-right: 15px; max-width: 470px;" Variant="Variant.Outlined" />
+                              Style="margin-left: 15px; margin-right: 15px; width: 100%; min-width: 400px;" Variant="Variant.Outlined" />
             </MudForm>
         </MudItem>
     </MudGrid>
@@ -55,7 +61,12 @@
     private bool _submitDisabled = true;
 
     private ScanAppTable<SparePartGUIModel> _table;
-    private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = false, AllowNegativeNumbersInFiltering = false };
+    private ScanAppTableOptions TableOptions = new()
+    {
+        AllowFiltering = true, 
+        AllowGrouping = false,
+        AllowNegativeNumbersInFiltering = false
+    };
     List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
