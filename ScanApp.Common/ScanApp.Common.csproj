@@ -9,8 +9,4 @@
     <PackageReference Include="SharedExtensions" Version="1.0.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>
