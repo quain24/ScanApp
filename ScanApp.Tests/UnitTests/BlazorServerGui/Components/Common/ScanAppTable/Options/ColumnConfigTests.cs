@@ -105,7 +105,6 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             subject.IsEditable.Should().BeFalse();
             subject.IsGroupable.Should().BeFalse();
             subject.IsFilterable.Should().BeTrue();
-            subject.IsSelectable.Should().BeTrue();
         }
 
         [Fact]

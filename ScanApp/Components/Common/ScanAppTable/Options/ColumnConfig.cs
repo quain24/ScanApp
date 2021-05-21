@@ -19,7 +19,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public Type PropertyType { get; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
-        public bool IsSelectable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         public Guid Identifier { get; } = Guid.NewGuid();
 
