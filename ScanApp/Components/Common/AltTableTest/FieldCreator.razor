@@ -1,0 +1,125 @@
+﻿@using ScanApp.Services
+@using System.Linq.Expressions
+@using ScanApp.Components.Common.ScanAppTable.Options
+@using Microsoft.AspNetCore.Components.Rendering
+@using ScanApp.Common.Extensions
+@typeparam T
+
+@foreach (var config in Configs)
+{
+    @CreateEditFields(config)
+}
+
+@code {
+
+    [Parameter]
+    public List<ColumnConfig<T>> Configs { get; set; }
+
+    [Parameter]
+    public T TargetItem { get; set; }
+
+    [Parameter]
+    public EventCallback<T> TargetItemChanged { get; set; }
+
+    private Dictionary<ColumnConfig<T>, Delegate> _validators = new();
+    private Dictionary<ColumnConfig<T>, RenderFragment> _columns = new();
+    private EventCallbackFactory _callbackFactory = new();
+
+    protected override void OnInitialized()
+    {
+        if (TargetItem is null)
+            throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set ()You can use @bind-TargetItem)");
+
+        CacheValidators();
+    }
+
+    bool _shouldRender = true;
+
+    private void CacheValidators()
+    {
+        foreach (var config in Configs)
+        {
+            if (config.CanValidate is false)
+                return;
+
+            var methodType = config.GetType().GetMethod(nameof(config.Validate))?.MakeGenericMethod(config.PropertyType)
+                             ?? throw new ArgumentException("Method for validator func creation is not accessible / not existing" +
+                                                            " - check source class of this method.");
+            var validatorFuncType = Expression.GetDelegateType(config.PropertyType, typeof(IEnumerable<string>));
+            var validationDelegate = Delegate.CreateDelegate(validatorFuncType, config, methodType);
+
+            _validators.Add(config, validationDelegate);
+        }
+    }
+
+    RenderFragment CreateEditFields(ColumnConfig<T> config)
+    {
+        return builder =>
+        {
+            if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime))
+                CreateDateFields(builder, config);
+            else
+                CreateTextField(builder, config);
+        };
+    }
+
+    private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<T> config)
+    {
+        // Type of mud blazor text field (int, string, etc)
+        var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
+
+        // Start creating text field
+        builder.OpenComponent(0, textFieldType);
+        builder.AddAttribute(1, "Value", config.GetValueFrom(TargetItem) as object);
+
+        // Set callback for edit action
+        var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
+        async Task EditDelegate(dynamic obj)
+        {
+            ColumnConfigExtensions.SetValue(config, TargetItem, obj);
+            await TargetItemChanged.InvokeAsync(TargetItem);
+        }
+
+        dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
+        builder.AddAttribute(2, "ValueChanged", callback);
+
+        // Set up corresponding validator
+        if (_validators.TryGetValue(config, out var validatorDelegate))
+            builder.AddAttribute(3, "Validation", validatorDelegate);
+
+        // Set common options
+        builder.AddAttribute(4, "Immediate", true);
+        builder.AddAttribute(5, "Disabled", !config.IsEditable);
+
+        // Finish component
+        builder.CloseComponent();
+    }
+
+    private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
+    {
+        builder.OpenComponent(10, typeof(MudDatePicker));
+        builder.AddAttribute(11, "Date", config.GetValueFrom(TargetItem) as DateTime?);
+
+        var callback = _callbackFactory.Create<DateTime?>(this, d => EditDate(d, TargetItem, config));
+        builder.AddAttribute(12, "DateChanged", callback);
+
+        if (_validators.TryGetValue(config, out var validatorDelegate))
+            builder.AddAttribute(13, "Validation", validatorDelegate);
+
+        builder.AddAttribute(14, "Immediate", true);
+        builder.AddAttribute(15, "Disabled", !config.IsEditable);
+
+        builder.CloseComponent();
+    }
+
+    private async Task EditDate(DateTime? date, T target, ColumnConfig<T> config)
+    {
+        var oldDate = config.GetValueFrom(TargetItem) as DateTime?;
+        if (date != oldDate && oldDate.HasValue)
+        {
+            date += oldDate.Value.TimeOfDay;
+        }
+        config.SetValue(TargetItem, date);
+        await TargetItemChanged.InvokeAsync(TargetItem);
+    }
+}

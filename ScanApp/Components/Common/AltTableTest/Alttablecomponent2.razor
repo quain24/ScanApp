@@ -2,6 +2,9 @@
 @using ScanApp.Services
 @using Microsoft.AspNetCore.Components.Rendering
 @using System.Linq.Expressions
+@using System.Diagnostics
+@using System.Runtime.CompilerServices
+@inject IDialogService _dialogService
 @typeparam TTableType
 
 @if (GroupedData.Any())
@@ -10,7 +13,7 @@
         @foreach (var group in GroupedData)
         {
             <MudExpansionPanel Text="@group.Key">
-                <MudTable Class="table-condensed m-0 p-0" Elevation="0" Bordered="false" Striped="true" Outlined="false" Items="group.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SelectedItemChanged" Dense="true" Breakpoint="Breakpoint.None">
+                <MudTable T="TTableType" Class="table-condensed m-0 p-0" Elevation="0" Bordered="false" Striped="true" Outlined="false" Items="group.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@Callback" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -24,9 +27,9 @@
 
                     <RowTemplate>
                         @foreach (var cfg in Configs)
-                        {
+                                {
                             <MudTd Style="font-size: small; padding: 10px" DataLabel="@cfg.DisplayName">@((object) PropertyPath<TTableType>.GetValue(cfg, context)?.ToString() ?? string.Empty)</MudTd>
-                        }
+                                }
                     </RowTemplate>
                 </MudTable>
             </MudExpansionPanel>
@@ -35,7 +38,7 @@
 }
 @if (_selectedGrouping is null)
 {
-    <MudTable Class="table-condensed m-0 p-0" Elevation="0" Bordered="false" Striped="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SelectedItemChanged" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable T="TTableType" Class="table-condensed m-0 p-0" Elevation="0" Bordered="false" Striped="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@(f => WriteLine(f))" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -49,25 +52,26 @@
 
         <RowTemplate>
             @foreach (var cfg in Configs)
-            {
+                {
                 <MudTd DataLabel="@cfg.DisplayName" Style="font-size: small; padding: 10px">@(PropertyPath<TTableType>.GetValue(cfg, context)?.ToString() ?? string.Empty)</MudTd>
-            }
+                }
         </RowTemplate>
         <RowTemplate>
             @foreach (var cfg in Configs)
-            {
+                {
                 <MudTd DataLabel="@cfg.DisplayName" Style="font-size: small; padding: 10px">@(PropertyPath<TTableType>.GetValue(cfg, context)?.ToString() ?? string.Empty)</MudTd>
-            }
+                }
         </RowTemplate>
     </MudTable>
 }
+<MudButton OnClick="FireUpEditDialog">Sorting</MudButton>
+
+
+
 @if (Configs?.Count > 0 && Data?.Count > 0 && SelectedItem is not null)
 {
     <MudForm @ref="_form" @bind-IsValid="@_success" Class="table-condensed m-0 p-0">
-        @foreach (var col in _columns)
-        {
-            @col.Value
-        }
+        <FieldCreator @bind-TargetItem="@SelectedItem" Configs="@Configs"></FieldCreator>
     </MudForm>
     <MudButton Disabled="@(!_success)">Validation ok</MudButton>
     <MudButton OnClick="@(_ => DeleteItem(SelectedItem))">Delete</MudButton>
@@ -83,7 +87,35 @@
 
 @code
 {
+    private bool _shouldRender = true;
+    protected override bool ShouldRender() => _shouldRender;
+
     private bool _firstGroupPanelExpanded = true;
+
+    private void Callback(TTableType newItem)
+    {
+
+        //WriteLine();
+        SelectedItem = newItem;
+        SelectedItemChanged.InvokeAsync(newItem);
+    }
+
+    public void WriteLine(TTableType t,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] long callerLineNumber = 0,
+        [CallerMemberName] string callerMember= "")
+    {
+        Console.WriteLine(
+            "Caller File Path: {0}, Caller Line Number: {1}, Caller Member: {2}",
+            callerFilePath,
+            callerLineNumber,
+            callerMember);
+        _shouldRender = false;
+        SelectedItem = t;
+        _shouldRender = true;
+    }
+
+    TTableType edited = new TTableType();
 
     [Parameter]
     public List<TTableType> Data { get; set; }
@@ -98,7 +130,7 @@
     public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
     [Parameter]
-    public List<ColumnConfig<TTableType>> Configs { get; init; }
+    public List<ColumnConfig<TTableType>> Configs { get; set; }
 
     private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
     private Dictionary<ColumnConfig<TTableType>, RenderFragment> _columns = new();
@@ -110,6 +142,22 @@
     private MudForm _form;
     private bool _success;
     private ColumnConfig<TTableType> _selectedGrouping;
+
+    private async Task FireUpEditDialog()
+    {
+        var dialog = _dialogService.Show<EditDialog<TTableType>>("Sorting dialog",
+            new DialogParameters
+            {
+                ["Configs"] = Configs,
+                ["SourceItem"] = SelectedItem
+            },
+            Globals.Gui.DefaultDialogOptions);
+        var result = await dialog.Result;
+        if(result.Cancelled)
+            return;
+        var data = result.Data as TTableType;
+        await EditedItem(data);
+    }
 
     private Dictionary<string, List<TTableType>> CreateGroupsFrom(ColumnConfig<TTableType> selectedColumn)
     {
@@ -161,18 +209,18 @@
         }
     }
 
-    RenderFragment CreateEditFields(ColumnConfig<TTableType> config)
+    RenderFragment CreateEditFields(ColumnConfig<TTableType> config, dynamic optionalTarget = null)
     {
         return builder =>
         {
             if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime))
-                CreateDateFields(builder, config);
+                CreateDateFields(builder, config, optionalTarget);
             else
-                CreateTextField(builder, config);
+                CreateTextField(builder, config, optionalTarget);
         };
     }
 
-    private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<TTableType> config)
+    private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<TTableType> config, dynamic optionalTarget = null)
     {
         // Type of mud blazor text field (int, string, etc)
         var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
@@ -183,7 +231,7 @@
 
         // Set callback for edit action
         var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
-        Action<dynamic> editDelegate = obj => EditProperty(obj, config.Identifier);
+        Action<dynamic> editDelegate = obj => EditProperty(obj, config.Identifier, optionalTarget);
         dynamic callback = Activator.CreateInstance(callbackType, this, editDelegate);
         builder.AddAttribute(2, "ValueChanged", callback);
         builder.AddAttribute(3, "Validation", _validators[config]);
@@ -192,23 +240,27 @@
         builder.CloseComponent();
     }
 
-    private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<TTableType> config)
+    private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<TTableType> config, dynamic optionalTarget = null)
     {
         var type = typeof(MudDatePicker);
         builder.OpenComponent(10, type);
         builder.AddAttribute(11, "Date", PropertyPath<TTableType>.GetValue(config, SelectedItem) as DateTime?);
         var callbackType = typeof(EventCallback<>).MakeGenericType(typeof(DateTime?));
-        Action<DateTime?> editDelegate = obj => DateChanged(obj, config);
+        Action<DateTime?> editDelegate = obj => DateChanged(obj, config, optionalTarget);
         dynamic callback = Activator.CreateInstance(callbackType, this, editDelegate);
         builder.AddAttribute(12, "DateChanged", callback);
         builder.AddAttribute(13, "Validation", _validators[config]);
         builder.AddAttribute(14, "Disabled", !config.IsEditable);
         builder.CloseComponent();
     }
-
-    private void DateChanged(DateTime? date, ColumnConfig<TTableType> config)
+    private void EditProperty(dynamic o, Guid guid, dynamic optionalTarget = null)
     {
-        PropertyPath<TTableType>.SetValue(config, SelectedItem, date);
+        PropertyPath<TTableType>.SetValue(Configs.First(c => c.Identifier == guid), optionalTarget ?? SelectedItem, o);
+    }
+
+    private void DateChanged(DateTime? date, ColumnConfig<TTableType> config, dynamic optionalTarget = null)
+    {
+        PropertyPath<TTableType>.SetValue(config, optionalTarget ?? SelectedItem, date);
     }
 
     private void AssignColumnsByProperties()
@@ -236,11 +288,6 @@
             : item => PropertyPath<TTableType>.GetValue(config, item)?.ToString();
     }
 
-    private void EditProperty(dynamic o, Guid guid)
-    {
-        PropertyPath<TTableType>.SetValue(Configs.First(c => c.Identifier == guid), SelectedItem, o);
-    }
-
     private async Task DeleteItem(TTableType element)
     {
         Data.Remove(element);
@@ -248,6 +295,16 @@
 
         await DataChanged.InvokeAsync(Data);
         await SelectedItemChanged.InvokeAsync(SelectedItem = null);
+    }
+
+    private Task EditedItem(TTableType editedItem)
+    {
+        var oldItemIndex = Data.FindIndex(tt => tt.Equals(SelectedItem));
+        if (oldItemIndex == -1)
+            return Task.CompletedTask;
+        Data[oldItemIndex] = editedItem;
+        SelectedItem = editedItem;
+        return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(SelectedItem));
     }
 
     private void RemoveFromGrouping(TTableType element)
@@ -298,4 +355,5 @@
 
     //    builder.CloseComponent();
     //};
+
 }
