@@ -2,6 +2,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar SnackBar
 @using System.Reflection;
+@using ScanApp.Common.Extensions
 @using ScanApp.Components.Common.ScanAppTable.EditDialog;
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog;
 @using ScanApp.Components.Common.ScanAppTable.GroupDialog;
@@ -219,7 +220,7 @@ else
 
     private async Task OpenEditDialog(TItem item)
     {
-        var itemClone = ItemCloner.Clone(item);
+        var itemClone = ItemCloner.CloneJson(item);
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,

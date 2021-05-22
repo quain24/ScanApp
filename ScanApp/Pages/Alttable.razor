@@ -5,13 +5,14 @@
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
+@using ScanApp.Models.SpareParts
 @using Version = ScanApp.Domain.ValueObjects.Version
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
 <h1>Alt table</h1>
 
-<Alttablecomponent TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="WeatherForecast"></Alttablecomponent>
+<Alttablecomponent2 TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
 
 @code
 {
@@ -23,8 +24,20 @@
         new ColumnConfig<WeatherForecast>(c => c.Version, "A version", new FluentValidationWrapper<ScanApp.Domain.ValueObjects.Version>(x => x.Must(c => c.IsEmpty != true)))
         {
             IsEditable = false
-        }
+        },
+        new ColumnConfig<WeatherForecast>(c => c.Number, "Const number"),
+        new ColumnConfig<WeatherForecast>(c => c.Model.Name, "Model name")
     };
+
+    public ColumnConfig<SparePartGUIModel>[] ccc = new[]
+    {
+        new ColumnConfig<SparePartGUIModel>(c => c.Name, "Part name", new FluentValidationWrapper<string>(x => x.NotEmpty().MaximumLength(10))),
+        new ColumnConfig<SparePartGUIModel>(c => c.Amount, null, new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 10)))
+    };
+
+    public List<SparePartGUIModel> parts { get; set; }
+
+    public SparePartGUIModel part { get; set; }
 
     public WeatherForecast WeatherForecast { get; set; }
 
@@ -32,6 +45,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        parts = new List<SparePartGUIModel>()
+        {
+            new SparePartGUIModel("part one", 0),
+            new SparePartGUIModel("part two", 0),
+            new SparePartGUIModel("part three", 0),
+            new SparePartGUIModel("part four", 0)
+        };
+
+
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
         forecasts.Add(new WeatherForecast()
         {

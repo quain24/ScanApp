@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using ScanApp.Common.Services;
+using ScanApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -21,6 +22,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         public Guid Identifier { get; } = Guid.NewGuid();
+        public bool CanValidate => Validator is not null;
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator) : this(columnNameSelector, displayName)
         {
@@ -68,21 +70,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             };
         }
 
-        private Func<dynamic, IEnumerable<string>> CreateStrongTypeValidatorFrom(IValidator validator)
-        {
-            _ = validator ?? throw new ArgumentNullException(nameof(validator));
-            return value =>
-            {
-                Type contextType = typeof(ValidationContext<>).MakeGenericType(PropertyType);
-                ValidationResult result = validator.Validate(Activator.CreateInstance(contextType, value));
-                return result.IsValid
-                    ? Array.Empty<string>()
-                    : ExtractErrorsFrom(result);
-            };
-        }
-
         public IEnumerable<string> Validate<TValueType>(TValueType value)
         {
+            if (Validator is null)
+            {
+                throw new ArgumentException("Cannot validate when there is no validator set - " +
+                                            "perhaps editing field tried to use this config as one with validation?");
+            }
+
             var context = new ValidationContext<TValueType>(value);
             var result = Validator.Validate(context);
             return result.IsValid
