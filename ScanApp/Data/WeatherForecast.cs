@@ -1,7 +1,5 @@
-
-
-using System;
 using ScanApp.Models.SpareParts;
+using System;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Data
@@ -10,8 +8,8 @@ namespace ScanApp.Data
     {
         public WeatherForecast()
         {
-            
         }
+
         public DateTime? Date { get; set; }
 
         public int TemperatureC { get; set; }

@@ -39,7 +39,7 @@
     {
         foreach (var config in Configs)
         {
-            if (config.CanValidate is false)
+            if (config.IsValidatable is false)
                 return;
 
             var methodType = config.GetType().GetMethod(nameof(config.Validate))?.MakeGenericMethod(config.PropertyType)

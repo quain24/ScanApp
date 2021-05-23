@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using ScanApp.Common.Services;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;
@@ -11,22 +10,21 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ColumnConfig<T>
     {
-        private Expression<Func<T, object>> ColumnNameSelector { get; }
-
-        private IValidator Validator { get; }
-        public string PropertyName { get; }
-        public IReadOnlyList<MemberInfo> PropertyPath { get; private set; }
         public string DisplayName { get; }
+        public string PropertyName { get; }
         public Type PropertyType { get; }
+        private Expression<Func<T, object>> ColumnNameSelector { get; }
+        public Guid Identifier { get; } = Guid.NewGuid();
+        public IReadOnlyList<MemberInfo> PropertyPath { get; }
+        private IValidator Validator { get; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
-        public Guid Identifier { get; } = Guid.NewGuid();
-        public bool CanValidate => Validator is not null;
+        public bool IsValidatable => Validator is not null;
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator) : this(columnNameSelector, displayName)
         {
-            Validator = validator;
+            Validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName)
@@ -37,7 +35,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             PropertyName = ExtractPropertyName();
             DisplayName = SetDisplayName(displayName);
 
-            PropertyType = ExtractValidatedType();
+            PropertyType = ExtractPropertyType();
         }
 
         private string ExtractPropertyName()
@@ -57,7 +55,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             };
         }
 
-        private Type ExtractValidatedType()
+        private Type ExtractPropertyType()
         {
             if (PropertyPath.Count == 0)
                 return typeof(T);
