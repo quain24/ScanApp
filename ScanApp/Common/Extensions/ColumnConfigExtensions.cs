@@ -1,14 +1,16 @@
 ﻿using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using ScanApp.Services;
 
 namespace ScanApp.Common.Extensions
 {
     public static class ColumnConfigExtensions
     {
         /// <summary>
-        /// Provides simple way to modify value of given column's row - to be used with <see cref="Alttablecomponent{TTableType}"/>
+        /// Set <paramref name="value"/> in <paramref name="target"/> by using path from used <paramref name="columnConfig"/> (<see cref="ColumnConfig{TSource}"/>).
         /// </summary>
         /// <typeparam name="TSource">Type of source object.</typeparam>
         /// <param name="columnConfig">Source column containing information about which value / property should be set in <paramref name="target"/>.</param>
@@ -44,6 +46,18 @@ namespace ScanApp.Common.Extensions
                 var pt when pt.IsValueType && value is null => false,
                 _ => false
             };
+        }
+
+        public static void SetValue<TSource>(this IList<MemberInfo> path, TSource source, dynamic value)
+        {
+            var checkedType = path.Last().GetUnderlyingType();
+            if (CheckValueCompatibility(checkedType, value))
+            {
+                throw new ArgumentException($"Given {nameof(value)}'s type ({value?.GetType().Name ?? $"{nameof(value)} was NULL"})" +
+                                            $" is different than property / field type being set ({checkedType}).");
+            }
+
+            _ = SetValueRecursive(path as List<MemberInfo>, source, value);
         }
 
         private static dynamic SetValueRecursive(List<MemberInfo> infos, dynamic source, dynamic value)

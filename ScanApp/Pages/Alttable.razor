@@ -12,15 +12,17 @@
 
 <h1>Alt table</h1>
 
-<Alttablecomponent2 TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
-
+<Alttablecomponent2 @ref="table" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
+<MudButton OnClick="@(_ => Remove())">Delete</MudButton>
+<MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
+<MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
 @code
 {
     public ColumnConfig<WeatherForecast>[] cc = new[]
     {
         new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary", new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20))),
         new ColumnConfig<WeatherForecast>(c => c.TemperatureC, "Temperature in C", new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10))),
-        new ColumnConfig<WeatherForecast>(c => c.Date, null, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(10)))),
+        new ColumnConfig<WeatherForecast>(c => c.Date, null, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10)))),
         new ColumnConfig<WeatherForecast>(c => c.Version, "A version", new FluentValidationWrapper<ScanApp.Domain.ValueObjects.Version>(x => x.Must(c => c.IsEmpty != true)))
         {
             IsEditable = false
@@ -42,6 +44,14 @@
     public WeatherForecast WeatherForecast { get; set; }
 
     private List<WeatherForecast> forecasts;
+
+    private Alttablecomponent2<WeatherForecast> table;
+
+    private void Remove()
+    {
+        forecasts.Remove(WeatherForecast);
+        WeatherForecast = null;
+    }
 
     protected override async Task OnInitializedAsync()
     {
