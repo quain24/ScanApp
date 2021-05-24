@@ -32,26 +32,22 @@
 </style>
 
 <MudPaper Elevation="4">
-    <MudGrid>
-        <MudItem Style="position: center">
-            <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
-                <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
-                                 SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
-                                 Immediate="true" Style="margin-left: 15px; margin-right: 15px; width: 100%; min-width: 400px;" Variant="Variant.Outlined" />
+    <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
+        <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
+                         SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
+                         Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
 
-                <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
-                              Style="margin-left: 15px; margin-right: 15px; width: 100%; min-width: 400px;" Variant="Variant.Outlined" />
-            </MudForm>
-        </MudItem>
-    </MudGrid>
+        <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
+                      Style="margin-left: 15px; margin-right: 15px; max-width: 490px; margin-bottom: 15px;" Variant="Variant.Outlined" />
+    </MudForm>
 </MudPaper>
 &nbsp;
 <ScanAppTable @ref="_table" @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
 <MudDivider />
-<MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 48%;" StartIcon="@Icons.Material.Filled.Cancel"
+<MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 38%;" StartIcon="@Icons.Material.Filled.Cancel"
            Disabled="@(RequiredFieldsAreEmpty() && !IsAnyAmountOverZero())" Color="Color.Error">Cancel</MudButton>
-<MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 48%;" Size="Size.Medium"
+<MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 38%;" Size="Size.Medium"
            Disabled="@_submitDisabled" Color="Color.Primary">Submit</MudButton>
 
 @code {
