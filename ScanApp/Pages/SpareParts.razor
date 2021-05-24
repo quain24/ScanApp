@@ -15,7 +15,7 @@
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
     .mud-input-label-inputcontrol {
@@ -24,10 +24,6 @@
 
     .mud-input-control-helper-container {
         margin-left: 20px;
-    }
-
-    .mud-toolbar{
-        max-width: 530px;
     }
 </style>
 
@@ -41,7 +37,6 @@
         &nbsp;
     </MudForm>
 </MudPaper>
-&nbsp;
 <ScanAppTable @ref="_table" @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
 <MudDivider />
@@ -59,7 +54,7 @@
     private ScanAppTable<SparePartGUIModel> _table;
     private ScanAppTableOptions TableOptions = new()
     {
-        AllowFiltering = true, 
+        AllowFiltering = true,
         AllowGrouping = false,
         AllowNegativeNumbersInFiltering = false
     };
@@ -118,7 +113,7 @@
         });
         ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
 
-    // Call database to get data
+        // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
         if (sparePartsTypesResult.Conclusion is false)
         {
