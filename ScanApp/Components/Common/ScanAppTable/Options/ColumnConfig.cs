@@ -13,6 +13,8 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public string DisplayName { get; }
         public string PropertyName { get; }
         public Type PropertyType { get; }
+        public FieldEditType FieldType { get; }
+        public Func<string, string> DisplayFormatter { get; init; }
         private Expression<Func<T, object>> ColumnNameSelector { get; }
         public Guid Identifier { get; } = Guid.NewGuid();
         public IReadOnlyList<MemberInfo> PropertyPath { get; }
@@ -22,12 +24,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsGroupable { get; init; } = true;
         public bool IsValidatable => Validator is not null;
 
-        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator) : this(columnNameSelector, displayName)
+        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator, FieldEditType fieldType = FieldEditType.AutoDetect) : this(columnNameSelector, displayName, fieldType)
         {
             Validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
-        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName)
+        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, FieldEditType fieldType = FieldEditType.AutoDetect)
         {
             ColumnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
             PropertyPath = PropertyPath<T>.GetFrom(ColumnNameSelector);
@@ -36,6 +38,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             DisplayName = SetDisplayName(displayName);
 
             PropertyType = ExtractPropertyType();
+            FieldType = fieldType;
         }
 
         private string ExtractPropertyName()
@@ -92,5 +95,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             }
             return errors;
         }
+    }
+
+    public enum FieldEditType
+    {
+        AutoDetect = 0,
+        Date,
+        Time,
+        DateAndTime,
+        PlainText
     }
 }

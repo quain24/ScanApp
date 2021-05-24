@@ -20,7 +20,7 @@ namespace ScanApp.Data
 
         public Version Version { get; set; } = Version.Create("teststamp");
 
-        public int Number = 10;
+        public double Number = 10.21;
 
         public SparePartGUIModel Model { get; set; } = new SparePartGUIModel("name", 13);
     }

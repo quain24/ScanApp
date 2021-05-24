@@ -22,7 +22,8 @@
     {
         new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary", new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20))),
         new ColumnConfig<WeatherForecast>(c => c.TemperatureC, "Temperature in C", new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10))),
-        new ColumnConfig<WeatherForecast>(c => c.Date, null, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10)))),
+        new ColumnConfig<WeatherForecast>(c => c.Date, null, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))), FieldEditType.Date),
+        new ColumnConfig<WeatherForecast>(c => c.Date, "Separate time column", new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))), FieldEditType.Time),
         new ColumnConfig<WeatherForecast>(c => c.Version, "A version", new FluentValidationWrapper<ScanApp.Domain.ValueObjects.Version>(x => x.Must(c => c.IsEmpty != true)))
         {
             IsEditable = false
@@ -70,7 +71,16 @@
             Version = Version.Empty(),
             TemperatureC = 10,
             Summary = null,
-            Date = null
+            Date = null,
+            Model = null
+        });
+        forecasts.Add(new WeatherForecast()
+        {
+            Version = Version.Create("addddddddd"),
+            TemperatureC = 21,
+            Summary = "asdasdasdasdasd",
+            Date = System.DateTime.Today,
+            Model = null
         });
         //for (int i = 0; i < 1000; i++)
         //{
