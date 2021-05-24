@@ -66,6 +66,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             };
 
             subject.Should().BeOfType<ScanAppTableOptions>();
+            Assert.False(subject.ShowToolBar);
         }
     }
 }
