@@ -1,5 +1,4 @@
-﻿@using ScanApp.Services
-@using System.Linq.Expressions
+﻿@using System.Linq.Expressions
 @using ScanApp.Components.Common.ScanAppTable.Options
 @using Microsoft.AspNetCore.Components.Rendering
 @using ScanApp.Common.Extensions
@@ -7,7 +6,7 @@
 
 @foreach (var config in Configs)
 {
-    @CreateEditFields(config)
+    @CreateEditField(config)
 }
 
 @code {
@@ -28,7 +27,7 @@
     protected override void OnInitialized()
     {
         if (TargetItem is null)
-            throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set ()You can use @bind-TargetItem)");
+            throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set (You can use @bind-TargetItem)");
 
         CacheValidators();
     }
@@ -52,13 +51,18 @@
         }
     }
 
-    RenderFragment CreateEditFields(ColumnConfig<T> config)
+    RenderFragment CreateEditField(ColumnConfig<T> config)
     {
         return builder =>
         {
-            if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime))
+            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldEditType.AutoDetect) ||
+                config.FieldType is FieldEditType.Date or FieldEditType.DateAndTime)
                 CreateDateFields(builder, config);
-            else
+            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldEditType.AutoDetect) ||
+                (config.PropertyType == typeof(TimeSpan?) && config.FieldType == FieldEditType.AutoDetect) ||
+                config.FieldType is FieldEditType.Time or FieldEditType.DateAndTime)
+                CreateTimeFields(builder, config);
+            else if (config.FieldType == FieldEditType.PlainText || (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?)))
                 CreateTextField(builder, config);
         };
     }
@@ -112,6 +116,41 @@
         builder.CloseComponent();
     }
 
+    private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
+    {
+        builder.OpenComponent(20, typeof(MudTimePicker));
+
+        if (config.PropertyType == typeof(DateTime?))
+        {
+            var data = config.GetValueFrom(TargetItem) as DateTime?;
+            TimeSpan? time = data.HasValue switch
+            {
+                true => data.Value.TimeOfDay,
+                false => null
+            };
+
+            builder.AddAttribute(21, "Time", time);
+            var callback = _callbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, TargetItem, config));
+            builder.AddAttribute(22, "TimeChanged", callback);
+        }
+
+        if (config.PropertyType == typeof(TimeSpan?))
+        {
+            var time = config.GetValueFrom(TargetItem) as TimeSpan?;
+            builder.AddAttribute(21, "Time", time);
+            var callback = _callbackFactory.Create<TimeSpan?>(this, d => EditTime(d, TargetItem, config));
+            builder.AddAttribute(22, "TimeChanged", callback);
+        }
+
+        if (_validators.TryGetValue(config, out var validatorDelegate))
+            builder.AddAttribute(23, "Validation", validatorDelegate);
+
+        builder.AddAttribute(24, "Immediate", true);
+        builder.AddAttribute(25, "Disabled", !config.IsEditable);
+
+        builder.CloseComponent();
+    }
+
     private async Task EditDate(DateTime? date, T target, ColumnConfig<T> config)
     {
         var oldDate = config.GetValueFrom(TargetItem) as DateTime?;
@@ -121,5 +160,35 @@
         }
         config.SetValue(TargetItem, date);
         await TargetItemChanged.InvokeAsync(TargetItem);
+    }
+
+    private async Task EditTime(TimeSpan? time, T target, ColumnConfig<T> config)
+    {
+        var oldTime = config.GetValueFrom(TargetItem) as TimeSpan?;
+
+        if (time != oldTime)
+        {
+            config.SetValue(TargetItem, time);
+            await TargetItemChanged.InvokeAsync(TargetItem);
+        }
+    }
+
+    private async Task EditTimeInDate(TimeSpan? newTime, T target, ColumnConfig<T> config)
+    {
+        if (config.GetValueFrom(TargetItem) is DateTime oldDate)
+        {
+            var newDate = oldDate.Date + newTime;
+            if (newDate != oldDate)
+            {
+                config.SetValue(TargetItem, newDate);
+                await TargetItemChanged.InvokeAsync(TargetItem);
+            }
+        }
+
+        else if (newTime.HasValue)
+        {
+            config.SetValue(TargetItem, DateTime.MinValue + newTime.Value);
+            await TargetItemChanged.InvokeAsync(TargetItem);
+        }
     }
 }

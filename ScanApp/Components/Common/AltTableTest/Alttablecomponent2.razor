@@ -1,5 +1,6 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Common.Extensions
+@using System.Globalization
 @inject IDialogService _dialogService
 @typeparam TTableType
 
@@ -24,7 +25,7 @@
                     <RowTemplate>
                         @foreach (var cfg in Configs)
                         {
-                            <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@((object) cfg.GetValueFrom(context)?.ToString() ?? string.Empty)</MudTd>
+                        <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
                         }
                     </RowTemplate>
                 </MudTable>
@@ -49,7 +50,7 @@ else
         <RowTemplate>
             @foreach (var cfg in Configs)
             {
-                <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(cfg.GetValueFrom(context)?.ToString() ?? string.Empty)</MudTd>
+                <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
             }
         </RowTemplate>
     </MudTable>
@@ -83,13 +84,38 @@ else
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
 
-    private Dictionary<string, List<TTableType>> GroupedData { get; set; } = new();
+    private Dictionary<string, List<TTableType>> GroupedData { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
     private Dictionary<ColumnConfig<TTableType>, RenderFragment> _columns = new();
     private HashSet<ColumnConfig<TTableType>> _comparables = new();
     private HashSet<ColumnConfig<TTableType>> _groupables = new();
     private ColumnConfig<TTableType> _selectedGroupable;
+
+    private dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
+    {
+        var value = config.GetValueFrom(context);
+
+        if (config.DisplayFormatter is not null)
+            return config.DisplayFormatter(value?.ToString() ?? string.Empty);
+
+        if (value is DateTime or DateTimeOffset)
+        {
+            switch (config.FieldType)
+            {
+                case FieldEditType.AutoDetect:
+                    return value.ToString();
+                case FieldEditType.Date:
+                    return value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern);
+                case FieldEditType.Time:
+                    return value.ToString("t", CultureInfo.CurrentCulture);
+                case FieldEditType.DateAndTime:
+                    return value.ToString("G", CultureInfo.CurrentCulture);
+            }
+        }
+
+        return value ?? string.Empty;
+    }
 
     public async Task OpenEditItemDialog()
     {
