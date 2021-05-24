@@ -16,6 +16,26 @@
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
+
+@*<MudTable T="WeatherForecast" Items="@forecasts">
+    <HeaderContent>
+        <MudTh>Sim</MudTh>
+        <MudTh>tem c</MudTh>
+        <MudTh>date</MudTh>
+        <MudTh>version</MudTh>
+        <MudTh>num</MudTh>
+        <MudTh>modname</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.TemperatureC</MudTd>
+        <MudTd>@context.TemperatureC</MudTd>
+        <MudTd>@context.Date</MudTd>
+        <MudTd>@context.Version</MudTd>
+        <MudTd>@context.Number</MudTd>
+        <MudTd>@context.Model.Name</MudTd>
+    </RowTemplate>
+</MudTable>*@
+
 @code
 {
     public ColumnConfig<WeatherForecast>[] cc = new[]
@@ -66,25 +86,26 @@
 
 
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
-        forecasts.Add(new WeatherForecast()
-        {
-            Version = Version.Empty(),
-            TemperatureC = 10,
-            Summary = null,
-            Date = null,
-            Model = null
-        });
+        //forecasts.Add(new WeatherForecast()
+        //{
+        //    Version = Version.Empty(),
+        //    TemperatureC = 10,
+        //    Summary = null,
+        //    Date = null,
+        //    Model = null
+        //});
         forecasts.Add(new WeatherForecast()
         {
             Version = Version.Create("addddddddd"),
             TemperatureC = 21,
             Summary = "asdasdasdasdasd",
             Date = System.DateTime.Today,
-            Model = null
+            Model = new SparePartGUIModel()
         });
-        //for (int i = 0; i < 1000; i++)
-        //{
-        //    forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = new Random(1234).Next(5000000).ToString(), TemperatureC = 24 });
-        //}
+        var rand = new Random(12345);
+        for (int i = 0; i < 2000; i++)
+        {
+            forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = rand.Next(5000000).ToString(), TemperatureC = rand.Next(21, 46) });
+        }
     }
 }

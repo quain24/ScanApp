@@ -1,16 +1,16 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Common.Extensions
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @inject IDialogService _dialogService
 @typeparam TTableType
 
 @if (GroupedData?.Count > 0)
 {
     <MudExpansionPanels Style="font-size: small" MultiExpansion="true" Dense="true" DisableGutters="true">
-        @foreach (var (groupName, items) in GroupedData)
-        {
-            <MudExpansionPanel Text="@groupName.Truncate()">
-                <MudTable T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="items" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+        <Virtualize Items="@GroupedData" OverscanCount="5" ItemSize="55">
+            <MudExpansionPanel @key="@(context.Key)" Text="@context.Key.Truncate()">
+                <MudTable RowsPerPage="RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -22,20 +22,26 @@
                         }
                     </HeaderContent>
 
-                    <RowTemplate>
+                    <RowTemplate Context="rowData">
                         @foreach (var cfg in Configs)
                         {
-                        <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
+                            <MudTd @key="@(cfg.Identifier.ToString()+rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, rowData))</MudTd>
                         }
                     </RowTemplate>
+                    <PagerContent>
+                        @if (context.Value.Count > RowsPerPage)
+                        {
+                            <MudTablePager PageSizeOptions="new[] {10, 50, 100, 1000}"/>
+                        }
+                    </PagerContent>
                 </MudTable>
             </MudExpansionPanel>
-        }
+        </Virtualize>
     </MudExpansionPanels>
 }
 else
 {
-    <MudTable T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable RowsPerPage="@RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -50,9 +56,30 @@ else
         <RowTemplate>
             @foreach (var cfg in Configs)
             {
-                <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
+                <MudTd @key="@(cfg.Identifier.ToString()+context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
             }
         </RowTemplate>
+        <FooterContent>
+            <MudTFootRow>
+                <MudTd colspan="5">
+                    Selected:
+                    @if (SelectedItem is not null)
+                    {
+                        @foreach (var cfg in Configs)
+                        {
+                            @(FormatOutput(cfg, SelectedItem).ToString() + ' ')
+                        }
+                    }
+                </MudTd>
+            </MudTFootRow>
+        </FooterContent>
+        <PagerContent>
+            @if (Data?.Count > RowsPerPage)
+            {
+                <MudTablePager PageSizeOptions="new[] {10, 50, 100, 1000}"/>
+            }
+        </PagerContent>
+        
     </MudTable>
 }
 
@@ -69,6 +96,9 @@ else
 
 @code
 {
+    [Parameter]
+    public int RowsPerPage { get; set; } = 50;
+
     [Parameter]
     public List<TTableType> Data { get; set; }
 
@@ -104,7 +134,7 @@ else
             switch (config.FieldType)
             {
                 case FieldEditType.AutoDetect:
-                    return value.ToString();
+                    return value;
                 case FieldEditType.Date:
                     return value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern);
                 case FieldEditType.Time:
@@ -159,6 +189,7 @@ else
     protected override void OnParametersSet()
     {
         CreateGroupsFrom(_selectedGroupable);
+        Console.WriteLine("==================================");
         base.OnParametersSet();
     }
 
@@ -196,7 +227,7 @@ else
                 GroupedData.Add(key, new List<TTableType> { item });
         }
         GroupedData = GroupedData
-            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x.Key, StringComparer.InvariantCultureIgnoreCase)
             .ToDictionary(x => x.Key, x => x.Value);
     }
 
