@@ -1,9 +1,9 @@
 ﻿using ScanApp.Components.Common.ScanAppTable.Options;
+using ScanApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ScanApp.Services;
 
 namespace ScanApp.Common.Extensions
 {
@@ -36,14 +36,14 @@ namespace ScanApp.Common.Extensions
 
         private static bool CheckValueCompatibility(Type storedType, dynamic value)
         {
+            if (value is null)
+                return Nullable.GetUnderlyingType(storedType) is not null || storedType.GetDefaultValue() is null;
+
             return storedType switch
             {
-                var pt when Nullable.GetUnderlyingType(pt) is null && value is null => false,
-                var pt when Nullable.GetUnderlyingType(pt) is null && Nullable.GetUnderlyingType(value.GetType()) is null => pt == value.GetType(),
-                var pt when Nullable.GetUnderlyingType(pt) is not null && value is null => true,
-                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(value.GetType()) is not null => pt == value.GetType(),
-                var pt when Nullable.GetUnderlyingType(pt) is not null => value.GetType() == Nullable.GetUnderlyingType(pt),
-                var pt when pt.IsValueType && value is null => false,
+                var pt when pt == value.GetType() => true,
+                var pt when Nullable.GetUnderlyingType(pt) == value.GetType() => true,
+                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(pt) == Nullable.GetUnderlyingType(value.GetType()) => true,
                 _ => false
             };
         }
@@ -131,6 +131,7 @@ namespace ScanApp.Common.Extensions
 
         private static dynamic GetValueRecursive(List<MemberInfo> infos, dynamic source)
         {
+            if (source is null) return null;
             var currentInfo = infos[0];
 
             if (infos.Count == 1)
