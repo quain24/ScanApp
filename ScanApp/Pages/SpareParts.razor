@@ -36,9 +36,9 @@
         <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
                          SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
                          Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
-
         <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
-                      Style="margin-left: 15px; margin-right: 15px; max-width: 490px; margin-bottom: 15px;" Variant="Variant.Outlined" />
+                      Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
+        &nbsp;
     </MudForm>
 </MudPaper>
 &nbsp;
@@ -89,7 +89,7 @@
         _lhmValidator = new(x => x
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
-            .WithMessage("Only predefined repair workshops are allowed"), "Select one of workshops");
+            .WithMessage("Only predefined repair workshops are allowed"), "Select one of the workshops");
         _amountValidator = new(x => x
             .GreaterThan(0)
             .WithMessage("Negative amounts are not allowed."));
