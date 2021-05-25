@@ -7,7 +7,7 @@ using FluentValidation;
 
 namespace ScanApp.Common.Validators
 {
-    public class PositiveNumbersOnlyValidator : AbstractValidator<int?>
+    public class PositiveNumbersOnlyValidator : AbstractValidator<int>
     {
         public PositiveNumbersOnlyValidator()
         {
