@@ -14,19 +14,19 @@
     <DialogContent>
         <MudContainer Style="@DialogStyle.GetDialogStyle(Properties.Length)">
             <MudGrid>
-                <MudItem>
+                <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
                     <MudExpansionPanels MultiExpansion="true">
                         <ScanAppTableFilterDialogFieldGenerator @ref="_fieldGenerator" ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" Properties="Properties"
                                                                 From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
                                                                 Options="Options"/>
                     </MudExpansionPanels>
-                </MudItem>
+                </MudForm>
             </MudGrid>
         </MudContainer>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        <MudButton Color="Color.Primary" Disabled="_okDisabled" OnClick="Submit">Ok</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -52,6 +52,8 @@
     private DateTime?[] FromDate { get; set; }
     private DateTime?[] ToDate { get; set; }
     private ScanAppTableFilterDialogFieldGenerator<TItem> _fieldGenerator;
+    private MudForm _form;
+    private bool _okDisabled;
 
     protected override Task OnInitializedAsync()
     {
@@ -70,7 +72,7 @@
 
     private void Submit()
     {
-        if (!_fieldGenerator.AreFilterFieldsValid())
+        if (!_form.IsValid)
         {
             return;
         }
@@ -87,10 +89,15 @@
 
     private void KeyPressed(KeyboardEventArgs keyboardEventArg)
     {
-        if (keyboardEventArg.Key != "Enter")
+        if (keyboardEventArg.Key != "Enter" && !_okDisabled)
         {
             return;
         }
         Submit();
+    }
+
+    private void OnValidationChanged(bool isFormValid)
+    {
+        _okDisabled = !isFormValid;
     }
 }

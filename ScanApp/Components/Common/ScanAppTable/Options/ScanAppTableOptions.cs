@@ -34,8 +34,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             }
         }
 
-        public bool AllowNegativeNumbersInFiltering { get; init; } = true;
-
         private bool IsToolBarEnabled()
         {
             if (AllowGrouping is false && AllowFiltering is false)

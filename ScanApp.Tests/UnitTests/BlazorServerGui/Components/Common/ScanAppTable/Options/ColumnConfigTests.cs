@@ -84,7 +84,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
                 new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
 
-            subject.Validator.Should().BeOfType<Func<object, IEnumerable<string>>>();
+            subject.Validator.Should().BeOfType<FluentValidationWrapper<int>>();
         }
 
         [Fact]
@@ -93,7 +93,47 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
                 new ColumnConfigTestsValidatorFixture());
 
-            subject.Validator.Should().BeOfType<Func<object, IEnumerable<string>>>();
+            subject.Validator.Should().BeOfType<ColumnConfigTestsValidatorFixture>();
+        }
+
+        [Fact]
+        public void Will_transform_fluent_validation_wrapper_into_MudBlazor_compatible_field_validator()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
+                new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
+
+            var encapsulation = subject.ToMudFormFieldValidator<int>();
+            encapsulation.Should().BeOfType<Func<int, IEnumerable<string>>>();
+        }
+
+        [Fact]
+        public void Will_transform_abstract_validator_into_MudBlazor_compatible_field_validator()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
+                new ColumnConfigTestsValidatorFixture());
+
+            var encapsulation = subject.ToMudFormFieldValidator<int>();
+            encapsulation.Should().BeOfType<Func<int, IEnumerable<string>>>();
+        }
+
+        [Fact]
+        public void Will_return_null_when_trying_to_transform_a_null_validator()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A");
+
+            var encapsulation = subject.ToMudFormFieldValidator<int>();
+            encapsulation.Should().BeNull();
+        }
+
+        [Fact]
+        public void
+            Will_transform_validator_into_MudBlazor_compatible_field_validator_with_different_types()
+        {
+            var subject = new ColumnConfig<MyClass>(s => s.A, "A", 
+                new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
+
+            var encapsulation = subject.ToMudFormFieldValidator<int?>();
+            encapsulation.Should().BeOfType<Func<int?, IEnumerable<string>>>();
         }
     }
 }
