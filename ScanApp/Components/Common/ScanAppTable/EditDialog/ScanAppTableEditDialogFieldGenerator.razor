@@ -5,6 +5,7 @@
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using ScanApp.Common
 @using ScanApp.Common.Extensions
+@using ScanApp.Common.Validators
 @typeparam TItem
 
 @if (!ColumnConfigs[Iterator].IsEditable)
@@ -17,31 +18,31 @@ else
     {
         case string str:
             <MudTextField @bind-Value="@ItemRepresentation.Strings[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="ColumnConfigs[Iterator].ToMudFormFieldValidator<string>()"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case int integer:
             <MudTextField @bind-Value="@ItemRepresentation.Ints[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="ColumnConfigs[Iterator].ToMudFormFieldValidator<int?>()"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case DateTime datetime:
             <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="@ColumnConfigs[Iterator].DisplayName"
-                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Validation="@ColumnConfigs[Iterator].Validator"
+                           @bind-Date="@ItemRepresentation.DateTimes[Iterator]" Validation="ColumnConfigs[Iterator].ToMudFormFieldValidator<DateTime?>()"
                            Editable="true" ShowWeekNumbers="true" />
             break;
 
         case double dbl:
             <MudTextField @bind-Value="@ItemRepresentation.Doubles[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="ColumnConfigs[Iterator].ToMudFormFieldValidator<double?>()"
                           Variant="Variant.Outlined"></MudTextField>
             break;
 
         case decimal dec:
             <MudTextField @bind-Value="@ItemRepresentation.Decimals[Iterator]" @onkeypress="KeyPressed" Immediate="true"
-                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="@ColumnConfigs[Iterator].Validator"
+                          Label="@ColumnConfigs[Iterator].DisplayName" Validation="ColumnConfigs[Iterator].ToMudFormFieldValidator<decimal?>()"
                           Variant="Variant.Outlined"></MudTextField>
             break;
     }

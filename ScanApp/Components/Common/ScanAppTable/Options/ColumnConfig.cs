@@ -1,15 +1,16 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ColumnConfig<T>
     {
         private readonly Expression<Func<T, object>> _columnNameSelector;
-        public Func<dynamic, IEnumerable<string>> Validator { get; }
+        public IValidator Validator { get; }
         public string PropertyName { get; }
         public string DisplayName { get; }
         public Type PropertyType { get; }
@@ -24,7 +25,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             PropertyName = ExtractPropertyName();
             DisplayName = SetDisplayName(displayName);
             PropertyType = ExtractValidatedType();
-            Validator = validator is not null ? CreateStrongTypeValidatorFrom(validator) : null;
+            Validator = validator ?? null;
         }
 
         private string ExtractPropertyName()
@@ -58,22 +59,34 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             };
         }
 
-        private Func<dynamic, IEnumerable<string>> CreateStrongTypeValidatorFrom(IValidator validator)
+        private IEnumerable<string> ExtractErrorsFrom(ValidationResult validationResult)
         {
-            var emptyContextType = typeof(ValidationContext<>);
-            var contextType = emptyContextType.MakeGenericType(PropertyType);
+            var errors = new List<string>(validationResult.Errors.Count);
+            foreach (var failure in validationResult.Errors)
+            {
+                errors.Add(failure.ErrorMessage);
+            }
+            return errors;
+        }
+
+        public Func<TValue, IEnumerable<string>> ToMudFormFieldValidator<TValue>()
+        {
+            if (Validator is null)
+                return null;
+            
+            _ = Validator;
             return value =>
             {
-                var context = Activator.CreateInstance(contextType, value);
-                var res = validator.Validate(context);
+                if (value is null)
+                {
+                    return Array.Empty<string>();
+                }
+                var context = new ValidationContext<TValue>(value);
+                var res = Validator.Validate(context);
                 if (res.IsValid)
                     return Array.Empty<string>();
-                var errors = new List<string>(res.Errors.Count);
-                foreach (var failure in res.Errors)
-                {
-                    errors.Add(failure.ErrorMessage);
-                }
-                return errors;
+
+                return ExtractErrorsFrom(res);
             };
         }
     }
