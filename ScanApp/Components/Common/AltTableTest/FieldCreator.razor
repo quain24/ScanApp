@@ -55,14 +55,14 @@
     {
         return builder =>
         {
-            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldEditType.AutoDetect) ||
-                config.FieldType is FieldEditType.Date or FieldEditType.DateAndTime)
+            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldType.AutoDetect) ||
+                config.FieldType is FieldType.Date or FieldType.DateAndTime)
                 CreateDateFields(builder, config);
-            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldEditType.AutoDetect) ||
-                (config.PropertyType == typeof(TimeSpan?) && config.FieldType == FieldEditType.AutoDetect) ||
-                config.FieldType is FieldEditType.Time or FieldEditType.DateAndTime)
+            if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldType.AutoDetect) ||
+                (config.PropertyType == typeof(TimeSpan?) && config.FieldType == FieldType.AutoDetect) ||
+                config.FieldType is FieldType.Time or FieldType.DateAndTime)
                 CreateTimeFields(builder, config);
-            else if (config.FieldType == FieldEditType.PlainText || (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?)))
+            else if (config.FieldType == FieldType.PlainText || (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?)))
                 CreateTextField(builder, config);
         };
     }

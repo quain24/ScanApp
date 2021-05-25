@@ -2,46 +2,62 @@
 @using ScanApp.Common.Extensions
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using ScanApp.Common.Helpers
+@using System.Collections.Generic
 @inject IDialogService _dialogService
 @typeparam TTableType
 
+@if (Configs?.Count > 0 && _groupables.Count > 0)
+{
+    <MudSelect FullWidth="false" SelectedValuesChanged="items => GroupingChanged(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable" ToStringFunc="@(t => t is null ? string.Empty : t.PropertyName)">
+        <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
+        @foreach (var cc in _groupables)
+        {
+            <MudSelectItem Value="cc">@cc.DisplayName</MudSelectItem>
+        }
+    </MudSelect>
+}
+
 @if (GroupedData?.Count > 0)
 {
-    <MudExpansionPanels Style="font-size: small" MultiExpansion="true" Dense="true" DisableGutters="true">
-        <Virtualize Items="@GroupedData" OverscanCount="5" ItemSize="55">
-            <MudExpansionPanel @key="@(context.Key)" Text="@context.Key.Truncate()">
-                <MudTable RowsPerPage="RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
-                    <HeaderContent>
-                        @foreach (var cfg in Configs)
-                        {
-                            <MudTh Style="padding: 10px;">
-                                <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
-                                    @cfg.DisplayName
-                                </MudTableSortLabel>
-                            </MudTh>
-                        }
-                    </HeaderContent>
+    <MudExpansionPanels Style="font-size: small" MultiExpansion="false" Dense="true" DisableGutters="true">
+        <Virtualize Items="@GroupedData" OverscanCount="5">
+                <MudExpansionPanel Text="@context.Key.Truncate(20)" IsExpandedChanged="@(v => ExpandedChanged(v, context.Key))" IsExpanded="_expandedTabs[context.Key]" MaxHeight="(MaxTableHeight == 0 ? 250 : MaxTableHeight + 100)">
+                    <MudTable FixedHeader="FixedHeader" Height="@(CalculateHeight(context.Value.Count))" RowsPerPage="RowsPerPage" row T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+                        <HeaderContent>
+                            @foreach (var cfg in Configs)
+                            {
+                                <MudTh Style="padding: 10px;">
+                                    <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
+                                        @cfg.DisplayName
+                                    </MudTableSortLabel>
+                                </MudTh>
+                            }
+                        </HeaderContent>
 
-                    <RowTemplate Context="rowData">
-                        @foreach (var cfg in Configs)
-                        {
-                            <MudTd @key="@(cfg.Identifier.ToString()+rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, rowData))</MudTd>
-                        }
-                    </RowTemplate>
-                    <PagerContent>
-                        @if (context.Value.Count > RowsPerPage)
-                        {
-                            <MudTablePager PageSizeOptions="new[] {10, 50, 100, 1000}"/>
-                        }
-                    </PagerContent>
-                </MudTable>
-            </MudExpansionPanel>
+                        <RowTemplate Context="rowData">
+                            @if (_expandedTabs[context.Key])
+                            {
+                                @foreach (var cfg in Configs)
+                                {
+                                    <MudTd Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, rowData))</MudTd>
+                                }
+                            }
+                        </RowTemplate>
+                        <PagerContent>
+                            @if (context.Value.Count > RowsPerPage)
+                            {
+                                <MudTablePager PageSizeOptions="PageSizeOptions" />
+                            }
+                        </PagerContent>
+                    </MudTable>
+                </MudExpansionPanel>
         </Virtualize>
     </MudExpansionPanels>
 }
 else
 {
-    <MudTable RowsPerPage="@RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable FixedHeader="FixedHeader" Height="@(MaxTableHeight > 0 ? MaxTableHeight + "px" : string.Empty)" @bind-RowsPerPage="@RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -56,7 +72,7 @@ else
         <RowTemplate>
             @foreach (var cfg in Configs)
             {
-                <MudTd @key="@(cfg.Identifier.ToString()+context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
+            <MudTd @key="@(cfg.Identifier.ToString()+context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
             }
         </RowTemplate>
         <FooterContent>
@@ -76,28 +92,30 @@ else
         <PagerContent>
             @if (Data?.Count > RowsPerPage)
             {
-                <MudTablePager PageSizeOptions="new[] {10, 50, 100, 1000}"/>
+                <MudTablePager PageSizeOptions="PageSizeOptions" />
             }
         </PagerContent>
-        
     </MudTable>
-}
-
-@if (Configs?.Count > 0 && _groupables.Count > 0)
-{
-    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable" ToStringFunc="@(t => t is null ? string.Empty : t.PropertyName)">
-        <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
-        @foreach (var cc in _groupables)
-        {
-            <MudSelectItem Value="cc">@cc.DisplayName</MudSelectItem>
-        }
-    </MudSelect>
 }
 
 @code
 {
+    private void ExpandedChanged(bool isExpanded, string key)
+    {
+        _expandedTabs[key] = isExpanded;
+    }
+
     [Parameter]
-    public int RowsPerPage { get; set; } = 50;
+    public bool FixedHeader { get; set; }
+
+    [Parameter]
+    public int MaxTableHeight { get; set; }
+
+    [Parameter]
+    public int RowsPerPage { get; set; }
+
+    [Parameter]
+    public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
     [Parameter]
     public List<TTableType> Data { get; set; }
@@ -114,7 +132,8 @@ else
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
 
-    private Dictionary<string, List<TTableType>> GroupedData { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
+    private readonly Dictionary<string, bool> _expandedTabs = new();
 
     private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
     private Dictionary<ColumnConfig<TTableType>, RenderFragment> _columns = new();
@@ -122,28 +141,82 @@ else
     private HashSet<ColumnConfig<TTableType>> _groupables = new();
     private ColumnConfig<TTableType> _selectedGroupable;
 
-    private dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
+    protected override void OnInitialized()
+    {
+        AssignColumnsByProperties();
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        CreateGroupsFrom(_selectedGroupable);
+        base.OnParametersSet();
+    }
+
+    private void AssignColumnsByProperties()
+    {
+        foreach (var config in Configs)
+        {
+            if (CanBeCompared(config))
+                _comparables.Add(config);
+
+            if (config.IsGroupable)
+                _groupables.Add(config);
+        }
+    }
+
+    private static bool CanBeCompared(ColumnConfig<TTableType> config)
+    {
+        var interfaces = config.PropertyType.GetInterfaces();
+        return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
+    }
+
+    private void GroupingChanged(ColumnConfig<TTableType> selectedColumn)
+    {
+        _expandedTabs.Clear();
+        CreateGroupsFrom(selectedColumn);
+    }
+
+    private void CreateGroupsFrom(ColumnConfig<TTableType> selectedColumn)
+    {
+        GroupedData.Clear();
+        if (selectedColumn is null || Data is null || Data.Count <= 1)
+            return;
+
+        foreach (var item in Data)
+        {
+            string key = selectedColumn.GetValueFrom(item)?.ToString() ?? "No value";
+            if (GroupedData.TryGetValue(key, out var collection))
+            {
+                collection.Add(item);
+            }
+            else
+            {
+                GroupedData.Add(key, new List<TTableType> { item });
+                _expandedTabs.TryAdd(key, false);
+            }
+        }
+    }
+
+    private static  dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
     {
         var value = config.GetValueFrom(context);
 
         if (config.DisplayFormatter is not null)
-            return config.DisplayFormatter(value?.ToString() ?? string.Empty);
+            return config.DisplayFormatter(value);
 
         if (value is DateTime or DateTimeOffset)
         {
-            switch (config.FieldType)
+            return config.FieldType switch
             {
-                case FieldEditType.AutoDetect:
-                    return value;
-                case FieldEditType.Date:
-                    return value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern);
-                case FieldEditType.Time:
-                    return value.ToString("t", CultureInfo.CurrentCulture);
-                case FieldEditType.DateAndTime:
-                    return value.ToString("G", CultureInfo.CurrentCulture);
-            }
+                FieldType.AutoDetect => value,
+                FieldType.Date => value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+                FieldType.Time => value.ToString("t", CultureInfo.CurrentCulture),
+                FieldType.DateAndTime => value.ToString("G", CultureInfo.CurrentCulture),
+                FieldType.PlainText => value.ToString(),
+                _ => throw new ArgumentOutOfRangeException($"Unknown value of {nameof(FieldType)} was used.")
+            };
         }
-
         return value ?? string.Empty;
     }
 
@@ -180,68 +253,28 @@ else
         return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(default));
     }
 
-    protected override void OnInitialized()
-    {
-        AssignColumnsByProperties();
-        base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
-        CreateGroupsFrom(_selectedGroupable);
-        Console.WriteLine("==================================");
-        base.OnParametersSet();
-    }
-
-    private void AssignColumnsByProperties()
-    {
-        foreach (var config in Configs)
-        {
-            if (CanBeCompared(config))
-                _comparables.Add(config);
-
-            if (config.IsGroupable)
-                _groupables.Add(config);
-        }
-    }
-
-    private bool CanBeCompared(ColumnConfig<TTableType> config)
-    {
-        var interfaces = config.PropertyType.GetInterfaces();
-        return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
-    }
-
-    private void CreateGroupsFrom(ColumnConfig<TTableType> selectedColumn)
-    {
-        GroupedData.Clear();
-
-        if (selectedColumn is null || Data is null || Data.Count <= 1)
-            return;
-
-        foreach (var item in Data)
-        {
-            string key = selectedColumn.GetValueFrom(item)?.ToString() ?? "No value";
-            if (GroupedData.TryGetValue(key, out var collection))
-                collection.Add(item);
-            else
-                GroupedData.Add(key, new List<TTableType> { item });
-        }
-        GroupedData = GroupedData
-            .OrderBy(x => x.Key, StringComparer.InvariantCultureIgnoreCase)
-            .ToDictionary(x => x.Key, x => x.Value);
-    }
-
     private void SingleSelectedItemHasChanged(TTableType newItem)
     {
         SelectedItem = newItem;
         SelectedItemChanged.InvokeAsync(newItem);
     }
 
-    private Func<TTableType, object> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
+    private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
     {
         return _comparables.Contains(config)
-            ? new Func<TTableType, object>(config.GetValueFrom)
+            ? new Func<TTableType, dynamic>(config.GetValueFrom)
             : item => config.GetValueFrom(item)?.ToString();
+    }
+
+    private string CalculateHeight(int rows)
+    {
+        if (MaxTableHeight < 1)
+            return string.Empty;
+        // rows * row height + header height and some
+        var theoreticalSize = (rows * 38) + 200;
+        return theoreticalSize > MaxTableHeight
+            ? MaxTableHeight + "px"
+            : theoreticalSize + "px";
     }
 
 }
