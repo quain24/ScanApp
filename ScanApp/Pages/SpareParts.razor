@@ -55,8 +55,7 @@
     private ScanAppTableOptions TableOptions = new()
     {
         AllowFiltering = true,
-        AllowGrouping = false,
-        AllowNegativeNumbersInFiltering = false
+        AllowGrouping = false
     };
     List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
 
@@ -111,7 +110,11 @@
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(
+            s => s.Amount,
+            "Amount",
+            new PositiveNumbersOnlyValidator()
+            ));
 
         // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
