@@ -132,8 +132,13 @@
             .Select(m => new SparePartGUIModel(m.Name))
             .ToList();
 
-        _sparePartsEmpty = ClearSparePartList(_spareParts);
+        var random = new Random(12345);
 
+        for (int i = 0; i < 1000; i++)
+        {
+            _spareParts.Add(new SparePartGUIModel(random.Next(1000, 50000).ToString(), random.Next(0, 100)));
+        }
+        _spareParts.Add(new SparePartGUIModel(null, random.Next(0, 100)));
         StateHasChanged();
     }
 
