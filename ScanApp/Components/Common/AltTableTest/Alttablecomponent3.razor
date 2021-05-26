@@ -15,7 +15,7 @@
         }
     </MudSelect>
 }
-
+<FilterFieldCreator Configs="Configs"></FilterFieldCreator>
 
 @if (GroupedData?.Count > 0)
 {
@@ -280,9 +280,9 @@ else
         // rows * row height + header height and some
         var theoreticalSize = (rows * 38) + 100;
 
-        // 80%, so user can grab below nested table and drag to other groupings
+        // 70%, so user can grab below nested table and drag to other groupings
         if (isNested)
-            theoreticalSize = (int)(theoreticalSize * 0.8);
-        return (theoreticalSize > MaxTableHeight ? isNested ? (MaxTableHeight * 0.8) : MaxTableHeight : theoreticalSize) + "px";
+            theoreticalSize = (int)(theoreticalSize * 0.7);
+        return (theoreticalSize > MaxTableHeight ? isNested ? (MaxTableHeight * 0.7) : MaxTableHeight : theoreticalSize) + "px";
     }
 }
