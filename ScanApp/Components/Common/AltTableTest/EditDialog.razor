@@ -7,7 +7,7 @@
         @if (TargetItem is not null)
         {
             <MudForm @ref="_form" @bind-IsValid="@_success" Class="table-condensed m-0 p-0">
-                <FieldCreator T="T" Configs="Configs" @bind-TargetItem="@TargetItem"></FieldCreator>
+                <EditFieldCreator T="T" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
             </MudForm>
         }
     </DialogContent>
