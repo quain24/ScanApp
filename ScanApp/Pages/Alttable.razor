@@ -12,7 +12,7 @@
 
 <h1>Alt table</h1>
 
-<Alttablecomponent3 @ref="table" RowsPerPage="1000" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
+<Alttablecomponent3 @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>

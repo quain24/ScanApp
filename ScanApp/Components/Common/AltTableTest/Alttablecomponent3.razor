@@ -15,8 +15,7 @@
         }
     </MudSelect>
 }
-<FilterFieldCreator Configs="Configs"></FilterFieldCreator>
-
+<FilterFieldCreator Configs="Configs" SourceCollection="Data"></FilterFieldCreator>
 @if (GroupedData?.Count > 0)
 {
     <MudTable FixedHeader="FixedHeader" @bind-SelectedItem="@SelectedGroup" OnRowClick="OnClick" T="KeyValuePair<string, List<TTableType>>" Height="@CalculateHeight(GroupedData.Count)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="GroupedData" Dense="true" Breakpoint="Breakpoint.None">
@@ -128,7 +127,7 @@ else
     public int MaxTableHeight { get; set; }
 
     [Parameter]
-    public int RowsPerPage { get; set; } = 2000;
+    public int RowsPerPage { get; set; } = 50;
 
     [Parameter]
     public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
