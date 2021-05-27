@@ -20,7 +20,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
-        public bool IsValidatable => Validator is not null;
         private IValidator Validator { get; }
         private Expression<Func<T, object>> ColumnNameSelector { get; }
 
@@ -98,6 +97,13 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private Type ExtractPropertyType()
         {
             return PropertyPath.Count == 0 ? typeof(T) : PropertyPath[^1].GetUnderlyingType();
+        }
+
+        public bool IsValidatable(Type type = null)
+        {
+            if (type is null)
+                return Validator is not null;
+            return Validator?.CanValidateInstancesOfType(type) ?? false;
         }
 
         public IEnumerable<string> Validate<TValueType>(TValueType value)

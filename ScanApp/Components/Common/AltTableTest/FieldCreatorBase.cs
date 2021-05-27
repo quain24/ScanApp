@@ -23,7 +23,7 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             foreach (var config in Configs)
             {
-                if (config.IsValidatable is false)
+                if (config.IsValidatable() is false)
                     return;
 
                 var methodType = config.GetType().GetMethod(nameof(config.Validate))?.MakeGenericMethod(config.PropertyType)
