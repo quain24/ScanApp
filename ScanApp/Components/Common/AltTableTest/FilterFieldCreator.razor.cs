@@ -22,6 +22,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private IEnumerable<ColumnConfig<T>> FilterableConfigs { get; set; }
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
+        private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferences = new();
         private readonly Dictionary<Guid, Delegate> _cachedFromToGetValueDelegates = new();
         private readonly Dictionary<Guid, (Delegate From, Delegate To)> _cachedFromToValidationDelegates = new();
 
@@ -69,6 +70,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - From");
+            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
 
             // Create 'To'
@@ -79,27 +81,14 @@ namespace ScanApp.Components.Common.AltTableTest
             dynamic callbackTo = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveToDelegate);
             builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackTo);
 
-            // Validation lambda creator
-            bool isValid = (_fromToValues[config.Identifier].From is null || _fromToValues[config.Identifier].To is null) || (_fromToValues[config.Identifier].From <= _fromToValues[config.Identifier].To);
-            var inputParam = Expression.Parameter(valueType);
-            var compatibilityCheckMethod = GetType()?.GetMethod(nameof(AreTypesCompatible), BindingFlags.NonPublic | BindingFlags.Static)?.MakeGenericMethod(valueType, typeof(T));
-            var currentConfigParam = Expression.Constant(config, typeof(ColumnConfig<T>));
-            var compatibilityCheckExpr = Expression.Call(compatibilityCheckMethod, inputParam, currentConfigParam);
-            var isCompatibleExpr = Expression.IsTrue(compatibilityCheckExpr);
-            var ifErrorExpr = Expression.Constant(new[] { "'From' must be greater or equal to 'To' or one of fields should be empty." }, typeof(IEnumerable<string>));
-            var ifValidExpr = Expression.Constant(Array.Empty<string>(), typeof(IEnumerable<string>));
-            var isValidExpr = Expression.Constant(isValid, typeof(bool));
-            var isValidAllExpr = Expression.IsTrue(Expression.And(isValidExpr, isCompatibleExpr));
-            var body = Expression.Lambda(Expression.Condition(Expression.IsTrue(isValidAllExpr), ifValidExpr, ifErrorExpr), inputParam);
-            var validationDelegate = body.Compile();
-
-            builder.AddAttribute(LineNumber.Get(), "Immediate", false);
-            builder.AddAttribute(LineNumber.Get(), "Validation", validationDelegate);
+            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, valueType));
             builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - To");
+            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
 
-        private TA GetData<TA>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
+        private TData GetData<TData>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
 
         private static Type MakeNullable(Type type)
         {
@@ -108,7 +97,49 @@ namespace ScanApp.Components.Common.AltTableTest
                 : typeof(Nullable<>).MakeGenericType(type);
         }
 
-        private static bool AreTypesCompatible<AA, A>(AA val, ColumnConfig<A> cc)
+        private void CreateFieldReference(object o, ColumnConfig<T> config, bool isFrom)
+        {
+            if (_fieldReferences.TryGetValue(config.Identifier, out var value))
+            {
+                if (value.From is not null && value.To is not null)
+                    return;
+                _fieldReferences[config.Identifier] = isFrom switch
+                {
+                    true when value.From is null => (o, _fieldReferences[config.Identifier].To),
+                    false when value.To is null => (_fieldReferences[config.Identifier].From, o),
+                    _ => _fieldReferences[config.Identifier]
+                };
+            }
+            else
+            {
+                _fieldReferences.Add(config.Identifier, isFrom ? (o, null) : (null, o));
+            }
+        }
+
+        private Delegate CreateValidationDelegate(ColumnConfig<T> config, Type inputType)
+        {
+            var isValid = true;
+            if (_fieldReferences.ContainsKey(config.Identifier))
+            {
+                isValid = _fieldReferences[config.Identifier].From?.Value is null || _fieldReferences[config.Identifier].To?.Value is null ||
+                           _fieldReferences[config.Identifier].From?.Value <= _fieldReferences[config.Identifier].To?.Value;
+            }
+            var inputParam = Expression.Parameter(inputType);
+            var compatibilityCheckMethod = GetType()
+                ?.GetMethod(nameof(AreTypesCompatible), BindingFlags.NonPublic | BindingFlags.Static)
+                ?.MakeGenericMethod(inputType);
+            var currentConfigParam = Expression.Constant(config, typeof(ColumnConfig<T>));
+            var compatibilityCheckExpr = Expression.Call(compatibilityCheckMethod, inputParam, currentConfigParam);
+            var isCompatibleExpr = Expression.IsTrue(compatibilityCheckExpr);
+            var ifErrorExpr = Expression.Constant(new[] { "'From' must be greater or equal to 'To' or one of fields should be empty." }, typeof(IEnumerable<string>));
+            var ifValidExpr = Expression.Constant(Array.Empty<string>(), typeof(IEnumerable<string>));
+            var isValidExpr = Expression.Constant(isValid, typeof(bool));
+            var isValidAllExpr = Expression.IsTrue(Expression.And(isValidExpr, isCompatibleExpr));
+            var body = Expression.Lambda(Expression.Condition(Expression.IsTrue(isValidAllExpr), ifValidExpr, ifErrorExpr), inputParam);
+            return body.Compile();
+        }
+
+        private static bool AreTypesCompatible<TValueType>(TValueType val, ColumnConfig<T> cc)
         {
             return val is null || cc.PropertyType == val?.GetType();
         }
