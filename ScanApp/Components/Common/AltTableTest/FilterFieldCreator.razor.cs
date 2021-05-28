@@ -29,8 +29,6 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             base.OnInitialized();
             FilterableConfigs = Configs.Where(c => c.IsFilterable);
-            CacheFromToDelegates();
-            CacheFromToValidators();
         }
 
         private RenderFragment CreateFilterField(ColumnConfig<T> config)
@@ -51,6 +49,58 @@ namespace ScanApp.Components.Common.AltTableTest
             };
         }
 
+        private void CreateFromToFields(RenderTreeBuilder builder, ColumnConfig<T> config)
+        {
+            _fromToValues.TryAdd(config.Identifier, (null, null));
+
+            var valueType = MakeNullable(config.PropertyType);
+            var fieldType = typeof(MudNumericField<>).MakeGenericType(valueType);
+            var readMethod = GetType().GetMethod(nameof(GetData), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(valueType);
+            var readDelegate = Delegate.CreateDelegate(Expression.GetFuncType(typeof(Guid), typeof(bool), valueType), this, readMethod);
+
+            // Create 'from'
+            builder.OpenComponent(LineNumber.Get(), fieldType);
+            builder.AddAttribute(LineNumber.Get(), "Value", readDelegate.DynamicInvoke(config.Identifier, true));
+
+            var callbackType = typeof(EventCallback<>).MakeGenericType(valueType);
+            void SaveFromDelegate(dynamic obj) => _fromToValues[config.Identifier] = (obj, _fromToValues[config.Identifier].To);
+            dynamic callbackFrom = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveFromDelegate);
+            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackFrom);
+
+            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - From");
+            builder.CloseComponent();
+
+            // Create 'To'
+            builder.OpenComponent(LineNumber.Get(), fieldType);
+
+            builder.AddAttribute(LineNumber.Get(), "Value", readDelegate.DynamicInvoke(config.Identifier, false));
+            void SaveToDelegate(dynamic obj) => _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, obj);
+            dynamic callbackTo = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveToDelegate);
+            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackTo);
+
+            // Validation lambda creator
+            bool isValid = (_fromToValues[config.Identifier].From is null || _fromToValues[config.Identifier].To is null) || (_fromToValues[config.Identifier].From <= _fromToValues[config.Identifier].To);
+            var inputParam = Expression.Parameter(valueType);
+            var compatibilityCheckMethod = GetType()?.GetMethod(nameof(AreTypesCompatible), BindingFlags.NonPublic | BindingFlags.Static)?.MakeGenericMethod(valueType, typeof(T));
+            var currentConfigParam = Expression.Constant(config, typeof(ColumnConfig<T>));
+            var compatibilityCheckExpr = Expression.Call(compatibilityCheckMethod, inputParam, currentConfigParam);
+            var isCompatibleExpr = Expression.IsTrue(compatibilityCheckExpr);
+            var ifErrorExpr = Expression.Constant(new[] { "'From' must be greater or equal to 'To' or one of fields should be empty." }, typeof(IEnumerable<string>));
+            var ifValidExpr = Expression.Constant(Array.Empty<string>(), typeof(IEnumerable<string>));
+            var isValidExpr = Expression.Constant(isValid, typeof(bool));
+            var isValidAllExpr = Expression.IsTrue(Expression.And(isValidExpr, isCompatibleExpr));
+            var body = Expression.Lambda(Expression.Condition(Expression.IsTrue(isValidAllExpr), ifValidExpr, ifErrorExpr), inputParam);
+            var validationDelegate = body.Compile();
+
+            builder.AddAttribute(LineNumber.Get(), "Immediate", false);
+            builder.AddAttribute(LineNumber.Get(), "Validation", validationDelegate);
+            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - To");
+            builder.CloseComponent();
+        }
+
+        private TA GetData<TA>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
+
         private static Type MakeNullable(Type type)
         {
             return (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -58,123 +108,9 @@ namespace ScanApp.Components.Common.AltTableTest
                 : typeof(Nullable<>).MakeGenericType(type);
         }
 
-        private void CacheFromToDelegates()
+        private static bool AreTypesCompatible<AA, A>(AA val, ColumnConfig<A> cc)
         {
-            foreach (var cfg in FilterableConfigs)
-            {
-                if (!cfg.PropertyType.IsNumeric())
-                    continue;
-
-                var valueType = MakeNullable(cfg.PropertyType);
-
-                var param = Expression.Parameter(cfg.PropertyType);
-                var body = Expression.Convert(param, valueType);
-                var lambda = Expression.Lambda(body, param);
-
-                _cachedFromToGetValueDelegates.Add(cfg.Identifier, lambda.Compile());
-            }
-        }
-
-        private void CacheFromToValidators()
-        {
-            foreach (var cfg in FilterableConfigs)
-            {
-                if (!cfg.PropertyType.IsNumeric())
-                    continue;
-
-                var valueType = MakeNullable(cfg.PropertyType);
-                var validatorFuncType = Expression.GetDelegateType(valueType, typeof(IEnumerable<string>));
-
-                var methodTypeFrom = GetType().GetMethod("ValidateFrom", BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(valueType);
-                var validationFrom = Delegate.CreateDelegate(validatorFuncType, this, methodTypeFrom);
-                var methodTypeTo = GetType().GetMethod("ValidateTo", BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(valueType);
-                var validationTo = Delegate.CreateDelegate(validatorFuncType, this, methodTypeTo);
-
-                _cachedFromToValidationDelegates.Add(cfg.Identifier, (validationFrom, validationTo));
-            }
-        }
-
-        private bool ValidateFromTo(dynamic from, dynamic to)
-        {
-            if (from is null || to is null)
-                return true;
-            return from <= to;
-        }
-
-        private Guid curKey;
-
-        private IEnumerable<string> ValidateFrom<TNumeric>(TNumeric from)
-        {
-            if (from is null)
-                return Array.Empty<string>();
-            return (dynamic)@from > (TNumeric)_fromToValues[curKey].To ? new[] { "From must be lesser than to." } : Array.Empty<string>();
-        }
-
-        private IEnumerable<string> ValidateTo<TNumeric>(TNumeric to)
-        {
-            if (to is null)
-                return Array.Empty<string>();
-            return (dynamic)to < (TNumeric)_fromToValues[curKey].From ? new[] { "To must be greater than from." } : Array.Empty<string>();
-        }
-
-        private Dictionary<Guid, bool> _results = new();
-
-        private void CreateFromToFields(RenderTreeBuilder builder, ColumnConfig<T> config)
-        {
-            _fromToValues.TryAdd(config.Identifier, (null, null));
-            foreach (var kvp in _fromToValues)
-            {
-                bool res = ValidateFromTo(kvp.Value.From, kvp.Value.To);
-                if (_results.TryAdd(kvp.Key, res))
-                    continue;
-                _results[kvp.Key] = res;
-            }
-
-            var valueType = MakeNullable(config.PropertyType);
-            var fieldType = typeof(MudTextField<>).MakeGenericType(valueType);
-
-            curKey = config.Identifier;
-            // Create 'from'
-            builder.OpenComponent(LineNumber.Get(), fieldType);
-            builder.AddAttribute(LineNumber.Get(), "Value", _cachedFromToGetValueDelegates[config.Identifier].DynamicInvoke(GetData(config, true)));
-
-            var callbackType = typeof(EventCallback<>).MakeGenericType(valueType);
-            void SaveFromDelegate(dynamic obj) => _fromToValues[config.Identifier] = (obj, _fromToValues[config.Identifier].To);
-            dynamic callbackFrom = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveFromDelegate);
-            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackFrom);
-
-            //builder.AddAttribute(LineNumber.Get(), "Validation", _cachedFromToValidationDelegates[config.Identifier].From);
-
-            builder.AddAttribute(LineNumber.Get(), "Error", !_results[config.Identifier]);
-            builder.AddAttribute(LineNumber.Get(), "ErrorText", _results[config.Identifier] ? string.Empty : "From must be lesser or equal to To.");
-
-            builder.AddAttribute(LineNumber.Get(), "Label", "From");
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.CloseComponent();
-
-            // Create 'To'
-            builder.OpenComponent(LineNumber.Get(), fieldType);
-
-            builder.AddAttribute(LineNumber.Get(), "Value", _cachedFromToGetValueDelegates[config.Identifier].DynamicInvoke(GetData(config, false)));
-            void SaveToDelegate(dynamic obj)
-            {
-                _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, obj);
-            }
-            dynamic callbackTo = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveToDelegate);
-            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackTo);
-
-            //builder.AddAttribute(LineNumber.Get(), "Validation", _cachedFromToValidationDelegates[config.Identifier].To);
-            builder.AddAttribute(LineNumber.Get(), "Error", !_results[config.Identifier]);
-            builder.AddAttribute(LineNumber.Get(), "ErrorText", _results[config.Identifier] ? string.Empty : "To must be greater or equal to From.");
-
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Label", "To");
-            builder.CloseComponent();
-        }
-
-        private object GetData(ColumnConfig<T> config, bool isFrom)
-        {
-            return isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
+            return val is null || cc.PropertyType == val?.GetType();
         }
 
         private void CreateFromToDateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
