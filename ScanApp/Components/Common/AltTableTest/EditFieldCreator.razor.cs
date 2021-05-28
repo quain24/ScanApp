@@ -5,6 +5,7 @@ using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Threading.Tasks;
+using ScanApp.Common.Helpers;
 
 namespace ScanApp.Components.Common.AltTableTest
 {
@@ -45,8 +46,8 @@ namespace ScanApp.Components.Common.AltTableTest
             var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
 
             // Start creating text field
-            builder.OpenComponent(0, textFieldType);
-            builder.AddAttribute(1, "Value", config.GetValueFrom(TargetItem) as object);
+            builder.OpenComponent(LineNumber.Get(), textFieldType);
+            builder.AddAttribute(LineNumber.Get(), "Value", config.GetValueFrom(TargetItem) as object);
 
             // Set callback for edit action
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
@@ -57,15 +58,15 @@ namespace ScanApp.Components.Common.AltTableTest
             }
 
             dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
-            builder.AddAttribute(2, "ValueChanged", callback);
+            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callback);
 
             // Set up corresponding validator
             if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(3, "Validation", validatorDelegate);
+                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
 
             // Set common options
-            builder.AddAttribute(4, "Immediate", true);
-            builder.AddAttribute(5, "Disabled", !config.IsEditable);
+            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
 
             // Finish component
             builder.CloseComponent();
@@ -73,24 +74,24 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
-            builder.OpenComponent(10, typeof(MudDatePicker));
-            builder.AddAttribute(11, "Date", config.GetValueFrom(TargetItem) as DateTime?);
+            builder.OpenComponent(LineNumber.Get(), typeof(MudDatePicker));
+            builder.AddAttribute(LineNumber.Get(), "Date", config.GetValueFrom(TargetItem) as DateTime?);
 
-            var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, TargetItem, config));
-            builder.AddAttribute(12, "DateChanged", callback);
+            var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config));
+            builder.AddAttribute(LineNumber.Get(), "DateChanged", callback);
 
             if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(13, "Validation", validatorDelegate);
+                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
 
-            builder.AddAttribute(14, "Immediate", true);
-            builder.AddAttribute(15, "Disabled", !config.IsEditable);
+            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
 
             builder.CloseComponent();
         }
 
         private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
-            builder.OpenComponent(20, typeof(MudTimePicker));
+            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
 
             if (config.PropertyType == typeof(DateTime?))
             {
@@ -101,29 +102,29 @@ namespace ScanApp.Components.Common.AltTableTest
                     false => null
                 };
 
-                builder.AddAttribute(21, "Time", time);
+                builder.AddAttribute(LineNumber.Get(), "Time", time);
                 var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, TargetItem, config));
-                builder.AddAttribute(22, "TimeChanged", callback);
+                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
             }
 
             if (config.PropertyType == typeof(TimeSpan?))
             {
                 var time = config.GetValueFrom(TargetItem) as TimeSpan?;
-                builder.AddAttribute(21, "Time", time);
-                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, TargetItem, config));
-                builder.AddAttribute(22, "TimeChanged", callback);
+                builder.AddAttribute(LineNumber.Get(), "Time", time);
+                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config));
+                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
             }
 
             if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(23, "Validation", validatorDelegate);
+                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
 
-            builder.AddAttribute(24, "Immediate", true);
-            builder.AddAttribute(25, "Disabled", !config.IsEditable);
+            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
 
             builder.CloseComponent();
         }
 
-        private async Task EditDate(DateTime? date, T target, ColumnConfig<T> config)
+        private async Task EditDate(DateTime? date, ColumnConfig<T> config)
         {
             var oldDate = config.GetValueFrom(TargetItem) as DateTime?;
             if (date != oldDate && oldDate.HasValue)
@@ -134,7 +135,7 @@ namespace ScanApp.Components.Common.AltTableTest
             await TargetItemChanged.InvokeAsync(TargetItem);
         }
 
-        private async Task EditTime(TimeSpan? time, T target, ColumnConfig<T> config)
+        private async Task EditTime(TimeSpan? time, ColumnConfig<T> config)
         {
             var oldTime = config.GetValueFrom(TargetItem) as TimeSpan?;
 
