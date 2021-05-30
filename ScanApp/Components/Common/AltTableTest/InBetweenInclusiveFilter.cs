@@ -8,8 +8,8 @@ namespace ScanApp.Components.Common.AltTableTest
 {
     public class InBetweenInclusiveFilter<T> : IFilter<T>
     {
-        private readonly dynamic _from;
-        private readonly dynamic _to;
+        protected readonly dynamic From;
+        protected readonly dynamic To;
         private readonly string _message = $"argument can be either a {nameof(DateTime)}, {nameof(DateTimeOffset)}, {nameof(TimeSpan)}, numeric or null.";
         private readonly Func<T, bool> _checkDelegate;
 
@@ -27,8 +27,8 @@ namespace ScanApp.Components.Common.AltTableTest
                 throw new ArgumentException($"'{nameof(from)}' type and '{nameof(to)}' type are not matched.");
 
             ColumnConfig = columnConfig ?? throw new ArgumentNullException(nameof(columnConfig));
-            _from = from;
-            _to = to;
+            From = from;
+            To = to;
 
             if (CanBeUsed(columnConfig.PropertyType) is false)
             {
@@ -42,7 +42,7 @@ namespace ScanApp.Components.Common.AltTableTest
                                             $" is not the same as types of '{nameof(from)}' or/and '{nameof(to)}' parameters.");
             }
 
-            _checkDelegate = _to is null && _from is null ? _ => true : CheckValue;
+            _checkDelegate = To is null && From is null ? _ => true : CheckValue;
         }
 
         private static bool CanBeUsed(dynamic value)
@@ -57,27 +57,27 @@ namespace ScanApp.Components.Common.AltTableTest
             return (one is Type ? one : (Type)one.GetType()) == (two is Type ? two : (Type)two.GetType());
         }
 
-        public bool Check(T item) => _checkDelegate(item);
+        public virtual bool Check(T item) => _checkDelegate(item);
 
-        private bool CheckValue(T item)
+        protected virtual bool CheckValue(T item)
         {
             var value = ColumnConfig.GetValueFrom(item);
 
-            if (_from is null)
+            if (From is null)
             {
-                return value is null || value <= _to;
+                return value is null || value <= To;
             }
-            if (_to is null)
+            if (To is null)
             {
-                return value is null || value >= _from;
+                return value is null || value >= From;
             }
 
-            return value is not null && value >= _from && value <= _to;
+            return value is not null && value >= From && value <= To;
         }
 
         public IEnumerable<T> Run(IEnumerable<T> source)
         {
-            if (_from is null && _to is null)
+            if (From is null && To is null)
                 return source.ToArray();
 
             return source.Where(CheckValue);
