@@ -71,7 +71,7 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackFrom);
 
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - {FromLabel}");
+            builder.AddAttribute(LineNumber.Get(), "Label", FromLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
 
@@ -85,7 +85,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, valueType));
-            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - {ToLabel}");
+            builder.AddAttribute(LineNumber.Get(), "Label", ToLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
@@ -189,8 +189,10 @@ namespace ScanApp.Components.Common.AltTableTest
                     if (date is null) return null;
                     if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
                     if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
-                    var compareTo = isFrom ? (DateTime?)_fromToValues[config.Identifier].To.Date : (DateTime?)_fromToValues[config.Identifier].From.Date;
-                    return isFrom ? (date <= compareTo ? null : "error") : (date >= compareTo ? null : "error");
+                    var compareTo = isFrom
+                        ? (DateTime?)_fromToValues[config.Identifier].To.Date
+                        : (DateTime?)_fromToValues[config.Identifier].From.Date;
+                    return isFrom ? (date <= compareTo ? null : ErrorMessageFromTo) : (date >= compareTo ? null : ErrorMessageFromTo);
                 }
 
                 builder.AddAttribute(LineNumber.Get(), "Validation", (Func<DateTime?, string>)ValidateDateFromTo);
@@ -200,6 +202,24 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
             builder.CloseComponent();
+        }
+
+        private void EditDate(DateTime? date, ColumnConfig<T> config, bool from)
+        {
+            var oldDate = (from ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To) as DateTime?;
+            if (date != oldDate && oldDate.HasValue)
+            {
+                date += oldDate.Value.TimeOfDay;
+            }
+
+            if (from)
+            {
+                _fromToValues[config.Identifier] = (date, _fromToValues[config.Identifier].To);
+            }
+            else
+            {
+                _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, date);
+            }
         }
 
         private void CreateTimeField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
@@ -227,8 +247,10 @@ namespace ScanApp.Components.Common.AltTableTest
                         if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
                         if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
 
-                        var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
-                        return isFrom ? (time <= compareTo ? null : "error") : (time >= compareTo ? null : "error");
+                        var compareTo = isFrom
+                            ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay
+                            : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
+                        return isFrom ? (time <= compareTo ? null : ErrorMessageFromTo) : (time >= compareTo ? null : ErrorMessageFromTo);
                     }
 
                     builder.AddAttribute(LineNumber.Get(), "Validation", (Func<TimeSpan?, string>)ValidateDateFromTo);
@@ -260,41 +282,19 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.CloseComponent();
         }
 
-        private void EditDate(DateTime? date, ColumnConfig<T> config, bool from)
-        {
-            var oldDate = (from ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To) as DateTime?;
-            if (date != oldDate && oldDate.HasValue)
-            {
-                date += oldDate.Value.TimeOfDay;
-            }
-
-            if (from)
-            {
-                _fromToValues[config.Identifier] = (date, _fromToValues[config.Identifier].To);
-            }
-            else
-            {
-                _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, date);
-            }
-        }
-
         private void EditTimeInDate(TimeSpan? newTime, ColumnConfig<T> config, bool isFrom)
         {
-            var source = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
-
-            if (source is DateTime oldDate)
+            if ((isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To) is DateTime oldDate)
             {
                 var newDate = oldDate.Date + newTime;
-                if (newDate != oldDate)
+                if (newDate == oldDate) return;
+                if (isFrom)
                 {
-                    if (isFrom)
-                    {
-                        _fromToValues[config.Identifier] = (newDate, _fromToValues[config.Identifier].To);
-                    }
-                    else
-                    {
-                        _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, newDate);
-                    }
+                    _fromToValues[config.Identifier] = (newDate, _fromToValues[config.Identifier].To);
+                }
+                else
+                {
+                    _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, newDate);
                 }
             }
             else if (newTime.HasValue)
@@ -318,11 +318,11 @@ namespace ScanApp.Components.Common.AltTableTest
             {
                 if (isFrom)
                 {
-                    _fromToValues[config.Identifier] = (DateTime.MinValue + time.Value, _fromToValues[config.Identifier].To);
+                    _fromToValues[config.Identifier] = (time, _fromToValues[config.Identifier].To);
                 }
                 else
                 {
-                    _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, DateTime.MinValue + time.Value);
+                    _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, time);
                 }
             }
         }

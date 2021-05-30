@@ -1,7 +1,11 @@
 ﻿@inherits FieldCreatorBase<T>
 @typeparam T
 
-@foreach (var config in Configs)
-{
-    @CreateFilterField(config)
-}
+<MudExpansionPanels MultiExpansion="true">
+    @foreach (var config in FilterableConfigs)
+    {
+        <MudExpansionPanel Text="@config.DisplayName">
+            @CreateFilterField(config)
+        </MudExpansionPanel>
+    }
+</MudExpansionPanels>
