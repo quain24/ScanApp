@@ -20,16 +20,19 @@ namespace ScanApp.Components.Common.AltTableTest
 
         [Parameter] public IEnumerable<T> FilteredCollection { get; set; }
 
+        [Parameter] public string FromLabel { get; set; } = "From";
+        [Parameter] public string ToLabel { get; set; } = "To";
+        [Parameter] public string ErrorMessageFromTo { get; set; }
+
         private IEnumerable<ColumnConfig<T>> FilterableConfigs { get; set; }
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferences = new();
-        private readonly Dictionary<Guid, Delegate> _cachedFromToGetValueDelegates = new();
-        private readonly Dictionary<Guid, (Delegate From, Delegate To)> _cachedFromToValidationDelegates = new();
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
             FilterableConfigs = Configs.Where(c => c.IsFilterable);
+            ErrorMessageFromTo ??= $"'{FromLabel}' cannot be greater than '{ToLabel}'.";
         }
 
         private RenderFragment CreateFilterField(ColumnConfig<T> config)
@@ -41,12 +44,11 @@ namespace ScanApp.Components.Common.AltTableTest
                 else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime)) &&
                          (config.FieldType is FieldType.AutoDetect or FieldType.DateAndTime))
                     CreateFromToDateTimeFields(builder, config);
-                ////if ((config.PropertyType == typeof(DateTime?) && config.FieldType == FieldType.AutoDetect) ||
-                //    (config.PropertyType == typeof(TimeSpan?) && config.FieldType == FieldType.AutoDetect) ||
-                //    config.FieldType is FieldType.Time or FieldType.DateAndTime)
-                //    CreateTimeFields(builder, config);
-                //else if (config.FieldType == FieldType.PlainText || (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?)))
-                //    CreateTextField(builder, config);
+                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime)) && config.FieldType == FieldType.Date)
+                    CreateFromToDateFields(builder, config);
+                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) || config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
+                         (config.FieldType is FieldType.AutoDetect or FieldType.Time))
+                    CreateFromToTimeFields(builder, config);
             };
         }
 
@@ -54,9 +56,9 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             _fromToValues.TryAdd(config.Identifier, (null, null));
 
-            var valueType = MakeNullable(config.PropertyType);
+            var valueType = EnsureNullable(config.PropertyType);
             var fieldType = typeof(MudNumericField<>).MakeGenericType(valueType);
-            var readMethod = GetType().GetMethod(nameof(GetData), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(valueType);
+            var readMethod = GetType().GetMethod(nameof(GetDataFromTo), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(valueType);
             var readDelegate = Delegate.CreateDelegate(Expression.GetFuncType(typeof(Guid), typeof(bool), valueType), this, readMethod);
 
             // Create 'from'
@@ -69,7 +71,7 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackFrom);
 
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - From");
+            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - {FromLabel}");
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
 
@@ -83,14 +85,14 @@ namespace ScanApp.Components.Common.AltTableTest
 
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, valueType));
-            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - To");
+            builder.AddAttribute(LineNumber.Get(), "Label", $"{config.DisplayName} - {ToLabel}");
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
 
-        private TData GetData<TData>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
+        private TData GetDataFromTo<TData>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
 
-        private static Type MakeNullable(Type type)
+        private static Type EnsureNullable(Type type)
         {
             return (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 ? type
@@ -118,22 +120,8 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private Delegate CreateValidationDelegate(ColumnConfig<T> config, Type inputType)
         {
-            var isValid = inputType switch
-            {
-                var t when t == typeof(DateTime?) && _fieldReferences.ContainsKey(config.Identifier) =>
-                    _fieldReferences[config.Identifier].From?.Date is null ||
-                    _fieldReferences[config.Identifier].To?.Date is null ||
-                    _fieldReferences[config.Identifier].From?.Date <= _fieldReferences[config.Identifier].To?.Date,
-                var t when t == typeof(TimeSpan?) && _fieldReferences.ContainsKey(config.Identifier) =>
-                    _fieldReferences[config.Identifier].From?.Time is null ||
-                    _fieldReferences[config.Identifier].To?.Time is null ||
-                    _fieldReferences[config.Identifier].From?.Time <= _fieldReferences[config.Identifier].To?.Time,
-                _ when _fieldReferences.ContainsKey(config.Identifier) is false => true,
-                _ => _fieldReferences[config.Identifier].From?.Value is null ||
-                     _fieldReferences[config.Identifier].To?.Value is null ||
-                     _fieldReferences[config.Identifier].From?.Value <= _fieldReferences[config.Identifier].To?.Value
-            };
-
+            bool isValid = _fromToValues[config.Identifier].From is null || _fromToValues[config.Identifier].To is null ||
+                           _fromToValues[config.Identifier].From <= _fromToValues[config.Identifier].To;
             var inputParam = Expression.Parameter(inputType);
             var compatibilityCheckMethod = GetType()
                 ?.GetMethod(nameof(AreTypesCompatible), BindingFlags.NonPublic | BindingFlags.Static)
@@ -141,8 +129,8 @@ namespace ScanApp.Components.Common.AltTableTest
             var currentConfigParam = Expression.Constant(config, typeof(ColumnConfig<T>));
             var compatibilityCheckExpr = Expression.Call(compatibilityCheckMethod, inputParam, currentConfigParam);
             var isCompatibleExpr = Expression.IsTrue(compatibilityCheckExpr);
-            var ifErrorExpr = Expression.Constant(new[] { "'From' must be greater or equal to 'To' or one of fields should be empty." }, typeof(IEnumerable<string>));
-            var ifValidExpr = Expression.Constant(Array.Empty<string>(), typeof(IEnumerable<string>));
+            var ifErrorExpr = Expression.Constant(ErrorMessageFromTo, typeof(string));
+            var ifValidExpr = Expression.Constant(null, typeof(string));
             var isValidExpr = Expression.Constant(isValid, typeof(bool));
             var isValidAllExpr = Expression.IsTrue(Expression.And(isValidExpr, isCompatibleExpr));
             var body = Expression.Lambda(Expression.Condition(Expression.IsTrue(isValidAllExpr), ifValidExpr, ifErrorExpr), inputParam);
@@ -160,36 +148,61 @@ namespace ScanApp.Components.Common.AltTableTest
             _fromToValues.TryAdd(config.Identifier, (null, null));
 
             // Create 'from'
-            CreateDateField(builder, config, "From", true, true);
-            CreateTimeField(builder, config, "From", true);
+            CreateDateField(builder, config, true, true);
+            CreateTimeField(builder, config, true);
 
             // Create 'To'
-            CreateDateField(builder, config, "To", false);
-            CreateTimeField(builder, config, "To", false);
+            CreateDateField(builder, config, false);
+            CreateTimeField(builder, config, false);
         }
 
-        private void CreateDateField(RenderTreeBuilder builder, ColumnConfig<T> config, string label, bool isFrom, bool shouldValidate = false)
+        private void CreateFromToDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
+        {
+            _fromToValues.TryAdd(config.Identifier, (null, null));
+            CreateDateField(builder, config, true, true);
+            CreateDateField(builder, config, false);
+        }
+
+        private void CreateFromToTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
+        {
+            _fromToValues.TryAdd(config.Identifier, (null, null));
+            CreateTimeField(builder, config, true, true);
+            CreateTimeField(builder, config, false);
+        }
+
+        private void CreateDateField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
         {
             var fieldType = typeof(MudDatePicker);
 
-            var value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
+            DateTime? value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
 
             builder.OpenComponent(LineNumber.Get(), fieldType);
-            builder.AddAttribute(LineNumber.Get(), "Date", value as DateTime?);
+            builder.AddAttribute(LineNumber.Get(), "Date", value);
 
             var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config, isFrom));
             builder.AddAttribute(LineNumber.Get(), "DateChanged", callback);
 
             if (shouldValidate)
-                builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, typeof(DateTime?)));
+            {
+                string ValidateDateFromTo(DateTime? date)
+                {
+                    if (date is null) return null;
+                    if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
+                    if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
+                    var compareTo = isFrom ? (DateTime?)_fromToValues[config.Identifier].To.Date : (DateTime?)_fromToValues[config.Identifier].From.Date;
+                    return isFrom ? (date <= compareTo ? null : "error") : (date >= compareTo ? null : "error");
+                }
 
-            builder.AddAttribute(LineNumber.Get(), "Label", label);
+                builder.AddAttribute(LineNumber.Get(), "Validation", (Func<DateTime?, string>)ValidateDateFromTo);
+            }
+
+            builder.AddAttribute(LineNumber.Get(), "Label", isFrom ? FromLabel : ToLabel);
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
             builder.CloseComponent();
         }
 
-        private void CreateTimeField(RenderTreeBuilder builder, ColumnConfig<T> config, string label, bool isFrom, bool shouldValidate = false)
+        private void CreateTimeField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
         {
             builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
             var value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
@@ -207,7 +220,19 @@ namespace ScanApp.Components.Common.AltTableTest
                 var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, config, isFrom));
                 builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
                 if (shouldValidate)
-                    builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, typeof(DateTime?)));
+                {
+                    string ValidateDateFromTo(TimeSpan? time)
+                    {
+                        if (time is null) return null;
+                        if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
+                        if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
+
+                        var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
+                        return isFrom ? (time <= compareTo ? null : "error") : (time >= compareTo ? null : "error");
+                    }
+
+                    builder.AddAttribute(LineNumber.Get(), "Validation", (Func<TimeSpan?, string>)ValidateDateFromTo);
+                }
             }
 
             if (config.PropertyType == typeof(TimeSpan?))
@@ -216,12 +241,22 @@ namespace ScanApp.Components.Common.AltTableTest
                 var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config, isFrom));
                 builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
                 if (shouldValidate)
-                    builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, typeof(TimeSpan?)));
+                {
+                    string ValidateDateFromTo(TimeSpan? date)
+                    {
+                        if (date is null) return null;
+                        var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To : (TimeSpan?)_fromToValues[config.Identifier].From;
+                        return isFrom ? (date <= compareTo ? null : "error") : (date >= compareTo ? null : "error");
+                    }
+
+                    builder.AddAttribute(LineNumber.Get(), "Validation", (Func<TimeSpan?, string>)ValidateDateFromTo);
+                }
             }
 
-            builder.AddAttribute(LineNumber.Get(), "Label", label);
+            builder.AddAttribute(LineNumber.Get(), "Label", isFrom ? FromLabel : ToLabel);
             builder.AddAttribute(LineNumber.Get(), "Immediate", true);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
+
             builder.CloseComponent();
         }
 
@@ -291,129 +326,5 @@ namespace ScanApp.Components.Common.AltTableTest
                 }
             }
         }
-
-        //private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<T> config)
-        //{
-        //    // Type of mud blazor text field (int, string, etc)
-        //    var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
-
-        //    // Start creating text field
-        //    builder.OpenComponent(0, textFieldType);
-        //    builder.AddAttribute(1, "Value", config.GetValueFrom(SourceCollection) as object);
-
-        //    // Set callback for edit action
-        //    var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
-        //    async Task EditDelegate(dynamic obj)
-        //    {
-        //        ColumnConfigExtensions.SetValue(config, SourceCollection, obj);
-        //        await TargetItemChanged.InvokeAsync(SourceCollection);
-        //    }
-
-        //    dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
-        //    builder.AddAttribute(2, "ValueChanged", callback);
-
-        //    // Set up corresponding validator
-        //    if (Validators.TryGetValue(config, out var validatorDelegate))
-        //        builder.AddAttribute(3, "Validation", validatorDelegate);
-
-        //    // Set common options
-        //    builder.AddAttribute(4, "Immediate", true);
-        //    builder.AddAttribute(5, "Disabled", !config.IsEditable);
-
-        //    // Finish component
-        //    builder.CloseComponent();
-        //}
-
-        //private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
-        //{
-        //    builder.OpenComponent(10, typeof(MudDatePicker));
-        //    builder.AddAttribute(11, "Date", config.GetValueFrom(SourceCollection) as DateTime?);
-
-        //    var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, SourceCollection, config));
-        //    builder.AddAttribute(12, "DateChanged", callback);
-
-        //    if (Validators.TryGetValue(config, out var validatorDelegate))
-        //        builder.AddAttribute(13, "Validation", validatorDelegate);
-
-        //    builder.AddAttribute(14, "Immediate", true);
-        //    builder.AddAttribute(15, "Disabled", !config.IsEditable);
-
-        //    builder.CloseComponent();
-        //}
-
-        //private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
-        //{
-        //    builder.OpenComponent(20, typeof(MudTimePicker));
-
-        //    if (config.PropertyType == typeof(DateTime?))
-        //    {
-        //        var data = config.GetValueFrom(SourceCollection) as DateTime?;
-        //        TimeSpan? time = data.HasValue switch
-        //        {
-        //            true => data.Value.TimeOfDay,
-        //            false => null
-        //        };
-
-        //        builder.AddAttribute(21, "Time", time);
-        //        var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, SourceCollection, config));
-        //        builder.AddAttribute(22, "TimeChanged", callback);
-        //    }
-
-        //    if (config.PropertyType == typeof(TimeSpan?))
-        //    {
-        //        var time = config.GetValueFrom(SourceCollection) as TimeSpan?;
-        //        builder.AddAttribute(21, "Time", time);
-        //        var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, SourceCollection, config));
-        //        builder.AddAttribute(22, "TimeChanged", callback);
-        //    }
-
-        //    if (Validators.TryGetValue(config, out var validatorDelegate))
-        //        builder.AddAttribute(23, "Validation", validatorDelegate);
-
-        //    builder.AddAttribute(24, "Immediate", true);
-        //    builder.AddAttribute(25, "Disabled", !config.IsEditable);
-
-        //    builder.CloseComponent();
-        //}
-
-        //private async Task EditDate(DateTime? date, T target, ColumnConfig<T> config)
-        //{
-        //    var oldDate = config.GetValueFrom(SourceCollection) as DateTime?;
-        //    if (date != oldDate && oldDate.HasValue)
-        //    {
-        //        date += oldDate.Value.TimeOfDay;
-        //    }
-        //    config.SetValue(SourceCollection, date);
-        //    await TargetItemChanged.InvokeAsync(SourceCollection);
-        //}
-
-        //private async Task EditTime(TimeSpan? time, T target, ColumnConfig<T> config)
-        //{
-        //    var oldTime = config.GetValueFrom(SourceCollection) as TimeSpan?;
-
-        //    if (time != oldTime)
-        //    {
-        //        config.SetValue(SourceCollection, time);
-        //        await TargetItemChanged.InvokeAsync(SourceCollection);
-        //    }
-        //}
-
-        //private async Task EditTimeInDate(TimeSpan? newTime, T target, ColumnConfig<T> config)
-        //{
-        //    if (config.GetValueFrom(SourceCollection) is DateTime oldDate)
-        //    {
-        //        var newDate = oldDate.Date + newTime;
-        //        if (newDate != oldDate)
-        //        {
-        //            config.SetValue(SourceCollection, newDate);
-        //            await TargetItemChanged.InvokeAsync(SourceCollection);
-        //        }
-        //    }
-        //    else if (newTime.HasValue)
-        //    {
-        //        config.SetValue(SourceCollection, DateTime.MinValue + newTime.Value);
-        //        await TargetItemChanged.InvokeAsync(SourceCollection);
-        //    }
-        //}
     }
 }
