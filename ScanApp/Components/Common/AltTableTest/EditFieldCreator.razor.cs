@@ -2,11 +2,10 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
 using ScanApp.Common.Extensions;
+using ScanApp.Common.Helpers;
 using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScanApp.Common.Helpers;
 
 namespace ScanApp.Components.Common.AltTableTest
 {
@@ -45,10 +44,10 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             // Type of mud blazor text field (int, string, etc)
             var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
-
+            // todo add custom edit converter - mud blazor mechanism to text fields - put it in Column Config
             // Start creating text field
             builder.OpenComponent(LineNumber.Get(), textFieldType);
-            builder.AddAttribute(LineNumber.Get(), "Value", config.GetValueFrom(TargetItem) as object);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Value), config.GetValueFrom(TargetItem) as object);
 
             // Set callback for edit action
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
@@ -59,15 +58,15 @@ namespace ScanApp.Components.Common.AltTableTest
             }
 
             dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
-            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callback);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.ValueChanged), callback);
 
             // Set up corresponding validator
             if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Validation), validatorDelegate);
 
             // Set common options
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Disabled), !config.IsEditable);
 
             // Finish component
             builder.CloseComponent();
@@ -76,51 +75,51 @@ namespace ScanApp.Components.Common.AltTableTest
         private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
             builder.OpenComponent(LineNumber.Get(), typeof(MudDatePicker));
-            builder.AddAttribute(LineNumber.Get(), "Date", config.GetValueFrom(TargetItem) as DateTime?);
 
-            var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config));
-            builder.AddAttribute(LineNumber.Get(), "DateChanged", callback);
-
+            var editCallback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Date), config.GetValueFrom(TargetItem) as DateTime?);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateChanged), editCallback);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Editable), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Disabled), !config.IsEditable);
             if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
-
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
+                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), validatorDelegate);
 
             builder.CloseComponent();
         }
 
         private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
-            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
-
-            if (config.PropertyType == typeof(DateTime?))
+            TimeSpan? time = null;
+            var callback = EventCallback<TimeSpan?>.Empty;
+            if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime))
             {
                 var data = config.GetValueFrom(TargetItem) as DateTime?;
-                TimeSpan? time = data.HasValue switch
+                time = data.HasValue switch
                 {
                     true => data.Value.TimeOfDay,
                     false => null
                 };
 
-                builder.AddAttribute(LineNumber.Get(), "Time", time);
-                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, TargetItem, config));
-                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
+                callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, config));
             }
 
-            if (config.PropertyType == typeof(TimeSpan?))
+            if (config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan))
             {
-                var time = config.GetValueFrom(TargetItem) as TimeSpan?;
-                builder.AddAttribute(LineNumber.Get(), "Time", time);
-                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config));
-                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
+                time = config.GetValueFrom(TargetItem) as TimeSpan?;
+                callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config));
             }
 
-            if (Validators.TryGetValue(config, out var validatorDelegate))
-                builder.AddAttribute(LineNumber.Get(), "Validation", validatorDelegate);
 
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Disabled", !config.IsEditable);
+            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
+
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Time), time);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeChanged), callback);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Editable), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Disabled), !config.IsEditable);
+            if (Validators.TryGetValue(config, out var validatorDelegate))
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validatorDelegate);
 
             builder.CloseComponent();
         }
@@ -147,7 +146,7 @@ namespace ScanApp.Components.Common.AltTableTest
             }
         }
 
-        private async Task EditTimeInDate(TimeSpan? newTime, T target, ColumnConfig<T> config)
+        private async Task EditTimeInDate(TimeSpan? newTime, ColumnConfig<T> config)
         {
             if (config.GetValueFrom(TargetItem) is DateTime oldDate)
             {
