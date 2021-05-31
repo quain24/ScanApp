@@ -1,7 +1,6 @@
 ﻿@inherits FieldCreatorBase<T>
 @typeparam T
 
-@foreach (var config in Configs)
-{
-    @CreateEditField(config)
+@{
+    base.BuildRenderTree(__builder);
 }

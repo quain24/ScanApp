@@ -1,0 +1,47 @@
+﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@typeparam T
+
+<MudDialog>
+    <DialogContent>
+            @if (Configs?.Count > 0)
+            {
+                <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+                    <FilterFieldCreator T="T" Configs="Configs"></FilterFieldCreator>
+                </MudForm>
+            }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Apply filters</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public List<ColumnConfig<T>> Configs { get; set; }
+
+    private MudForm _form;
+    private bool _success = true;
+
+    Task Submit()
+    {
+        if (_form is null)
+        {
+            MudDialog.Cancel();
+            return Task.CompletedTask;
+        }
+
+        _form.Validate();
+
+        if (_success is false)
+            return Task.CompletedTask;
+
+        MudDialog.Close(DialogResult.Ok(1));
+        return Task.CompletedTask;
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

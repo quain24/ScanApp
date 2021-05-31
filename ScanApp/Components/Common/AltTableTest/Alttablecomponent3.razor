@@ -15,7 +15,7 @@
         }
     </MudSelect>
 }
-<FilterFieldCreator Configs="Configs" SourceCollection="Data"></FilterFieldCreator>
+
 @if (GroupedData?.Count > 0)
 {
     <MudTable FixedHeader="FixedHeader" @bind-SelectedItem="@SelectedGroup" OnRowClick="OnClick" T="KeyValuePair<string, List<TTableType>>" Height="@CalculateHeight(GroupedData.Count)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="GroupedData" Dense="true" Breakpoint="Breakpoint.None">
@@ -241,6 +241,20 @@ else
             return;
         var data = (TTableType)result.Data;
         await EditItem(data);
+    }
+
+    public async Task OpenFilterItemDialog()
+    {
+        var dialog = _dialogService.Show<FilterDialog<TTableType>>("Filtering dialog",
+            new DialogParameters
+            {
+                ["Configs"] = Configs
+            },
+            Globals.Gui.DefaultDialogOptions);
+
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
     }
 
     private Task EditItem(TTableType editedItem)

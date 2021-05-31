@@ -16,25 +16,7 @@
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
-
-@*<MudTable T="WeatherForecast" Items="@forecasts">
-    <HeaderContent>
-        <MudTh>Sim</MudTh>
-        <MudTh>tem c</MudTh>
-        <MudTh>date</MudTh>
-        <MudTh>version</MudTh>
-        <MudTh>num</MudTh>
-        <MudTh>modname</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>@context.TemperatureC</MudTd>
-        <MudTd>@context.TemperatureC</MudTd>
-        <MudTd>@context.Date</MudTd>
-        <MudTd>@context.Version</MudTd>
-        <MudTd>@context.Number</MudTd>
-        <MudTd>@context.Model.Name</MudTd>
-    </RowTemplate>
-</MudTable>*@
+<MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
 
 @code
 {

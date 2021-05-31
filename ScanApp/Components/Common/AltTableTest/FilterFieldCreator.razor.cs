@@ -24,8 +24,7 @@ namespace ScanApp.Components.Common.AltTableTest
         [Parameter] public string ToLabel { get; set; } = "To";
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";
         [Parameter] public string ErrorMessageFromTo { get; set; }
-
-        private IEnumerable<ColumnConfig<T>> FilterableConfigs { get; set; }
+        
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferencesFromTo = new();
         private readonly Dictionary<Guid, string> _includingValues = new();
@@ -33,11 +32,16 @@ namespace ScanApp.Components.Common.AltTableTest
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            FilterableConfigs = Configs.Where(c => c.IsFilterable);
             ErrorMessageFromTo ??= $"'{FromLabel}' cannot be greater than '{ToLabel}'.";
         }
 
-        private RenderFragment CreateFilterField(ColumnConfig<T> config)
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+            Configs = Configs.Where(c => c.IsFilterable);
+        }
+
+        public override RenderFragment CreateField(ColumnConfig<T> config)
         {
             return builder =>
             {

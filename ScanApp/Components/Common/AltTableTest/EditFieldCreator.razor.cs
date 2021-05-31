@@ -4,6 +4,7 @@ using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ScanApp.Common.Helpers;
 
@@ -24,7 +25,7 @@ namespace ScanApp.Components.Common.AltTableTest
                 throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set (You can use @bind-TargetItem)");
         }
 
-        private RenderFragment CreateEditField(ColumnConfig<T> config)
+        public override RenderFragment CreateField(ColumnConfig<T> config)
         {
             return builder =>
             {

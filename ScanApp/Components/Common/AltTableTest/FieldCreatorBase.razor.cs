@@ -6,13 +6,15 @@ using System.Linq.Expressions;
 
 namespace ScanApp.Components.Common.AltTableTest
 {
-    public abstract class FieldCreatorBase<T> : ComponentBase
+    public abstract partial class FieldCreatorBase<T> : ComponentBase
     {
         [Parameter]
-        public List<ColumnConfig<T>> Configs { get; set; }
+        public IEnumerable<ColumnConfig<T>> Configs { get; set; }
 
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();
+
+        public abstract RenderFragment CreateField(ColumnConfig<T> config);
 
         protected override void OnInitialized()
         {

@@ -1,11 +1,6 @@
 ﻿@inherits FieldCreatorBase<T>
 @typeparam T
 
-<MudExpansionPanels MultiExpansion="true">
-    @foreach (var config in FilterableConfigs)
-    {
-        <MudExpansionPanel Text="@config.DisplayName">
-            @CreateFilterField(config)
-        </MudExpansionPanel>
-    }
-</MudExpansionPanels>
+@{
+    base.BuildRenderTree(__builder);
+}
