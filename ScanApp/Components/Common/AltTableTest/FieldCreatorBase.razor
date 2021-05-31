@@ -3,7 +3,7 @@
         <MudExpansionPanels MultiExpansion="true">
             @foreach (var config in Configs)
             {
-                <MudExpansionPanel Text="@config.DisplayName">
+                <MudExpansionPanel @ref="@Panels[config]" Text="@config.DisplayName">
                     @CreateField(config)
                 </MudExpansionPanel>
             }
