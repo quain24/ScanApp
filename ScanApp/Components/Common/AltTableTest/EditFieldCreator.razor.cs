@@ -110,7 +110,6 @@ namespace ScanApp.Components.Common.AltTableTest
                 callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config));
             }
 
-
             builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
 
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Time), time);
@@ -127,19 +126,30 @@ namespace ScanApp.Components.Common.AltTableTest
         private async Task EditDate(DateTime? date, ColumnConfig<T> config)
         {
             var oldDate = config.GetValueFrom(TargetItem) as DateTime?;
-            if (date != oldDate && oldDate.HasValue)
+
+            if (config.PropertyType == typeof(DateTime) && date.HasValue is false)
             {
-                date += oldDate.Value.TimeOfDay;
+                config.SetValue(TargetItem, DateTime.MinValue + oldDate.Value.TimeOfDay);
             }
-            config.SetValue(TargetItem, date);
+            else
+            {
+                if (date != oldDate && oldDate.HasValue)
+                {
+                    date += oldDate.Value.TimeOfDay;
+                }
+                config.SetValue(TargetItem, date);
+            }
             await TargetItemChanged.InvokeAsync(TargetItem);
         }
 
         private async Task EditTime(TimeSpan? time, ColumnConfig<T> config)
         {
-            var oldTime = config.GetValueFrom(TargetItem) as TimeSpan?;
-
-            if (time != oldTime)
+            if (config.PropertyType == typeof(TimeSpan) && time.HasValue is false)
+            {
+                config.SetValue(TargetItem, TimeSpan.Zero);
+                await TargetItemChanged.InvokeAsync(TargetItem);
+            }
+            else if (time != config.GetValueFrom(TargetItem) as TimeSpan?)
             {
                 config.SetValue(TargetItem, time);
                 await TargetItemChanged.InvokeAsync(TargetItem);
