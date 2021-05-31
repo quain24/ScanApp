@@ -22,11 +22,13 @@ namespace ScanApp.Components.Common.AltTableTest
 
         [Parameter] public string FromLabel { get; set; } = "From";
         [Parameter] public string ToLabel { get; set; } = "To";
+        [Parameter] public string IncludeLabel { get; set; } = "Must include...";
         [Parameter] public string ErrorMessageFromTo { get; set; }
 
         private IEnumerable<ColumnConfig<T>> FilterableConfigs { get; set; }
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
-        private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferences = new();
+        private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferencesFromTo = new();
+        private readonly Dictionary<Guid, string> _includingValues = new();
 
         protected override void OnInitialized()
         {
@@ -41,22 +43,22 @@ namespace ScanApp.Components.Common.AltTableTest
             {
                 if (config.PropertyType.IsNumeric())
                     CreateFromToFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime)) &&
+                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
+                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?)) &&
                          (config.FieldType is FieldType.AutoDetect or FieldType.DateAndTime))
                     CreateFromToDateTimeFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime)) && config.FieldType == FieldType.Date)
+                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
+                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?)) &&
+                          config.FieldType == FieldType.Date)
                     CreateFromToDateFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) || config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
+                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
+                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?) ||
+                          config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
                          (config.FieldType is FieldType.AutoDetect or FieldType.Time))
                     CreateFromToTimeFields(builder, config);
+                else
+                    CreateIncludingField(builder, config);
             };
-        }
-
-        private void ValidateFromToPair(Guid id)
-        {
-            if (!_fieldReferences.ContainsKey(id)) return;
-            _fieldReferences[id].From?.Validate();
-            _fieldReferences[id].To?.Validate();
         }
 
         private void CreateFromToFields(RenderTreeBuilder builder, ColumnConfig<T> config)
@@ -110,22 +112,29 @@ namespace ScanApp.Components.Common.AltTableTest
                 : typeof(Nullable<>).MakeGenericType(type);
         }
 
+        private void ValidateFromToPair(Guid id)
+        {
+            if (!_fieldReferencesFromTo.ContainsKey(id)) return;
+            _fieldReferencesFromTo[id].From?.Validate();
+            _fieldReferencesFromTo[id].To?.Validate();
+        }
+
         private void CreateFieldReference(object o, ColumnConfig<T> config, bool isFrom)
         {
-            if (_fieldReferences.TryGetValue(config.Identifier, out var value))
+            if (_fieldReferencesFromTo.TryGetValue(config.Identifier, out var value))
             {
                 if (value.From is not null && value.To is not null)
                     return;
-                _fieldReferences[config.Identifier] = isFrom switch
+                _fieldReferencesFromTo[config.Identifier] = isFrom switch
                 {
-                    true when value.From is null => (o, _fieldReferences[config.Identifier].To),
-                    false when value.To is null => (_fieldReferences[config.Identifier].From, o),
-                    _ => _fieldReferences[config.Identifier]
+                    true when value.From is null => (o, _fieldReferencesFromTo[config.Identifier].To),
+                    false when value.To is null => (_fieldReferencesFromTo[config.Identifier].From, o),
+                    _ => _fieldReferencesFromTo[config.Identifier]
                 };
             }
             else
             {
-                _fieldReferences.Add(config.Identifier, isFrom ? (o, null) : (null, o));
+                _fieldReferencesFromTo.Add(config.Identifier, isFrom ? (o, null) : (null, o));
             }
         }
 
@@ -181,6 +190,18 @@ namespace ScanApp.Components.Common.AltTableTest
             CreateTimeField(builder, config, false, true);
         }
 
+        private void CreateIncludingField(RenderTreeBuilder builder, ColumnConfig<T> config)
+        {
+            _includingValues.TryAdd(config.Identifier, null);
+
+            builder.OpenComponent(LineNumber.Get(), typeof(MudTextField<string>));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Value), _includingValues[config.Identifier]);
+            var callbackValueChanged = CallbackFactory.Create<string>(this,  s => _includingValues[config.Identifier] = string.IsNullOrEmpty(s) ? null : s);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Label), IncludeLabel);
+            builder.CloseComponent();
+        }
+
         private void CreateDateField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
         {
             DateTime? value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
@@ -196,11 +217,11 @@ namespace ScanApp.Components.Common.AltTableTest
                 string Validate(DateTime? date)
                 {
                     if (date is null) return null;
-                    if (isFrom && ((DateTime?) _fromToValues[config.Identifier].To).HasValue is false) return null;
-                    if (isFrom is false && ((DateTime?) _fromToValues[config.Identifier].From).HasValue is false) return null;
+                    if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
+                    if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
                     var compareTo = isFrom
-                        ? (DateTime?) _fromToValues[config.Identifier].To.Date
-                        : (DateTime?) _fromToValues[config.Identifier].From.Date;
+                        ? (DateTime?)_fromToValues[config.Identifier].To.Date
+                        : (DateTime?)_fromToValues[config.Identifier].From.Date;
                     return isFrom
                         ? (date <= compareTo ? null : ErrorMessageFromTo)
                         : (date >= compareTo ? null : ErrorMessageFromTo);
@@ -208,7 +229,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
                 var callbackRevalidateFromTo = CallbackFactory.Create(this, () => ValidateFromToPair(config.Identifier));
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerClosed), callbackRevalidateFromTo);
-                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), (Func<DateTime?, string>) Validate);
+                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), (Func<DateTime?, string>)Validate);
             }
 
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Label), isFrom ? FromLabel : ToLabel);
