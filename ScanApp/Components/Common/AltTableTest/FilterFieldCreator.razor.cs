@@ -1,6 +1,6 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
@@ -52,6 +52,13 @@ namespace ScanApp.Components.Common.AltTableTest
             };
         }
 
+        private void ValidateFromToPair(Guid id)
+        {
+            if (!_fieldReferences.ContainsKey(id)) return;
+            _fieldReferences[id].From?.Validate();
+            _fieldReferences[id].To?.Validate();
+        }
+
         private void CreateFromToFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
             _fromToValues.TryAdd(config.Identifier, (null, null));
@@ -63,29 +70,33 @@ namespace ScanApp.Components.Common.AltTableTest
 
             // Create 'from'
             builder.OpenComponent(LineNumber.Get(), fieldType);
-            builder.AddAttribute(LineNumber.Get(), "Value", readDelegate.DynamicInvoke(config.Identifier, true));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, true));
 
             var callbackType = typeof(EventCallback<>).MakeGenericType(valueType);
             void SaveFromDelegate(dynamic obj) => _fromToValues[config.Identifier] = (obj, _fromToValues[config.Identifier].To);
             dynamic callbackFrom = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveFromDelegate);
-            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackFrom);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.ValueChanged), callbackFrom);
 
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Label", FromLabel);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), FromLabel);
+            var callbackRevalidateFromTo = CallbackFactory.Create<KeyboardEventArgs>(this, _ => ValidateFromToPair(config.Identifier));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
 
             // Create 'To'
             builder.OpenComponent(LineNumber.Get(), fieldType);
 
-            builder.AddAttribute(LineNumber.Get(), "Value", readDelegate.DynamicInvoke(config.Identifier, false));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, false));
             void SaveToDelegate(dynamic obj) => _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, obj);
             dynamic callbackTo = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveToDelegate);
-            builder.AddAttribute(LineNumber.Get(), "ValueChanged", callbackTo);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.ValueChanged), callbackTo);
 
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
-            builder.AddAttribute(LineNumber.Get(), "Validation", CreateValidationDelegate(config, valueType));
-            builder.AddAttribute(LineNumber.Get(), "Label", ToLabel);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Validation), CreateValidationDelegate(config, valueType));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), ToLabel);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
@@ -148,58 +159,59 @@ namespace ScanApp.Components.Common.AltTableTest
             _fromToValues.TryAdd(config.Identifier, (null, null));
 
             // Create 'from'
-            CreateDateField(builder, config, true, true);
+            CreateDateField(builder, config, true);
             CreateTimeField(builder, config, true);
 
             // Create 'To'
-            CreateDateField(builder, config, false);
+            CreateDateField(builder, config, false, true);
             CreateTimeField(builder, config, false);
         }
 
         private void CreateFromToDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
             _fromToValues.TryAdd(config.Identifier, (null, null));
-            CreateDateField(builder, config, true, true);
-            CreateDateField(builder, config, false);
+            CreateDateField(builder, config, true);
+            CreateDateField(builder, config, false, true);
         }
 
         private void CreateFromToTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
             _fromToValues.TryAdd(config.Identifier, (null, null));
-            CreateTimeField(builder, config, true, true);
-            CreateTimeField(builder, config, false);
+            CreateTimeField(builder, config, true);
+            CreateTimeField(builder, config, false, true);
         }
 
         private void CreateDateField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
         {
-            var fieldType = typeof(MudDatePicker);
-
             DateTime? value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
 
-            builder.OpenComponent(LineNumber.Get(), fieldType);
-            builder.AddAttribute(LineNumber.Get(), "Date", value);
+            builder.OpenComponent(LineNumber.Get(), typeof(MudDatePicker));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Date), value);
 
             var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config, isFrom));
-            builder.AddAttribute(LineNumber.Get(), "DateChanged", callback);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateChanged), callback);
 
             if (shouldValidate)
             {
-                string ValidateDateFromTo(DateTime? date)
+                string Validate(DateTime? date)
                 {
                     if (date is null) return null;
-                    if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
-                    if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
+                    if (isFrom && ((DateTime?) _fromToValues[config.Identifier].To).HasValue is false) return null;
+                    if (isFrom is false && ((DateTime?) _fromToValues[config.Identifier].From).HasValue is false) return null;
                     var compareTo = isFrom
-                        ? (DateTime?)_fromToValues[config.Identifier].To.Date
-                        : (DateTime?)_fromToValues[config.Identifier].From.Date;
-                    return isFrom ? (date <= compareTo ? null : ErrorMessageFromTo) : (date >= compareTo ? null : ErrorMessageFromTo);
+                        ? (DateTime?) _fromToValues[config.Identifier].To.Date
+                        : (DateTime?) _fromToValues[config.Identifier].From.Date;
+                    return isFrom
+                        ? (date <= compareTo ? null : ErrorMessageFromTo)
+                        : (date >= compareTo ? null : ErrorMessageFromTo);
                 }
 
-                builder.AddAttribute(LineNumber.Get(), "Validation", (Func<DateTime?, string>)ValidateDateFromTo);
+                var callbackRevalidateFromTo = CallbackFactory.Create(this, () => ValidateFromToPair(config.Identifier));
+                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerClosed), callbackRevalidateFromTo);
+                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), (Func<DateTime?, string>) Validate);
             }
 
-            builder.AddAttribute(LineNumber.Get(), "Label", isFrom ? FromLabel : ToLabel);
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Label), isFrom ? FromLabel : ToLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
             builder.CloseComponent();
         }
@@ -224,59 +236,61 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private void CreateTimeField(RenderTreeBuilder builder, ColumnConfig<T> config, bool isFrom, bool shouldValidate = false)
         {
-            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
             var value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
+            TimeSpan? time = null;
+            var editingCallback = EventCallback<TimeSpan?>.Empty;
+            Func<TimeSpan?, string> validationFunc = null;
 
-            if (config.PropertyType == typeof(DateTime?))
+            if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
+                config.PropertyType == typeof(DateTimeOffset?) || config.PropertyType == typeof(DateTimeOffset))
             {
-                var data = value as DateTime?;
-                TimeSpan? time = data.HasValue switch
+                var data = (value is DateTimeOffset offset ? offset.LocalDateTime : value) as DateTime?;
+                time = data.HasValue switch
                 {
                     true => data.Value.TimeOfDay,
                     false => null
                 };
 
-                builder.AddAttribute(LineNumber.Get(), "Time", time);
-                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, config, isFrom));
-                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
-                if (shouldValidate)
+                editingCallback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, config, isFrom));
+                validationFunc = t =>
                 {
-                    string ValidateDateFromTo(TimeSpan? time)
-                    {
-                        if (time is null) return null;
-                        if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
-                        if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false) return null;
+                    if (t is null) return null;
+                    if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
+                    if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false)
+                        return null;
 
-                        var compareTo = isFrom
-                            ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay
-                            : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
-                        return isFrom ? (time <= compareTo ? null : ErrorMessageFromTo) : (time >= compareTo ? null : ErrorMessageFromTo);
-                    }
-
-                    builder.AddAttribute(LineNumber.Get(), "Validation", (Func<TimeSpan?, string>)ValidateDateFromTo);
-                }
+                    var compareTo = isFrom
+                        ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay
+                        : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
+                    return isFrom
+                        ? (t <= compareTo ? null : ErrorMessageFromTo)
+                        : (t >= compareTo ? null : ErrorMessageFromTo);
+                };
             }
-
-            if (config.PropertyType == typeof(TimeSpan?))
+            else if (config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan))
             {
-                builder.AddAttribute(LineNumber.Get(), "Time", value as TimeSpan?);
-                var callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config, isFrom));
-                builder.AddAttribute(LineNumber.Get(), "TimeChanged", callback);
-                if (shouldValidate)
+                time = value;
+                editingCallback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config, isFrom));
+                validationFunc = t =>
                 {
-                    string ValidateDateFromTo(TimeSpan? date)
-                    {
-                        if (date is null) return null;
-                        var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To : (TimeSpan?)_fromToValues[config.Identifier].From;
-                        return isFrom ? (date <= compareTo ? null : "error") : (date >= compareTo ? null : "error");
-                    }
-
-                    builder.AddAttribute(LineNumber.Get(), "Validation", (Func<TimeSpan?, string>)ValidateDateFromTo);
-                }
+                    if (t is null) return null;
+                    var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To : (TimeSpan?)_fromToValues[config.Identifier].From;
+                    return isFrom ? (t <= compareTo ? null : ErrorMessageFromTo) : (t >= compareTo ? null : ErrorMessageFromTo);
+                };
             }
 
-            builder.AddAttribute(LineNumber.Get(), "Label", isFrom ? FromLabel : ToLabel);
-            builder.AddAttribute(LineNumber.Get(), "Immediate", true);
+            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Time), time);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeChanged), editingCallback);
+
+            if (shouldValidate)
+            {
+                var callbackRevalidateFromTo = CallbackFactory.Create(this, () => ValidateFromToPair(config.Identifier));
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validationFunc);
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerClosed), callbackRevalidateFromTo);
+            }
+
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Label), isFrom ? FromLabel : ToLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
 
             builder.CloseComponent();
