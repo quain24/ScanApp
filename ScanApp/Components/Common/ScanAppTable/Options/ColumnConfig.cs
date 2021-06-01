@@ -81,7 +81,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
 
         public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
         {
-            if(typeof(TType) != PropertyType && (Nullable.GetUnderlyingType(PropertyType) != typeof(TType)))
+            if(typeof(TType) != PropertyType)
             {
                 throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
             }
