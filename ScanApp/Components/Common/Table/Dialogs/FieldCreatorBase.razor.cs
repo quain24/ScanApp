@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Components;
-using MudBlazor;
-using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.AltTableTest
+namespace ScanApp.Components.Common.Table.Dialogs
 {
     public abstract partial class FieldCreatorBase<T> : ComponentBase
     {

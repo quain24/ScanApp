@@ -1,10 +1,10 @@
-﻿using ScanApp.Common.Extensions;
-using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ScanApp.Common.Extensions;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.AltTableTest
+namespace ScanApp.Components.Common.Table
 {
     public class InBetweenInclusiveFilter<T> : IFilter<T>
     {

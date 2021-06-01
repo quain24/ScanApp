@@ -1,7 +1,6 @@
 ﻿@page "/Alttable"
 @using ScanApp.Data
 @using ScanApp.Components.Common.ScanAppTable.Options
-@using ScanApp.Components.Common.AltTableTest
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
@@ -12,7 +11,7 @@
 
 <h1>Alt table</h1>
 
-<Alttablecomponent3 @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
@@ -50,7 +49,7 @@
 
     private List<WeatherForecast> forecasts;
 
-    private Alttablecomponent3<WeatherForecast> table;
+    private SCTable<WeatherForecast> table;
 
     private void Remove()
     {

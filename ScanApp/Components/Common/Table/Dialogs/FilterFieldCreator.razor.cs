@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
 using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
-namespace ScanApp.Components.Common.AltTableTest
+namespace ScanApp.Components.Common.Table.Dialogs
 {
     public partial class FilterFieldCreator<T> : FieldCreatorBase<T>
     {
@@ -24,7 +24,7 @@ namespace ScanApp.Components.Common.AltTableTest
         [Parameter] public string ToLabel { get; set; } = "To";
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";
         [Parameter] public string ErrorMessageFromTo { get; set; }
-        
+
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferencesFromTo = new();
         private readonly Dictionary<Guid, string> _includingValues = new();
@@ -39,6 +39,32 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             base.OnParametersSet();
             Configs = Configs.Where(c => c.IsFilterable);
+        }
+
+        public IEnumerable<IFilter<T>> GetFilters()
+        {
+            List<IFilter<T>> filters = new(_fromToValues.Count + _includingValues.Count);
+            foreach (var (key, values) in _fromToValues)
+            {
+                var config = Configs.First(c => c.Identifier == key);
+                if (values.From is null && values.To is null)
+                    continue;
+
+                IFilter<T> filter = values switch
+                {
+                    (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Date =>
+                        new InBetweenInclusiveFilterDateOnly<T>(config, v.From, v.To),
+                    (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Time =>
+                        new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
+                    (null or TimeSpan, null or TimeSpan) v when config.FieldType is FieldType.Time =>
+                        new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
+                    var (@from, to) => new InBetweenInclusiveFilter<T>(config, @from, to)
+                };
+
+                filters.Add(filter);
+            }
+
+            return filters;
         }
 
         public override RenderFragment CreateField(ColumnConfig<T> config)
@@ -107,7 +133,7 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.CloseComponent();
         }
 
-        private TData GetDataFromTo<TData>(Guid id, bool isFrom) => (isFrom ? _fromToValues[id].From : _fromToValues[id].To);
+        private TData GetDataFromTo<TData>(Guid id, bool isFrom) => isFrom ? _fromToValues[id].From : _fromToValues[id].To;
 
         private static Type EnsureNullable(Type type)
         {
@@ -241,19 +267,19 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close());
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close(false));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Clear(false));
+               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Clear(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
@@ -266,6 +292,17 @@ namespace ScanApp.Components.Common.AltTableTest
         }
 
         /// <summary>
+        /// Returns reference to 'from' or 'to' field / picker pointed to by given <paramref name="config"/>.
+        /// </summary>
+        /// <param name="config"><see cref="_fieldReferencesFromTo"/> index.</param>
+        /// <param name="isFrom">Choose if either 'from' or 'to' value should be returned.</param>
+        /// <returns>If <paramref name="isFrom"/> is <see langword="true"/>, than a 'from' value from <see cref="_fieldReferencesFromTo"/> with index
+        /// corresponding to given <paramref name="config"/> is returned. Otherwise, 'to' part is returned.</returns>
+        private dynamic FromToField(ColumnConfig<T> config, bool isFrom) => isFrom
+            ? _fieldReferencesFromTo[config.Identifier].From
+            : _fieldReferencesFromTo[config.Identifier].To;
+
+        /// <summary>
         /// Returns data from 'from' or 'to' field pointed to by given <paramref name="config"/>.
         /// </summary>
         /// <param name="config"><see cref="_fromToValues"/> index.</param>
@@ -273,8 +310,8 @@ namespace ScanApp.Components.Common.AltTableTest
         /// <returns>If <paramref name="isFrom"/> is <see langword="true"/>, than a 'from' value from <see cref="_fromToValues"/> with index
         /// corresponding to given <paramref name="config"/> is returned. Otherwise, 'to' part is returned.</returns>
         private dynamic FromToFieldData(ColumnConfig<T> config, bool isFrom) => isFrom
-            ? _fieldReferencesFromTo[config.Identifier].From
-            : _fieldReferencesFromTo[config.Identifier].To;
+            ? _fromToValues[config.Identifier].From
+            : _fromToValues[config.Identifier].To;
 
         private void EditDate(DateTime? date, ColumnConfig<T> config, bool from)
         {
@@ -350,19 +387,19 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close());
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close(false));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Clear(false));
+               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Clear(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));

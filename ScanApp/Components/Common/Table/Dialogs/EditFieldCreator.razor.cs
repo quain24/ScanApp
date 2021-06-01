@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
 using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace ScanApp.Components.Common.AltTableTest
+namespace ScanApp.Components.Common.Table.Dialogs
 {
     public partial class EditFieldCreator<T> : FieldCreatorBase<T>
     {

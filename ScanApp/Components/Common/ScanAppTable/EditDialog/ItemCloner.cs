@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ScanApp.Common.Extensions
+namespace ScanApp.Components.Common.ScanAppTable.EditDialog
 {
     public static class ItemCloner
     {

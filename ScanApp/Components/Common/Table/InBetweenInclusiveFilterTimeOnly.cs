@@ -1,8 +1,8 @@
-﻿using ScanApp.Common.Extensions;
+﻿using System;
+using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
 
-namespace ScanApp.Components.Common.AltTableTest
+namespace ScanApp.Components.Common.Table
 {
     public class InBetweenInclusiveFilterTimeOnly<T> : InBetweenInclusiveFilter<T>
     {
