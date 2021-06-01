@@ -48,7 +48,7 @@ namespace ScanApp.Components.Common.AltTableTest
         {
             // Type of mud blazor text field (int, string, etc)
             var textFieldType = typeof(MudTextField<>).MakeGenericType(config.PropertyType);
-            // todo add custom edit converter - mud blazor mechanism to text fields - put it in Column Config
+            
             // Start creating text field
             builder.OpenComponent(LineNumber.Get(), textFieldType);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Value), config.GetValueFrom(TargetItem) as object);
@@ -68,6 +68,10 @@ namespace ScanApp.Components.Common.AltTableTest
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Validation), validatorDelegate);
 
+            // Apply custom converter for get / set value if there is one (from text/int/etc to object and vice-versa)
+            if(config.Converter is not null)
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Converter), config.Converter);
+
             // Set common options
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Immediate), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Disabled), !config.IsEditable);
@@ -86,6 +90,8 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DisableToolbar), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Disabled), !config.IsEditable);
+            if(config.Converter is not null)
+                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), validatorDelegate);
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
@@ -150,6 +156,8 @@ namespace ScanApp.Components.Common.AltTableTest
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.DisableToolbar), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Disabled), !config.IsEditable);
+            if(config.Converter is not null)
+                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validatorDelegate);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>

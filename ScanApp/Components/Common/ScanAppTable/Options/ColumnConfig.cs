@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using MudBlazor;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
@@ -15,6 +16,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public Type PropertyType { get; }
         public FieldType FieldType { get; }
         public Func<dynamic, string> DisplayFormatter { get; }
+        public dynamic Converter { get; private set; }
         public Guid Identifier { get; } = Guid.NewGuid();
         public IReadOnlyList<MemberInfo> PropertyPath { get; }
         public bool IsFilterable { get; init; } = true;
@@ -75,6 +77,16 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.Name}'" +
                                             $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier}.");
             }
+        }
+
+        public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
+        {
+            if(typeof(TType) != PropertyType && (Nullable.GetUnderlyingType(PropertyType) != typeof(TType)))
+            {
+                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
+            }
+            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
         }
 
         private string ExtractPropertyName()
