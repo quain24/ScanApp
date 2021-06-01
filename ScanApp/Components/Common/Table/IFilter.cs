@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using ScanApp.Components.Common.ScanAppTable.Options;
+﻿using ScanApp.Components.Common.ScanAppTable.Options;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.Common.Table
 {
@@ -7,8 +7,8 @@ namespace ScanApp.Components.Common.Table
     {
         ColumnConfig<T> ColumnConfig { get; }
 
-        IEnumerable<T> Run(IEnumerable<T> source);
-
         bool Check(T item);
+
+        IEnumerable<T> Run(IEnumerable<T> source);
     }
 }

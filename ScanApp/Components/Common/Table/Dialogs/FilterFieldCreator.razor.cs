@@ -47,6 +47,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             foreach (var (key, values) in _fromToValues)
             {
                 var config = Configs.First(c => c.Identifier == key);
+
                 if (values.From is null && values.To is null)
                     continue;
 
@@ -55,13 +56,21 @@ namespace ScanApp.Components.Common.Table.Dialogs
                     (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Date =>
                         new InBetweenInclusiveFilterDateOnly<T>(config, v.From, v.To),
                     (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Time =>
-                        new InBetweenInclusiveFilterTimeOnly<T>(config, (TimeSpan?)(v.From is null ? null : v.From.TimeOfDay), (TimeSpan?)(v.To is null ? null : v.To.TimeOfDay)),
+                        new InBetweenInclusiveFilterTimeOnly<T>(config, (TimeSpan?)(v.From?.TimeOfDay), (TimeSpan?)(v.To?.TimeOfDay)),
                     (null or TimeSpan, null or TimeSpan) v when config.FieldType is FieldType.Time =>
                         new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
                     var (@from, to) => new InBetweenInclusiveFilter<T>(config, @from, to)
                 };
 
                 filters.Add(filter);
+            }
+
+            foreach (var (key, value) in _includingValues)
+            {
+                var config = Configs.First(c => c.Identifier == key);
+                if(value is null)
+                    continue;
+                filters.Add(new IncludeFilter<T>(config, value));
             }
 
             return filters;
