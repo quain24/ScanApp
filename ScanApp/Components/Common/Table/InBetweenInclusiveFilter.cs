@@ -17,13 +17,13 @@ namespace ScanApp.Components.Common.Table
 
         public InBetweenInclusiveFilter(ColumnConfig<T> columnConfig, dynamic from, dynamic to)
         {
-            if (CanBeUsed(from) is false)
+            if (CanBeUsed(from?.GetType()) is false)
                 throw new ArgumentException($"'{nameof(from)}' {_message}", nameof(from));
 
-            if (CanBeUsed(to) is false)
+            if (CanBeUsed(to?.GetType()) is false)
                 throw new ArgumentException($"'{nameof(to)}' {_message}", nameof(to));
 
-            if (TypesMatch(from, to) is false)
+            if (TypesMatch(from, to?.GetType()) is false)
                 throw new ArgumentException($"'{nameof(from)}' type and '{nameof(to)}' type are not matched.");
 
             ColumnConfig = columnConfig ?? throw new ArgumentNullException(nameof(columnConfig));
@@ -36,25 +36,23 @@ namespace ScanApp.Components.Common.Table
                                             $" stored in {nameof(columnConfig)} is not compatible with {nameof(InBetweenInclusiveFilter<T>)} sorting algorithm.");
             }
 
-            if (TypesMatch(from, columnConfig.PropertyType) is false || TypesMatch(to, columnConfig.PropertyType))
-            {
-                throw new ArgumentException($"Type of property being filtered ({columnConfig.PropertyType.Name})" +
-                                            $" is not the same as types of '{nameof(from)}' or/and '{nameof(to)}' parameters.");
-            }
-
             _checkDelegate = To is null && From is null ? _ => true : CheckValue;
         }
 
-        private static bool CanBeUsed(dynamic value)
+        private static bool CanBeUsed(Type value)
         {
-            return value is DateTime or TimeSpan or DateTimeOffset ||
-                   (((Type)value?.GetType())?.IsNumeric() ?? true);
+            return value == typeof(DateTime) || value == typeof(DateTime?) ||
+                   value ==  typeof(TimeSpan) || value ==  typeof(TimeSpan?) ||
+                   value ==  typeof(DateTimeOffset) || value ==  typeof(DateTimeOffset?) ||
+                   (value?.IsNumeric() ?? true);
         }
 
-        private static bool TypesMatch(dynamic one, dynamic two)
+        private static bool TypesMatch(dynamic one, Type two)
         {
             if (one is null || two is null) return true;
-            return (one is Type ? one : (Type)one.GetType()) == (two is Type ? two : (Type)two.GetType());
+            Type oneType = one is Type ? one : (Type) one.GetType();
+
+            return oneType == Nullable.GetUnderlyingType(two) || oneType == two;
         }
 
         public virtual bool Check(T item) => _checkDelegate(item);

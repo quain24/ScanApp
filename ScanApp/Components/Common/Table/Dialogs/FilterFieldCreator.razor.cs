@@ -55,7 +55,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                     (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Date =>
                         new InBetweenInclusiveFilterDateOnly<T>(config, v.From, v.To),
                     (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Time =>
-                        new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
+                        new InBetweenInclusiveFilterTimeOnly<T>(config, (TimeSpan?)(v.From is null ? null : v.From.TimeOfDay), (TimeSpan?)(v.To is null ? null : v.To.TimeOfDay)),
                     (null or TimeSpan, null or TimeSpan) v when config.FieldType is FieldType.Time =>
                         new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
                     var (@from, to) => new InBetweenInclusiveFilter<T>(config, @from, to)
@@ -353,7 +353,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 {
                     if (t is null || ((DateTime?)FromToFieldData(config, isFrom)).HasValue is false) return null;
 
-                    var compareTo = (TimeSpan?)FromToFieldData(config, isFrom);
+                    var compareTo = (TimeSpan?)(FromToFieldData(config, isFrom).TimeOfDay);
                     return isFrom
                         ? (t <= compareTo ? null : ErrorMessageFromTo)
                         : (t >= compareTo ? null : ErrorMessageFromTo);
@@ -367,7 +367,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 {
                     if (t is null) return null;
                     var compareTo = (TimeSpan?)FromToFieldData(config, isFrom);
-                    return isFrom ? (t <= compareTo ? null : ErrorMessageFromTo) : (t >= compareTo ? null : ErrorMessageFromTo);
+                    return isFrom
+                        ? (t <= compareTo ? null : ErrorMessageFromTo)
+                        : (t >= compareTo ? null : ErrorMessageFromTo);
                 };
             }
 
