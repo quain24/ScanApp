@@ -94,13 +94,13 @@ namespace ScanApp.Components.Common.AltTableTest
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)_fieldReferences[config.Identifier]).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)_fieldReferences[config.Identifier]).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                if (Nullable.GetUnderlyingType(config.PropertyType) is not null)
                {
@@ -109,7 +109,7 @@ namespace ScanApp.Components.Common.AltTableTest
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.Style), "mr-auto align-self-start");
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                       (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+                       (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
                    builderInternal.CloseComponent();
                }
            }));
@@ -158,13 +158,13 @@ namespace ScanApp.Components.Common.AltTableTest
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)_fieldReferences[config.Identifier]).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)_fieldReferences[config.Identifier]).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                if (Nullable.GetUnderlyingType(config.PropertyType) is not null)
                {
@@ -172,7 +172,7 @@ namespace ScanApp.Components.Common.AltTableTest
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.Style), "mr-auto align-self-start");
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                       (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+                       (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
                    builderInternal.CloseComponent();
                }
            }));

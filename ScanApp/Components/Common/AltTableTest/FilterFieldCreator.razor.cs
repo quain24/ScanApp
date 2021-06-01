@@ -24,7 +24,7 @@ namespace ScanApp.Components.Common.AltTableTest
         [Parameter] public string ToLabel { get; set; } = "To";
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";
         [Parameter] public string ErrorMessageFromTo { get; set; }
-
+        
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferencesFromTo = new();
         private readonly Dictionary<Guid, string> _includingValues = new();
@@ -244,19 +244,19 @@ namespace ScanApp.Components.Common.AltTableTest
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Clear(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
                builderInternal.CloseComponent();
            }));
 
@@ -353,19 +353,19 @@ namespace ScanApp.Components.Common.AltTableTest
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
                var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Clear(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
                builderInternal.CloseComponent();
            }));
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Label), isFrom ? FromLabel : ToLabel);

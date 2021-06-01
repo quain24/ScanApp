@@ -13,6 +13,9 @@ namespace ScanApp.Components.Common.AltTableTest
         public IEnumerable<ColumnConfig<T>> Configs { get; set; }
 
         [Parameter] public bool StartExpanded { get; set; }
+        [Parameter] public string PickerOKLabel { get; set; } = "Ok";
+        [Parameter] public string PickerCancelLabel { get; set; } = "Cancel";
+        [Parameter] public string PickerClearLabel { get; set; } = "Clear";
 
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
