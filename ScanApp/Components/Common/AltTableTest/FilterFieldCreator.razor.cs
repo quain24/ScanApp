@@ -24,7 +24,7 @@ namespace ScanApp.Components.Common.AltTableTest
         [Parameter] public string ToLabel { get; set; } = "To";
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";
         [Parameter] public string ErrorMessageFromTo { get; set; }
-        
+
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fieldReferencesFromTo = new();
         private readonly Dictionary<Guid, string> _includingValues = new();
@@ -200,7 +200,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
             builder.OpenComponent(LineNumber.Get(), typeof(MudTextField<string>));
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Value), _includingValues[config.Identifier]);
-            var callbackValueChanged = CallbackFactory.Create<string>(this,  s => _includingValues[config.Identifier] = string.IsNullOrEmpty(s) ? null : s);
+            var callbackValueChanged = CallbackFactory.Create<string>(this, s => _includingValues[config.Identifier] = string.IsNullOrEmpty(s) ? null : s);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Label), IncludeLabel);
             builder.CloseComponent();
@@ -212,6 +212,8 @@ namespace ScanApp.Components.Common.AltTableTest
 
             builder.OpenComponent(LineNumber.Get(), typeof(MudDatePicker));
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Date), value);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Editable), true);
 
             var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config, isFrom));
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateChanged), callback);
@@ -236,10 +238,43 @@ namespace ScanApp.Components.Common.AltTableTest
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), (Func<DateTime?, string>)Validate);
             }
 
+            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
+           {
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close());
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+               builderInternal.CloseComponent();
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Close(false));
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+               builderInternal.CloseComponent();
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToFieldData(config, isFrom)).Clear(false));
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+               builderInternal.CloseComponent();
+           }));
+
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Label), isFrom ? FromLabel : ToLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
             builder.CloseComponent();
         }
+
+        /// <summary>
+        /// Returns data from 'from' or 'to' field pointed to by given <paramref name="config"/>.
+        /// </summary>
+        /// <param name="config"><see cref="_fromToValues"/> index.</param>
+        /// <param name="isFrom">Choose if either 'from' or 'to' value should be returned.</param>
+        /// <returns>If <paramref name="isFrom"/> is <see langword="true"/>, than a 'from' value from <see cref="_fromToValues"/> with index
+        /// corresponding to given <paramref name="config"/> is returned. Otherwise, 'to' part is returned.</returns>
+        private dynamic FromToFieldData(ColumnConfig<T> config, bool isFrom) => isFrom
+            ? _fieldReferencesFromTo[config.Identifier].From
+            : _fieldReferencesFromTo[config.Identifier].To;
 
         private void EditDate(DateTime? date, ColumnConfig<T> config, bool from)
         {
@@ -279,14 +314,9 @@ namespace ScanApp.Components.Common.AltTableTest
                 editingCallback = CallbackFactory.Create<TimeSpan?>(this, d => EditTimeInDate(d, config, isFrom));
                 validationFunc = t =>
                 {
-                    if (t is null) return null;
-                    if (isFrom && ((DateTime?)_fromToValues[config.Identifier].To).HasValue is false) return null;
-                    if (isFrom is false && ((DateTime?)_fromToValues[config.Identifier].From).HasValue is false)
-                        return null;
+                    if (t is null || ((DateTime?)FromToFieldData(config, isFrom)).HasValue is false) return null;
 
-                    var compareTo = isFrom
-                        ? (TimeSpan?)_fromToValues[config.Identifier].To.TimeOfDay
-                        : (TimeSpan?)_fromToValues[config.Identifier].From.TimeOfDay;
+                    var compareTo = (TimeSpan?)FromToFieldData(config, isFrom);
                     return isFrom
                         ? (t <= compareTo ? null : ErrorMessageFromTo)
                         : (t >= compareTo ? null : ErrorMessageFromTo);
@@ -299,12 +329,14 @@ namespace ScanApp.Components.Common.AltTableTest
                 validationFunc = t =>
                 {
                     if (t is null) return null;
-                    var compareTo = isFrom ? (TimeSpan?)_fromToValues[config.Identifier].To : (TimeSpan?)_fromToValues[config.Identifier].From;
+                    var compareTo = (TimeSpan?)FromToFieldData(config, isFrom);
                     return isFrom ? (t <= compareTo ? null : ErrorMessageFromTo) : (t >= compareTo ? null : ErrorMessageFromTo);
                 };
             }
 
             builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Time), time);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeChanged), editingCallback);
 
@@ -315,6 +347,27 @@ namespace ScanApp.Components.Common.AltTableTest
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerClosed), callbackRevalidateFromTo);
             }
 
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>
+           {
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close());
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Ok")));
+               builderInternal.CloseComponent();
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Close(false));
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Cancel")));
+               builderInternal.CloseComponent();
+               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker) FromToFieldData(config, isFrom)).Clear(false));
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
+               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), "Clear")));
+               builderInternal.CloseComponent();
+           }));
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Label), isFrom ? FromLabel : ToLabel);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
 
@@ -323,7 +376,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private void EditTimeInDate(TimeSpan? newTime, ColumnConfig<T> config, bool isFrom)
         {
-            if ((isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To) is DateTime oldDate)
+            if (FromToFieldData(config, isFrom) is DateTime oldDate)
             {
                 var newDate = oldDate.Date + newTime;
                 if (newDate == oldDate) return;
@@ -351,7 +404,7 @@ namespace ScanApp.Components.Common.AltTableTest
 
         private void EditTime(TimeSpan? time, ColumnConfig<T> config, bool isFrom)
         {
-            var source = (isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To) as TimeSpan?;
+            var source = FromToFieldData(config, isFrom) as TimeSpan?;
 
             if (time != source)
             {
