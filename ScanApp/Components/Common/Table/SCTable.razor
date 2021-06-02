@@ -8,7 +8,7 @@
 
 @if (Configs?.Count > 0 && _groupables.Count > 0)
 {
-    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable" ToStringFunc="@(t => t is null ? string.Empty : t.PropertyName)">
+    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable" >
         <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
         @foreach (var cc in _groupables)
         {
@@ -32,7 +32,7 @@
         <ChildRowContent>
             @if (_clicked == context.Key)
             {
-                <MudTable FixedHeader="true" FixedFooter="true" Context="display" T="TTableType" Height="@CalculateHeight(context.Value.Count, true)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+                <MudTable FixedHeader="true" FixedFooter="true" Context="display" T="TTableType" Height="@CalculateHeight(context.Value.Count, true)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -209,6 +209,9 @@ else
     {
         var value = config.GetValueFrom(context);
 
+        if (config.Converter is not null)
+            return config.Converter.SetFunc(value);
+
         if (config.DisplayFormatter is not null)
             return config.DisplayFormatter(value);
 
@@ -298,6 +301,6 @@ else
         // 75% for nested table, so user can grab below nested table and drag to other groupings
         return (theoreticalSize > MaxTableHeight
             ? isNested ? MaxTableHeight * 0.75 : MaxTableHeight
-            : isNested ? theoreticalSize * 0.75 : theoreticalSize) + "px";
+            : isNested ? theoreticalSize * 0.75 : MaxTableHeight) + "px";
     }
 }
