@@ -83,22 +83,21 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 if (config.PropertyType.IsNumeric())
                     CreateFromToFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
-                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?)) &&
-                         (config.FieldType is FieldType.AutoDetect or FieldType.DateAndTime))
+                else if (IsFormOfDateTime(config.PropertyType) && config.FieldType is FieldType.AutoDetect or FieldType.DateAndTime)
                     CreateFromToDateTimeFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
-                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?)) &&
-                          config.FieldType == FieldType.Date)
+                else if (IsFormOfDateTime(config.PropertyType) && config.FieldType == FieldType.Date)
                     CreateFromToDateFields(builder, config);
-                else if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
-                          config.PropertyType == typeof(DateTimeOffset) || config.PropertyType == typeof(DateTimeOffset?) ||
-                          config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
+                else if ((IsFormOfDateTime(config.PropertyType) || config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
                          (config.FieldType is FieldType.AutoDetect or FieldType.Time))
                     CreateFromToTimeFields(builder, config);
                 else
                     CreateIncludingField(builder, config);
             };
+        }
+
+        private bool IsFormOfDateTime(Type type)
+        {
+            return type == typeof(DateTime?) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?);
         }
 
         private void CreateFromToFields(RenderTreeBuilder builder, ColumnConfig<T> config)

@@ -19,7 +19,7 @@
 
 @if (GroupedData?.Count > 0)
 {
-    <MudTable FixedHeader="FixedHeader" @bind-SelectedItem="@SelectedGroup" OnRowClick="OnClick" T="KeyValuePair<string, List<TTableType>>" Height="@CalculateHeight(GroupedData.Count)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="GroupedData" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable FixedHeader="FixedHeader" FixedFooter="FixedFooter" @bind-SelectedItem="@SelectedGroup" OnRowClick="OnClick" T="KeyValuePair<string, List<TTableType>>" Height="@CalculateHeight(GroupedData.Count)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="GroupedData" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             <MudTh Style="padding: 10px; z-index: 10">
                 Grouped by: @_selectedGroupable.DisplayName
@@ -32,7 +32,7 @@
         <ChildRowContent>
             @if (_clicked == context.Key)
             {
-                <MudTable Context="display" T="TTableType" FixedHeader="FixedHeader" Height="@CalculateHeight(context.Value.Count, true)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+                <MudTable FixedHeader="true" FixedFooter="true" Context="display" T="TTableType" Height="@CalculateHeight(context.Value.Count, true)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -111,8 +111,6 @@ else
     </MudTable>
 }
 
-
-
 @code
 {
     private void OnClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
@@ -123,6 +121,9 @@ else
     string _clicked;
     [Parameter]
     public bool FixedHeader { get; set; }
+
+    [Parameter]
+    public bool FixedFooter { get; set; }
 
     [Parameter]
     public int MaxTableHeight { get; set; }
@@ -229,7 +230,7 @@ else
 
     public async Task OpenEditItemDialog()
     {
-        var dialog = _dialogService.Show<EditDialog<TTableType>>("Sorting dialog",
+        var dialog = _dialogService.Show<EditDialog<TTableType>>("Edit item",
             new DialogParameters
             {
                 ["Configs"] = Configs,
@@ -244,9 +245,19 @@ else
         await EditItem(data);
     }
 
+    private Task EditItem(TTableType editedItem)
+    {
+        var oldItemIndex = Data.FindIndex(tt => tt.Equals(SelectedItem));
+        if (oldItemIndex == -1)
+            return Task.CompletedTask;
+        Data[oldItemIndex] = editedItem;
+        SelectedItem = editedItem;
+        return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(SelectedItem));
+    }
+
     public async Task OpenFilterItemDialog()
     {
-        var dialog = _dialogService.Show<FilterDialog<TTableType>>("Filtering dialog",
+        var dialog = _dialogService.Show<FilterDialog<TTableType>>("Filter by...",
             new DialogParameters
             {
                 ["Configs"] = Configs
@@ -256,16 +267,6 @@ else
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
-    }
-
-    private Task EditItem(TTableType editedItem)
-    {
-        var oldItemIndex = Data.FindIndex(tt => tt.Equals(SelectedItem));
-        if (oldItemIndex == -1)
-            return Task.CompletedTask;
-        Data[oldItemIndex] = editedItem;
-        SelectedItem = editedItem;
-        return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(SelectedItem));
     }
 
     public Task DeleteItem(TTableType element)
@@ -294,9 +295,9 @@ else
         // rows * row height + header height and some
         var theoreticalSize = (rows * 38) + 100;
 
-        // 70%, so user can grab below nested table and drag to other groupings
-        if (isNested)
-            theoreticalSize = (int)(theoreticalSize * 0.7);
-        return (theoreticalSize > MaxTableHeight ? isNested ? (MaxTableHeight * 0.7) : MaxTableHeight : theoreticalSize) + "px";
+        // 75% for nested table, so user can grab below nested table and drag to other groupings
+        return (theoreticalSize > MaxTableHeight
+            ? isNested ? MaxTableHeight * 0.75 : MaxTableHeight
+            : isNested ? theoreticalSize * 0.75 : theoreticalSize) + "px";
     }
 }
