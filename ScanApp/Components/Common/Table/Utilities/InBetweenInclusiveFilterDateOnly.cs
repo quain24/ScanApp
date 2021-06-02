@@ -2,7 +2,7 @@
 using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.Table
+namespace ScanApp.Components.Common.Table.Utilities
 {
     public class InBetweenInclusiveFilterDateOnly<T> : InBetweenInclusiveFilter<T>
     {

@@ -1,7 +1,7 @@
-﻿using ScanApp.Components.Common.ScanAppTable.Options;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.Table
+namespace ScanApp.Components.Common.Table.Utilities
 {
     public interface IFilter<T>
     {

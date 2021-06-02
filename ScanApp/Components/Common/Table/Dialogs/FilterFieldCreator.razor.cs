@@ -10,6 +10,7 @@ using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
 using ScanApp.Components.Common.ScanAppTable.Options;
+using ScanApp.Components.Common.Table.Utilities;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {

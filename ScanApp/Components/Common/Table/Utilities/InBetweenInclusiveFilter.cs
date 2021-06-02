@@ -4,7 +4,7 @@ using System.Linq;
 using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.Table
+namespace ScanApp.Components.Common.Table.Utilities
 {
     public class InBetweenInclusiveFilter<T> : IFilter<T>
     {
@@ -75,6 +75,8 @@ namespace ScanApp.Components.Common.Table
 
         public IEnumerable<T> Run(IEnumerable<T> source)
         {
+            _ = source ?? throw new ArgumentNullException(nameof(source));
+
             if (From is null && To is null)
                 return source.ToArray();
 

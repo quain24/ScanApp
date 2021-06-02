@@ -1,10 +1,10 @@
-﻿using ScanApp.Components.Common.ScanAppTable.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ScanApp.Common.Extensions;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
-namespace ScanApp.Components.Common.Table
+namespace ScanApp.Components.Common.Table.Utilities
 {
     public class IncludeFilter<T> : IFilter<T>
     {
@@ -26,12 +26,19 @@ namespace ScanApp.Components.Common.Table
             else
                 representation = value is string s ? s : value?.ToString();
 
-            return representation?.Contains(MustContain, StringComparison.OrdinalIgnoreCase) ?? false;
+            return representation switch
+            {
+                null => MustContain is null,
+                "" => MustContain?.Length == 0,
+                var r when MustContain is not null => r.Contains(MustContain),
+                _ => false
+            };
         }
 
         public IEnumerable<T> Run(IEnumerable<T> source)
         {
-            return MustContain is null ? source.ToArray() : source.Where(Check);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
+            return source.Where(Check);
         }
     }
 }
