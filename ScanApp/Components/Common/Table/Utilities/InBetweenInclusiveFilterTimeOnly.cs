@@ -13,25 +13,23 @@ namespace ScanApp.Components.Common.Table.Utilities
         protected override bool CheckValue(T item)
         {
             var value = ColumnConfig.GetValueFrom(item);
-            TimeSpan? compareTo;
-
+            TimeSpan? compareTo = null;
+            
             if (value is TimeSpan)
                 compareTo = value;
-            else if (Nullable.GetUnderlyingType(value) is DateTime)
-                compareTo = value.HasValue ? value.Value.TimeOfDay : null;
-            else
+            else if (value is DateTime)
                 compareTo = value.TimeOfDay;
 
             if (From is null)
             {
-                return compareTo is null || compareTo <= To.Value.TimeOfDay;
+                return compareTo is null || compareTo <= To;
             }
             if (To is null)
             {
-                return compareTo is null || compareTo >= From.Value.TimeOfDay;
+                return compareTo is null || compareTo >= From;
             }
 
-            return compareTo is not null && compareTo >= From.Value.TimeOfDay && compareTo <= To.Value.TimeOfDay;
+            return compareTo is not null && compareTo >= From && compareTo <= To;
         }
     }
 }

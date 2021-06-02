@@ -8,11 +8,13 @@ namespace ScanApp.Components.Common.Table.Utilities
 {
     public class IncludeFilter<T> : IFilter<T>
     {
+        private readonly bool _caseSensitive;
         public ColumnConfig<T> ColumnConfig { get; }
         private string MustContain { get; }
 
-        public IncludeFilter(ColumnConfig<T> config, string mustContain)
+        public IncludeFilter(ColumnConfig<T> config, string mustContain, bool caseSensitive = false)
         {
+            _caseSensitive = caseSensitive;
             ColumnConfig = config ?? throw new ArgumentNullException(nameof(config));
             MustContain = mustContain;
         }
@@ -30,7 +32,7 @@ namespace ScanApp.Components.Common.Table.Utilities
             {
                 null => MustContain is null,
                 "" => MustContain?.Length == 0,
-                var r when MustContain is not null => r.Contains(MustContain),
+                var r when MustContain is not null => r.Contains(MustContain, _caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase),
                 _ => false
             };
         }

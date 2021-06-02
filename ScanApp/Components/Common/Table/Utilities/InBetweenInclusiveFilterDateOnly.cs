@@ -16,14 +16,14 @@ namespace ScanApp.Components.Common.Table.Utilities
 
             if (From is null)
             {
-                return value is null || value <= To.Value.Date;
+                return value is null || value.Date <= To.Date;
             }
             if (To is null)
             {
-                return value is null || value >= From.Value.Date;
+                return value is null || value.Date >= From.Date;
             }
 
-            return value is not null && value >= From.Value.Date && value <= To.Value.Date;
+            return value is not null && (value.Date >= From.Date && value.Date <= To.Date);
         }
     }
 }

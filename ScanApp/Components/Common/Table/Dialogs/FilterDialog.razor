@@ -42,7 +42,7 @@
 
         var filters = _filterFields.GetFilters();
 
-        MudDialog.Close(DialogResult.Ok(1));
+        MudDialog.Close(DialogResult.Ok(filters));
         return Task.CompletedTask;
     }
 

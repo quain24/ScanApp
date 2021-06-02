@@ -3,6 +3,7 @@
 @using System.Globalization
 @using ScanApp.Common.Helpers
 @using ScanApp.Components.Common.Table.Dialogs
+@using ScanApp.Components.Common.Table.Utilities
 @inject IDialogService _dialogService
 @typeparam TTableType
 
@@ -110,7 +111,10 @@ else
         </PagerContent>
     </MudTable>
 }
-
+@if (Enumerable is not null)
+{
+    <h4>@Enumerable.Count()</h4>
+}
 @code
 {
     private void OnClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
@@ -148,6 +152,8 @@ else
 
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
+
+    public IEnumerable<TTableType> Enumerable { get; set; }
 
     private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
@@ -270,6 +276,8 @@ else
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
+        var filters = (IEnumerable<IFilter<TTableType>>) result.Data;
+        Enumerable = Data.Filter(filters);
     }
 
     public Task DeleteItem(TTableType element)
@@ -296,7 +304,7 @@ else
         if (MaxTableHeight < 1)
             return null;
         // rows * row height + header height and some
-        var theoreticalSize = (rows * 38) + 100;
+        var theoreticalSize = (rows * 38) + 120;
 
         // 75% for nested table, so user can grab below nested table and drag to other groupings
         return (theoreticalSize > MaxTableHeight
