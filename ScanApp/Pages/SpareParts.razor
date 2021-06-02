@@ -54,7 +54,7 @@
     private MudForm _form;
     private bool _submitDisabled = true;
 
-    private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = false, AllowNegativeNumbersInFiltering = false };
+    private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = true, AllowNegativeNumbersInFiltering = true, ShowToolBar = true};
     List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();

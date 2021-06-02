@@ -9,7 +9,7 @@
 
 @if (Configs?.Count > 0 && _groupables.Count > 0)
 {
-    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable" >
+    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable">
         <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
         @foreach (var cc in _groupables)
         {
@@ -20,7 +20,9 @@
 
 @if (GroupedData?.Count > 0)
 {
-    <MudTable FixedHeader="FixedHeader" FixedFooter="FixedFooter" @bind-SelectedItem="@SelectedGroup" OnRowClick="OnClick" T="KeyValuePair<string, List<TTableType>>" Height="@CalculateHeight(GroupedData.Count)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="GroupedData" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
+              FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
+              Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false"  Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             <MudTh Style="padding: 10px; z-index: 10">
                 Grouped by: @_selectedGroupable.DisplayName
@@ -28,12 +30,14 @@
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="@context.Key">@context.Key</MudTd>
+            <MudTd @key="@(context.Key+context.Value.GetHashCode())" DataLabel="@context.Key">@context.Key</MudTd>
         </RowTemplate>
         <ChildRowContent>
-            @if (_clicked == context.Key)
+            @if (_selectedGroupId == context.Key)
             {
-                <MudTable FixedHeader="true" FixedFooter="true" Context="display" T="TTableType" Height="@CalculateHeight(context.Value.Count, true)" RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Items="context.Value" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+                <MudTable Items="@context.Value" T="TTableType" SelectedItem="@SelectedItem" SelectedItemChanged="@(i => SelectedItemChanged.InvokeAsync(i))" @bind-SelectedItems="@SelectedItemsBoundChild"
+                          FixedHeader="true" FixedFooter="true" Context="display" Height="@CalculateHeight(context.Value.Count, true)"
+                          RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -71,7 +75,10 @@
 }
 else
 {
-    <MudTable FixedHeader="FixedHeader" Height="@(MaxTableHeight > 0 ? MaxTableHeight + "px" : string.Empty)" RowsPerPage="@RowsPerPage" T="TTableType" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Items="Data" SelectedItem="@SelectedItem" SelectedItemChanged="@SingleSelectedItemHasChanged" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable Items="Data" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+              FixedHeader="FixedHeader" Height="@CalculateHeight()"
+              RowsPerPage="@RowsPerPage"  Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
+              Hover="true" Outlined="false"  Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -89,20 +96,7 @@ else
                 <MudTd @key="@(cfg.Identifier.ToString()+context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
             }
         </RowTemplate>
-        <FooterContent>
-            <MudTFootRow>
-                <MudTd colspan="5">
-                    Selected:
-                    @if (SelectedItem is not null)
-                    {
-                        @foreach (var cfg in Configs)
-                        {
-                            @(FormatOutput(cfg, SelectedItem).ToString() + ' ')
-                        }
-                    }
-                </MudTd>
-            </MudTFootRow>
-        </FooterContent>
+
         <PagerContent>
             @if (Data?.Count > RowsPerPage)
             {
@@ -111,18 +105,14 @@ else
         </PagerContent>
     </MudTable>
 }
-@if (Enumerable is not null)
-{
-    <h4>@Enumerable.Count()</h4>
-}
+
+<MudToolBar>
+</MudToolBar>
+
 @code
 {
-    private void OnClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
-    {
-        _clicked = _clicked == args.Item.Key ? null : args.Item.Key;
-    }
 
-    string _clicked;
+
     [Parameter]
     public bool FixedHeader { get; set; }
 
@@ -138,11 +128,25 @@ else
     [Parameter]
     public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
-    [Parameter]
-    public List<TTableType> Data { get; set; }
+    private List<TTableType> _data;
+    private int _oldDataCount;
 
     [Parameter]
-    public EventCallback<List<TTableType>> DataChanged { get; set; }
+    public List<TTableType> Data
+    {
+        get => _data;
+        set
+        {
+            if (value?.Count != _oldDataCount || _editHappen)
+            {
+                _editHappen = false;
+                _oldDataCount = value?.Count ?? 0;
+                CreateGroupsFrom(_selectedGroupable);
+            }
+            _data = value;
+            // todo refreshing breaks child table position
+        }
+    }
 
     [Parameter]
     public TTableType SelectedItem { get; set; }
@@ -150,11 +154,33 @@ else
     [Parameter]
     public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
+    private TTableType SelectedItemBoundChild
+    {
+        get => SelectedItem;
+        set => SelectedItemChanged.InvokeAsync(value);
+    }
+
+    [Parameter]
+    public HashSet<TTableType> SelectedItems { get; set; }
+
+    [Parameter]
+    public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
+
+    private HashSet<TTableType> SelectedItemsBoundChild
+    {
+        get => SelectedItems;
+        set => SelectedItemsChanged.InvokeAsync(value);
+    }
+
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
 
-    public IEnumerable<TTableType> Enumerable { get; set; }
+    private string _selectedGroupId;
+    private bool _groupingEnabled;
+    private bool _filteringEnabled;
+    private bool _editingEnabled;
 
+    private IEnumerable<TTableType> _filteredData = new List<TTableType>();
     private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
 
@@ -164,16 +190,20 @@ else
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
     private ColumnConfig<TTableType> _selectedGroupable;
 
+    private bool _editHappen;
+
     protected override void OnInitialized()
     {
         AssignColumnsByProperties();
+        EnableAvailableFunctionality();
         base.OnInitialized();
     }
 
-    protected override void OnParametersSet()
+    private void EnableAvailableFunctionality()
     {
-        CreateGroupsFrom(_selectedGroupable);
-        base.OnParametersSet();
+        _groupingEnabled = Configs?.Any(c => c.IsGroupable) ?? false;
+        _filteringEnabled = Configs?.Any(c => c.IsFilterable) ?? false;
+        _editingEnabled = Configs?.Any(c => c.IsEditable) ?? false;
     }
 
     private void AssignColumnsByProperties()
@@ -237,6 +267,11 @@ else
         return value ?? string.Empty;
     }
 
+    private void OnGroupClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
+    {
+        _selectedGroupId = _selectedGroupId == args.Item.Key ? null : args.Item.Key;
+    }
+
     public async Task OpenEditItemDialog()
     {
         var dialog = _dialogService.Show<EditDialog<TTableType>>("Edit item",
@@ -260,8 +295,8 @@ else
         if (oldItemIndex == -1)
             return Task.CompletedTask;
         Data[oldItemIndex] = editedItem;
-        SelectedItem = editedItem;
-        return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(SelectedItem));
+        _editHappen = true;
+        return SelectedItemChanged.InvokeAsync(editedItem);
     }
 
     public async Task OpenFilterItemDialog()
@@ -276,20 +311,8 @@ else
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
-        var filters = (IEnumerable<IFilter<TTableType>>) result.Data;
-        Enumerable = Data.Filter(filters);
-    }
-
-    public Task DeleteItem(TTableType element)
-    {
-        Data.Remove(element);
-        return Task.WhenAll(DataChanged.InvokeAsync(Data), SelectedItemChanged.InvokeAsync(default));
-    }
-
-    private void SingleSelectedItemHasChanged(TTableType newItem)
-    {
-        SelectedItem = newItem;
-        SelectedItemChanged.InvokeAsync(newItem);
+        var filters = (IEnumerable<IFilter<TTableType>>)result.Data;
+        _filteredData = Data.Filter(filters);
     }
 
     private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
@@ -299,16 +322,20 @@ else
             : item => config.GetValueFrom(item)?.ToString();
     }
 
-    private string CalculateHeight(int rows, bool isNested = false)
+    private string CalculateHeight(int rows = 0, bool isNested = false)
     {
+        // No height set
         if (MaxTableHeight < 1)
             return null;
-        // rows * row height + header height and some
+
+        // non-nested table is either unlimited or always set to given MaxHeight
+        if (isNested is false)
+            return MaxTableHeight < 1 ? null : MaxTableHeight + "px";
+
+        // rows in group * row height + header height and some
         var theoreticalSize = (rows * 38) + 120;
 
-        // 75% for nested table, so user can grab below nested table and drag to other groupings
-        return (theoreticalSize > MaxTableHeight
-            ? isNested ? MaxTableHeight * 0.75 : MaxTableHeight
-            : isNested ? theoreticalSize * 0.75 : MaxTableHeight) + "px";
+        // 70% for nested table, so user can grab below nested table and drag to other groupings
+        return (theoreticalSize > MaxTableHeight * 0.7 ? MaxTableHeight * 0.7 : theoreticalSize) + "px";
     }
 }

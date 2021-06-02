@@ -11,9 +11,8 @@
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" @bind-Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
-<MudButton OnClick="@(async _ => await table.DeleteItem(WeatherForecast))">Delete using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
 
