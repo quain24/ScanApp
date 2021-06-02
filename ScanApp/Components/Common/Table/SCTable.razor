@@ -9,7 +9,7 @@
 
 @if (Configs?.Count > 0 && _groupables.Count > 0)
 {
-    <MudSelect FullWidth="false" SelectedValuesChanged="items => CreateGroupsFrom(items.First())" T="ColumnConfig<TTableType>" Label="Groups" @bind-Value="_selectedGroupable">
+    <MudSelect FullWidth="false" Value="SelectedGroupable" ValueChanged="@(CreateGroupsFrom)" T="ColumnConfig<TTableType>" Label="Groups">
         <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
         @foreach (var cc in _groupables)
         {
@@ -22,10 +22,10 @@
 {
     <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
               FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
-              Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false"  Dense="true" Breakpoint="Breakpoint.None">
+              Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             <MudTh Style="padding: 10px; z-index: 10">
-                Grouped by: @_selectedGroupable.DisplayName
+                Grouped by: @SelectedGroupable.DisplayName
             </MudTh>
         </HeaderContent>
 
@@ -35,8 +35,8 @@
         <ChildRowContent>
             @if (_selectedGroupId == context.Key)
             {
-                <MudTable Items="@context.Value" T="TTableType" SelectedItem="@SelectedItem" SelectedItemChanged="@(i => SelectedItemChanged.InvokeAsync(i))" @bind-SelectedItems="@SelectedItemsBoundChild"
-                          FixedHeader="true" FixedFooter="true" Context="display" Height="@CalculateHeight(context.Value.Count, true)"
+                <MudTable Items="@context.Value" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+                          FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
                           RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
@@ -77,8 +77,8 @@ else
 {
     <MudTable Items="Data" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
               FixedHeader="FixedHeader" Height="@CalculateHeight()"
-              RowsPerPage="@RowsPerPage"  Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
-              Hover="true" Outlined="false"  Dense="true" Breakpoint="Breakpoint.None">
+              RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
+              Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -111,8 +111,6 @@ else
 
 @code
 {
-
-
     [Parameter]
     public bool FixedHeader { get; set; }
 
@@ -132,21 +130,7 @@ else
     private int _oldDataCount;
 
     [Parameter]
-    public List<TTableType> Data
-    {
-        get => _data;
-        set
-        {
-            if (value?.Count != _oldDataCount || _editHappen)
-            {
-                _editHappen = false;
-                _oldDataCount = value?.Count ?? 0;
-                CreateGroupsFrom(_selectedGroupable);
-            }
-            _data = value;
-            // todo refreshing breaks child table position
-        }
-    }
+    public List<TTableType> Data { get; set; }
 
     [Parameter]
     public TTableType SelectedItem { get; set; }
@@ -175,6 +159,8 @@ else
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
 
+    private ColumnConfig<TTableType> SelectedGroupable { get; set; }
+
     private string _selectedGroupId;
     private bool _groupingEnabled;
     private bool _filteringEnabled;
@@ -188,15 +174,18 @@ else
     private Dictionary<ColumnConfig<TTableType>, RenderFragment> _columns = new();
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
-    private ColumnConfig<TTableType> _selectedGroupable;
-
-    private bool _editHappen;
-
+    
     protected override void OnInitialized()
     {
         AssignColumnsByProperties();
         EnableAvailableFunctionality();
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        CreateGroupsFrom(SelectedGroupable);
     }
 
     private void EnableAvailableFunctionality()
@@ -226,19 +215,33 @@ else
 
     private void CreateGroupsFrom(ColumnConfig<TTableType> selectedColumn)
     {
-        GroupedData.Clear();
+        SelectedGroupable = selectedColumn;
 
         if (selectedColumn is null || Data is null || Data.Count <= 1)
+        {
+            GroupedData.Clear();
             return;
+        }
+
+        foreach (var group in GroupedData.Values)
+        {
+            group.Clear();
+        }
 
         foreach (var item in Data)
         {
+
             string key = selectedColumn.GetValueFrom(item)?.ToString() ?? "No value";
             if (GroupedData.TryGetValue(key, out var collection))
                 collection.Add(item);
             else
                 GroupedData.Add(key, new List<TTableType> { item });
         }
+
+        var emptyKeys = GroupedData.Where(d => d.Value.Count == 0)
+            .Select(d => d.Key)
+            .ToList();
+        emptyKeys.ForEach(k => GroupedData.Remove(k));
     }
 
     private static dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
@@ -295,7 +298,6 @@ else
         if (oldItemIndex == -1)
             return Task.CompletedTask;
         Data[oldItemIndex] = editedItem;
-        _editHappen = true;
         return SelectedItemChanged.InvokeAsync(editedItem);
     }
 
