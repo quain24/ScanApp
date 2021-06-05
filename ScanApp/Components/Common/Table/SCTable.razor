@@ -4,6 +4,7 @@
 @using ScanApp.Common.Helpers
 @using ScanApp.Components.Common.Table.Dialogs
 @using ScanApp.Components.Common.Table.Utilities
+@using SharedExtensions
 @inject IDialogService _dialogService
 @typeparam TTableType
 
@@ -30,13 +31,13 @@
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd @key="@(context.Key+context.Value.GetHashCode())" DataLabel="@context.Key">@context.Key</MudTd>
+            <MudTd DataLabel="@context.Key">@context.Key</MudTd>
         </RowTemplate>
         <ChildRowContent>
             @if (_selectedGroupId == context.Key)
             {
-                <MudTable Items="@context.Value" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-                          FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
+                <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+                          RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
                           RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
                     <HeaderContent>
                         @foreach (var cfg in Configs)
@@ -75,8 +76,8 @@
 }
 else
 {
-    <MudTable Items="Data" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-              FixedHeader="FixedHeader" Height="@CalculateHeight()"
+    <MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+              RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()"
               RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
               Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <HeaderContent>
@@ -126,9 +127,6 @@ else
     [Parameter]
     public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
-    private List<TTableType> _data;
-    private int _oldDataCount;
-
     [Parameter]
     public List<TTableType> Data { get; set; }
 
@@ -143,6 +141,9 @@ else
         get => SelectedItem;
         set => SelectedItemChanged.InvokeAsync(value);
     }
+
+    [Parameter]
+    public bool MultiSelection { get; set; }
 
     [Parameter]
     public HashSet<TTableType> SelectedItems { get; set; }
@@ -171,10 +172,10 @@ else
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
 
     private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
-    private Dictionary<ColumnConfig<TTableType>, RenderFragment> _columns = new();
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
-    
+    private IEnumerable<IFilter<TTableType>> _filters = new List<IFilter<TTableType>>();
+
     protected override void OnInitialized()
     {
         AssignColumnsByProperties();
@@ -228,6 +229,8 @@ else
             group.Clear();
         }
 
+        // Must be done without deleting groups collections.
+        // Otherwise will cause sub-table to scroll up after row click or edit.
         foreach (var item in Data)
         {
 
@@ -313,8 +316,14 @@ else
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
-        var filters = (IEnumerable<IFilter<TTableType>>)result.Data;
-        _filteredData = Data.Filter(filters);
+        _filters = (IEnumerable<IFilter<TTableType>>)result.Data;
+    }
+
+    private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
+    {
+        return _filters.IsNullOrEmpty()
+            ? data
+            : data.Filter(_filters);
     }
 
     private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
@@ -339,5 +348,15 @@ else
 
         // 70% for nested table, so user can grab below nested table and drag to other groupings
         return (theoreticalSize > MaxTableHeight * 0.7 ? MaxTableHeight * 0.7 : theoreticalSize) + "px";
+    }
+
+    private string SelectedRowStyleFunc(TTableType rowValue, int rowNumber)
+    {
+        return MultiSelection switch
+        {
+            true  => SelectedItems?.Contains(rowValue) ?? false,
+            false => SelectedItem?.Equals(rowValue) ?? false
+
+        } ? Globals.Gui.SelectedTableRowStyle : string.Empty;
     }
 }

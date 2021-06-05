@@ -14,5 +14,10 @@ namespace Globals
         /// </summary>
         /// <value>Default <see cref="MudDialog"/> options - no close button, no background click to close, full width enabled</value>
         public static DialogOptions DefaultDialogOptions { get; } = new() { CloseButton = false, FullWidth = true, DisableBackdropClick = true };
+
+        /// <summary>
+        /// Default css style for selected table row when using row style func in mud blazor or our tables.
+        /// </summary>
+        public static string SelectedTableRowStyle = "background-color: lightgrey";
     }
 }

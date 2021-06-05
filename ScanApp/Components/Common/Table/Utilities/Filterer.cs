@@ -29,7 +29,7 @@ namespace ScanApp.Components.Common.Table.Utilities
 
             return filters.Length == 1
                 ? filters[0].Run(collection)
-                : collection.Where(item => filters.All(f => f.Check(item)));
+                : collection.AsParallel().Where(item => filters.All(f => f.Check(item)));
         }
 
         ///<inheritdoc cref="Filter{T}(System.Collections.Generic.IEnumerable{T},ScanApp.Components.Common.Table.Utilities.IFilter{T}[])"/>
