@@ -7,13 +7,13 @@
         @if (TargetItem is not null)
         {
             <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <EditFieldCreator T="T" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+                <EditFieldCreator T="T" @ref="_fieldCreator" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
             </MudForm>
         }
     </DialogContent>
     <DialogActions>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Edit</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Save changes</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -24,11 +24,17 @@
     public List<ColumnConfig<T>> Configs { get; set; }
 
     [Parameter]
+    public bool ExpandInvalidPanelsOnStart { get; set; } = true;
+
+    [Parameter] public bool StartExpanded { get; set; }
+
+    [Parameter]
     public T SourceItem { get; set; }
 
     private T TargetItem { get; set; }
 
     private MudForm _form;
+    private EditFieldCreator<T> _fieldCreator;
     private bool _success = true;
 
     protected override void OnInitialized()
@@ -38,8 +44,29 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if(firstRender)
-            _form?.Validate();
+        base.OnAfterRender(firstRender);
+        if (firstRender is false) return;
+
+        _form?.Validate();
+
+        if(ExpandInvalidPanelsOnStart)
+            OpenInvalidExpansionPanels();
+
+        StateHasChanged();
+    }
+
+    private void OpenInvalidExpansionPanels()
+    {
+        if (_form.IsValid) return;
+
+        foreach (var (key, fieldReference) in _fieldCreator.FieldReferences)
+        {
+            if (fieldReference?.ValidationErrors?.Count != 0)
+            {
+                _fieldCreator.Panels[key].Expand(false);
+            }
+        }
+        StateHasChanged();
     }
 
     Task Submit()

@@ -6,7 +6,7 @@
             @if (Configs?.Count > 0)
             {
                 <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                    <FilterFieldCreator @ref="_filterFields" T="T" Configs="Configs"></FilterFieldCreator>
+                    <FilterFieldCreator T="T" @ref="_filterFields" StartExpanded="StartExpanded" Configs="Configs"></FilterFieldCreator>
                 </MudForm>
             }
     </DialogContent>
@@ -22,6 +22,8 @@
 
     [Parameter]
     public List<ColumnConfig<T>> Configs { get; set; }
+
+    [Parameter] public bool StartExpanded { get; set; }
 
     private MudForm _form;
     private bool _success = true;

@@ -17,8 +17,8 @@ namespace ScanApp.Components.Common.Table.Dialogs
         [Parameter] public string PickerCancelLabel { get; set; } = "Cancel";
         [Parameter] public string PickerClearLabel { get; set; } = "Clear";
 
+        public Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
-        protected Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();
 
         public abstract RenderFragment CreateField(ColumnConfig<T> config);

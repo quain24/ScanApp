@@ -1,0 +1,63 @@
+﻿@using ScanApp.Components.Common.ScanAppTable.Options
+@using SharedExtensions
+@typeparam T
+
+@if (Groupables?.Count() > 0 && GroupingVisible)
+{
+    <MudSelect Value="SelectedGroupable" ValueChanged="SelectedGroupableChanged" T="ColumnConfig<T>" Label="Groups"
+               FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller" Class="ml-0">
+        <MudSelectItem T="ColumnConfig<T>" Value="null">None</MudSelectItem>
+        @foreach (var cc in Groupables)
+        {
+            <MudSelectItem Value="cc">@cc.DisplayName</MudSelectItem>
+        }
+    </MudSelect>
+}
+@if (EditVisible)
+{
+    <MudButton OnClick="OnEditClick" Variant="Variant.Filled" Class="ml-auto" Disabled="EditDisabled">Edit</MudButton>
+}
+@if (FilterVisible)
+{
+    @if (FiltersApplied)
+    {
+        <MudButton OnClick="OnRemoveFilterClick" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2">Remove filters</MudButton>
+    }
+    else
+    {
+        <MudButton OnClick="OnFilterClick" Variant="Variant.Filled" Class="ml-2">Filter</MudButton>
+    }
+}
+
+@code {
+
+
+    [Parameter]
+    public bool FiltersApplied { get; set; }
+    [Parameter]
+    public bool EditDisabled { get; set; }
+    [Parameter]
+    public bool EditVisible { get; set; }
+    [Parameter]
+    public bool FilterVisible { get; set; }
+
+    [Parameter]
+    public bool GroupingVisible { get; set; } = true;
+
+    [Parameter]
+    public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
+
+    [Parameter]
+    public ColumnConfig<T> SelectedGroupable { get; set; }
+
+    [Parameter]
+    public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnEditClick { get; set; }
+    [Parameter]
+    public EventCallback OnFilterClick { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemoveFilterClick { get; set; }
+}

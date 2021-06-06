@@ -19,8 +19,6 @@ namespace ScanApp.Components.Common.Table.Dialogs
         [Parameter]
         public IEnumerable<T> SourceCollection { get; set; }
 
-        [Parameter] public IEnumerable<T> FilteredCollection { get; set; }
-
         [Parameter] public string FromLabel { get; set; } = "From";
         [Parameter] public string ToLabel { get; set; } = "To";
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";

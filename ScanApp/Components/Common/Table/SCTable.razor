@@ -8,71 +8,69 @@
 @inject IDialogService _dialogService
 @typeparam TTableType
 
-@if (Configs?.Count > 0 && _groupables.Count > 0)
-{
-    <MudSelect FullWidth="false" Value="SelectedGroupable" ValueChanged="@(CreateGroupsBasedOn)" T="ColumnConfig<TTableType>" Label="Groups">
-        <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
-        @foreach (var cc in _groupables)
-        {
-            <MudSelectItem Value="cc">@cc.DisplayName</MudSelectItem>
-        }
-    </MudSelect>
-}
-
 @if (GroupedData?.Count > 0)
 {
-    <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
-              FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
-              Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
-        <HeaderContent>
-            <MudTh Style="padding: 10px; z-index: 10">
-                Grouped by: @SelectedGroupable.DisplayName
-            </MudTh>
-        </HeaderContent>
+<MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
+          FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
+          Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
+    <ToolBarContent>
+        @if (Configs?.Count > 0 && _groupables.Count > 0)
+        {
+            <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
+                          OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
+                          FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
+                          OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+        }
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh Style="padding: 10px; z-index: 10">
+            Grouped by: @SelectedGroupable.DisplayName
+        </MudTh>
+    </HeaderContent>
 
-        <RowTemplate>
-            <MudTd DataLabel="@context.Key">@context.Key</MudTd>
-        </RowTemplate>
-        <ChildRowContent>
-            @if (_selectedGroupId == context.Key)
-            {
-                <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-                          RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
-                          RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
-                    <HeaderContent>
-                        @foreach (var cfg in Configs)
-                        {
-                            <MudTh Style="border: thin solid darkgray; padding: 2px 10px 2px 10px;">
-                                <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@ChooseSortingAlgorithm(cfg)">
-                                    @cfg.DisplayName
-                                </MudTableSortLabel>
-                            </MudTh>
-                        }
-                    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@context.Key">@context.Key</MudTd>
+    </RowTemplate>
+    <ChildRowContent>
+        @if (_selectedGroupId == context.Key)
+        {
+            <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+                      RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
+                      RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
+                <HeaderContent>
+                    @foreach (var cfg in Configs)
+                    {
+                        <MudTh Style="border: thin solid darkgray; padding: 2px 10px 2px 10px;">
+                            <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@ChooseSortingAlgorithm(cfg)">
+                                @cfg.DisplayName
+                            </MudTableSortLabel>
+                        </MudTh>
+                    }
+                </HeaderContent>
 
-                    <RowTemplate Context="rowData">
-                        @foreach (var cfg in Configs)
-                        {
-                            <MudTd @key="@(cfg.Identifier.ToString() + rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@FormatOutput(cfg, rowData)</MudTd>
-                        }
-                    </RowTemplate>
-                    <PagerContent>
-                        @if (context.Value.Count > RowsPerPage)
-                        {
-                            <MudTablePager PageSizeOptions="PageSizeOptions" />
-                        }
-                    </PagerContent>
-                </MudTable>
-            }
-        </ChildRowContent>
+                <RowTemplate Context="rowData">
+                    @foreach (var cfg in Configs)
+                    {
+                        <MudTd @key="@(cfg.Identifier.ToString() + rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@FormatOutput(cfg, rowData)</MudTd>
+                    }
+                </RowTemplate>
+                <PagerContent>
+                    @if (context.Value.Count > RowsPerPage)
+                    {
+                        <MudTablePager PageSizeOptions="PageSizeOptions" />
+                    }
+                </PagerContent>
+            </MudTable>
+        }
+    </ChildRowContent>
 
-        <PagerContent>
-            @if (GroupedData.Count > RowsPerPage)
-            {
-                <MudTablePager PageSizeOptions="PageSizeOptions" />
-            }
-        </PagerContent>
-    </MudTable>
+    <PagerContent>
+        @if (GroupedData.Count > RowsPerPage)
+        {
+            <MudTablePager PageSizeOptions="PageSizeOptions" />
+        }
+    </PagerContent>
+</MudTable>
 }
 else
 {
@@ -80,6 +78,15 @@ else
               RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()"
               RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
               Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
+        <ToolBarContent>
+            @if (Configs?.Count > 0 && _groupables.Count > 0)
+            {
+                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
+                              OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
+                              FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
+                              OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+            }
+        </ToolBarContent>
         <HeaderContent>
             @foreach (var cfg in Configs)
             {
@@ -94,7 +101,7 @@ else
         <RowTemplate>
             @foreach (var cfg in Configs)
             {
-                <MudTd @key="@(cfg.Identifier.ToString()+context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
+                <MudTd @key="@(cfg.Identifier.ToString() + context.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
             }
         </RowTemplate>
 
@@ -174,7 +181,7 @@ else
     private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
-    private IEnumerable<IFilter<TTableType>> _filters = new List<IFilter<TTableType>>();
+    private IEnumerable<IFilter<TTableType>> _filters;
 
     protected override void OnInitialized()
     {
@@ -317,6 +324,7 @@ else
         if (result.Cancelled)
             return;
         _filters = (IEnumerable<IFilter<TTableType>>)result.Data;
+        CreateGroupsBasedOn(SelectedGroupable);
     }
 
     private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
@@ -324,6 +332,12 @@ else
         return _filters.IsNullOrEmpty()
             ? data
             : data.Filter(_filters);
+    }
+
+    private void RemoveFilters()
+    {
+        _filters = null;
+        CreateGroupsBasedOn(SelectedGroupable);
     }
 
     private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
@@ -354,7 +368,7 @@ else
     {
         return MultiSelection switch
         {
-            true  => SelectedItems?.Contains(rowValue) ?? false,
+            true => SelectedItems?.Contains(rowValue) ?? false,
             false => SelectedItem?.Equals(rowValue) ?? false
 
         } ? Globals.Gui.SelectedTableRowStyle : string.Empty;

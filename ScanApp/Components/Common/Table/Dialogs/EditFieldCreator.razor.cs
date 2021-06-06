@@ -19,7 +19,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
         [Parameter]
         public EventCallback<T> TargetItemChanged { get; set; }
 
-        private readonly Dictionary<Guid, dynamic> _fieldReferences = new();
+        public readonly Dictionary<ColumnConfig<T>, dynamic> FieldReferences = new();
 
         protected override void OnInitialized()
         {
@@ -76,6 +76,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Immediate), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Disabled), !config.IsEditable);
 
+            // Add field reference to collection.
+            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config));
+
             // Finish component
             builder.CloseComponent();
         }
@@ -97,13 +100,13 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)_fieldReferences[config.Identifier]).Close());
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FieldReferences[config]).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)_fieldReferences[config.Identifier]).Close(false));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FieldReferences[config]).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
@@ -111,7 +114,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                if (Nullable.GetUnderlyingType(config.PropertyType) is not null)
                {
                    builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-                   var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)_fieldReferences[config.Identifier]).Clear(false));
+                   var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FieldReferences[config]).Clear(false));
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.Style), "mr-auto align-self-start");
                    builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
@@ -146,7 +149,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 time = config.GetValueFrom(TargetItem) as TimeSpan?;
                 callback = CallbackFactory.Create<TimeSpan?>(this, d => EditTime(d, config));
-                clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)_fieldReferences[config.Identifier]).Clear(false));
+                clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FieldReferences[config]).Clear(false));
             }
 
             builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
@@ -163,13 +166,13 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)_fieldReferences[config.Identifier]).Close());
+               var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FieldReferences[config]).Close());
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
                builderInternal.CloseComponent();
                builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
-               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)_fieldReferences[config.Identifier]).Close(false));
+               var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FieldReferences[config]).Close(false));
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
                builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
                    (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
@@ -191,15 +194,15 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
         private void CreateFieldReference(object o, ColumnConfig<T> config)
         {
-            if (_fieldReferences.TryGetValue(config.Identifier, out var value))
+            if (FieldReferences.TryGetValue(config, out var value))
             {
                 if (value is not null)
                     return;
-                _fieldReferences[config.Identifier] = o;
+                FieldReferences[config] = o;
             }
             else
             {
-                _fieldReferences.Add(config.Identifier, o);
+                FieldReferences.Add(config, o);
             }
         }
 
