@@ -10,7 +10,7 @@
 
 @if (Configs?.Count > 0 && _groupables.Count > 0)
 {
-    <MudSelect FullWidth="false" Value="SelectedGroupable" ValueChanged="@(CreateGroupsFrom)" T="ColumnConfig<TTableType>" Label="Groups">
+    <MudSelect FullWidth="false" Value="SelectedGroupable" ValueChanged="@(CreateGroupsBasedOn)" T="ColumnConfig<TTableType>" Label="Groups">
         <MudSelectItem T="ColumnConfig<TTableType>" Value="null">None</MudSelectItem>
         @foreach (var cc in _groupables)
         {
@@ -178,15 +178,15 @@ else
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
         AssignColumnsByProperties();
         EnableAvailableFunctionality();
-        base.OnInitialized();
     }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        CreateGroupsFrom(SelectedGroupable);
+        CreateGroupsBasedOn(SelectedGroupable);
     }
 
     private void EnableAvailableFunctionality()
@@ -214,7 +214,7 @@ else
         return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
     }
 
-    private void CreateGroupsFrom(ColumnConfig<TTableType> selectedColumn)
+    private void CreateGroupsBasedOn(ColumnConfig<TTableType> selectedColumn)
     {
         SelectedGroupable = selectedColumn;
 
@@ -231,7 +231,7 @@ else
 
         // Must be done without deleting groups collections.
         // Otherwise will cause sub-table to scroll up after row click or edit.
-        foreach (var item in Data)
+        foreach (var item in FilterDataSource(Data))
         {
 
             string key = selectedColumn.GetValueFrom(item)?.ToString() ?? "No value";
