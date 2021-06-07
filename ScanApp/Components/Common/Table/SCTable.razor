@@ -1,8 +1,8 @@
-﻿@using ScanApp.Components.Common.ScanAppTable.Options
-@using ScanApp.Common.Extensions
+﻿@using ScanApp.Common.Extensions
 @using System.Globalization
 @using ScanApp.Common.Helpers
 @using ScanApp.Components.Common.Table.Dialogs
+@using ScanApp.Components.Common.Table.Enums
 @using ScanApp.Components.Common.Table.Utilities
 @using SharedExtensions
 @inject IDialogService _dialogService
@@ -114,9 +114,6 @@ else
     </MudTable>
 }
 
-<MudToolBar>
-</MudToolBar>
-
 @code
 {
     [Parameter] public bool FixedHeader { get; set; }
@@ -156,7 +153,6 @@ else
     }
 
     [Parameter] public List<ColumnConfig<TTableType>> Configs { get; set; }
-
     [Parameter] public Show ShowEditButton { get; set; } = Show.Auto;
     [Parameter] public Show ShowFilterButton { get; set; } = Show.Auto;
     [Parameter] public Show ShowGroupsField { get; set; } = Show.Auto;
@@ -193,7 +189,7 @@ else
     {
         foreach (var config in Configs)
         {
-            if (CanBeCompared(config))
+            if (CanBeComparedDirectly(config))
                 _comparables.Add(config);
 
             if (config.IsGroupable)
@@ -211,7 +207,7 @@ else
                           && (ShowEditButton is Show.Auto) || ShowEditButton is Show.Yes;
     }
 
-    private static bool CanBeCompared(ColumnConfig<TTableType> config)
+    private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
     {
         var interfaces = config.PropertyType.GetInterfaces();
         return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
@@ -380,12 +376,5 @@ else
             false => SelectedItem?.Equals(rowValue) ?? false
 
         } ? Globals.Gui.SelectedTableRowStyle : string.Empty;
-    }
-
-    public enum Show
-    {
-        Auto = 0,
-        Yes,
-        No
     }
 }

@@ -1,4 +1,4 @@
-﻿using ScanApp.Components.Common.ScanAppTable.Options;
+﻿using ScanApp.Components.Common.Table;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;

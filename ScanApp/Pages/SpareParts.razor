@@ -55,7 +55,7 @@
     private bool _submitDisabled = true;
 
     private ScanAppTableOptions TableOptions { get; set; } = new() { AllowGrouping = true, AllowNegativeNumbersInFiltering = true, ShowToolBar = true};
-    List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
+    List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
@@ -110,11 +110,11 @@
     private async Task GetData()
     {
         // Set up columns
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount"));
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount"));
 
         // Set up validators for columns
 

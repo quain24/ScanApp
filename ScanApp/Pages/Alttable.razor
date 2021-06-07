@@ -1,17 +1,17 @@
 ﻿@page "/Alttable"
+
+@using Version = ScanApp.Domain.ValueObjects.Version
 @using ScanApp.Data
-@using ScanApp.Components.Common.ScanAppTable.Options
+@using ScanApp.Models.SpareParts
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
-@using ScanApp.Models.SpareParts
-@using Version = ScanApp.Domain.ValueObjects.Version
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast"/>
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" />
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
@@ -31,7 +31,8 @@
                 GetFunc = Version.Create
             }),
         new ColumnConfig<WeatherForecast>(c => c.Number, "Const number"),
-        new ColumnConfig<WeatherForecast>(c => c.Model.Name, "Model name")
+        new ColumnConfig<WeatherForecast>(c => c.Model.Name, "Model name"),
+        new ColumnConfig<WeatherForecast>(c => c.nulldate, "Null Date")
     };
 
     public ColumnConfig<SparePartGUIModel>[] ccc = new[]
@@ -59,13 +60,12 @@
     protected override async Task OnInitializedAsync()
     {
         parts = new List<SparePartGUIModel>()
-        {
+    {
             new SparePartGUIModel("part one", 0),
             new SparePartGUIModel("part two", 0),
             new SparePartGUIModel("part three", 0),
             new SparePartGUIModel("part four", 0)
         };
-
 
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
         //forecasts.Add(new WeatherForecast()

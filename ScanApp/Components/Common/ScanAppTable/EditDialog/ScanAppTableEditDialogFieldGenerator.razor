@@ -1,11 +1,4 @@
-﻿@using ScanApp.Components.Common.ScanAppTable.Options
-@using ScanApp.Models.SpareParts
-@using FluentValidation
-@using System.Data
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
-@using ScanApp.Common
-@using ScanApp.Common.Extensions
-@typeparam TItem
+﻿@typeparam TItem
 
 @if (!ColumnConfigs[Iterator].IsEditable)
 {
@@ -50,7 +43,7 @@ else
 @code {
 
     [Parameter]
-    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+    public List<Options.ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
     public List<object> ColumnValidators { get; set; }

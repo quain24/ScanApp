@@ -23,5 +23,7 @@ namespace ScanApp.Data
         public double? Number = 10.21;
 
         public SparePartGUIModel Model { get; set; } = new SparePartGUIModel("name", 13);
+
+        public DateTime? nulldate { get; set; } = DateTime.Today;
     }
 }

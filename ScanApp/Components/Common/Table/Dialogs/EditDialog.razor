@@ -1,4 +1,4 @@
-﻿@using ScanApp.Components.Common.ScanAppTable.Options
+﻿@using ScanApp.Components.Common.Table
 @using ScanApp.Common.Extensions
 @typeparam T
 
@@ -47,23 +47,7 @@
         _form?.Validate();
 
         if(ExpandInvalidPanelsOnStart)
-            OpenInvalidExpansionPanels();
-
-        StateHasChanged();
-    }
-
-    private void OpenInvalidExpansionPanels()
-    {
-        if (_form.IsValid) return;
-
-        foreach (var (key, fieldReference) in _fieldCreator.FieldReferences)
-        {
-            if (fieldReference?.ValidationErrors?.Count != 0)
-            {
-                _fieldCreator.Panels[key].Expand(false);
-            }
-        }
-        StateHasChanged();
+            _fieldCreator?.ExpandInvalidPanels();
     }
 
     Task Submit()

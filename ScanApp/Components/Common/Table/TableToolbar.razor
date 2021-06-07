@@ -1,6 +1,4 @@
-﻿@using ScanApp.Components.Common.ScanAppTable.Options
-@using SharedExtensions
-@typeparam T
+﻿@typeparam T
 
 @if (Groupables?.Count() > 0 && GroupingVisible)
 {
@@ -32,33 +30,22 @@
 @code {
 
 
-    [Parameter]
-    public bool FiltersApplied { get; set; }
-    [Parameter]
-    public bool EditDisabled { get; set; }
-    [Parameter]
-    public bool EditVisible { get; set; }
-    [Parameter]
-    public bool FilterVisible { get; set; }
+    [Parameter] public bool FiltersApplied { get; set; }
+    [Parameter] public bool EditDisabled { get; set; }
+    [Parameter] public bool EditVisible { get; set; }
+    [Parameter] public bool FilterVisible { get; set; }
 
-    [Parameter]
-    public bool GroupingVisible { get; set; } = true;
+    [Parameter] public bool GroupingVisible { get; set; } = true;
 
-    [Parameter]
-    public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
+    [Parameter] public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
 
-    [Parameter]
-    public ColumnConfig<T> SelectedGroupable { get; set; }
+    [Parameter] public ColumnConfig<T> SelectedGroupable { get; set; }
 
-    [Parameter]
-    public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
+    [Parameter] public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
 
-    [Parameter]
-    public EventCallback OnEditClick { get; set; }
+    [Parameter] public EventCallback OnEditClick { get; set; }
 
-    [Parameter]
-    public EventCallback OnFilterClick { get; set; }
+    [Parameter] public EventCallback OnFilterClick { get; set; }
 
-    [Parameter]
-    public EventCallback OnRemoveFilterClick { get; set; }
+    [Parameter] public EventCallback OnRemoveFilterClick { get; set; }
 }
