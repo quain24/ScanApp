@@ -51,9 +51,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime)) &&
                     config.FieldType is FieldType.Date or FieldType.DateAndTime or FieldType.AutoDetect)
                     CreateDateFields(builder, config);
-                if (config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
-                   (config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
-                   config.FieldType is FieldType.AutoDetect or FieldType.Time or FieldType.DateAndTime)
+                if ((config.PropertyType == typeof(DateTime?) || config.PropertyType == typeof(DateTime) ||
+                     config.PropertyType == typeof(TimeSpan?) || config.PropertyType == typeof(TimeSpan)) &&
+                     config.FieldType is FieldType.AutoDetect or FieldType.Time or FieldType.DateAndTime)
                     CreateTimeFields(builder, config);
                 else if (config.FieldType == FieldType.PlainText ||
                         (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?) &&
@@ -75,7 +75,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
             {
-                ColumnConfigExtensions.SetValue(config, TargetItem, obj);
+                TargetItem = ColumnConfigExtensions.SetValue(config, TargetItem, obj);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
 
@@ -244,7 +244,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             if (config.PropertyType == typeof(DateTime) && date.HasValue is false)
             {
-                config.SetValue(TargetItem, DateTime.MinValue + oldDate.Value.TimeOfDay);
+                TargetItem = config.SetValue(TargetItem, DateTime.MinValue + oldDate.Value.TimeOfDay);
             }
             else
             {
@@ -252,7 +252,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 {
                     date += oldDate.Value.TimeOfDay;
                 }
-                config.SetValue(TargetItem, date);
+                TargetItem = config.SetValue(TargetItem, date);
             }
             await TargetItemChanged.InvokeAsync(TargetItem);
         }
@@ -263,7 +263,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 if (time != config.GetValueFrom(TargetItem) as TimeSpan?)
                 {
-                    config.SetValue(TargetItem, time.Value);
+                    TargetItem = config.SetValue(TargetItem, time.Value);
                     await TargetItemChanged.InvokeAsync(TargetItem);
                 }
                 return;
@@ -271,12 +271,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             if (Nullable.GetUnderlyingType(config.PropertyType) is null && TimeSpan.Zero != (TimeSpan)config.GetValueFrom(TargetItem))
             {
-                config.SetValue(TargetItem, TimeSpan.Zero);
+                TargetItem = config.SetValue(TargetItem, TimeSpan.Zero);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
             else if (config.GetValueFrom(TargetItem) is not null)
             {
-                config.SetValue(TargetItem, null);
+                TargetItem = config.SetValue(TargetItem, null);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
         }
@@ -288,13 +288,13 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 var newDate = oldDate.Date + (newTime ?? TimeSpan.Zero);
                 if (newDate != oldDate)
                 {
-                    config.SetValue(TargetItem, newDate);
+                    TargetItem = config.SetValue(TargetItem, newDate);
                     await TargetItemChanged.InvokeAsync(TargetItem);
                 }
             }
             else if (newTime.HasValue)
             {
-                config.SetValue(TargetItem, DateTime.MinValue + newTime.Value);
+                TargetItem = config.SetValue(TargetItem, DateTime.MinValue + newTime.Value);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
         }
