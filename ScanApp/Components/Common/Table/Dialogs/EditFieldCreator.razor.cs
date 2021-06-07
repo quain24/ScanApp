@@ -57,7 +57,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                     CreateTimeFields(builder, config);
                 else if (config.FieldType == FieldType.PlainText ||
                         (config.PropertyType != typeof(DateTime?) && config.PropertyType != typeof(TimeSpan?) &&
-                         config.PropertyType == typeof(DateTime) && config.PropertyType == typeof(TimeSpan)))
+                         config.PropertyType != typeof(DateTime) && config.PropertyType != typeof(TimeSpan)))
                     CreateTextField(builder, config);
             };
         }
