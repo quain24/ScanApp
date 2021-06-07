@@ -20,16 +20,13 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public List<ColumnConfig<T>> Configs { get; set; }
+    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
 
-    [Parameter]
-    public bool ExpandInvalidPanelsOnStart { get; set; } = true;
+    [Parameter] public bool ExpandInvalidPanelsOnStart { get; set; } = true;
 
     [Parameter] public bool StartExpanded { get; set; }
 
-    [Parameter]
-    public T SourceItem { get; set; }
+    [Parameter] public T SourceItem { get; set; }
 
     private T TargetItem { get; set; }
 

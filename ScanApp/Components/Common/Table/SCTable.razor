@@ -10,72 +10,72 @@
 
 @if (GroupedData?.Count > 0)
 {
-<MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
-          FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
-          Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
-    <ToolBarContent>
-        @if (Configs?.Count > 0 && _groupables.Count > 0)
-        {
-            <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
-                          OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
-                          FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
-                          OnRemoveFilterClick="RemoveFilters"></TableToolbar>
-        }
-    </ToolBarContent>
-    <HeaderContent>
-        <MudTh Style="padding: 10px; z-index: 10">
-            Grouped by: @SelectedGroupable.DisplayName
-        </MudTh>
-    </HeaderContent>
+    <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick"
+              FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
+              Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
+        <ToolBarContent>
+            @if (Configs?.Count > 0 && _groupables.Count > 0)
+            {
+                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
+                              OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
+                              FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
+                              OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+            }
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh Style="padding: 10px; z-index: 10">
+                Grouped by: @SelectedGroupable.DisplayName
+            </MudTh>
+        </HeaderContent>
 
-    <RowTemplate>
-        <MudTd DataLabel="@context.Key">@context.Key</MudTd>
-    </RowTemplate>
-    <ChildRowContent>
-        @if (_selectedGroupId == context.Key)
-        {
-            <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-                      RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
-                      RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
-                <HeaderContent>
-                    @foreach (var cfg in Configs)
-                    {
-                        <MudTh Style="border: thin solid darkgray; padding: 2px 10px 2px 10px;">
-                            <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@ChooseSortingAlgorithm(cfg)">
-                                @cfg.DisplayName
-                            </MudTableSortLabel>
-                        </MudTh>
-                    }
-                </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@context.Key">@context.Key</MudTd>
+        </RowTemplate>
+        <ChildRowContent>
+            @if (_selectedGroupId == context.Key)
+            {
+                <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+                          RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
+                          RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
+                    <HeaderContent>
+                        @foreach (var cfg in Configs)
+                        {
+                            <MudTh Style="border: thin solid darkgray; padding: 2px 10px 2px 10px;">
+                                <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@ChooseSortingAlgorithm(cfg)">
+                                    @cfg.DisplayName
+                                </MudTableSortLabel>
+                            </MudTh>
+                        }
+                    </HeaderContent>
 
-                <RowTemplate Context="rowData">
-                    @foreach (var cfg in Configs)
-                    {
-                        <MudTd @key="@(cfg.Identifier.ToString() + rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@FormatOutput(cfg, rowData)</MudTd>
-                    }
-                </RowTemplate>
-                <PagerContent>
-                    @if (context.Value.Count > RowsPerPage)
-                    {
-                        <MudTablePager PageSizeOptions="PageSizeOptions" />
-                    }
-                </PagerContent>
-            </MudTable>
-        }
-    </ChildRowContent>
+                    <RowTemplate Context="rowData">
+                        @foreach (var cfg in Configs)
+                        {
+                            <MudTd @key="@(cfg.Identifier.ToString() + rowData.GetHashCode())" Style="font-size: smaller; padding: 10px" DataLabel="@cfg.DisplayName">@FormatOutput(cfg, rowData)</MudTd>
+                        }
+                    </RowTemplate>
+                    <PagerContent>
+                        @if (context.Value.Count > RowsPerPage)
+                        {
+                            <MudTablePager PageSizeOptions="PageSizeOptions" />
+                        }
+                    </PagerContent>
+                </MudTable>
+            }
+        </ChildRowContent>
 
-    <PagerContent>
-        @if (GroupedData.Count > RowsPerPage)
-        {
-            <MudTablePager PageSizeOptions="PageSizeOptions" />
-        }
-    </PagerContent>
-</MudTable>
+        <PagerContent>
+            @if (GroupedData.Count > RowsPerPage)
+            {
+                <MudTablePager PageSizeOptions="PageSizeOptions" />
+            }
+        </PagerContent>
+    </MudTable>
 }
 else
 {
     <MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-              RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()"
+              RowStyleFunc="SelectedRowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))"
               RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
               Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <ToolBarContent>
@@ -135,6 +135,9 @@ else
     public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
     [Parameter]
+    public bool EditOnRowClick { get; set; }
+
+    [Parameter]
     public List<TTableType> Data { get; set; }
 
     [Parameter]
@@ -167,18 +170,21 @@ else
     [Parameter]
     public List<ColumnConfig<TTableType>> Configs { get; set; }
 
+    [Parameter] public Show ShowEditButton { get; set; } = Show.Auto;
+    [Parameter] public Show ShowFilterButton { get; set; } = Show.Auto;
+    [Parameter] public Show ShowGroupsField { get; set; } = Show.Auto;
+    [Parameter] public bool EditDialogStartsExpanded { get; set; } = true;
+    [Parameter] public bool FilterDialogStartsExpanded { get; set; }
+    [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; } = true;
+
     private ColumnConfig<TTableType> SelectedGroupable { get; set; }
 
     private string _selectedGroupId;
     private bool _groupingEnabled;
     private bool _filteringEnabled;
     private bool _editingEnabled;
-
-    private IEnumerable<TTableType> _filteredData = new List<TTableType>();
     private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
-
-    private Dictionary<ColumnConfig<TTableType>, Delegate> _validators = new();
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
     private IEnumerable<IFilter<TTableType>> _filters;
@@ -196,13 +202,6 @@ else
         CreateGroupsBasedOn(SelectedGroupable);
     }
 
-    private void EnableAvailableFunctionality()
-    {
-        _groupingEnabled = Configs?.Any(c => c.IsGroupable) ?? false;
-        _filteringEnabled = Configs?.Any(c => c.IsFilterable) ?? false;
-        _editingEnabled = Configs?.Any(c => c.IsEditable) ?? false;
-    }
-
     private void AssignColumnsByProperties()
     {
         foreach (var config in Configs)
@@ -213,6 +212,16 @@ else
             if (config.IsGroupable)
                 _groupables.Add(config);
         }
+    }
+
+    private void EnableAvailableFunctionality()
+    {
+        _filteringEnabled = (Configs?.Any(c => c.IsFilterable) ?? false)
+                            && (ShowFilterButton is Show.Auto) || ShowFilterButton is Show.Yes;
+        _groupingEnabled = (Configs?.Any(c => c.IsGroupable) ?? false)
+                           && (ShowGroupsField is Show.Auto) || ShowGroupsField is Show.Yes;
+        _editingEnabled = (Configs?.Any(c => c.IsEditable) ?? false)
+                          && (ShowEditButton is Show.Auto) || ShowEditButton is Show.Yes;
     }
 
     private static bool CanBeCompared(ColumnConfig<TTableType> config)
@@ -231,13 +240,13 @@ else
             return;
         }
 
+        // Must be done without deleting groups collections.
+        // Otherwise will cause sub-table to scroll up after row click or edit.
         foreach (var group in GroupedData.Values)
         {
             group.Clear();
         }
 
-        // Must be done without deleting groups collections.
-        // Otherwise will cause sub-table to scroll up after row click or edit.
         foreach (var item in FilterDataSource(Data))
         {
 
@@ -252,6 +261,13 @@ else
             .Select(d => d.Key)
             .ToList();
         emptyKeys.ForEach(k => GroupedData.Remove(k));
+    }
+
+    private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
+    {
+        return _filters.IsNullOrEmpty()
+            ? data
+            : data.Filter(_filters);
     }
 
     private static dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
@@ -285,13 +301,24 @@ else
         _selectedGroupId = _selectedGroupId == args.Item.Key ? null : args.Item.Key;
     }
 
+    private async Task OnRowClick(TableRowClickEventArgs<TTableType> args)
+    {
+        if (EditOnRowClick)
+        {
+            SelectedItem = args.Item;
+            await OpenEditItemDialog();
+        }
+    }
+
     public async Task OpenEditItemDialog()
     {
         var dialog = _dialogService.Show<EditDialog<TTableType>>("Edit item",
             new DialogParameters
             {
                 ["Configs"] = Configs,
-                ["SourceItem"] = SelectedItem
+                ["SourceItem"] = SelectedItem,
+                ["StartExpanded"] = EditDialogStartsExpanded,
+                ["ExpandInvalidPanelsOnStart"] = EditDialogInvalidFieldsStartExpanded
             },
             Globals.Gui.DefaultDialogOptions);
 
@@ -316,7 +343,8 @@ else
         var dialog = _dialogService.Show<FilterDialog<TTableType>>("Filter by...",
             new DialogParameters
             {
-                ["Configs"] = Configs
+                ["Configs"] = Configs,
+                ["StartExpanded"] = FilterDialogStartsExpanded
             },
             Globals.Gui.DefaultDialogOptions);
 
@@ -325,13 +353,6 @@ else
             return;
         _filters = (IEnumerable<IFilter<TTableType>>)result.Data;
         CreateGroupsBasedOn(SelectedGroupable);
-    }
-
-    private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
-    {
-        return _filters.IsNullOrEmpty()
-            ? data
-            : data.Filter(_filters);
     }
 
     private void RemoveFilters()
@@ -372,5 +393,12 @@ else
             false => SelectedItem?.Equals(rowValue) ?? false
 
         } ? Globals.Gui.SelectedTableRowStyle : string.Empty;
+    }
+
+    public enum Show
+    {
+        Auto = 0,
+        Yes,
+        No
     }
 }
