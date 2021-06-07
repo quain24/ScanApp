@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using MudBlazor;
+using ScanApp.Common.Extensions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace ScanApp.Components.Common.Table

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace ScanApp.Services
+namespace ScanApp.Common.Extensions
 {
     public static class MemberInfoExtensions
     {
