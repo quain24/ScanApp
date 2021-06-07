@@ -9,6 +9,7 @@ namespace ScanApp.Services
     {
         public static IReadOnlyList<MemberInfo> GetFrom<TResult>(Expression<Func<TSource, TResult>> expression)
         {
+            _ = expression ?? throw new ArgumentNullException(nameof(expression));
             var visitor = new PropertyVisitor();
             visitor.Visit(expression.Body);
             visitor.Path.Reverse();
