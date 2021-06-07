@@ -91,6 +91,9 @@ namespace ScanApp.Common.Extensions
 
         private static MemberInfo GetTargetedObjectMemberInfo(dynamic source, MemberInfo currentInfo)
         {
+            _ = source ?? throw new ArgumentNullException(nameof(source), "One of objects on path to setting or getting value is null," +
+                                                                          " therefore cannot have next set of members extracted." +
+                                                                          $" Tried to extract {nameof(MemberInfo)} data from '{currentInfo.Name}'");
             MemberInfo[] members = source
                 .GetType()
                 .GetMember(currentInfo.Name, BindingFlags.ExactBinding | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
