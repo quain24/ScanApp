@@ -119,32 +119,23 @@ else
 
 @code
 {
-    [Parameter]
-    public bool FixedHeader { get; set; }
+    [Parameter] public bool FixedHeader { get; set; }
 
-    [Parameter]
-    public bool FixedFooter { get; set; }
+    [Parameter] public bool FixedFooter { get; set; }
 
-    [Parameter]
-    public int MaxTableHeight { get; set; }
+    [Parameter] public int MaxTableHeight { get; set; }
 
-    [Parameter]
-    public int RowsPerPage { get; set; } = 50;
+    [Parameter] public int RowsPerPage { get; set; } = 50;
 
-    [Parameter]
-    public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
+    [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
-    [Parameter]
-    public bool EditOnRowClick { get; set; }
+    [Parameter] public bool EditOnRowClick { get; set; }
 
-    [Parameter]
-    public List<TTableType> Data { get; set; }
+    [Parameter] public List<TTableType> Data { get; set; }
 
-    [Parameter]
-    public TTableType SelectedItem { get; set; }
+    [Parameter] public TTableType SelectedItem { get; set; }
 
-    [Parameter]
-    public EventCallback<TTableType> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
     private TTableType SelectedItemBoundChild
     {
@@ -152,14 +143,11 @@ else
         set => SelectedItemChanged.InvokeAsync(value);
     }
 
-    [Parameter]
-    public bool MultiSelection { get; set; }
+    [Parameter] public bool MultiSelection { get; set; }
 
-    [Parameter]
-    public HashSet<TTableType> SelectedItems { get; set; }
+    [Parameter] public HashSet<TTableType> SelectedItems { get; set; }
 
-    [Parameter]
-    public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
+    [Parameter] public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
 
     private HashSet<TTableType> SelectedItemsBoundChild
     {
@@ -167,8 +155,7 @@ else
         set => SelectedItemsChanged.InvokeAsync(value);
     }
 
-    [Parameter]
-    public List<ColumnConfig<TTableType>> Configs { get; set; }
+    [Parameter] public List<ColumnConfig<TTableType>> Configs { get; set; }
 
     [Parameter] public Show ShowEditButton { get; set; } = Show.Auto;
     [Parameter] public Show ShowFilterButton { get; set; } = Show.Auto;
