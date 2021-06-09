@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace ScanApp.Components.Common.ScanAppTable.EditDialog
 {
@@ -18,8 +19,8 @@ namespace ScanApp.Components.Common.ScanAppTable.EditDialog
 
         public ItemRepresentation(PropertyInfo[] properties, TItem item)
         {
-            _item = item;
-            _properties = properties;
+            _item = item ?? throw new ArgumentNullException(nameof(item), "Item argument cannot be null");
+            _properties = properties ?? throw new ArgumentNullException(nameof(_properties), "Properties argument cannot be null.");
 
             int size = properties.Count();
 
@@ -31,8 +32,8 @@ namespace ScanApp.Components.Common.ScanAppTable.EditDialog
             Doubles = new double?[size];
             Decimals = new decimal?[size];
 
-            SetObjects(size);
             SetTypes(size);
+            SetObjects(size);
             MapItemToRepresentation();
         }
 
@@ -40,7 +41,7 @@ namespace ScanApp.Components.Common.ScanAppTable.EditDialog
         {
             for (int i = 0; i < size; i++)
             {
-                Types[i] = Objects[i].GetType();
+                Types[i] = _properties[i].PropertyType;
             }
         }
 
@@ -49,6 +50,29 @@ namespace ScanApp.Components.Common.ScanAppTable.EditDialog
             for (int i = 0; i < size; i++)
             {
                 Objects[i] = _properties[i].GetValue(_item);
+                if (Objects[i] is null)
+                {
+                    Objects[i] = CreateDefaultInstance(_properties[i]);
+                }
+            }
+        }
+
+        private object CreateDefaultInstance(PropertyInfo propInfo)
+        {
+            try
+            {
+                return Activator.CreateInstance(propInfo.PropertyType);
+            }
+            catch (Exception e)
+            {
+                if (propInfo.PropertyType == typeof(string))
+                {
+                    return string.Empty;
+                }
+
+                throw new ArgumentNullException(nameof(propInfo),
+                    "Could not create a default instance of a property. " +
+                    "Creation of new instance is caused by null values passed to the table.");
             }
         }
 
