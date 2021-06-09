@@ -16,17 +16,17 @@ namespace ScanApp.Components.Common.Table
 {
     public class ColumnConfig<T>
     {
+        public Guid Identifier { get; } = Guid.NewGuid();
         public string DisplayName { get; }
         public string PropertyName { get; }
         public Type PropertyType { get; }
         public FieldType FieldType { get; }
         public dynamic Converter { get; private set; }
-        public Guid Identifier { get; } = Guid.NewGuid();
-        private IReadOnlyList<MemberInfo> PathToItem { get; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         private IValidator Validator { get; }
+        private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> TargetItemSelector { get; }
         private Func<T, dynamic> _getter;
         private Action<T, dynamic> _setter;

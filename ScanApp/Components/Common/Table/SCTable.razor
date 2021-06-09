@@ -15,7 +15,7 @@
         <ToolBarContent>
             @if (Configs?.Count > 0 && _groupables.Count > 0)
             {
-                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
+                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
                               OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
                               FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
                               OnRemoveFilterClick="RemoveFilters"></TableToolbar>
@@ -80,7 +80,7 @@ else
         <ToolBarContent>
             @if (Configs?.Count > 0 && _groupables.Count > 0)
             {
-                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="CreateGroupsBasedOn" SelectedGroupable="SelectedGroupable"
+                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
                               OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
                               FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
                               OnRemoveFilterClick="RemoveFilters"></TableToolbar>
