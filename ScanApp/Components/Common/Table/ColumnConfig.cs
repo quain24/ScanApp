@@ -22,14 +22,15 @@ namespace ScanApp.Components.Common.Table
         public FieldType FieldType { get; }
         public dynamic Converter { get; private set; }
         public Guid Identifier { get; } = Guid.NewGuid();
-        public IReadOnlyList<MemberInfo> PropertyPath { get; }
+        private IReadOnlyList<MemberInfo> PathToItem { get; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         private IValidator Validator { get; }
         private Expression<Func<T, dynamic>> TargetItemSelector { get; }
-        private readonly Func<T, dynamic> _getter;
+        private Func<T, dynamic> _getter;
         private Action<T, dynamic> _setter;
+        private Func<T, dynamic, T> _valueSetter;
 
         public ColumnConfig(Expression<Func<T, dynamic>> target)
             : this(target, null, FieldType.AutoDetect, null)
@@ -54,14 +55,15 @@ namespace ScanApp.Components.Common.Table
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
             TargetItemSelector = target ?? throw new ArgumentNullException(nameof(target));
-            PropertyPath = PropertyPath<T>.GetFrom(TargetItemSelector);
-            _getter = TargetItemSelector.Compile();
+            PathToItem = PropertyPath<T>.GetFrom(TargetItemSelector);
 
             PropertyName = ExtractPropertyName();
+            PropertyType = ExtractPropertyType();
             DisplayName = SetDisplayName(displayName);
 
-            PropertyType = ExtractPropertyType();
-            CreateSetter();
+            CreatePrecompiledGetterForItem();
+            CreatePrecompiledSetterForItem();
+            ChooseSetValueVersion();
             FieldType = format;
             Validator = validator;
             if (Validator?.CanValidateInstancesOfType(PropertyType) is false)
@@ -71,13 +73,53 @@ namespace ScanApp.Components.Common.Table
             }
         }
 
-        /// <summary>
-        /// Extracts underlying value (value source is pointed to in source <see cref="ColumnConfig{T}"/>) from given <paramref name="source"/>.<br/>
-        /// Values can be extracted only from properties or fields stored in <paramref name="source"/>.
-        /// </summary>
-        /// <param name="source">Object from which we are trying to get a value.</param>
-        /// <returns>Value extracted from <paramref name="source"/>.</returns>
-        public dynamic GetValueFrom(T source) => source is null ? null : _getter.Invoke(source);
+        private string ExtractPropertyName()
+        {
+            return PathToItem.Count == 0
+                ? typeof(T)?.Name
+                : PathToItem[^1]?.Name ?? throw new ArgumentException("Could not extract property name!");
+        }
+
+        private Type ExtractPropertyType() => PathToItem.Count == 0 ? typeof(T) : PathToItem[^1].GetUnderlyingType();
+
+        private string SetDisplayName(string name)
+        {
+            return name switch
+            {
+                null => PropertyName,
+                var s when string.IsNullOrWhiteSpace(s) => throw new ArgumentException("Display name cannot contain only whitespaces.", nameof(name)),
+                _ => name
+            };
+        }
+
+        private void CreatePrecompiledGetterForItem() => _getter = TargetItemSelector.Compile();
+
+        private void CreatePrecompiledSetterForItem()
+        {
+            var valueParameterExpression = Expression.Parameter(typeof(object));
+            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
+
+            var assign = Expression.Lambda<Action<T, dynamic>>
+            (
+                Expression.Assign(targetExpression,
+                    Expression.Convert(valueParameterExpression, targetExpression.Type)),
+                TargetItemSelector.Parameters.Single(),
+                valueParameterExpression
+            );
+
+            _setter = assign.Compile();
+        }
+
+        private void ChooseSetValueVersion()
+        {
+            _valueSetter = PathToItem switch
+            {
+                var p when p.Count == 0 => SetValueDirect,
+                var p when p.Count == 1 && typeof(T).IsValueType => TriedSetImmutableValue,
+                var p when p.Last().ReflectedType?.IsValueType ?? true => TriedSetImmutableValue,
+                _ => SetValueWhenValid
+            };
+        }
 
         /// <summary>
         /// Set <paramref name="value"/> in <paramref name="target"/> if <paramref name="target"/> is a reference type.
@@ -96,7 +138,13 @@ namespace ScanApp.Components.Common.Table
         /// </para>
         /// </returns>
         /// <exception cref="ArgumentException">Given <paramref name="value"/> is of incompatible type to one stored in <see cref="PropertyType"/>.</exception>
-        public T SetValue(T target, dynamic value)
+        public T SetValue(T target, dynamic value) => _valueSetter(target, value);
+
+        private static T SetValueDirect(T target, dynamic value) => value;
+
+        private static T TriedSetImmutableValue(T target, dynamic value) => throw new ArgumentException("Cannot set values inside value types.");
+
+        private T SetValueWhenValid(T target, dynamic value)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
@@ -107,38 +155,17 @@ namespace ScanApp.Components.Common.Table
                                             $" (Identifier - {Identifier}).", nameof(value));
             }
 
-            // If no path, then this ColumnConfig target was set to something like 'c => c' - return replacement.
-            if (PropertyPath.Count == 0)
-            {
-                return value;
-            }
-
-            // Throw if tried to set value in directly value type - immutability
-            if((PropertyPath.Count == 1 && target.GetType().IsValueType ) ||
-               (PropertyPath.Last().ReflectedType?.IsValueType ?? true))
-            {
-                throw new ArgumentException("Cannot set values inside value types.");
-            }
-
             _setter.Invoke(target, value);
             return target;
         }
 
-        private void CreateSetter()
-        {
-            var valueParameterExpression = Expression.Parameter(typeof(object));
-            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
-
-            var assign = Expression.Lambda<Action<T, dynamic>>
-            (
-                Expression.Assign(targetExpression,
-                    Expression.Convert(valueParameterExpression, targetExpression.Type)),
-                TargetItemSelector.Parameters.Single(),
-                valueParameterExpression
-            );
-
-            _setter = assign.Compile();
-        }
+        /// <summary>
+        /// Extracts underlying value (value source is pointed to in source <see cref="ColumnConfig{T}"/>) from given <paramref name="source"/>.<br/>
+        /// Values can be extracted only from properties or fields stored in <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">Object from which we are trying to get a value.</param>
+        /// <returns>Value extracted from <paramref name="source"/>.</returns>
+        public dynamic GetValueFrom(T source) => source is null ? null : _getter.Invoke(source);
 
         public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
         {
@@ -148,28 +175,6 @@ namespace ScanApp.Components.Common.Table
             }
             Converter = converter ?? throw new ArgumentNullException(nameof(converter));
             return this;
-        }
-
-        private string ExtractPropertyName()
-        {
-            return PropertyPath.Count == 0
-                ? typeof(T)?.Name
-                : PropertyPath[^1]?.Name ?? throw new ArgumentException("Could not extract property name!");
-        }
-
-        private string SetDisplayName(string name)
-        {
-            return name switch
-            {
-                null => PropertyName,
-                var s when string.IsNullOrWhiteSpace(s) => throw new ArgumentException("Display name cannot contain only whitespaces.", nameof(name)),
-                _ => name
-            };
-        }
-
-        private Type ExtractPropertyType()
-        {
-            return PropertyPath.Count == 0 ? typeof(T) : PropertyPath[^1].GetUnderlyingType();
         }
 
         public bool IsValidatable(Type type = null)
