@@ -75,7 +75,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
             {
-                TargetItem = ColumnConfigExtensions.SetValue(config, TargetItem, obj);
+                TargetItem = config.SetValue(TargetItem, obj);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
 

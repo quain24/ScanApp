@@ -1,12 +1,16 @@
 ﻿using FluentValidation;
+using MudBlazor;
+using ScanApp.Common.Extensions;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using MudBlazor;
-using ScanApp.Common.Extensions;
+using TypeExtensions = ScanApp.Common.Extensions.TypeExtensions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
+
+// ReSharper disable IntroduceOptionalParameters.Global
 
 namespace ScanApp.Components.Common.Table
 {
@@ -16,7 +20,6 @@ namespace ScanApp.Components.Common.Table
         public string PropertyName { get; }
         public Type PropertyType { get; }
         public FieldType FieldType { get; }
-        public Func<dynamic, string> DisplayFormatter { get; }
         public dynamic Converter { get; private set; }
         public Guid Identifier { get; } = Guid.NewGuid();
         public IReadOnlyList<MemberInfo> PropertyPath { get; }
@@ -24,54 +27,42 @@ namespace ScanApp.Components.Common.Table
         public bool IsEditable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         private IValidator Validator { get; }
-        private Expression<Func<T, object>> ColumnNameSelector { get; }
+        private Expression<Func<T, dynamic>> TargetItemSelector { get; }
+        private readonly Func<T, dynamic> _getter;
+        private Action<T, dynamic> _setter;
 
-        public ColumnConfig(Expression<Func<T, object>> target)
-            : this(target, null, FieldType.AutoDetect, null, null)
+        public ColumnConfig(Expression<Func<T, dynamic>> target)
+            : this(target, null, FieldType.AutoDetect, null)
         {
         }
 
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName)
-            : this(target, displayName, FieldType.AutoDetect, null, null)
+        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName)
+            : this(target, displayName, FieldType.AutoDetect, null)
         {
         }
 
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName, IValidator validator)
-            : this(target, displayName, FieldType.AutoDetect, null, validator)
+        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, IValidator validator)
+            : this(target, displayName, FieldType.AutoDetect, validator)
         {
         }
 
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName, FieldType format)
-            : this(target, displayName, format, null, null)
+        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format)
+            : this(target, displayName, format, null)
         {
         }
 
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName, FieldType format, IValidator validator)
-            : this(target, displayName, format, null, validator)
+        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
-        }
-
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName, Func<dynamic, string> formatter)
-            : this(target, displayName, FieldType.AutoDetect, formatter, null)
-        {
-        }
-
-        public ColumnConfig(Expression<Func<T, object>> target, string displayName, Func<dynamic, string> formatter, IValidator validator)
-            : this(target, displayName, FieldType.AutoDetect, formatter, validator)
-        {
-        }
-
-        private ColumnConfig(Expression<Func<T, object>> target, string displayName, FieldType format, Func<dynamic, string> formatter, IValidator validator)
-        {
-            ColumnNameSelector = target ?? throw new ArgumentNullException(nameof(target));
-            PropertyPath = PropertyPath<T>.GetFrom(ColumnNameSelector);
+            TargetItemSelector = target ?? throw new ArgumentNullException(nameof(target));
+            PropertyPath = PropertyPath<T>.GetFrom(TargetItemSelector);
+            _getter = TargetItemSelector.Compile();
 
             PropertyName = ExtractPropertyName();
             DisplayName = SetDisplayName(displayName);
 
             PropertyType = ExtractPropertyType();
+            CreateSetter();
             FieldType = format;
-            DisplayFormatter = formatter;
             Validator = validator;
             if (Validator?.CanValidateInstancesOfType(PropertyType) is false)
             {
@@ -80,9 +71,78 @@ namespace ScanApp.Components.Common.Table
             }
         }
 
+        /// <summary>
+        /// Extracts underlying value (value source is pointed to in source <see cref="ColumnConfig{T}"/>) from given <paramref name="source"/>.<br/>
+        /// Values can be extracted only from properties or fields stored in <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">Object from which we are trying to get a value.</param>
+        /// <returns>Value extracted from <paramref name="source"/>.</returns>
+        public dynamic GetValueFrom(T source) => source is null ? null : _getter.Invoke(source);
+
+        /// <summary>
+        /// Set <paramref name="value"/> in <paramref name="target"/> if <paramref name="target"/> is a reference type.
+        /// </summary>
+        /// <param name="target">
+        ///     If <paramref name="target"/> is a reference type, than it will have one of it's fields / properties set to given <paramref name="value"/> by this method.<br/>
+        ///     <b>Otherwise <paramref name="target"/> will not be mutated.</b>
+        /// </param>
+        /// <param name="value">New data for given <paramref name="target"/></param>
+        /// <returns>
+        /// <para>
+        ///     <paramref name="target"/> is a reference type - a reference to mutated <paramref name="target"/> will be returned.
+        /// </para>
+        /// <para>
+        ///     <paramref name="target"/> is a value type - new value will be returned, <paramref name="target"/> will not be mutated,
+        /// </para>
+        /// </returns>
+        /// <exception cref="ArgumentException">Given <paramref name="value"/> is of incompatible type to one stored in <see cref="PropertyType"/>.</exception>
+        public T SetValue(T target, dynamic value)
+        {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            if (!TypeExtensions.CheckValueCompatibility(PropertyType, value))
+            {
+                throw new ArgumentException($"Given {nameof(value)}'s type ({value?.GetType().Name ?? $"{nameof(value)} was NULL"}) is different than property" +
+                                            $" / field type being set ({PropertyType}) using {nameof(ColumnConfig<T>)} for variable named '{DisplayName}'" +
+                                            $" (Identifier - {Identifier}).", nameof(value));
+            }
+
+            // If no path, then this ColumnConfig target was set to something like 'c => c' - return replacement.
+            if (PropertyPath.Count == 0)
+            {
+                return value;
+            }
+
+            // Throw if tried to set value in directly value type - immutability
+            if((PropertyPath.Count == 1 && target.GetType().IsValueType ) ||
+               (PropertyPath.Last().ReflectedType?.IsValueType ?? true))
+            {
+                throw new ArgumentException("Cannot set values inside value types.");
+            }
+
+            _setter.Invoke(target, value);
+            return target;
+        }
+
+        private void CreateSetter()
+        {
+            var valueParameterExpression = Expression.Parameter(typeof(object));
+            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
+
+            var assign = Expression.Lambda<Action<T, dynamic>>
+            (
+                Expression.Assign(targetExpression,
+                    Expression.Convert(valueParameterExpression, targetExpression.Type)),
+                TargetItemSelector.Parameters.Single(),
+                valueParameterExpression
+            );
+
+            _setter = assign.Compile();
+        }
+
         public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
         {
-            if(typeof(TType) != PropertyType)
+            if (typeof(TType) != PropertyType)
             {
                 throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
             }
