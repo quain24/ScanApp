@@ -1,5 +1,4 @@
-﻿@using ScanApp.Common.Extensions
-@using System.Globalization
+﻿@using System.Globalization
 @using ScanApp.Common.Helpers
 @using ScanApp.Components.Common.Table.Dialogs
 @using ScanApp.Components.Common.Table.Enums
@@ -170,7 +169,7 @@ else
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
     private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
-    private IEnumerable<IFilter<TTableType>> _filters;
+    private readonly List<IFilter<TTableType>> _filters = new();
 
     protected override void OnInitialized()
     {
@@ -248,7 +247,7 @@ else
 
     private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
     {
-        return _filters.IsNullOrEmpty()
+        return _filters.Count == 0
             ? data
             : data.Filter(_filters);
     }
@@ -259,9 +258,6 @@ else
 
         if (config.Converter is not null)
             return config.Converter.SetFunc(value);
-
-        if (config.DisplayFormatter is not null)
-            return config.DisplayFormatter(value);
 
         if (value is DateTime or DateTimeOffset)
         {
@@ -334,13 +330,13 @@ else
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
-        _filters = (IEnumerable<IFilter<TTableType>>)result.Data;
+        _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ?? Enumerable.Empty<IFilter<TTableType>>());
         CreateGroupsBasedOn(SelectedGroupable);
     }
 
     private void RemoveFilters()
     {
-        _filters = null;
+        _filters.Clear();
         CreateGroupsBasedOn(SelectedGroupable);
     }
 
