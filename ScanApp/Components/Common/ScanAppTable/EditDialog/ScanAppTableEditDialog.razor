@@ -48,10 +48,9 @@
     private MudForm _form;
     private bool _okDisabled;
 
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         ItemRepresentation = new ItemRepresentation<TItem>(Properties, Item);
-        return base.OnInitializedAsync();
     }
 
     private void Cancel()

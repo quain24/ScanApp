@@ -9,13 +9,13 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
     {
         public FilteringOperationsFactory(PropertyInfo[] properties, int?[] from, int?[] to, string[] contains, DateTime?[] fromDate, DateTime?[] toDate)
         {
-            Properties = properties;
+            Properties = properties ?? throw new ArgumentNullException(nameof(properties), "Properties argument is null. Cannot run filtering without properties.");
             From = from;
             To = to;
             Contains = contains;
             FromDate = fromDate;
             ToDate = toDate;
-            Length = from.Length;
+            Length = properties.Length;
         }
 
         private int?[] From { get; set; }
@@ -26,15 +26,6 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
         private PropertyInfo[] Properties { get; set; }
         private int Length { get; set; }
         private List<IFilteringOperation> FilteringOperations { get; set; } = new List<IFilteringOperation>();
-
-
-        // string | string | int | int
-        // item 1 | aaa 1  | 1   | 2
-        // item 4 | aaa 2  | 11  | 2
-        // item 4 | aaa 3  | 12  | 2
-        // item 4 | aaa 4  | 13  | 2
-
-
 
         public List<IFilteringOperation> CreateOperations()
         {

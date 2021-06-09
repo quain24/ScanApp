@@ -84,9 +84,6 @@
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
             .WithMessage("Only predefined repair workshops are allowed"), "Select one of the workshops");
-        _amountValidator = new(x => x
-            .GreaterThan(0)
-            .WithMessage("Negative amounts are not allowed."));
     }
 
     private async Task RetrieveRepairWorkshops()
@@ -110,11 +107,7 @@
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(
-            s => s.Amount,
-            "Amount",
-            new PositiveNumbersOnlyValidator()
-            ));
+        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
 
         // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
@@ -182,7 +175,7 @@
     {
 
         return sparePartList
-            .Select(s => new SparePartGUIModel(s.Name))
+            .Select(s => new SparePartGUIModel(s?.Name))
             .ToList();
     }
 
@@ -202,5 +195,5 @@
 
     private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 
-    private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s.Amount > 0) ?? false;
+    private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s?.Amount > 0) ?? false;
 }
