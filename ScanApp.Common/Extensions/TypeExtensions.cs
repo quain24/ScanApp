@@ -27,5 +27,20 @@ namespace ScanApp.Common.Extensions
             var t = Nullable.GetUnderlyingType(type) ?? type;
             return (t.IsPrimitive && t != typeof(char)) || t == typeof(decimal);
         }
+
+        public static bool CheckValueCompatibility(this Type type, object value)
+        {
+            if (value is null)
+                return Nullable.GetUnderlyingType(type) is not null || type.GetDefaultValue() is null;
+
+            return type switch
+            {
+                var pt when pt == value.GetType() => true,
+                var pt when pt.IsInstanceOfType(value) => true,
+                var pt when Nullable.GetUnderlyingType(pt) == value.GetType() => true,
+                var pt when Nullable.GetUnderlyingType(pt) is not null && Nullable.GetUnderlyingType(pt) == Nullable.GetUnderlyingType(value.GetType()) => true,
+                _ => false
+            };
+        }
     }
 }
