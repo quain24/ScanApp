@@ -62,7 +62,7 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
-        public IColumnBuilder<T> ConverterUsing<TType>(Converter<TType> converter)
+        public IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter)
         {
             _converter = converter;
             return this;

@@ -11,7 +11,7 @@ namespace ScanApp.Components.Common.Table
 
         IColumnBuilder<T> FormatAs(FieldType type);
 
-        IColumnBuilder<T> ConverterUsing<TType>(Converter<TType> converter);
+        IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter);
 
         IColumnBuilder<T> AsReadOnly();
 
