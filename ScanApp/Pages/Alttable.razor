@@ -65,8 +65,8 @@
             .Create(),
         ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
             .UnderName("Null Date")
-            .AsNonFilterable()
-            .AsNonGroupable()
+            .DisableFiltering()
+            .DisableGrouping()
             .AsReadOnly()
             .Create()
     };

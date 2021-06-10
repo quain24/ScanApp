@@ -15,11 +15,7 @@ namespace ScanApp.Components.Common.Table
         private bool _isFilterable = true;
         private bool _isEditable = true;
         private bool _isGroupable = true;
-
-        private ColumnBuilder()
-        {
-        }
-
+        
         private ColumnBuilder(Expression<Func<T, dynamic>> target)
         {
             _target = target;
@@ -36,13 +32,13 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
-        public IColumnBuilder<T> AsNonGroupable()
+        public IColumnBuilder<T> DisableGrouping()
         {
             _isGroupable = false;
             return this;
         }
 
-        public IColumnBuilder<T> AsNonFilterable()
+        public IColumnBuilder<T> DisableFiltering()
         {
             _isFilterable = false;
             return this;

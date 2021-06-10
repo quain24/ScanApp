@@ -15,9 +15,9 @@ namespace ScanApp.Components.Common.Table
 
         IColumnBuilder<T> AsReadOnly();
 
-        IColumnBuilder<T> AsNonGroupable();
+        IColumnBuilder<T> DisableGrouping();
 
-        IColumnBuilder<T> AsNonFilterable();
+        IColumnBuilder<T> DisableFiltering();
 
         ColumnConfig<T> Create();
     }
