@@ -81,6 +81,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
                 Add(new TestObject(), c => c.AString, "test value", new TestObject { AString = "test value" });
                 Add(new TestObject() {AnNullableInt = 10}, c => c.AnNullableInt, null, new TestObject());
                 Add(new TestObject(), c => c.AnNullableInt, null, new TestObject());
+                Add(new TestObject() {SubClassField = new SubClass(){DoubleField = 0}}, c => c.SubClassField.DoubleField, 12.1, new TestObject(){SubClassField = new SubClass(){DoubleField = 12.1}});
                 Add(new TestObject(), c => c.AnNullableInt, 10, new TestObject() { AnNullableInt = 10 });
                 Add(new TestObject(), c => c.AnInt, 1, new TestObject() { AnInt = 1 });
                 Add(new TestObject(), c => c.SubClassProp, new SubClass { AString = "string" }, new TestObject() { SubClassProp = new SubClass() { AString = "string" } });
