@@ -148,7 +148,12 @@ else
     private HashSet<TTableType> SelectedItemsBoundChild
     {
         get => SelectedItems;
-        set => SelectedItemsChanged.InvokeAsync(value);
+        set
+        {
+            SelectedItems = value;
+            SelectedItemsChanged.InvokeAsync(value);
+            
+        }
     }
 
     [Parameter] public List<ColumnConfig<TTableType>> Configs { get; set; }

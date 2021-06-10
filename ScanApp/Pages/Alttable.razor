@@ -11,10 +11,24 @@
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" />
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast"
+         Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" />
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
+
+
+
+<MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
+<MudText>
+    <li>
+        @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
+        {
+            <ul>@w.Summary</ul>
+        }
+    </li>
+</MudText>
+
 
 @code
 {
@@ -46,6 +60,7 @@
     public SparePartGUIModel part { get; set; }
 
     public WeatherForecast WeatherForecast { get; set; }
+    public HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
 
     private List<WeatherForecast> forecasts;
 
