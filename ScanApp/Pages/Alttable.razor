@@ -29,7 +29,7 @@
 
 @code
 {
-    public ColumnConfig<WeatherForecast>[] cc = new[]
+    public ColumnConfig<WeatherForecast>[] cc = 
     {
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)
             .UnderName("Simple summary")
@@ -51,7 +51,7 @@
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
-            .ConverterUsing(new Converter<Version>
+            .ConvertUsing(new Converter<Version>
             {
                 SetFunc = value => value.Value,
                 GetFunc = Version.Create

@@ -14,6 +14,22 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
     public class ColumnConfigTests
     {
         [Fact]
+        public void Throws_arg_null_exc_if_no_target_is_given_on_initialization()
+        {
+            Action act = () => _ = new ColumnConfig<TestObject>(null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void Sets_display_name_from_given_parameter()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.SubClassField, "given name");
+
+            subject.DisplayName.Should().BeEquivalentTo("given name");
+        }
+
+        [Fact]
         public void SetValue_throws_arg_null_exc_when_target_is_null()
         {
             var config = new ColumnConfig<ColumnConfigFixtures.TestObject>(target => target.AnInt);
