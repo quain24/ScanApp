@@ -1,4 +1,6 @@
 ﻿using FluentAssertions;
+using FluentValidation;
+using Moq;
 using MudBlazor;
 using ScanApp.Components.Common.Table;
 using System;
@@ -74,6 +76,74 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             var subject = new ColumnConfig<TestObject>(target);
 
             subject.PropertyType.Should().Be(expected);
+        }
+
+        [Theory]
+        [ClassData(typeof(ProperValidatorTypeFixture))]
+        public void Accepts_proper_validator(Expression<Func<TestObject, object>> target, Type expected)
+        {
+            var validatorMock = new Mock<IValidator>();
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == expected))).Returns(true);
+            Action act = () => _ = new ColumnConfig<TestObject>(target, null, validatorMock.Object);
+
+            act.Should().NotThrow();
+        }
+
+        [Theory]
+        [ClassData(typeof(ProperValidatorTypeFixture))]
+        public void Throws_arg_exc_if_given_validator_cannot_validate_type_pointed_by_target(Expression<Func<TestObject, object>> target, Type expected)
+        {
+            var validatorMock = new Mock<IValidator>();
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == expected))).Returns(false);
+            Action act = () => _ = new ColumnConfig<TestObject>(target, null, validatorMock.Object);
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void IsValidatable_returns_true_if_there_is_proper_validator()
+        {
+            var validatorMock = new Mock<IValidator>();
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.IsAny<Type>())).Returns(true);
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validatorMock.Object);
+
+            subject.IsValidatable().Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsValidatable_returns_true_if_there_is_proper_validator_and_given_type_match()
+        {
+            var validatorMock = new Mock<IValidator<int>>();
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(int)))).Returns(true);
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validatorMock.Object);
+
+            subject.IsValidatable(typeof(int)).Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsValidatable_returns_false_if_there_is_proper_validator_but_given_type_mismatch()
+        {
+            var validatorMock = new Mock<IValidator<string>>();
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+
+            subject.IsValidatable(typeof(int)).Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidatable_returns_false_if_there_is_no_validator()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt);
+
+            subject.IsValidatable().Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidatable_returns_false_if_there_is_no_validator_but_given_type_mismatch()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+
+            subject.IsValidatable(typeof(string)).Should().BeFalse();
         }
 
         [Fact]
