@@ -11,7 +11,10 @@ namespace ScanApp.Common.Extensions
         /// </summary>
         /// <param name="info">Object to have its underlying type extracted</param>
         /// <returns>Type of object from which this <see cref="MemberInfo"/> was extracted.</returns>
-        /// <exception cref="ArgumentException">Given <paramref name="info"/> was not <see cref="FieldInfo"/> or <see cref="PropertyInfo"/>.</exception>
+        /// <exception cref="ArgumentException">
+        /// Given <paramref name="info"/> was not <see cref="FieldInfo"/>,
+        /// <see cref="PropertyInfo"/> or <see cref="MethodInfo"/> or <see cref="MethodInfo"/> has return parameter of <see langword="void"/>.
+        /// </exception>
         public static Type GetUnderlyingType(this MemberInfo info)
         {
             return info?.MemberType switch
