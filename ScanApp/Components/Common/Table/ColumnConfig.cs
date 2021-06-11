@@ -109,6 +109,12 @@ namespace ScanApp.Components.Common.Table
             var valueParameterExpression = Expression.Parameter(typeof(object));
             var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
 
+            if (targetExpression.NodeType == ExpressionType.Call)
+            {
+                // Target set in this ColumnConfig points to method - readable but not settable
+                return;
+            }
+
             var assign = Expression.Lambda<Action<T, dynamic>>
             (
                 Expression.Assign(targetExpression,
@@ -127,6 +133,7 @@ namespace ScanApp.Components.Common.Table
                 var p when p.Count == 0 => SetValueDirect,
                 var p when p.Count == 1 && typeof(T).IsValueType => TriedSetImmutableValue,
                 var p when p[^1].ReflectedType?.IsValueType ?? true => TriedSetImmutableValue,
+                _ when _setter is null => TriedSetMethod,
                 _ => SetValueWhenValid
             };
         }
@@ -150,9 +157,12 @@ namespace ScanApp.Components.Common.Table
         /// <exception cref="ArgumentException">Given <paramref name="value"/> is of incompatible type to one stored in <see cref="PropertyType"/>.</exception>
         public T SetValue(T target, dynamic value) => _valueSetter(target, value);
 
-        private static T SetValueDirect(T target, dynamic value) => value;
+        private static T SetValueDirect(T _, dynamic value) => value;
 
-        private static T TriedSetImmutableValue(T target, dynamic value) => throw new ArgumentException("Cannot set values inside value types.");
+        private static T TriedSetImmutableValue(T _, dynamic __) => throw new ArgumentException("Cannot set values inside value types.");
+
+        private T TriedSetMethod(T _, dynamic __) => throw new Exception("Tried to set value when target is a method" +
+                                                                         $" - Identifier - '{Identifier}' | display name - '{DisplayName}'");
 
         private T SetValueWhenValid(T target, dynamic value)
         {

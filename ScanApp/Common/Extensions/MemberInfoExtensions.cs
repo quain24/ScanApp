@@ -18,7 +18,8 @@ namespace ScanApp.Common.Extensions
             {
                 MemberTypes.Field => ((FieldInfo)info).FieldType,
                 MemberTypes.Property => ((PropertyInfo)info).PropertyType,
-                _ => throw new ArgumentException("Underlying type is returned only for properties and fields.")
+                MemberTypes.Method when ((MethodInfo)info).ReturnType != typeof(void) => ((MethodInfo)info).ReturnType,
+                _ => throw new ArgumentException("Underlying type can be returned for properties, fields or a return type for non-void method calls...")
             };
         }
     }

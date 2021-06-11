@@ -25,6 +25,12 @@ namespace ScanApp.Services
                 Path.Add(node.Member);
                 return base.VisitMember(node);
             }
+
+            protected override Expression VisitMethodCall(MethodCallExpression node)
+            {
+                Path.Add(node.Method);
+                return base.VisitMethodCall(node);
+            }
         }
     }
 }

@@ -1,12 +1,9 @@
 ﻿using FluentAssertions;
-using Moq;
-using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.Table;
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
 using Xunit;
+using Xunit.Sdk;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.ColumnConfigFixtures;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
@@ -21,12 +18,54 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             act.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact]
-        public void Sets_display_name_from_given_parameter()
+        [Theory]
+        [ClassData(typeof(AutoDisplayNameFixture))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+        public void Sets_display_name_from_given_parameter(Expression<Func<TestObject, object>> target, string _)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
-            var subject = new ColumnConfig<TestObject>(c => c.SubClassField, "given name");
+            var subject = new ColumnConfig<TestObject>(target, "given name");
 
             subject.DisplayName.Should().BeEquivalentTo("given name");
+        }
+
+        [Theory]
+        [ClassData(typeof(AutoDisplayNameFixture))]
+        public void Uses_target_property_or_field_name_if_no_display_name_is_given(Expression<Func<TestObject, object>> target, string expected)
+        {
+            var subject = new ColumnConfig<TestObject>(target);
+
+            subject.DisplayName.Should().BeEquivalentTo(expected);
+        }
+
+        [Theory]
+        [InlineData(FieldType.Date)]
+        [InlineData(FieldType.Time)]
+        [InlineData(FieldType.DateAndTime)]
+        [InlineData(FieldType.AutoDetect)]
+        [InlineData(FieldType.PlainText)]
+        public void Uses_given_FieldType(FieldType type)
+        {
+            var subject = new ColumnConfig<TestObject>(c => c, null, type);
+
+            subject.FieldType.Should().Be(type);
+        }
+
+        [Fact]
+        public void Given_no_FieldType_uses_FieldType_AutoDetect()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c);
+
+            subject.FieldType.Should().Be(FieldType.AutoDetect);
+        }
+
+        [Theory]
+        [ClassData(typeof(DetectTypeFixture))]
+        public void Detects_type_of_object_pointed_to_by_target_expression(Expression<Func<TestObject, object>> target, Type expected)
+        {
+            var subject = new ColumnConfig<TestObject>(target);
+
+            subject.PropertyType.Should().Be(expected);
         }
 
         [Fact]

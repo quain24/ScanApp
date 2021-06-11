@@ -14,6 +14,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             public int AnIntField;
             public int? AnNullableInt { get; set; }
 
+            public int TestMethod()
+            {
+                return 1;
+            }
             public SubClass SubClassProp { get; set; }
             public SubClass SubClassField;
             public SubClassPar SubClassParamField;
@@ -69,6 +73,35 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             public string StrVal;
 
             public DateTime? DateTimeNullableVal;
+        }
+
+        public class AutoDisplayNameFixture : TheoryData<Expression<Func<TestObject, object>>, string>
+        {
+            public AutoDisplayNameFixture()
+            {
+                Add(c => c.AString, nameof(TestObject.AString));
+                Add(c => c.AnNullableInt, nameof(TestObject.AnNullableInt));
+                Add(c => c.SubClassProp.DoubleField, nameof(SubClass.DoubleField));
+                Add(c => c.SubClassProp.NullableDateTime, nameof(SubClass.NullableDateTime));
+                Add(c => c.SubClassProp.SubClassParFieldInSubClass.DoubleField, nameof(SubClass.DoubleField));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.IntVal, nameof(TestStruct.IntVal));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.StructVal.StrVal, nameof(SubStruct.StrVal));
+            }
+        }
+
+        public class DetectTypeFixture : TheoryData<Expression<Func<TestObject, object>>, Type>
+        {
+            public DetectTypeFixture()
+            {
+                Add(c => c.AString, typeof(string));
+                Add(c => c.TestMethod(), typeof(int));
+                Add(c => c.AnNullableInt, typeof(int?));
+                Add(c => c.SubClassProp.DoubleField, typeof(double));
+                Add(c => c.SubClassProp.NullableDateTime, typeof(DateTime?));
+                Add(c => c.SubClassProp.SubClassParFieldInSubClass.DoubleField, typeof(double));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.IntVal, typeof(int));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.StructVal.StrVal, typeof(string));
+            }
         }
 
         public class ColumnConfigExtensionsTheoryData : TheoryData<TestObject, Expression<Func<TestObject, object>>, dynamic, TestObject>
