@@ -165,5 +165,28 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             }
         }
 
+        public class GetValueProperTheoryData : TheoryData<TestObject, Expression<Func<TestObject, object>>, dynamic>
+        {
+            public GetValueProperTheoryData()
+            {
+                Add(new TestObject {SubClassField = new SubClass(){AString = "wow"}}, c => c.SubClassField, new SubClass(){AString = "wow"});
+                Add(new TestObject {TestStructProp = new TestStruct(){StrVal = "wow"}}, c => c.TestStructProp, new TestStruct(){StrVal = "wow"});
+                Add(new TestObject {TestStructProp = new TestStruct(){StructVal = new SubStruct(){IntVal = 10}}}, c => c.TestStructProp.StructVal.IntVal, 10);
+                Add(new TestObject { AString = "wowww" }, c => c, new TestObject(){AString = "wowww"});
+                Add(new TestObject { AString = "test value" }, c => c.AString, "test value");
+                Add(new TestObject { AString = null }, c => c.AString, null);
+                Add(new TestObject { AnNullableInt = null }, c => c.AnNullableInt, null);
+                Add(new TestObject() {AnNullableInt = 10}, c => c.AnNullableInt, 10);
+                Add(new TestObject(), c => c.AnNullableInt, null);
+                Add(new TestObject(){SubClassField = new SubClass(){DoubleField = 12.1}}, c => c.SubClassField.DoubleField, 12.1);
+                Add(new TestObject() { AnInt = 1 }, c => c.AnInt, 1);
+                Add(new TestObject() { SubClassProp = new SubClass() { AString = "string" } }, c => c.SubClassProp, new SubClass { AString = "string" });
+                Add(new TestObject() { SubClassField = new SubClass() { AString = "string" } }, c => c.SubClassField, new SubClass { AString = "string" });
+                Add(new TestObject() { SubClassProp = new SubClass() { DoubleField = 10.5 } }, c => c.SubClassProp.DoubleField, 10.5);
+                Add(new TestObject() { SubClassParamField = new SubClassPar("value") }, c => c.SubClassParamField.AString, "value");
+                Add(new TestObject {SubClassParamField = new SubClassPar("aaa"){SubClassPropInSubParamClass = new SubClass(){SubClassParFieldInSubClass = new SubClassPar("aa"){AString = "value"}}}},
+                    c => c.SubClassParamField.SubClassPropInSubParamClass.SubClassParFieldInSubClass.AString, "value");
+            }
+        }
     }
 }

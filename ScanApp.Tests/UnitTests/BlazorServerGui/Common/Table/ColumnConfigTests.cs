@@ -1,15 +1,23 @@
 ﻿using FluentAssertions;
+using MudBlazor;
 using ScanApp.Components.Common.Table;
 using System;
 using System.Linq.Expressions;
 using Xunit;
-using Xunit.Sdk;
+using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.ColumnConfigFixtures;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
 {
     public class ColumnConfigTests
     {
+        public ITestOutputHelper Output { get; }
+
+        public ColumnConfigTests(ITestOutputHelper output)
+        {
+            Output = output;
+        }
+
         [Fact]
         public void Throws_arg_null_exc_if_no_target_is_given_on_initialization()
         {
@@ -172,8 +180,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
         [Fact]
         public void SetValue_throws_arg_exc_when_trying_to_write_to_target_when_target_is_method_call()
         {
-
-            var target = new TestObject {SubClassField = new SubClass() {AString = "wow"}};
+            var target = new TestObject { SubClassField = new SubClass() { AString = "wow" } };
             var sut = new ColumnConfig<TestObject>(t => t.TestMethod());
 
             Action act = () => _ = sut.SetValue(target, 10);
@@ -184,13 +191,79 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
         [Fact]
         public void SetValue_throws_arg_exc_when_trying_to_write_to_read_only_target()
         {
-
-            var target = new TestObject {SubClassField = new SubClass() {AString = "wow"}};
+            var target = new TestObject { SubClassField = new SubClass() { AString = "wow" } };
             var sut = new ColumnConfig<TestObject>(t => t.Readonlyint);
 
             Action act = () => _ = sut.SetValue(target, 10);
 
             act.Should().Throw<Exception>();
+        }
+
+        [Theory]
+        [ClassData(typeof(GetValueProperTheoryData))]
+        public void GetValueFrom_retrieves_value_from_target(TestObject source, Expression<Func<TestObject, object>> target, dynamic expected)
+        {
+            var sut = new ColumnConfig<TestObject>(target);
+
+            Output.WriteLine(sut.PropertyName + " " + sut.PropertyType);
+            ((object)sut.GetValueFrom(source)).Should().BeEquivalentTo((object)expected);
+        }
+
+        [Theory]
+        [InlineData(100)]
+        [InlineData(10)]
+        [InlineData(-12)]
+        public void GetValueFrom_retrieves_data_when_target_is_direct_primitive(int data)
+        {
+            var source = data;
+            var subject = new ColumnConfig<int>(x => x);
+
+            var result = subject.GetValueFrom(source);
+
+            ((int)result).Should().Be(data);
+        }
+
+        [Theory]
+        [InlineData("a")]
+        [InlineData("test")]
+        [InlineData("    ")]
+        public void GetValueFrom_retrieves_data_when_target_is_direct_primitive_string(string data)
+        {
+            var source = data;
+            var subject = new ColumnConfig<string>(x => x);
+
+            var result = subject.GetValueFrom(source);
+
+            ((string)result).Should().Be(data);
+        }
+
+        [Fact]
+        public void AssignConverter_accepts_and_sets_valid_converter()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(new Converter<string>());
+
+            act.Should().NotThrow();
+            ((object)subject.Converter).Should().BeOfType<Converter<string>>()
+                .And.NotBeNull();
+        }
+
+        [Fact]
+        public void AssignConverter_throws_arg_null_exc_when_given_converter_is_null()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(null as Converter<string>);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void AssignConverter_throws_arg_exc_when_given_converter_does_not_match_targets_type()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(new Converter<int>());
+
+            act.Should().Throw<ArgumentException>();
         }
     }
 }
