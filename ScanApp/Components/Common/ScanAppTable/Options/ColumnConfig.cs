@@ -69,6 +69,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             return errors;
         }
 
+
         public Func<TValue, IEnumerable<string>> ToMudFormFieldValidator<TValue>()
         {
             if (Validator is null)
@@ -89,5 +90,19 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 return ExtractErrorsFrom(res);
             };
         }
+
+        public IEnumerable<string> Validate<TValue>(TValue value)
+        {
+            if (Validator is null)
+            {
+                return Array.Empty<string>();
+            }
+            var validationContext = new ValidationContext<TValue>(value);
+            var validationResult = Validator.Validate(validationContext);
+            return validationResult.IsValid
+                ? Array.Empty<string>()
+                : ExtractErrorsFrom(validationResult);
+        }
+
     }
 }
