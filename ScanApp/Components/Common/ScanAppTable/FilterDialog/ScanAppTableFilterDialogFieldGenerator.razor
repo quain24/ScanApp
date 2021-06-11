@@ -2,41 +2,36 @@
 
 @using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
-@using System.Security.Cryptography.X509Certificates
-@using FluentValidation
-@using Newtonsoft.Json.Bson
-@using ScanApp.Common
-@using ScanApp.Components.Admin
 
 @for (int i = 0; i < Properties.Length; i++)
 {
     int localIterator = i;
 
-    if (Properties[localIterator].PropertyType == typeof(int))
+    if (TypeChecker.IsInteger(Properties[localIterator].PropertyType))
     {
         <MudExpansionPanel @ref="@_expansionPanels[localIterator]" Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
-            <MudTextField @ref="@_fromTextFields[localIterator]" @bind-Value="@From[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="From"
+            <MudTextField @ref="@_fromTextFields[localIterator]" @bind-Value="@From[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="Between this value"
                           Variant="Variant.Outlined" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<int?>()"></MudTextField>
             <MudTextField @ref="@_toTextFields[localIterator]" @bind-Value="@To[localIterator]" @onkeypress="KeyPressed"
-                          Immediate="true" Label="To" Variant="Variant.Outlined" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<int?>()"></MudTextField>
+                          Immediate="true" Label="and this value" Variant="Variant.Outlined" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<int?>()"></MudTextField>
         </MudExpansionPanel>
     }
-    else if (Properties[localIterator].PropertyType == typeof(string))
+    else if (TypeChecker.IsString(Properties[localIterator].PropertyType))
     {
         <MudExpansionPanel Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
             <MudTextField @bind-Value="@Contains[localIterator]" @onkeypress="KeyPressed" Immediate="true" Label="Contains"
                           Variant="Variant.Outlined" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<string>()"></MudTextField>
         </MudExpansionPanel>
     }
-    else if (Properties[localIterator].PropertyType == typeof(DateTime))
+    else if (TypeChecker.IsDateTime(Properties[localIterator].PropertyType))
     {
         <MudExpansionPanel Text="@ColumnConfigs[localIterator].DisplayName" Style="margin-left: 5px; margin-right: 5px;">
             <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="From"
                            @bind-Date="@FromDate[localIterator]" Editable="true"
-                           ShowWeekNumbers="true" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<DateTime?>()"/>
+                           ShowWeekNumbers="true" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<DateTime?>()" />
             <MudDatePicker Elevation="7" PickerVariant="PickerVariant.Dialog" Label="To"
                            @bind-Date="@ToDate[localIterator]" Editable="true"
-                           ShowWeekNumbers="true" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<DateTime?>()"/>
+                           ShowWeekNumbers="true" Validation="ColumnConfigs[localIterator].ToMudFormFieldValidator<DateTime?>()" />
         </MudExpansionPanel>
     }
 }
@@ -73,9 +68,7 @@
     private MudTextField<int?>[] _fromTextFields;
     private MudTextField<int?>[] _toTextFields;
 
-    private bool[] _fromToErrors;
-    private bool[] _conversionErrors;
-    private string _fromToErrorMessage = "\"From\" cannot be larger than \"To\"";
+    
 
     protected override Task OnInitializedAsync()
     {

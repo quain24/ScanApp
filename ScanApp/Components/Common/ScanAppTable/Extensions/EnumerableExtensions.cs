@@ -29,8 +29,17 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                     .ToList();
             }
 
+            if (from <= to)
+            {
+                return enumerable
+                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from &&
+                                Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
+                    .ToList();
+            }
+
             return enumerable
-                .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from && Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
+                .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) <= from &&
+                            Convert.ToInt32(propInfo.GetValue(x, null)) >= to)
                 .ToList();
         }
 
