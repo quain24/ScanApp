@@ -22,6 +22,9 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             public SubClass SubClassField;
             public SubClassPar SubClassParamField;
             public TestStruct TestStructProp { get; set; }
+
+            private int _prvIntField;
+            public readonly int Readonlyint;
         }
 
         public class SubClass

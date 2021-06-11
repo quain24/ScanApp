@@ -61,9 +61,9 @@ namespace ScanApp.Components.Common.Table
             PropertyType = ExtractPropertyType();
             DisplayName = SetDisplayName(displayName);
 
+            ChooseSetValueVersion();
             CreatePrecompiledGetterForItem();
             CreatePrecompiledSetterForItem();
-            ChooseSetValueVersion();
             FieldType = format;
             Validator = validator;
             if (Validator?.CanValidateInstancesOfType(PropertyType) is false)
@@ -73,70 +73,13 @@ namespace ScanApp.Components.Common.Table
             }
         }
 
-        public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
-        {
-            if (typeof(TType) != PropertyType)
-            {
-                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
-            }
-            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
-            return this;
-        }
-
-        private string ExtractPropertyName()
-        {
-            return PathToItem.Count == 0
-                ? typeof(T)?.Name
-                : PathToItem[^1]?.Name ?? throw new ArgumentException("Could not extract property name!");
-        }
-
-        private Type ExtractPropertyType() => PathToItem.Count == 0 ? typeof(T) : PathToItem[^1].GetUnderlyingType();
-
-        private string SetDisplayName(string name)
-        {
-            return name switch
-            {
-                null => PropertyName,
-                var s when string.IsNullOrWhiteSpace(s) => throw new ArgumentException("Display name cannot contain only whitespaces.", nameof(name)),
-                _ => name
-            };
-        }
-
-        private void CreatePrecompiledGetterForItem() => _getter = TargetItemSelector.Compile();
-
-        private void CreatePrecompiledSetterForItem()
-        {
-            var valueParameterExpression = Expression.Parameter(typeof(object));
-            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
-
-            if (targetExpression.NodeType == ExpressionType.Call)
-            {
-                // Target set in this ColumnConfig points to method - readable but not settable
-                return;
-            }
-
-            var assign = Expression.Lambda<Action<T, dynamic>>
-            (
-                Expression.Assign(targetExpression,
-                    Expression.Convert(valueParameterExpression, targetExpression.Type)),
-                TargetItemSelector.Parameters.Single(),
-                valueParameterExpression
-            );
-
-            _setter = assign.Compile();
-        }
-
-        private void ChooseSetValueVersion()
-        {
-            _valueSetter = PathToItem switch
-            {
-                var p when p.Count == 0 => SetValueDirect,
-                var p when p.Count == 1 && typeof(T).IsValueType => TriedSetImmutableValue,
-                var p when p[^1].ReflectedType?.IsValueType ?? true => TriedSetImmutableValue,
-                _ when _setter is null => TriedSetMethod,
-                _ => SetValueWhenValid
-            };
-        }
+        /// <summary>
+        /// Extracts underlying value (value source is pointed to in source <see cref="ColumnConfig{T}"/>) from given <paramref name="source"/>.<br/>
+        /// Values can be extracted only from properties or fields stored in <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">Object from which we are trying to get a value.</param>
+        /// <returns>Value extracted from <paramref name="source"/>.</returns>
+        public dynamic GetValueFrom(T source) => source is null ? null : _getter.Invoke(source);
 
         /// <summary>
         /// Set <paramref name="value"/> in <paramref name="target"/> if <paramref name="target"/> is a reference type.
@@ -157,12 +100,41 @@ namespace ScanApp.Components.Common.Table
         /// <exception cref="ArgumentException">Given <paramref name="value"/> is of incompatible type to one stored in <see cref="PropertyType"/>.</exception>
         public T SetValue(T target, dynamic value) => _valueSetter(target, value);
 
+        private string ExtractPropertyName()
+        {
+            return PathToItem.Count == 0
+                ? typeof(T)?.Name
+                : PathToItem[^1]?.Name ?? throw new ArgumentException("Could not extract property name!");
+        }
+
+        private Type ExtractPropertyType() => PathToItem.Count == 0 ? typeof(T) : PathToItem[^1].GetUnderlyingType();
+
+        private string SetDisplayName(string name)
+        {
+            return name switch
+            {
+                null => PropertyName,
+                var s when string.IsNullOrWhiteSpace(s) => throw new ArgumentException("Display name cannot contain only whitespaces.", nameof(name)),
+                _ => name
+            };
+        }
+
+        private void ChooseSetValueVersion()
+        {
+            _valueSetter = PathToItem switch
+            {
+                var p when p.Count == 0 => SetValueDirect,
+                var p when p.Count == 1 && typeof(T).IsValueType => TriedSetImmutableValue,
+                var p when p[^1].ReflectedType?.IsValueType ?? true => TriedSetImmutableValue,
+                var p when p[^1].IsWritable() is false => TriedSetImmutableValue,
+                _ => SetValueWhenValid
+            };
+        }
+
         private static T SetValueDirect(T _, dynamic value) => value;
 
-        private static T TriedSetImmutableValue(T _, dynamic __) => throw new ArgumentException("Cannot set values inside value types.");
-
-        private T TriedSetMethod(T _, dynamic __) => throw new Exception("Tried to set value when target is a method" +
-                                                                         $" - Identifier - '{Identifier}' | display name - '{DisplayName}'");
+        private T TriedSetImmutableValue(T _, dynamic __) => throw new ArgumentException("Cannot write in immutable type or set method." +
+                                                                                         $" - Identifier - '{Identifier}' | display name - '{DisplayName}'");
 
         private T SetValueWhenValid(T target, dynamic value)
         {
@@ -179,13 +151,37 @@ namespace ScanApp.Components.Common.Table
             return target;
         }
 
-        /// <summary>
-        /// Extracts underlying value (value source is pointed to in source <see cref="ColumnConfig{T}"/>) from given <paramref name="source"/>.<br/>
-        /// Values can be extracted only from properties or fields stored in <paramref name="source"/>.
-        /// </summary>
-        /// <param name="source">Object from which we are trying to get a value.</param>
-        /// <returns>Value extracted from <paramref name="source"/>.</returns>
-        public dynamic GetValueFrom(T source) => source is null ? null : _getter.Invoke(source);
+        private void CreatePrecompiledGetterForItem() => _getter = TargetItemSelector.Compile();
+
+        private void CreatePrecompiledSetterForItem()
+        {
+            // No setter if target of this Column config points to something non-settable.
+            if (_valueSetter != SetValueWhenValid)
+                return;
+
+            var valueParameterExpression = Expression.Parameter(typeof(object));
+            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
+
+            var assign = Expression.Lambda<Action<T, dynamic>>
+            (
+                Expression.Assign(targetExpression,
+                    Expression.Convert(valueParameterExpression, targetExpression.Type)),
+                TargetItemSelector.Parameters.Single(),
+                valueParameterExpression
+            );
+
+            _setter = assign.Compile();
+        }
+
+        public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
+        {
+            if (typeof(TType) != PropertyType)
+            {
+                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
+            }
+            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
+        }
 
         public bool IsValidatable(Type type = null)
         {

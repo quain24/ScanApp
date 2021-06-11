@@ -168,5 +168,29 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
 
             act.Should().Throw<ArgumentException>();
         }
+
+        [Fact]
+        public void SetValue_throws_arg_exc_when_trying_to_write_to_target_when_target_is_method_call()
+        {
+
+            var target = new TestObject {SubClassField = new SubClass() {AString = "wow"}};
+            var sut = new ColumnConfig<TestObject>(t => t.TestMethod());
+
+            Action act = () => _ = sut.SetValue(target, 10);
+
+            act.Should().Throw<Exception>();
+        }
+
+        [Fact]
+        public void SetValue_throws_arg_exc_when_trying_to_write_to_read_only_target()
+        {
+
+            var target = new TestObject {SubClassField = new SubClass() {AString = "wow"}};
+            var sut = new ColumnConfig<TestObject>(t => t.Readonlyint);
+
+            Action act = () => _ = sut.SetValue(target, 10);
+
+            act.Should().Throw<Exception>();
+        }
     }
 }
