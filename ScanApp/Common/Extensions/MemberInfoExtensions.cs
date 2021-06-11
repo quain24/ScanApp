@@ -7,7 +7,7 @@ namespace ScanApp.Common.Extensions
     {
         /// <summary>
         /// Extracts underlying <see cref="Type"/> from given <paramref name="info"/>.<br/>
-        /// Type can be extracted only if source <see cref="MemberInfo"/> is either a <see cref="FieldInfo"/> or <see cref="PropertyInfo"/>.
+        /// Type can be extracted only if source <see cref="MemberInfo"/> is either a <see cref="FieldInfo"/>, <see cref="PropertyInfo"/> or <see cref="MethodInfo"/>.
         /// </summary>
         /// <param name="info">Object to have its underlying type extracted</param>
         /// <returns>Type of object from which this <see cref="MemberInfo"/> was extracted.</returns>
