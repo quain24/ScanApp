@@ -10,8 +10,8 @@
 @inject ISnackbar Snackbar
 
 <MudGrid>
-    <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
+    <MudItem xs="12" lg="6">
+        <MudTable Class="px-2" RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users" SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
                   Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@(async args => await FillRolesData(args))" Hover="true" Dense="true" Outlined="false" Elevation="0" Striped="true">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Users</MudText>
@@ -22,14 +22,14 @@
                 <MudTh>Name</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Style="height: 51px;">@context.Name</MudTd>
+                <MudTd Style="height: 51px; padding-left: 5px">@context.Name</MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem xs="12" lg="6" Class="px-1">
+    <MudItem xs="12" lg="6" Class="mx-auto">
         <MudTable Breakpoint="Breakpoint.None" T="RoleModel" Items="@UserRoles" @bind-SelectedItem="_selectedRole" RowsPerPage="5"
                   Filter="new Func<RoleModel, bool>(FilterRoles)" Hover="true" Dense="true" Outlined="false" Elevation="0" Striped="true">
             <ToolBarContent>
