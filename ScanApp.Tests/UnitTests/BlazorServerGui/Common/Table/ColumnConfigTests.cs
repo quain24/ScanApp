@@ -139,7 +139,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
         }
 
         [Fact]
-        public void IsValidatable_returns_false_if_there_is_no_validator_but_given_type_mismatch()
+        public void IsValidatable_returns_false_if_there_is_no_validator_but_given_type_match()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
 
