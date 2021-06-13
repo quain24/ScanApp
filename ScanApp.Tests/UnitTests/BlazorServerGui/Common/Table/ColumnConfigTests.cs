@@ -5,6 +5,7 @@ using MudBlazor;
 using ScanApp.Components.Common.Table;
 using System;
 using System.Linq.Expressions;
+using FluentValidation.Results;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.ColumnConfigFixtures;
@@ -144,6 +145,37 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
             var subject = new ColumnConfig<TestObject>(c => c.AString);
 
             subject.IsValidatable(typeof(string)).Should().BeFalse();
+        }
+
+        [Fact]
+        public void Validate_will_perform_validation()
+        {
+            var data = new TestObject {AString = "wowww"};
+            var validatorMock = new Mock<IValidator<string>>();
+            validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+
+            var result = subject.Validate(data.AString);
+
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Validate_gives_list_of_errors_if_invalid()
+        {
+            var data = new TestObject {AString = "wowww"};
+            var validatorMock = new Mock<IValidator<string>>();
+            var failure1 = new ValidationFailure("prop name 1", "error 1");
+            var failure2 = new ValidationFailure("prop name 1", "error 2");
+            validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>()))
+                .Returns(new ValidationResult(new []{failure1, failure2}));
+            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+
+            var result = subject.Validate(data.AString);
+
+            result.Should().HaveCount(2).And.Contain(failure1.ErrorMessage).And.Contain(failure2.ErrorMessage);
         }
 
         [Fact]

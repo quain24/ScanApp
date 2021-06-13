@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using FluentValidation.Internal;
 using TypeExtensions = ScanApp.Common.Extensions.TypeExtensions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -65,12 +66,7 @@ namespace ScanApp.Components.Common.Table
             CreatePrecompiledGetterForItem();
             CreatePrecompiledSetterForItem();
             FieldType = format;
-            Validator = validator;
-            if (Validator?.CanValidateInstancesOfType(PropertyType) is false)
-            {
-                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
-                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
-            }
+            Validator = SetUpValidator(validator);
         }
 
         /// <summary>
@@ -173,6 +169,25 @@ namespace ScanApp.Components.Common.Table
             _setter = assign.Compile();
         }
 
+        private IValidator SetUpValidator(IValidator validator)
+        {
+            if (validator is null)
+                return null;
+
+            if (validator.CanValidateInstancesOfType(PropertyType) is false)
+            {
+                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
+                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
+            }
+
+            foreach (var validationRule in validator.CreateDescriptor()?.Rules ?? Enumerable.Empty<IValidationRule>())
+            {
+                validationRule.PropertyName = DisplayName;
+            }
+
+            return validator;
+        }
+
         public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
         {
             if (typeof(TType) != PropertyType)
@@ -197,7 +212,7 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException("Cannot validate when there is no validator set - " +
                                             "perhaps editing field tried to use this config as one with validation?");
             }
-            var context = new ValidationContext<TValueType>(value);
+            var context = new ValidationContext<TValueType>(value, new PropertyChain(new []{PropertyName}), new DefaultValidatorSelector());
             var result = Validator.Validate(context);
             return result.IsValid
                 ? Array.Empty<string>()
@@ -209,7 +224,7 @@ namespace ScanApp.Components.Common.Table
             var errors = new List<string>(result.Errors.Count);
             foreach (var failure in result.Errors)
             {
-                errors.Add(failure.ErrorMessage);
+                errors.Add(failure.ErrorMessage.Replace("{PropertyName}", failure.PropertyName));
             }
             return errors;
         }
