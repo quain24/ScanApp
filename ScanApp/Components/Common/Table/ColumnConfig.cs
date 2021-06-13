@@ -15,17 +15,74 @@ using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace ScanApp.Components.Common.Table
 {
+    /// <summary>
+    /// Represents a single column configuration for one property / method / field that will be used in a <see cref="SCTable{TTableType}"/>.<br/>
+    /// Each <see cref="ColumnConfig{T}"/> points to one of properties / methods / fields from used type <typeparamref name="T"/> and contains all<br/>
+    /// of configurations for <see cref="SCTable{TTableType}"/> instance, so it can display / filter / sort / etc given <typeparamref name="T"/> data collection.
+    /// <para>
+    /// <see cref="ColumnConfig{T}"/> is also responsible for getting and setting value pointed to by <br/>
+    /// target set in it's instance.
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">Type configured by this <see cref="ColumnConfig{T}"/> instance, used as data source for <see cref="SCTable{TTableType}"/>.</typeparam>
     public class ColumnConfig<T>
     {
+        /// <summary>
+        /// Gets this <see cref="ColumnConfig{T}"/> unique identifier.
+        /// </summary>
+        /// <value><see cref="Guid"/> identifier.</value>
         public Guid Identifier { get; } = Guid.NewGuid();
+
+        /// <summary>
+        /// Gets name used as display name of one of <see cref="SCTable{TTableType}"/> columns.<br/>
+        /// </summary>
+        /// <value><see cref="string"/> representing column name displayed to user is set; Otherwise name of object that this instance is pointing to.</value>
         public string DisplayName { get; }
+
+        /// <summary>
+        /// Gets name of property to which this instance of <see cref="ColumnConfig{T}"/> is pointing.
+        /// </summary>
+        /// <value><see cref="string"/> representation of property / field / object name.</value>
         public string PropertyName { get; }
+
+        /// <summary>
+        /// Gets <see cref="Type"/> object that is pointed to by this instance of <see cref="ColumnConfig{T}"/>.
+        /// </summary>
+        /// <value><see cref="Type"/> of object targeted by this <see cref="ColumnConfig{T}"/>.</value>
         public Type PropertyType { get; }
+
+        /// <summary>
+        /// Gets type as which object targeted by this instance if <see cref="ColumnConfig{T}"/> should be displayed.
+        /// </summary>
+        /// <value>
+        /// <see cref="FieldType"/> set when creating this instance , otherwise default (<see cref="FieldType.AutoDetect"/>).
+        /// </value>
         public FieldType FieldType { get; }
+
+        /// <summary>
+        /// Gets converter used to convert between given value actual form and table-friendly display form of object pointed by this instance.
+        /// </summary>
+        /// <value><see cref="MudBlazor.Converter{T,U}"/> or <see cref="Converter{T}"/> as <see langword="dynamic"/> type value.</value>
         public dynamic Converter { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can filter data by objects pointed to by this instance.
+        /// </summary>
+        /// <value><see langword="true"/> if table can be filtered using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
         public bool IsFilterable { get; init; } = true;
+
+        /// <summary>
+        /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can edit value that it is pointing to.
+        /// </summary>
+        /// <value><see langword="true"/> if table can be edit data pointed to by this <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
         public bool IsEditable { get; init; } = true;
+
+        /// <summary>
+        /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can group data by objects pointed to by this instance.
+        /// </summary>
+        /// <value><see langword="true"/> if table can be grouped by using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
         public bool IsGroupable { get; init; } = true;
+
         private IValidator Validator { get; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> TargetItemSelector { get; }
@@ -33,26 +90,46 @@ namespace ScanApp.Components.Common.Table
         private Action<T, dynamic> _setter;
         private Func<T, dynamic, T> _valueSetter;
 
+        /// <summary>
+        /// Creates new instance of <see cref="ColumnConfig{T}"/> configuring given <paramref name="target"/>.
+        /// </summary>
+        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target)
             : this(target, null, FieldType.AutoDetect, null)
         {
         }
 
+        ///<inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
+        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
+        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName)
             : this(target, displayName, FieldType.AutoDetect, null)
         {
         }
 
+        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
+        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
+        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
+        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, IValidator validator)
             : this(target, displayName, FieldType.AutoDetect, validator)
         {
         }
 
+        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
+        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
+        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
+        /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format)
             : this(target, displayName, format, null)
         {
         }
 
+        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
+        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
+        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
+        /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
+        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
             TargetItemSelector = target ?? throw new ArgumentNullException(nameof(target));
@@ -188,6 +265,20 @@ namespace ScanApp.Components.Common.Table
             return validator;
         }
 
+        /// <summary>
+        /// Informs if this instance of <see cref="ColumnConfig{T}"/> contains validator for it's target if no <paramref name="type"/> is provided.<br/>
+        /// Otherwise checks if this instance contains validator capable of validating given <param name="type">.</param>
+        /// </summary>
+        /// <param name="type">Type being check for being compatible with validator (if any) used in this <see cref="ColumnConfig{T}"/>.</param>
+        /// <returns>
+        /// <para>
+        ///     If no <paramref name="type"/> is given - returns <see langword="true"/> if this instance contains validator, otherwise returns <see langword="false"/>.
+        /// </para>
+        /// <para>
+        ///     If <paramref name="type"/> is provided - returns <see langword="true"/> if it can be validated by validator contained
+        ///     in this <see cref="ColumnConfig{T}"/>, otherwise returns <see langword="false"/>.
+        /// </para>
+        /// </returns>
         public bool IsValidatable(Type type = null)
         {
             if (type is null)
@@ -195,6 +286,16 @@ namespace ScanApp.Components.Common.Table
             return Validator?.CanValidateInstancesOfType(type) ?? false;
         }
 
+        /// <summary>
+        /// Validates given object.
+        /// </summary>
+        /// <typeparam name="TValueType">Type of validated object, must be compatible with validator contained by this instance.</typeparam>
+        /// <param name="value">Object to be validated.</param>
+        /// <returns>
+        /// <see cref="IEnumerable{string}"/> containing all errors if there were any, otherwise <see cref="Enumerable.Empty{TValueType}"/> where TResult is <typeparamref name="TValueType"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">This instance of <see cref="ColumnConfig{T}"/> does not contain any validator.</exception>
+        /// <exception cref="InvalidOperationException">Tried to validate value incompatible with validator inside this instance.</exception>
         public IEnumerable<string> Validate<TValueType>(TValueType value)
         {
             if (Validator is null)
@@ -219,6 +320,14 @@ namespace ScanApp.Components.Common.Table
             return errors;
         }
 
+        /// <summary>
+        /// Assigns converter used to transform values pointed to by this <see cref="ColumnConfig{T}"/> to and from <see cref="SCTable{TTableType}"/> friendly form.
+        /// </summary>
+        /// <typeparam name="TType">Type of value to be converted - must be compatible with type of target set in this <see cref="ColumnConfig{T}"/>.</typeparam>
+        /// <param name="converter">Converts value.</param>
+        /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="converter"/> was <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Type of converter is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
         public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
         {
             if (typeof(TType) != PropertyType)
@@ -230,12 +339,34 @@ namespace ScanApp.Components.Common.Table
         }
     }
 
+    /// <summary>
+    /// Display form.
+    /// </summary>
     public enum FieldType
     {
+        /// <summary>
+        /// Display form will be detected by <see cref="SCTable{TTableType}"/>.
+        /// </summary>
         AutoDetect = 0,
+
+        /// <summary>
+        /// Data will be displayed as Date-only (in case of <see cref="DateTime"/> values and similar).
+        /// </summary>
         Date,
+
+        /// <summary>
+        /// Data will be displayed as Time-only (in case of <see cref="DateTime"/> values and similar).
+        /// </summary>
         Time,
+
+        /// <summary>
+        /// Data will be displayed as date and time, even if field does not contain data information.
+        /// </summary>
         DateAndTime,
+
+        /// <summary>
+        /// A basic <c>.ToString()</c> method will be used when displaying data.
+        /// </summary>
         PlainText
     }
 }
