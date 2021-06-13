@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using FluentValidation.Results;
 using Moq;
 using MudBlazor;
+using ScanApp.Common;
 using ScanApp.Components.Common.Table;
 using System;
 using System.Linq.Expressions;
-using FluentValidation.Results;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.ColumnConfigFixtures;
@@ -150,7 +151,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
         [Fact]
         public void Validate_will_perform_validation()
         {
-            var data = new TestObject {AString = "wowww"};
+            var data = new TestObject { AString = "wowww" };
             var validatorMock = new Mock<IValidator<string>>();
             validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
@@ -164,18 +165,30 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
         [Fact]
         public void Validate_gives_list_of_errors_if_invalid()
         {
-            var data = new TestObject {AString = "wowww"};
+            var data = new TestObject { AString = "wowww" };
             var validatorMock = new Mock<IValidator<string>>();
             var failure1 = new ValidationFailure("prop name 1", "error 1");
             var failure2 = new ValidationFailure("prop name 1", "error 2");
             validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>()))
-                .Returns(new ValidationResult(new []{failure1, failure2}));
+                .Returns(new ValidationResult(new[] { failure1, failure2 }));
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
             var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
 
             var result = subject.Validate(data.AString);
 
             result.Should().HaveCount(2).And.Contain(failure1.ErrorMessage).And.Contain(failure2.ErrorMessage);
+        }
+
+        [Fact]
+        public void Validate_throws_invalid_operation_exc_on_invalid_type_given_to_validate()
+        {
+            var data = new TestObject { AString = "wowww" };
+            var validator = new FluentValidationWrapper<int>(x => x.LessThan(10));
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validator);
+
+            Action act = () => _ = subject.Validate(data.AString);
+
+            act.Should().Throw<InvalidOperationException>();
         }
 
         [Fact]

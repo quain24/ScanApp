@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Internal;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Services;
@@ -7,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using FluentValidation.Internal;
 using TypeExtensions = ScanApp.Common.Extensions.TypeExtensions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -63,8 +63,8 @@ namespace ScanApp.Components.Common.Table
             DisplayName = SetDisplayName(displayName);
 
             ChooseSetValueVersion();
-            CreatePrecompiledGetterForItem();
             CreatePrecompiledSetterForItem();
+            CreatePrecompiledGetterForItem();
             FieldType = format;
             Validator = SetUpValidator(validator);
         }
@@ -188,16 +188,6 @@ namespace ScanApp.Components.Common.Table
             return validator;
         }
 
-        public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
-        {
-            if (typeof(TType) != PropertyType)
-            {
-                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
-            }
-            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
-            return this;
-        }
-
         public bool IsValidatable(Type type = null)
         {
             if (type is null)
@@ -212,7 +202,7 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException("Cannot validate when there is no validator set - " +
                                             "perhaps editing field tried to use this config as one with validation?");
             }
-            var context = new ValidationContext<TValueType>(value, new PropertyChain(new []{PropertyName}), new DefaultValidatorSelector());
+            var context = new ValidationContext<TValueType>(value, new PropertyChain(new[] { PropertyName }), new DefaultValidatorSelector());
             var result = Validator.Validate(context);
             return result.IsValid
                 ? Array.Empty<string>()
@@ -224,9 +214,19 @@ namespace ScanApp.Components.Common.Table
             var errors = new List<string>(result.Errors.Count);
             foreach (var failure in result.Errors)
             {
-                errors.Add(failure.ErrorMessage.Replace("{PropertyName}", failure.PropertyName));
+                errors.Add(failure.ErrorMessage);
             }
             return errors;
+        }
+
+        public ColumnConfig<T> AssignConverter<TType>(Converter<TType> converter)
+        {
+            if (typeof(TType) != PropertyType)
+            {
+                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
+            }
+            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
         }
     }
 
