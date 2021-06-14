@@ -29,7 +29,9 @@ namespace ScanApp.Components.Common.Table.Utilities
 
             return filters.Count == 1
                 ? filters[0].Run(collection)
-                : collection.Where(item => filters.All(f => f.Check(item)));
+                : collection
+                    .Where(item => filters.All(f => f.Check(item)))
+                    .ToList();
         }
     }
 }
