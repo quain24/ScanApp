@@ -32,7 +32,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             public string AString { get; set; }
             public DateTime? NullableDateTime { get; set; }
-
+            public DateTime DateTime { get; set; }
+            public TimeSpan? NullableTimeSpan { get; set; }
+            public TimeSpan TimeSpan { get; set; }
+            public int IntField;
             public double DoubleField;
             public int? NullableIntField;
 

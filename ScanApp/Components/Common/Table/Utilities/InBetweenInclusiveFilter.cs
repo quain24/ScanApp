@@ -23,7 +23,7 @@ namespace ScanApp.Components.Common.Table.Utilities
                 throw new ArgumentException($"'{nameof(to)}' {_message}", nameof(to));
 
             if (TypesMatch(from, to?.GetType()) is false)
-                throw new ArgumentException($"'{nameof(from)}' type and '{nameof(to)}' type are not matched.");
+                throw new ArgumentException($"'{nameof(from)}' type and '{nameof(to)}' do not matched.");
 
             ColumnConfig = columnConfig ?? throw new ArgumentNullException(nameof(columnConfig));
             From = from;

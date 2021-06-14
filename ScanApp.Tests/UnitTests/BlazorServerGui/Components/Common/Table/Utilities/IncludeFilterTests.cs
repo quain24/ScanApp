@@ -144,5 +144,16 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
 
             result.Should().BeFalse();
         }
+
+        [Fact]
+        public void Run_throws_if_source_is_null()
+        {
+            var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.TimeSpan);
+            var subject = new IncludeFilter<ColumnConfigFixtures.SubClass>(config, "a");
+
+            Action act = () => _ = subject.Run(null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
     }
 }
