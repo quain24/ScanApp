@@ -191,7 +191,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_between_given_values_dateTime()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, DateTime.Today, DateTime.Today + TimeSpan.FromDays(100));
@@ -212,7 +212,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_with_only_from_dateTime()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, DateTime.Today, null);
@@ -233,7 +233,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_with_only_to_dateTime()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, null, DateTime.Today + TimeSpan.FromDays(100));
@@ -254,7 +254,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_between_given_values_timeSpan()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.TimeSpan);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, TimeSpan.FromTicks(100), TimeSpan.FromTicks(5000));
@@ -275,7 +275,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_with_only_from_timeSpan()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.TimeSpan);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, TimeSpan.FromTicks(100), null);
@@ -296,7 +296,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Will_filter_with_only_to_timeSpan()
         {
-            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(1000);
+            var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.TimeSpan);
 
             var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, null, TimeSpan.FromTicks(5000));

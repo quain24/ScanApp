@@ -73,7 +73,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Finds_entries_with_given_string()
         {
-            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
+            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(250);
             var modified = col.Take(100).ToList();
             modified.ForEach(x => x.AString += "search");
             var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
@@ -88,7 +88,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         [Fact]
         public void Finds_entries_with_given_string_case_sensitive()
         {
-            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
+            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(250);
             var modified = col.Take(100).ToList();
             modified.Take(10).ToList().ForEach(x => x.AString += "Search");
             modified.Skip(10).Take(10).ToList().ForEach(x => x.AString += "search");
