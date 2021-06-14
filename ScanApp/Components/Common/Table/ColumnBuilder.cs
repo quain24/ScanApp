@@ -68,7 +68,7 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
-        public ColumnConfig<T> Create()
+        public ColumnConfig<T> Build()
         {
             var config = new ColumnConfig<T>(_target, _name, _type, _validator)
             {

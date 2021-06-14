@@ -34,20 +34,20 @@
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)
             .UnderName("Simple summary")
             .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .FormatAs(FieldType.Date)
             .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .UnderName("Separate time column")
             .FormatAs(FieldType.Time)
             .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
@@ -56,19 +56,19 @@
                 SetFunc = value => value.Value,
                 GetFunc = Version.Create
             })
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Number)
             .UnderName("Const number")
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Model.Name)
             .UnderName("Model name")
-            .Create(),
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
             .UnderName("Null Date")
             .DisableFiltering()
             .DisableGrouping()
             .AsReadOnly()
-            .Create()
+            .Build()
     };
 
     public ColumnConfig<WeatherForecast>[] altConifgWay = new[]

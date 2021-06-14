@@ -19,6 +19,6 @@ namespace ScanApp.Components.Common.Table
 
         IColumnBuilder<T> DisableFiltering();
 
-        ColumnConfig<T> Create();
+        ColumnConfig<T> Build();
     }
 }
