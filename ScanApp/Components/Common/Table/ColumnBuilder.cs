@@ -94,7 +94,7 @@ namespace ScanApp.Components.Common.Table
             _type = type;
             return this;
         }
-        
+
         /// <summary>
         /// Set converter that will be used to translate from and to a <see cref="SCTable{TTableType}"/> display-friendly format.
         /// </summary>
