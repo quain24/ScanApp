@@ -16,9 +16,8 @@
             <MudGrid>
                 <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
                     <MudExpansionPanels MultiExpansion="true">
-                        <ScanAppTableFilterDialogFieldGenerator @ref="_fieldGenerator" ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" Properties="Properties"
-                                                                From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
-                                                                Options="Options"/>
+                        <FilterFieldGenerator ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate" 
+                                              FromDecimal="FromDecimal" ToDecimal="ToDecimal"/>
                     </MudExpansionPanels>
                 </MudForm>
             </MudGrid>
@@ -51,17 +50,21 @@
     private string[] Contains { get; set; }
     private DateTime?[] FromDate { get; set; }
     private DateTime?[] ToDate { get; set; }
-    private ScanAppTableFilterDialogFieldGenerator<TItem> _fieldGenerator;
+    private decimal?[] FromDecimal { get; set; }
+    private decimal?[] ToDecimal { get; set; }
     private MudForm _form;
     private bool _okDisabled;
 
     protected override Task OnInitializedAsync()
     {
-        From = new int?[Properties.Length];
-        To = new int?[Properties.Length];
-        Contains = new string[Properties.Length];
-        FromDate = new DateTime?[Properties.Length];
-        ToDate = new DateTime?[Properties.Length];
+        int length = Properties.Length;
+        From = new int?[length];
+        To = new int?[length];
+        Contains = new string[length];
+        FromDate = new DateTime?[length];
+        ToDate = new DateTime?[length];
+        FromDecimal = new decimal?[length];
+        ToDecimal = new decimal?[length];
         return base.OnInitializedAsync();
     }
 
@@ -76,7 +79,7 @@
         {
             return;
         }
-        var filteringOperationFactory = new FilteringOperationsFactory(Properties, From, To, Contains, FromDate, ToDate);
+        var filteringOperationFactory = new FilteringOperationsFactory(Properties, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
         var filteringOperations = filteringOperationFactory.CreateOperations();
 
         foreach (var operation in filteringOperations)
