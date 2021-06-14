@@ -81,6 +81,30 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                             Convert.ToDateTime(propInfo.GetValue(x, null)) <= to).ToList();
         }
 
+        public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, string propertyName, decimal? from, decimal? to)
+        {
+            if (ArgumentsAreValid(from, to) is false)
+            {
+                return enumerable;
+            }
+
+            var propInfo = typeof(T).GetProperty(propertyName);
+
+            if (from is null)
+            {
+                return enumerable.Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) <= to).ToList();
+            }
+
+            if (to is null)
+            {
+                return enumerable.Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) >= from).ToList();
+            }
+
+            return enumerable
+                .Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) >= from &&
+                            Convert.ToDecimal(propInfo.GetValue(x, null)) <= to).ToList();
+        }
+
         public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, string propertyName)
         {
             return items.GroupBy(x => x.GetType().GetProperty(propertyName).GetValue(x, null));
@@ -95,6 +119,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         }
 
         private static bool ArgumentsAreValid(DateTime? from, DateTime? to)
+        {
+            if (!from.HasValue && !to.HasValue)
+                return false;
+
+            return true;
+        }
+
+        private static bool ArgumentsAreValid(decimal? from, decimal? to)
         {
             if (!from.HasValue && !to.HasValue)
                 return false;

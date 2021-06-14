@@ -76,5 +76,14 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
             var type = obj.GetType();
             return type == typeof(string);
         }
+
+        public static Type GetNullableType(Type type) 
+        {
+            type = Nullable.GetUnderlyingType(type) ?? type; 
+            if (type.IsValueType)
+                return typeof(Nullable<>).MakeGenericType(type);
+            else
+                return type;
+        }
     }
 }

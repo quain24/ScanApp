@@ -21,7 +21,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
                 {
                     Integer = i, 
                     Date = new DateTime(2021, 1, 1).AddDays(i),
-                    String = "test" + i
+                    String = "test" + i,
+                    Decimal = i + (i/100)
                 };
 
                 objectList.Add(obj);
@@ -34,6 +35,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             var contains = new string[properties.Length];
             var fromDate = new DateTime?[properties.Length];
             var toDate = new DateTime?[properties.Length];
+            var fromDecimal = new decimal?[properties.Length];
+            var toDecimal = new decimal?[properties.Length];
 
             from[0] = 10;
             to[0] = 20;
@@ -43,7 +46,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
 
             contains[2] = "test5";
 
-            return new FilteringOperationsFactory(properties, from, to, contains, fromDate, toDate);
+            fromDecimal[3] = new decimal(1.20);
+            toDecimal[3] = new decimal(1.30);
+
+            return new FilteringOperationsFactory(properties, from, to, contains, fromDate, toDate, fromDecimal, toDecimal);
         }
 
 
@@ -61,7 +67,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             var subject = CreateInstance();
             var operationsList = subject.CreateOperations();
 
-            Assert.Equal(3, operationsList.Count);
+            Assert.Equal(4, operationsList.Count);
         }
     }
 }
