@@ -1,8 +1,7 @@
-﻿using System;
+﻿using ScanApp.Common.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ScanApp.Common.Extensions;
-using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.Table.Utilities
 {
@@ -42,15 +41,15 @@ namespace ScanApp.Components.Common.Table.Utilities
         private static bool CanBeUsed(Type value)
         {
             return value == typeof(DateTime) || value == typeof(DateTime?) ||
-                   value ==  typeof(TimeSpan) || value ==  typeof(TimeSpan?) ||
-                   value ==  typeof(DateTimeOffset) || value ==  typeof(DateTimeOffset?) ||
+                   value == typeof(TimeSpan) || value == typeof(TimeSpan?) ||
+                   value == typeof(DateTimeOffset) || value == typeof(DateTimeOffset?) ||
                    (value?.IsNumeric() ?? true);
         }
 
         private static bool TypesMatch(dynamic one, Type two)
         {
             if (one is null || two is null) return true;
-            Type oneType = one is Type ? one : (Type) one.GetType();
+            Type oneType = one is Type ? one : (Type)one.GetType();
 
             return oneType == Nullable.GetUnderlyingType(two) || oneType == two;
         }

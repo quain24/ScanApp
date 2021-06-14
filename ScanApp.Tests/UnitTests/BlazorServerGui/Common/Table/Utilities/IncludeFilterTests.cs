@@ -1,28 +1,66 @@
-﻿using AutoFixture;
+﻿using System;
+using AutoFixture;
 using FluentAssertions;
 using ScanApp.Components.Common.Table;
 using ScanApp.Components.Common.Table.Utilities;
 using ScanApp.Tests.Extensions;
 using System.Linq;
 using Xunit;
+using Fluxor;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
 {
     public class IncludeFilterTests
     {
+        public Fixture Fixture { get; }
+
+        public IncludeFilterTests()
+        {
+            Fixture = new Fixture();
+            Fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
+                .ToList()
+                .ForEach(b => Fixture.Behaviors.Remove(b));
+            Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+            var customization = new SupportMutableValueTypesCustomization();
+            customization.Customize(Fixture);
+        }
+
+        [Fact]
+        public void Throws_arg_null_exc_if_config_is_null()
+        {
+            Action act = () => _ = new IncludeFilter<ColumnConfigFixtures.TestObject>(null as ColumnConfig<ColumnConfigFixtures.TestObject>, "");
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void Search_for_empty_string_ignores_null()
+        {
+            var data = Fixture.Create<ColumnConfigFixtures.TestObject>();
+            data.AString = null;
+
+            var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
+            var subject = new IncludeFilter<ColumnConfigFixtures.TestObject>(colConf, "");
+
+            subject.Check(data).Should().BeFalse();
+        }
+
+        [Fact]
+        public void Search_for_null_string_ignores_empty()
+        {
+            var data = Fixture.Create<ColumnConfigFixtures.TestObject>();
+            data.AString = "";
+
+            var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
+            var subject = new IncludeFilter<ColumnConfigFixtures.TestObject>(colConf, null);
+
+            subject.Check(data).Should().BeFalse();
+        }
+
         [Fact]
         public void Finds_entries_with_given_string()
         {
-            var fixture = new Fixture();
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => fixture.Behaviors.Remove(b));
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            var customization = new SupportMutableValueTypesCustomization();
-            customization.Customize(fixture);
-
-            var col = fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
+            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
             var modified = col.Take(100).ToList();
             modified.ForEach(x => x.AString += "search");
             var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
@@ -37,16 +75,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
         [Fact]
         public void Finds_entries_with_given_string_case_sensitive()
         {
-            var fixture = new Fixture();
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => fixture.Behaviors.Remove(b));
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            var customization = new SupportMutableValueTypesCustomization();
-            customization.Customize(fixture);
-
-            var col = fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
+            var col = Fixture.CreateMany<ColumnConfigFixtures.TestObject>(1000);
             var modified = col.Take(100).ToList();
             modified.Take(10).ToList().ForEach(x => x.AString += "Search");
             modified.Skip(10).Take(10).ToList().ForEach(x => x.AString += "search");
@@ -64,16 +93,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
         [Fact]
         public void Checks_single_item_and_returns_true_if_found_match()
         {
-            var fixture = new Fixture();
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => fixture.Behaviors.Remove(b));
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            var customization = new SupportMutableValueTypesCustomization();
-            customization.Customize(fixture);
-
-            var col = fixture.Create<ColumnConfigFixtures.TestObject>();
+            var col = Fixture.Create<ColumnConfigFixtures.TestObject>();
             col.AString = "aa aa search_test";
 
             var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
@@ -87,16 +107,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
         [Fact]
         public void Checks_single_item_and_returns_false_if_not_found_match()
         {
-            var fixture = new Fixture();
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => fixture.Behaviors.Remove(b));
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            var customization = new SupportMutableValueTypesCustomization();
-            customization.Customize(fixture);
-
-            var col = fixture.Create<ColumnConfigFixtures.TestObject>();
+            var col = Fixture.Create<ColumnConfigFixtures.TestObject>();
             col.AString = "aa aa sea__rch_test";
 
             var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
@@ -110,16 +121,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
         [Fact]
         public void Checks_single_item_and_returns_true_if_found_match_case_sensitive()
         {
-            var fixture = new Fixture();
-            fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => fixture.Behaviors.Remove(b));
-            fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-            var customization = new SupportMutableValueTypesCustomization();
-            customization.Customize(fixture);
-
-            var col = fixture.Create<ColumnConfigFixtures.TestObject>();
+            var col = Fixture.Create<ColumnConfigFixtures.TestObject>();
             col.AString = "aa aa sea_rch_test";
 
             var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
