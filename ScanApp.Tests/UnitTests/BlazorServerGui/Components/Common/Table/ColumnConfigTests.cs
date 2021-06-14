@@ -1,17 +1,17 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Linq.Expressions;
+using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 using MudBlazor;
 using ScanApp.Common;
 using ScanApp.Components.Common.Table;
-using System;
-using System.Linq.Expressions;
 using Xunit;
 using Xunit.Abstractions;
-using static ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.ColumnConfigFixtures;
+using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
 
-namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
+namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 {
     public class ColumnConfigTests
     {

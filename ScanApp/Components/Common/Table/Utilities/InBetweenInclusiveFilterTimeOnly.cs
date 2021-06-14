@@ -1,6 +1,4 @@
 ﻿using System;
-using ScanApp.Common.Extensions;
-using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.Table.Utilities
 {

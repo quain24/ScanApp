@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using FluentValidation;
 using Moq;
 using ScanApp.Components.Common.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
-using System;
 using Xunit;
 
-namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
+namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 {
     public class ColumnBuilderTests
     {

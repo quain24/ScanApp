@@ -1,14 +1,13 @@
 ﻿using System;
+using System.Linq;
 using AutoFixture;
 using FluentAssertions;
 using ScanApp.Components.Common.Table;
 using ScanApp.Components.Common.Table.Utilities;
 using ScanApp.Tests.Extensions;
-using System.Linq;
 using Xunit;
-using Fluxor;
 
-namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
+namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilities
 {
     public class IncludeFilterTests
     {
@@ -24,6 +23,20 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table.Utilities
 
             var customization = new SupportMutableValueTypesCustomization();
             customization.Customize(Fixture);
+        }
+
+        [Fact]
+        public void Creates_instance_when_valid_params_are_used()
+        {
+            var data = Fixture.Create<ColumnConfigFixtures.TestObject>();
+            data.AString = null;
+
+            var colConf = new ColumnConfig<ColumnConfigFixtures.TestObject>(x => x.AString);
+            var subject = new IncludeFilter<ColumnConfigFixtures.TestObject>(colConf, "abc");
+
+            subject.Should().BeOfType<IncludeFilter<ColumnConfigFixtures.TestObject>>()
+                .And.NotBeNull()
+                .And.BeAssignableTo<IFilter<ColumnConfigFixtures.TestObject>>();
         }
 
         [Fact]

@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Xunit;
 
-namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Table
+namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 {
     public static class ColumnConfigFixtures
     {

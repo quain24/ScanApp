@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.Table.Utilities
 {
