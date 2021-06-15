@@ -55,7 +55,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
                         new InBetweenInclusiveFilterDateOnly<T>(config, v.From, v.To),
                     (null or DateTime, null or DateTime) v when config.FieldType is FieldType.Time =>
                         new InBetweenInclusiveFilterTimeOnly<T>(config, (TimeSpan?)(v.From?.TimeOfDay), (TimeSpan?)(v.To?.TimeOfDay)),
-                    (null or TimeSpan, null or TimeSpan) v when config.FieldType is FieldType.Time =>
+                    (null or TimeSpan, null or TimeSpan) v when config.FieldType is FieldType.Time or FieldType.AutoDetect =>
                         new InBetweenInclusiveFilterTimeOnly<T>(config, v.From, v.To),
                     var (@from, to) => new InBetweenInclusiveFilter<T>(config, @from, to)
                 };
