@@ -115,22 +115,44 @@ else
 
 @code
 {
+
+    /// <inheritdoc cref="MudTableBase.FixedHeader" />
     [Parameter] public bool FixedHeader { get; set; }
 
+    /// <inheritdoc cref="MudTableBase.FixedFooter" />
     [Parameter] public bool FixedFooter { get; set; }
 
+    /// <inheritdoc cref="MudTableBase.Height" />
     [Parameter] public int MaxTableHeight { get; set; }
 
+    ///<summary>
+    /// Gets or sets number of rows per single table page.<br />
+    /// If the table has more items than this number, it will break into pages of said size.
+    /// </summary>
+    /// <value>Number of rows per single page. If set to 0, table will disable pagination.</value>
     [Parameter] public int RowsPerPage { get; set; } = 50;
 
+    ///<summary>
+    /// Gets or sets available page size options for user to choose from.
+    /// </summary>
+    /// <value>Array of page sizes. Default values are 10, 25, 50, 100 and 250 rows per page.</value>
     [Parameter] public int[] PageSizeOptions { get; set; } = { 10, 25, 50, 100, 250 };
 
+    /// <summary>
+    /// Gets or sets default row behavior for OnClick event. If enabled, clicking the row will open edit dialog.
+    /// </summary>
+    /// <value><see langword="true" /> if clicking a row will open edit dialog, otherwise <see langword="false" />.</value>
     [Parameter] public bool EditOnRowClick { get; set; }
 
+    /// <summary>
+    /// Gets or sets data to be displayed in table. One item will be displayed as one row.
+    /// </summary>
     [Parameter] public List<TTableType> Data { get; set; }
 
+    ///<inheritdoc cref="MudTable{T}.SelectedItem" />
     [Parameter] public TTableType SelectedItem { get; set; }
 
+    ///<inheritdoc cref="MudTable{T}.SelectedItemChanged" />
     [Parameter] public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
     private TTableType SelectedItemBoundChild
@@ -139,10 +161,13 @@ else
         set => SelectedItemChanged.InvokeAsync(value);
     }
 
+    ///<inheritdoc cref="MudTableBase.MultiSelection" />
     [Parameter] public bool MultiSelection { get; set; }
 
+    ///<inheritdoc cref="MudTable{T}.SelectedItems" />
     [Parameter] public HashSet<TTableType> SelectedItems { get; set; }
 
+    ///<inheritdoc cref="MudTable{T}.SelectedItemsChanged" />
     [Parameter] public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
 
     private HashSet<TTableType> SelectedItemsBoundChild
@@ -155,12 +180,91 @@ else
         }
     }
 
+    /// <summary>
+    /// Gets or sets collection of configuration objects used to set all properties and behaviors of corresponding columns in table.
+    /// </summary>
+    /// <value>Collection of configuration objects.</value>
     [Parameter] public List<ColumnConfig<TTableType>> Configs { get; set; }
+
+    /// <summary>
+    /// Gets or sets visibility of edit button.
+    /// </summary>
+    /// <value>
+    /// <list type="bullet">
+    /// <item>
+    ///     <term><see cref="Show.Auto" /></term>
+    ///     <description>Table will decide if edit button is needed (<strong>default</strong>).</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.Yes" /></term>
+    ///     <description>Always show edit button.</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.No" /></term>
+    ///     <description>Never show edit button.</description>
+    /// </item>
+    /// </list>
+    /// </value>
     [Parameter] public Show ShowEditButton { get; set; } = Show.Auto;
+
+    /// <summary>
+    /// Gets or sets visibility of filter button.
+    /// </summary>
+    /// <value>
+    /// <list type="bullet">
+    /// <item>
+    ///     <term><see cref="Show.Auto" /></term>
+    ///     <description>Table will decide if filter button is needed (<strong>default</strong>).</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.Yes" /></term>
+    ///     <description>Always show filter button.</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.No" /></term>
+    ///     <description>Never show filter button.</description>
+    /// </item>
+    /// </list>
+    /// </value>
     [Parameter] public Show ShowFilterButton { get; set; } = Show.Auto;
+
+    /// <summary>
+    /// Gets or sets visibility of group-by field.
+    /// </summary>
+    /// <value>
+    /// <list type="bullet">
+    /// <item>
+    ///     <term><see cref="Show.Auto" /></term>
+    ///     <description>Table will decide if group-by field is needed (<strong>default</strong>).</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.Yes" /></term>
+    ///     <description>Always show group-by field.</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.No" /></term>
+    ///     <description>Never show group-by field.</description>
+    /// </item>
+    /// </list>
+    /// </value>
     [Parameter] public Show ShowGroupsField { get; set; } = Show.Auto;
+
+    /// <summary>
+    /// Gets or sets how the edit dialog fields will be visible when dialog is opened.
+    /// </summary>
+    /// <value>If set to <see langword="true" />, dialog will start with all fields expanded (<strong>default</strong>).</value>
     [Parameter] public bool EditDialogStartsExpanded { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets how the filter dialog fields will be visible when dialog is opened.
+    /// </summary>
+    /// <value>If set to <see langword="true" />, dialog will start with all fields expanded.</value>
     [Parameter] public bool FilterDialogStartsExpanded { get; set; }
+
+    /// <summary>
+    /// Gets or sets how the edit dialog fields that are marked by validation as invalid will be visible when dialog is opened.
+    /// </summary>
+    /// <value>If set to <see langword="true" />, dialog will start with all invalid fields expanded (<strong>default</strong>).</value>
     [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; } = true;
 
     private ColumnConfig<TTableType> SelectedGroupable { get; set; }
@@ -293,6 +397,10 @@ else
         }
     }
 
+    /// <summary>
+    /// Opens editing dialog which context is currently selected item.
+    /// </summary>
+    /// <returns>Awaitable task.</returns>
     public async Task OpenEditItemDialog()
     {
         var dialog = _dialogService.Show<EditDialog<TTableType>>("Edit item",
@@ -321,6 +429,10 @@ else
         return SelectedItemChanged.InvokeAsync(editedItem);
     }
 
+    /// <summary>
+    /// Opens table filtering dialog.
+    /// </summary>
+    /// <returns>Awaitable task.</returns>
     public async Task OpenFilterItemDialog()
     {
         var dialog = _dialogService.Show<FilterDialog<TTableType>>("Filter by...",
@@ -338,7 +450,10 @@ else
         CreateGroupsBasedOn(SelectedGroupable);
     }
 
-    private void RemoveFilters()
+    /// <summary>
+    /// Clears applied content filters.
+    /// </summary>
+    public void RemoveFilters()
     {
         _filters.Clear();
         CreateGroupsBasedOn(SelectedGroupable);
