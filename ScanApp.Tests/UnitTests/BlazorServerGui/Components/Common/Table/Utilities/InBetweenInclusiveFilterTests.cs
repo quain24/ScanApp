@@ -193,13 +193,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         {
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
+            var now = DateTime.Now;
 
-            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, DateTime.Today, DateTime.Today + TimeSpan.FromDays(100));
+            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, now, now + TimeSpan.FromDays(100));
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime <= DateTime.Today + TimeSpan.FromDays(100) && d.NullableDateTime >= DateTime.Today)
+                .Where(d => d.NullableDateTime <= now + TimeSpan.FromDays(100) && d.NullableDateTime >= now)
                 .ToHashSet();
 
             using (new AssertionScope())
@@ -214,13 +215,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         {
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
+            var now = DateTime.Now;
 
-            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, DateTime.Today, null);
+            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, now, null);
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime >= DateTime.Today)
+                .Where(d => d.NullableDateTime >= now)
                 .ToHashSet();
 
             using (new AssertionScope())
@@ -235,13 +237,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         {
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
+            var now = DateTime.Now;
 
-            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, null, DateTime.Today + TimeSpan.FromDays(100));
+            var subject = new InBetweenInclusiveFilter<ColumnConfigFixtures.SubClass>(config, null, now + TimeSpan.FromDays(100));
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime <= DateTime.Today + TimeSpan.FromDays(100))
+                .Where(d => d.NullableDateTime <= now + TimeSpan.FromDays(100))
                 .ToHashSet();
 
             using (new AssertionScope())
