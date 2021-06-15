@@ -13,8 +13,16 @@ namespace ScanApp.Components.Common.Table.Dialogs
 {
     public partial class EditFieldCreator<T> : FieldCreatorBase<T>
     {
+        /// <summary>
+        /// Gets or sets item that will be edited by fields created by this instance.
+        /// </summary>
+        /// <value>Item to be edited if set.</value>
         [Parameter] public T TargetItem { get; set; }
 
+        /// <summary>
+        /// Callback is called when edited item has been changed and returns edited item.
+        /// </summary>
+        /// <value>Callback.</value>
         [Parameter] public EventCallback<T> TargetItemChanged { get; set; }
 
         private readonly Dictionary<ColumnConfig<T>, dynamic> _fieldReferences = new();
@@ -44,7 +52,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             StateHasChanged();
         }
 
-        public override RenderFragment CreateField(ColumnConfig<T> config)
+        protected override RenderFragment CreateField(ColumnConfig<T> config)
         {
             return builder =>
             {

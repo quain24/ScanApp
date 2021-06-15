@@ -15,12 +15,28 @@ namespace ScanApp.Components.Common.Table.Dialogs
 {
     public partial class FilterFieldCreator<T> : FieldCreatorBase<T>
     {
-        [Parameter]
-        public IEnumerable<T> SourceCollection { get; set; }
-
+        /// <summary>
+        /// Gets or sets label for 'From' caption.
+        /// </summary>
+        /// <value><see cref="string"/> representing 'From' label if set. Default value is 'From'.</value>
         [Parameter] public string FromLabel { get; set; } = "From";
+
+        /// <summary>
+        /// Gets or sets label for 'To' caption.
+        /// </summary>
+        /// <value><see cref="string"/> representing 'To' label if set. Default value is 'To'.</value>
         [Parameter] public string ToLabel { get; set; } = "To";
+
+        /// <summary>
+        /// Gets or sets label for 'Include' caption.
+        /// </summary>
+        /// <value><see cref="string"/> representing 'Include' label if set. Default value is 'Must include...'.</value>
         [Parameter] public string IncludeLabel { get; set; } = "Must include...";
+
+        /// <summary>
+        /// Gets or sets error message for when in the from - to pair of fields field 'From' has greater value than 'To' caption.
+        /// </summary>
+        /// <value><see cref="string"/> representing error message for from - to field pair when set, otherwise it is set to <c>'{FromLabel}' cannot be greater than '{ToLabel}'</c> by default.</value>
         [Parameter] public string ErrorMessageFromTo { get; set; }
 
         private readonly Dictionary<Guid, (dynamic From, dynamic To)> _fromToValues = new();
@@ -39,6 +55,10 @@ namespace ScanApp.Components.Common.Table.Dialogs
             Configs = Configs.Where(c => c.IsFilterable);
         }
 
+        /// <summary>
+        /// Create and retrieve <see cref="IFilter{T}"/> collection based on data provided by user.
+        /// </summary>
+        /// <returns>Collection of <see cref="IFilter{T}"/> if there is data for it to be created, otherwise empty collection.</returns>
         public IEnumerable<IFilter<T>> GetFilters()
         {
             List<IFilter<T>> filters = new(_fromToValues.Count + _includingValues.Count);
@@ -74,7 +94,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             return filters;
         }
 
-        public override RenderFragment CreateField(ColumnConfig<T> config)
+        protected override RenderFragment CreateField(ColumnConfig<T> config)
         {
             return builder =>
             {

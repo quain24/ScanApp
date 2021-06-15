@@ -8,19 +8,45 @@ namespace ScanApp.Components.Common.Table.Dialogs
 {
     public abstract partial class FieldCreatorBase<T> : ComponentBase
     {
-        [Parameter]
-        public IEnumerable<ColumnConfig<T>> Configs { get; set; }
+        /// <summary>
+        /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields.
+        /// </summary>
+        /// <value>Collection of <see cref="ColumnConfig{T}"/> objects if set, otherwise <see langword="null"/>.</value>
+        [Parameter] public IEnumerable<ColumnConfig<T>> Configs { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether fields created by this creator should be displayed as open right after start.
+        /// </summary>
+        /// <value><see langword="true"/> if fields created by this creator are to be displayed as open initially, otherwise <see langword="false"/>.</value>
         [Parameter] public bool StartExpanded { get; set; }
+
+        /// <summary>
+        /// Gets or sets date / time picker button label for 'OK' option.
+        /// </summary>
+        /// <value><see cref="string"/> representing picker 'OK' label if set. Default value is 'Ok'.</value>
         [Parameter] public string PickerOKLabel { get; set; } = "Ok";
+
+        /// <summary>
+        /// Gets or sets date / time picker button label for 'Cancel' option.
+        /// </summary>
+        /// <value><see cref="string"/> representing picker 'OK' label if set. Default value is 'Cancel'.</value>
         [Parameter] public string PickerCancelLabel { get; set; } = "Cancel";
+
+        /// <summary>
+        /// Gets or sets date / time picker button label for 'Clear' option.
+        /// </summary>
+        /// <value><see cref="string"/> representing picker 'Clear' label if set. Default value is 'Clear'.</value>
         [Parameter] public string PickerClearLabel { get; set; } = "Clear";
 
+        /// <summary>
+        /// Gets a dictionary in which keys are <see cref="ColumnConfig{T}"/> objects and values are corresponding <see cref="MudExpansionPanel"/> references used by this creator.
+        /// </summary>
+        /// <value><see cref="Dictionary{TKey,TValue}"/> of <see cref="ColumnConfig{T}"/> and <see cref="MudExpansionPanel"/> if set, otherwise empty collection.</value>
         public Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();
 
-        public abstract RenderFragment CreateField(ColumnConfig<T> config);
+        protected abstract RenderFragment CreateField(ColumnConfig<T> config);
 
         protected override void OnInitialized()
         {
