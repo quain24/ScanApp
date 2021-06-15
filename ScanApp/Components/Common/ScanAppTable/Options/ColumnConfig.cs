@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
@@ -14,6 +15,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public string PropertyName { get; }
         public string DisplayName { get; }
         public Type PropertyType { get; }
+        public PropertyInfo PropInfo { get; set; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsSelectable { get; init; } = true;
@@ -32,7 +34,6 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         {
             return _columnNameSelector.Body switch
             {
-                UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } unary => unary.Operand.Type.Name,
                 UnaryExpression { Operand: MemberExpression m } => m.Member.Name,
                 MemberExpression m => m.Member.Name,
                 { } m => m.Type.Name

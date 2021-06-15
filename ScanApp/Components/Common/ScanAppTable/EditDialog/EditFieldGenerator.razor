@@ -1,6 +1,7 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
 @using System.Linq.Expressions
+@using ScanApp.Components.Common.ScanAppTable.FilterDialog
 @typeparam TItem
 
 @EditFields
@@ -13,16 +14,12 @@
     public TItem Item { get; set; }
 
     [Parameter]
-    public PropertyInfo[] Properties { get; set; }
-
-    [Parameter]
     public EventCallback<(PropertyInfo, object)> ItemChanged { get; set; }
 
     [Parameter]
     public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
 
     private RenderFragment EditFields { get; set; }
-    private EventCallbackFactory _eventCallbackFactory = new EventCallbackFactory();
 
     protected override void OnInitialized()
     {
@@ -42,16 +39,14 @@
                 builder.AddAttribute(2, nameof(MudField.Variant), Variant.Filled);
                 builder.AddAttribute(3, nameof(MudField.ChildContent), (RenderFragment)(builder2 =>
                 {
-                    builder2.AddContent(4, Properties[localIterator].GetValue(Item));
+                    builder2.AddContent(4, ColumnConfigs[localIterator].PropInfo.GetValue(Item));
                 }));
                 builder.CloseComponent();
                 builder.CloseRegion();
                 continue;
             }
 
-            dynamic editDelegate = CreateEditDelegate(i);
-
-            if (IsDateTime(ColumnConfigs[i].PropertyType))
+            if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
             {
                 builder.OpenRegion(1);
                 builder.OpenComponent(0, typeof(MudDatePicker));
@@ -60,8 +55,8 @@
                 builder.AddAttribute(3, nameof(MudDatePicker.Label), ColumnConfigs[i].DisplayName);
                 builder.AddAttribute(4, nameof(MudDatePicker.Editable), true);
                 builder.AddAttribute(5, nameof(MudDatePicker.ShowWeekNumbers), true);
-                builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), editDelegate);
-                builder.AddAttribute(7, nameof(MudDatePicker.Date), Properties[i].GetValue(Item) as DateTime?);
+                builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateEditDelegate(i));
+                builder.AddAttribute(7, nameof(MudDatePicker.Date), ColumnConfigs[localIterator].PropInfo.GetValue(Item) as DateTime?);
                 builder.AddAttribute(8, nameof(MudDatePicker.Validation), GetValidator(i));
                 builder.CloseComponent();
                 builder.CloseRegion();
@@ -69,13 +64,14 @@
             }
 
             builder.OpenRegion(2);
-            builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(ColumnConfigs[i].PropertyType));
-            builder.AddAttribute(1, nameof(MudTextField<string>.Value), Properties[i].GetValue(Item));
+            Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
+            builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
+            builder.AddAttribute(1, nameof(MudTextField<string>.Value), ColumnConfigs[localIterator].PropInfo.GetValue(Item));
             builder.AddAttribute(2, nameof(MudTextField<string>.Variant), Variant.Outlined);
             builder.AddAttribute(3, nameof(MudTextField<string>.Label), ColumnConfigs[i].DisplayName);
             builder.AddAttribute(4, nameof(MudTextField<string>.Immediate), true);
-            builder.AddAttribute(5, nameof(MudTextField<string>.Validation), GetValidator(i));
-            builder.AddAttribute(6, nameof(MudTextField<string>.ValueChanged), editDelegate);
+            builder.AddAttribute(5, nameof(MudTextField<string>.Validation), GetNullableValidator(i));
+            builder.AddAttribute(6, nameof(MudTextField<string>.ValueChanged), CreateNullableEditDelegate(i));
             builder.AddAttribute(7, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
 
             builder.CloseComponent();
@@ -83,19 +79,26 @@
         }
     };
 
-    private bool IsDateTime(Type type)
-    {
-        return type == typeof(DateTime) || type == typeof(DateTime?);
-    }
-
     private dynamic CreateEditDelegate(int iterator)
     {
         var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[iterator].PropertyType);
 
         async Task EditDelegate(dynamic obj)
         {
-            Properties[iterator].SetValue(Item, obj);
-            await ItemChanged.InvokeAsync((Properties[iterator], obj));
+            await ItemChanged.InvokeAsync((ColumnConfigs[iterator].PropInfo, obj));
+        }
+
+        return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
+    }
+
+    private dynamic CreateNullableEditDelegate(int iterator)
+    {
+        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        var callbackType = typeof(EventCallback<>).MakeGenericType(nullableType);
+
+        async Task EditDelegate(dynamic obj)
+        {
+            await ItemChanged.InvokeAsync((ColumnConfigs[iterator].PropInfo, obj));
         }
 
         return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
@@ -103,12 +106,23 @@
 
     private Delegate GetValidator(int iterator)
     {
-        var methodInfo =
-            ColumnConfigs[iterator]
+        var methodInfo = ColumnConfigs[iterator]
                 .GetType()
                 .GetMethod("Validate")
                 ?.MakeGenericMethod(ColumnConfigs[iterator].PropertyType);
         var validatorFuncType = Expression.GetDelegateType(ColumnConfigs[iterator].PropertyType, typeof(IEnumerable<string>));
+        return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
+    }
+
+    private Delegate GetNullableValidator(int iterator)
+    {
+        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+
+        var methodInfo = ColumnConfigs[iterator]
+            .GetType()
+            .GetMethod("Validate")
+            ?.MakeGenericMethod(nullableType);
+        var validatorFuncType = Expression.GetDelegateType(nullableType, typeof(IEnumerable<string>));
         return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
     }
 }
