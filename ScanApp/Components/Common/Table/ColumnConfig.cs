@@ -5,7 +5,6 @@ using ScanApp.Common.Extensions;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -83,6 +82,12 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <value><see langword="true"/> if table can be grouped by using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
         public bool IsGroupable { get; init; } = true;
+
+        /// <summary>
+        /// Gets or sets custom CSS style to be used when displaying table column configured by this instance.
+        /// </summary>
+        /// <value>A <see cref="string"/> representation of CSS style if set, otherwise <see langword="null"/>.</value>>
+        public string ColumnStyle { get; set; }
 
         private IValidator Validator { get; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }

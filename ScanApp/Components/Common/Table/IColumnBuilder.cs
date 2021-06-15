@@ -52,6 +52,13 @@ namespace ScanApp.Components.Common.Table
         IColumnBuilder<T> DisableFiltering();
 
         /// <summary>
+        /// Sets up CSS style for column configured by <see cref="ColumnConfig{T}"/> being configured.
+        /// </summary>
+        /// <param name="cssColumnStyle"></param>
+        /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
+        IColumnBuilder<T> Style(string cssColumnStyle);
+
+        /// <summary>
         /// Creates new configured <see cref="ColumnConfig{T}"/>.
         /// </summary>
         /// <returns><see cref="ColumnConfig{T}"/> configured by this instance of builder.</returns>

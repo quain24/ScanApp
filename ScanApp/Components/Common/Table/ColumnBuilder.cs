@@ -17,6 +17,7 @@ namespace ScanApp.Components.Common.Table
         private bool _isFilterable = true;
         private bool _isEditable = true;
         private bool _isGroupable = true;
+        private string _columnStyle;
 
         private ColumnBuilder(Expression<Func<T, dynamic>> target)
         {
@@ -75,13 +76,20 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
+        public IColumnBuilder<T> Style(string cssColumnStyle)
+        {
+            _columnStyle = cssColumnStyle;
+            return this;
+        }
+
         public ColumnConfig<T> Build()
         {
             var config = new ColumnConfig<T>(_target, _name, _type, _validator)
             {
                 IsEditable = _isEditable,
                 IsGroupable = _isGroupable,
-                IsFilterable = _isFilterable
+                IsFilterable = _isFilterable,
+                ColumnStyle = _columnStyle
             };
 
             if (_converter is not null)

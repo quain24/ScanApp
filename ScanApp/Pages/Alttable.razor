@@ -34,6 +34,7 @@
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)
             .UnderName("Simple summary")
             .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+            .Style("width: 60%;")
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")

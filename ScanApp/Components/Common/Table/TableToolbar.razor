@@ -29,23 +29,59 @@
 
 @code {
 
-
+    /// <summary>
+    /// Gets or sets a value indicating if any table filters are applied.
+    /// </summary>
+    /// <value>If <see langword="true"/>, this will replace filter button with 'remove filers' button.</value>
     [Parameter] public bool FiltersApplied { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if editing function should be disabled.
+    /// </summary>
     [Parameter] public bool EditDisabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if editing function (button) should be visible.
+    /// </summary>
     [Parameter] public bool EditVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if filtering function should be disabled.
+    /// </summary>
     [Parameter] public bool FilterVisible { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating if grouping function should be disabled.
+    /// </summary>
     [Parameter] public bool GroupingVisible { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets a collection of <see cref="ColumnConfig{T}"/> that will be set as options for grouping.
+    /// </summary>
     [Parameter] public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
 
+    /// <summary>
+    /// Currently selected <see cref="ColumnConfig{T}"/>.
+    /// </summary>
     [Parameter] public ColumnConfig<T> SelectedGroupable { get; set; }
 
+    /// <summary>
+    /// Occurs when new <see cref="ColumnConfig{T}"/> is selected in group chooser.
+    /// </summary>
     [Parameter] public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
 
+    /// <summary>
+    /// Occurs when 'edit' button is clicked.
+    /// </summary>
     [Parameter] public EventCallback OnEditClick { get; set; }
 
+    /// <summary>
+    /// Occurs when 'filter' button is clicked.
+    /// </summary>
     [Parameter] public EventCallback OnFilterClick { get; set; }
 
+    /// <summary>
+    /// Occurs when 'remove filters' button is clicked.
+    /// </summary>
     [Parameter] public EventCallback OnRemoveFilterClick { get; set; }
 }
