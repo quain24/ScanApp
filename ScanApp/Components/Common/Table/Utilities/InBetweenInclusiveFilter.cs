@@ -5,6 +5,10 @@ using System.Linq;
 
 namespace ScanApp.Components.Common.Table.Utilities
 {
+    /// <summary>
+    /// Filters collections of <typeparamref name="T"/> by item pointed to by provided <see cref="ColumnConfig{T}"/> for values that comply with given 'from' and 'to' values.
+    /// </summary>
+    /// <typeparam name="T">Type being filtered.</typeparam>
     public class InBetweenInclusiveFilter<T> : IFilter<T>
     {
         protected readonly dynamic From;
@@ -14,6 +18,16 @@ namespace ScanApp.Components.Common.Table.Utilities
 
         public ColumnConfig<T> ColumnConfig { get; }
 
+        /// <summary>
+        /// Creates new instance of <see cref="InBetweenInclusiveFilter{T}"/>.
+        /// </summary>
+        /// <param name="columnConfig">Configuration object pointing to value by which given collection is filtered.</param>
+        /// <param name="from">Inclusive value from which value meets the conditions of this filter.</param>
+        /// <param name="to">Inclusive value to which value meets the conditions of this filter.</param>
+        /// <exception cref="ArgumentException"><paramref name="to"/> or <paramref name="from"/> are not <see cref="DateTime"/>, <see cref="TimeSpan"/>, numeric values or <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="to"/> and <paramref name="from"/> types are different.</exception>
+        /// <exception cref="ArgumentException">Type of target pointed by <paramref name="columnConfig"/> is not <see cref="DateTime"/>, <see cref="TimeSpan"/> or numeric value.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="columnConfig"/> is <see langword="null"/>.</exception>
         public InBetweenInclusiveFilter(ColumnConfig<T> columnConfig, dynamic from, dynamic to)
         {
             if (CanBeUsed(from?.GetType()) is false)
@@ -72,6 +86,8 @@ namespace ScanApp.Components.Common.Table.Utilities
             return value is not null && value >= From && value <= To;
         }
 
+        /// <inheritdoc cref="IFilter{T}.Run"/>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public IEnumerable<T> Run(IEnumerable<T> source)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
