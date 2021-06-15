@@ -76,7 +76,7 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
-        public IColumnBuilder<T> Style(string cssColumnStyle)
+        public IColumnBuilder<T> ColumnStyle(string cssColumnStyle)
         {
             _columnStyle = cssColumnStyle;
             return this;

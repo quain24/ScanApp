@@ -56,7 +56,7 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <param name="cssColumnStyle"></param>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
-        IColumnBuilder<T> Style(string cssColumnStyle);
+        IColumnBuilder<T> ColumnStyle(string cssColumnStyle);
 
         /// <summary>
         /// Creates new configured <see cref="ColumnConfig{T}"/>.
