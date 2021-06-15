@@ -1,5 +1,4 @@
-﻿@using ScanApp.Components.Common.Table
-@using ScanApp.Common.Extensions
+﻿@using ScanApp.Common.Extensions
 @typeparam T
 
 <MudDialog>
@@ -20,12 +19,21 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
+    /// <summary>
+    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
+    /// </summary>
+    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
     [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
 
     [Parameter] public bool ExpandInvalidPanelsOnStart { get; set; } = true;
 
+    /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
     [Parameter] public bool StartExpanded { get; set; }
 
+    /// <summary>
+    /// Gets or sets an item upon which copy editing operations will be performed.
+    /// </summary>
+    /// <value>Item that's copy will be edited.</value>
     [Parameter] public T SourceItem { get; set; }
 
     private T TargetItem { get; set; }
@@ -46,7 +54,7 @@
 
         _form?.Validate();
 
-        if(ExpandInvalidPanelsOnStart)
+        if (ExpandInvalidPanelsOnStart)
             _fieldCreator?.ExpandInvalidPanels();
     }
 

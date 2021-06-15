@@ -1,5 +1,4 @@
-﻿@using ScanApp.Components.Common.Table
-@typeparam T
+﻿@typeparam T
 
 <MudDialog>
     <DialogContent>
@@ -20,9 +19,13 @@
 {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public List<ColumnConfig<T>> Configs { get; set; }
+    /// <summary>
+    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
+    /// </summary>
+    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
+    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
 
+    /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
     [Parameter] public bool StartExpanded { get; set; }
 
     private MudForm _form;
