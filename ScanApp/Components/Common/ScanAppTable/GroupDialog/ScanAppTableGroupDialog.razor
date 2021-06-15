@@ -13,7 +13,7 @@
     </TitleContent>
     <DialogContent>
         <MudSelect T="string" Label="Group By" @bind-Value="_selectedGroupBy">
-            @for (int i = 0; i < Properties.Length; i++)
+            @for (int i = 0; i < ColumnConfigs.Count; i++)
             {
                 int localIterator = i;
                 if (!ColumnConfigs[localIterator].IsGroupable)
@@ -47,9 +47,6 @@
     [Parameter]
     public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
-    [Parameter]
-    public PropertyInfo[] Properties { get; set; }
-
     private string _selectedGroupBy;
     private bool SubmitDisabled;
     private Dictionary<string, string> _headersPropertiesPairs;
@@ -57,9 +54,9 @@
     protected override Task OnInitializedAsync()
     {
         _headersPropertiesPairs = new Dictionary<string, string>();
-        for (int i = 0; i < Properties.Length; i++)
+        for (int i = 0; i < ColumnConfigs.Count; i++)
         {
-            _headersPropertiesPairs.Add(ColumnConfigs[i].DisplayName, Properties[i].Name);
+            _headersPropertiesPairs.Add(ColumnConfigs[i].DisplayName, ColumnConfigs[i].PropInfo.Name);
         }
         return base.OnInitializedAsync();
     }
