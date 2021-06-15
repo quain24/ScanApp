@@ -11,10 +11,11 @@
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast"
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
          Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" />
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
+<MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
@@ -54,7 +55,7 @@
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
             .ConvertUsing(new Converter<Version>
             {
-                SetFunc = value => value.Value,
+                SetFunc = value => value?.Value,
                 GetFunc = Version.Create
             })
             .Build(),
@@ -71,6 +72,11 @@
             .AsReadOnly()
             .Build()
     };
+
+    public WeatherForecast Create()
+    {
+        return new WeatherForecast(11);
+    }
 
     public ColumnConfig<WeatherForecast>[] altConifgWay = new[]
     {

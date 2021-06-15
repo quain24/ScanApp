@@ -11,9 +11,13 @@
         }
     </MudSelect>
 }
+@if (AddVisible)
+{
+    <MudButton OnClick="OnAddClick" Variant="Variant.Filled" Class="ml-auto" Disabled="AddDisabled">Add</MudButton>
+}
 @if (EditVisible)
 {
-    <MudButton OnClick="OnEditClick" Variant="Variant.Filled" Class="ml-auto" Disabled="EditDisabled">Edit</MudButton>
+    <MudButton OnClick="OnEditClick" Variant="Variant.Filled" Class="ml-2" Disabled="EditDisabled">Edit</MudButton>
 }
 @if (FilterVisible)
 {
@@ -32,7 +36,7 @@
     /// <summary>
     /// Gets or sets a value indicating if any table filters are applied.
     /// </summary>
-    /// <value>If <see langword="true"/>, this will replace filter button with 'remove filers' button.</value>
+    /// <value>If <see langword="true" />, this will replace filter button with 'remove filers' button.</value>
     [Parameter] public bool FiltersApplied { get; set; }
 
     /// <summary>
@@ -46,6 +50,16 @@
     [Parameter] public bool EditVisible { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating if add function (button) should be visible.
+    /// </summary>
+    [Parameter] public bool AddVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if add function (button) should be disabled.
+    /// </summary>
+    [Parameter] public bool AddDisabled { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating if filtering function should be disabled.
     /// </summary>
     [Parameter] public bool FilterVisible { get; set; }
@@ -56,17 +70,17 @@
     [Parameter] public bool GroupingVisible { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a collection of <see cref="ColumnConfig{T}"/> that will be set as options for grouping.
+    /// Gets or sets a collection of <see cref="ColumnConfig{T}" /> that will be set as options for grouping.
     /// </summary>
     [Parameter] public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
 
     /// <summary>
-    /// Currently selected <see cref="ColumnConfig{T}"/>.
+    /// Currently selected <see cref="ColumnConfig{T}" />.
     /// </summary>
     [Parameter] public ColumnConfig<T> SelectedGroupable { get; set; }
 
     /// <summary>
-    /// Occurs when new <see cref="ColumnConfig{T}"/> is selected in group chooser.
+    /// Occurs when new <see cref="ColumnConfig{T}" /> is selected in group chooser.
     /// </summary>
     [Parameter] public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
 
@@ -74,6 +88,11 @@
     /// Occurs when 'edit' button is clicked.
     /// </summary>
     [Parameter] public EventCallback OnEditClick { get; set; }
+
+    /// <summary>
+    /// Occurs when 'add' button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnAddClick { get; set; }
 
     /// <summary>
     /// Occurs when 'filter' button is clicked.

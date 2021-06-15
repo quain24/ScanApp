@@ -1,0 +1,52 @@
+﻿@typeparam T
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+            <EditFieldCreator T="T" @ref="_fieldCreator" StartExpanded="true" Configs="Configs" @bind-TargetItem="@SourceItem"></EditFieldCreator>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Create new item</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    /// <summary>
+    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
+    /// </summary>
+    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
+    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
+
+    /// <summary>
+    /// Gets or sets anew clean item which will have it's values edited.
+    /// </summary>
+    /// <value>Item that's values will be edited.</value>
+    [Parameter] public T SourceItem { get; set; }
+
+    private MudForm _form;
+    private EditFieldCreator<T> _fieldCreator;
+    private bool _success = true;
+
+    Task Submit()
+    {
+        if (_form is null)
+        {
+            MudDialog.Cancel();
+            return Task.CompletedTask;
+        }
+
+        _form.Validate();
+
+        if (_success is false)
+            return Task.CompletedTask;
+
+        MudDialog.Close(DialogResult.Ok(SourceItem));
+        return Task.CompletedTask;
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

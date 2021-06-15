@@ -38,11 +38,11 @@
                 <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
                           RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)"
                           RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="false" Hover="true" Outlined="true" Dense="true" Breakpoint="Breakpoint.None">
-                    
+
                     <ColGroup>
                         @ColumnStyles
                     </ColGroup>
-                    
+
                     <HeaderContent>
                         @foreach (var cfg in Configs)
                         {
@@ -80,50 +80,51 @@
 }
 else
 {
-<MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
-          RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))"
-          RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
-          Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
+    <MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+              RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))"
+              RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true"
+              Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
 
-    <ToolBarContent>
-        @if (Configs?.Count > 0 && _groupables.Count > 0)
-        {
-            <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
-                          OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
-                          FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
-                          OnRemoveFilterClick="RemoveFilters"></TableToolbar>
-        }
-    </ToolBarContent>
-    
-    <ColGroup>
-        @ColumnStyles
-    </ColGroup>
+        <ToolBarContent>
+            @if (Configs?.Count > 0 && _groupables.Count > 0)
+            {
+                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
+                              OnAddClick="@OpenAddItemDialog" AddVisible="_addingEnabled" AddDisabled="false"
+                              OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
+                              FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
+                              OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+            }
+        </ToolBarContent>
 
-    <HeaderContent>
-        @foreach (var cfg in Configs)
-        {
-            <MudTh Style="@HeaderStyle">
-                <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
-                    @cfg.DisplayName
-                </MudTableSortLabel>
-            </MudTh>
-        }
-    </HeaderContent>
+        <ColGroup>
+            @ColumnStyles
+        </ColGroup>
 
-    <RowTemplate>
-        @foreach (var cfg in Configs)
-        {
-            <MudTd @key="@(cfg.Identifier.ToString() + context.GetHashCode())" Style="@RowStyle" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
-        }
-    </RowTemplate>
+        <HeaderContent>
+            @foreach (var cfg in Configs)
+            {
+                <MudTh Style="@HeaderStyle">
+                    <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
+                        @cfg.DisplayName
+                    </MudTableSortLabel>
+                </MudTh>
+            }
+        </HeaderContent>
 
-    <PagerContent>
-        @if (Data?.Count > RowsPerPage)
-        {
-            <MudTablePager PageSizeOptions="PageSizeOptions" />
-        }
-    </PagerContent>
-</MudTable>
+        <RowTemplate>
+            @foreach (var cfg in Configs)
+            {
+                <MudTd @key="@(cfg.Identifier.ToString() + context.GetHashCode())" Style="@RowStyle" DataLabel="@cfg.DisplayName">@(FormatOutput(cfg, context))</MudTd>
+            }
+        </RowTemplate>
+
+        <PagerContent>
+            @if (Data?.Count > RowsPerPage)
+            {
+                <MudTablePager PageSizeOptions="PageSizeOptions" />
+            }
+        </PagerContent>
+    </MudTable>
 }
 
 @code
@@ -142,7 +143,7 @@ else
     /// Gets or sets number of rows per single table page.<br />
     /// If the table has more items than this number, it will break into pages of said size.
     /// </summary>
-    /// <value>Number of rows per single page. If set to 0, table will disable pagination.</value>
+    /// <value>Number of rows per single page. If set to 0, table will disable pagination. Default value is <c>50</c></value>
     [Parameter] public int RowsPerPage { get; set; } = 50;
 
     ///<summary>
@@ -158,42 +159,48 @@ else
     [Parameter] public bool EditOnRowClick { get; set; }
 
     /// <summary>
+    /// <inheritdoc cref="MudComponentBase.Style" />.<br />
+    /// This parameter restyles table header, when table is in non-grouped mode..
+    /// </summary>
+    /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px"</c>.</value>
+    [Parameter] public string HeaderStyle { get; set; } = "padding: 10px";
+
+    /// <summary>
+    /// <inheritdoc cref="MudComponentBase.Style" />.<br />
+    /// This parameter restyles header of table when it is in grouped mode.
+    /// </summary>
+    /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px; z-index: 10"</c>.</value>
+    [Parameter] public string GroupedHeaderStyle { get; set; } = "padding: 10px; z-index: 10";
+
+    /// <summary>
+    /// <inheritdoc cref="MudComponentBase.Style" />.<br />
+    /// This parameter restyles headers of sub-tables when main table is in grouped mode.
+    /// </summary>
+    /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"border: thin solid darkgray; padding: 2px 10px 2px 10px;"</c>.</value>
+    [Parameter] public string GroupHeaderStyle { get; set; } = "border: thin solid darkgray; padding: 2px 10px 2px 10px;";
+
+    /// <summary>
+    /// Gets or sets custom CSS for table rows<br />
+    /// Note that some of the CSS settings are override by table settings.
+    /// </summary>
+    /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"font-size: smaller; padding: 10px"</c>.</value>
+    [Parameter] public string RowStyle { get; set; } = "font-size: smaller; padding: 10px";
+
+    /// <summary>
     /// Gets or sets data to be displayed in table. One item will be displayed as one row.
     /// </summary>
     [Parameter] public List<TTableType> Data { get; set; }
 
+    ///<summary>
     ///<inheritdoc cref="MudTable{T}.SelectedItem" />
+    /// <br />@Bind-... notation is supported
+    /// </summary>
     [Parameter] public TTableType SelectedItem { get; set; }
 
-    /// <summary>
-    /// <inheritdoc cref="MudComponentBase.Style" />.<br/>
-    /// This parameter restyles table header, when table is in non-grouped mode..
-    /// </summary>
-    /// <value>A <see cref="string"/> representing CSS style if set. By default <c>"padding: 10px"</c>.</value>
-    [Parameter] public string HeaderStyle { get; set; } = "padding: 10px";
-
-    /// <summary>
-    /// <inheritdoc cref="MudComponentBase.Style" />.<br/>
-    /// This parameter restyles header of table when it is in grouped mode.
-    /// </summary>
-    /// <value>A <see cref="string"/> representing CSS style if set. By default <c>"padding: 10px; z-index: 10"</c>.</value>
-    [Parameter] public string GroupedHeaderStyle { get; set; } = "padding: 10px; z-index: 10";
-
-    /// <summary>
-    /// <inheritdoc cref="MudComponentBase.Style" />.<br/>
-    /// This parameter restyles headers of sub-tables when main table is in grouped mode.
-    /// </summary>
-    /// <value>A <see cref="string"/> representing CSS style if set. By default <c>"border: thin solid darkgray; padding: 2px 10px 2px 10px;"</c>.</value>
-    [Parameter] public string GroupHeaderStyle { get; set; } = "border: thin solid darkgray; padding: 2px 10px 2px 10px;";
-
-    /// <summary>
-    /// Gets or sets custom CSS for table rows<br/>
-    /// Note that some of the CSS settings are override by table settings.
-    /// </summary>
-    /// <value>A <see cref="string"/> representing CSS style if set. By default <c>"font-size: smaller; padding: 10px"</c>.</value>
-    [Parameter] public string RowStyle { get; set; } = "font-size: smaller; padding: 10px";
-
+    ///<summary>
     ///<inheritdoc cref="MudTable{T}.SelectedItemChanged" />
+    /// <br />@Bind-... notation is supported
+    /// </summary>
     [Parameter] public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
     private TTableType SelectedItemBoundChild
@@ -205,10 +212,16 @@ else
     ///<inheritdoc cref="MudTableBase.MultiSelection" />
     [Parameter] public bool MultiSelection { get; set; }
 
+    ///<summary>
     ///<inheritdoc cref="MudTable{T}.SelectedItems" />
+    /// <br />@Bind-... notation is supported
+    /// </summary>
     [Parameter] public HashSet<TTableType> SelectedItems { get; set; }
 
+    /// <summary>
     ///<inheritdoc cref="MudTable{T}.SelectedItemsChanged" />
+    /// <br />@Bind-... notation is supported
+    /// </summary>
     [Parameter] public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
 
     private HashSet<TTableType> SelectedItemsBoundChild
@@ -270,6 +283,27 @@ else
     [Parameter] public Show ShowFilterButton { get; set; } = Show.Auto;
 
     /// <summary>
+    /// Gets or sets visibility of Add button.
+    /// </summary>
+    /// <value>
+    /// <list type="bullet">
+    /// <item>
+    ///     <term><see cref="Show.Auto" /></term>
+    ///     <description>Table will decide if Add button is needed (<strong>default</strong>).</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.Yes" /></term>
+    ///     <description>Always show Add button.</description>
+    /// </item>
+    /// <item>
+    ///     <term><see cref="Show.No" /></term>
+    ///     <description>Never show Add button.</description>
+    /// </item>
+    /// </list>
+    /// </value>
+    [Parameter] public Show ShowAddButton { get; set; } = Show.Auto;
+
+    /// <summary>
     /// Gets or sets visibility of group-by field.
     /// </summary>
     /// <value>
@@ -308,10 +342,35 @@ else
     /// <value>If set to <see langword="true" />, dialog will start with all invalid fields expanded (<strong>default</strong>).</value>
     [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; } = true;
 
-    /// <inheritdoc cref="MudTable{T}.RowStyleFunc"/>
+    /// <inheritdoc cref="MudTable{T}.RowStyleFunc" />
     /// <remarks>If not set, will be used to mark currently selected row(s) by default.</remarks>
-    /// <value>A <see cref="Func{TTableType, int, string}"/> delegate used to restyle rows if set, otherwise <see langword="null"/>.</value>
+    /// <value>A <see cref="Func{TTableType, int, string}" /> delegate used to restyle rows if set, otherwise default built-in delegate.</value>
     [Parameter] public Func<TTableType, int, string> RowStyleFunc { get; set; }
+
+    /// <summary>
+    /// Gets or sets <typeparam name="TTableType" /> object factory necessary for creating new table items for when 'Add' is enabled.<br />
+    /// Supported delegates are:
+    /// <list type="bullet">
+    /// <item>
+    /// <term><see cref="Func{TTableType, TTableType}">Func&lt;TTableType&gt;</see></term>
+    /// <description>Parameter-less delegate creating new <typeparamref name="TTableType" />.</description>
+    /// </item>
+    /// <item>
+    /// <term><see cref="Func{TTableType, TTableType}">Func&lt;TTableType, TTableType&gt;</see></term>
+    /// <description>Delegate taking as a parameter currently selected item, creating new <typeparamref name="TTableType" />.</description>
+    /// </item>
+    /// <item>
+    /// <term><see cref="Func{HashSet{TTableType}, TTableType}">Func&lt;HashSet&lt;TTableType&gt;, TTableType&gt;</see></term>
+    /// <description>Delegate taking as a parameter currently selected items, creating new <typeparamref name="TTableType" />.</description>
+    /// </item>
+    /// <item>
+    /// <term><see cref="Func{IEnumerable{TTableType}, TTableType}">Func&lt;IEnumerable&lt;TTableType&gt;, TTableType&gt;</see></term>
+    /// <description>Delegate taking as a parameter this tables data-set (<see cref="Data" />),<br />
+    /// creating new <typeparamref name="TTableType" />.</description>
+    /// </item>
+    /// </list>
+    /// </summary>
+    [Parameter] public object ItemFactory { get; set; }
 
     private ColumnConfig<TTableType> SelectedGroupable { get; set; }
 
@@ -319,6 +378,7 @@ else
     private bool _groupingEnabled;
     private bool _filteringEnabled;
     private bool _editingEnabled;
+    private bool _addingEnabled;
     private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
     private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
     private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
@@ -361,6 +421,7 @@ else
                            && (ShowGroupsField is Show.Auto) || ShowGroupsField is Show.Yes;
         _editingEnabled = (Configs?.Any(c => c.IsEditable) ?? false)
                           && (ShowEditButton is Show.Auto) || ShowEditButton is Show.Yes;
+        _addingEnabled = (ItemFactory is not null && ShowAddButton is Show.Auto) || ShowAddButton is Show.Yes;
     }
 
     private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
@@ -506,6 +567,45 @@ else
     {
         _filters.Clear();
         CreateGroupsBasedOn(SelectedGroupable);
+    }
+
+    public async Task OpenAddItemDialog()
+    {
+        var dialog = _dialogService.Show<AddDialog<TTableType>>("Add new item",
+            new DialogParameters
+            {
+                ["Configs"] = Configs,
+                ["SourceItem"] = CreateNewItem()
+            },
+            Globals.Gui.DefaultDialogOptions);
+
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        if(result.Data is TTableType item)
+            Data.Add(item);
+        CreateGroupsBasedOn(SelectedGroupable);
+    }
+
+    private TTableType CreateNewItem()
+    {
+        try
+        {
+            return ItemFactory switch
+            {
+                Func<TTableType> factory => factory.Invoke(),
+                Func<TTableType, TTableType> factory => factory.Invoke(SelectedItem),
+                Func<IEnumerable<TTableType>, TTableType> factory => factory.Invoke(Data),
+                Func<HashSet<TTableType>, TTableType> factory => factory.Invoke(SelectedItems),
+                null => throw new ArgumentNullException(nameof(ItemFactory), "No factory delegate was provided"),
+                _ => throw new ArgumentOutOfRangeException(nameof(ItemFactory), "Provided factory type is not compatible with allowed delegate types.")
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Something went wrong when trying to create new item using provided {nameof(ItemFactory)}: {ex.Message}", ex);
+        }
     }
 
     private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)

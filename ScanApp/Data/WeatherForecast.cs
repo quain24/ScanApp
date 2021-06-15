@@ -10,6 +10,13 @@ namespace ScanApp.Data
         {
         }
 
+        public WeatherForecast(int a = 0)
+        {
+            Version = null;
+            Number = null;
+            Model = new SparePartGUIModel("a");
+        }
+
         public DateTime? Date { get; set; }
 
         public int TemperatureC { get; set; }
