@@ -265,8 +265,7 @@ else
         var parameter = new DialogParameters
         {
             ["Item"] = itemClone,
-            ["ColumnConfigs"] = ColumnConfigs,
-            ["Properties"] = Properties
+            ["ColumnConfigs"] = ColumnConfigs
 
         };
         var dialog = DialogService.Show<ScanAppTableEditDialog<TItem>>("Edit", parameter, DialogOptions);
@@ -296,7 +295,6 @@ else
     {
         var parameter = new DialogParameters
         {
-            ["Properties"] = Properties,
             ["ColumnConfigs"] = ColumnConfigs,
             ["Items"] = ShownItems
         };
@@ -342,7 +340,6 @@ else
         {
             ["Items"] = ShownItems,
             ["ColumnConfigs"] = ColumnConfigs,
-            ["Properties"] = Properties,
             ["Options"] = Options
         };
         var dialog = DialogService.Show<ScanAppTableFilterDialog<TItem>>("Filter", parameter, DialogOptions);

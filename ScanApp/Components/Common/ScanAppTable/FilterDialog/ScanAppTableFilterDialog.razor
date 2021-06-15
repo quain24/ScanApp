@@ -1,8 +1,6 @@
 ﻿@typeparam TItem
 @using System.Reflection;
-@using ScanApp.Components.Common.ScanAppTable.Extensions
 @using ScanApp.Components.Common.ScanAppTable.Options
-@using ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 
 <MudDialog>
     <TitleContent>
@@ -12,12 +10,12 @@
         </MudText>
     </TitleContent>
     <DialogContent>
-        <MudContainer Style="@DialogStyle.GetDialogStyle(Properties.Length)">
+        <MudContainer Style="@DialogStyle.GetDialogStyle(ColumnConfigs.Count)">
             <MudGrid>
                 <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
                     <MudExpansionPanels MultiExpansion="true">
-                        <FilterFieldGenerator ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate" 
-                                              FromDecimal="FromDecimal" ToDecimal="ToDecimal"/>
+                        <FilterFieldGenerator ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
+                                              FromDecimal="FromDecimal" ToDecimal="ToDecimal" />
                     </MudExpansionPanels>
                 </MudForm>
             </MudGrid>
@@ -40,9 +38,6 @@
     public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     [Parameter]
-    public PropertyInfo[] Properties { get; set; }
-
-    [Parameter]
     public ScanAppTableOptions Options { get; set; }
 
     private int?[] From { get; set; }
@@ -55,9 +50,9 @@
     private MudForm _form;
     private bool _okDisabled;
 
-    protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        int length = Properties.Length;
+        int length = ColumnConfigs.Count;
         From = new int?[length];
         To = new int?[length];
         Contains = new string[length];
@@ -65,7 +60,6 @@
         ToDate = new DateTime?[length];
         FromDecimal = new decimal?[length];
         ToDecimal = new decimal?[length];
-        return base.OnInitializedAsync();
     }
 
     private void Cancel()
@@ -79,7 +73,13 @@
         {
             return;
         }
-        var filteringOperationFactory = new FilteringOperationsFactory(Properties, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
+
+        var properties = new PropertyInfo[ColumnConfigs.Count];
+        for (int i = 0; i < ColumnConfigs.Count; i++)
+        {
+            properties[i] = ColumnConfigs[i].PropInfo;
+        }
+        var filteringOperationFactory = new FilteringOperationsFactory(properties, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
         var filteringOperations = filteringOperationFactory.CreateOperations();
 
         foreach (var operation in filteringOperations)
