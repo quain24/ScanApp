@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
-using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
 using System;
 using System.Collections.Generic;

@@ -38,7 +38,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
 
             var compareTo = data
                 .Where(d => d.NullableDateTime <= (now + TimeSpan.FromDays(100)) && (d.NullableDateTime >= now))
-                .ToHashSet();
+                .ToList();
 
             using (new AssertionScope())
             {
@@ -60,7 +60,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
 
             var compareTo = data
                 .Where(d => d.NullableDateTime >= now)
-                .ToHashSet();
+                .ToList();
 
             using (new AssertionScope())
             {
@@ -82,7 +82,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
 
             var compareTo = data
                 .Where(d => d.NullableDateTime <= (now + TimeSpan.FromDays(100)))
-                .ToHashSet();
+                .ToList();
 
             using (new AssertionScope())
             {
