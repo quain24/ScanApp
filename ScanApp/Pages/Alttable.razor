@@ -12,13 +12,14 @@
 <h1>Alt table</h1>
 
 <SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" />
+         Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemAdded="Created" />
 <MudButton OnClick="@(_ => Remove())">Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
 <MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
+<MudText>@(aaa?.Summary ?? string.Empty)</MudText>
 <MudText>
     <li>
         @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
@@ -30,6 +31,14 @@
 
 @code
 {
+    public async Task Created(WeatherForecast item)
+    {
+        Console.WriteLine(item?.Summary);
+        aaa = item;
+    }
+
+    WeatherForecast aaa;
+
     public ColumnConfig<WeatherForecast>[] cc = 
     {
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)

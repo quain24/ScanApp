@@ -74,16 +74,9 @@ namespace ScanApp.Components.Common.Table
 
         /// <summary>
         /// Gets or sets data to be displayed in table. One item will be displayed as one row.
-        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public List<TTableType> Data { get; set; }
-
-        /// <summary>
-        /// Called when data collection displayed by table had it's count changed by said table (an item has been added).
-        /// <br />@bind-... notation is supported
-        /// </summary>
-        [Parameter] public EventCallback<List<TTableType>> DataChanged { get; set; }
-
+        
         ///<summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItem" />
         /// <br />@bind-... notation is supported
@@ -101,6 +94,12 @@ namespace ScanApp.Components.Common.Table
             get => SelectedItem;
             set => SelectedItemChanged.InvokeAsync(value);
         }
+
+        /// <summary>
+        /// Called when a new item is successfully created by 'Add item' table functionality.
+        /// </summary>
+        /// <value>Callback providing freshly created <typeparamref name="TTableType" /> item.</value>
+        [Parameter] public EventCallback<TTableType> ItemAdded { get; set; }
 
         ///<inheritdoc cref="MudTableBase.MultiSelection" />
         [Parameter] public bool MultiSelection { get; set; }
@@ -470,7 +469,7 @@ namespace ScanApp.Components.Common.Table
             if (result.Data is TTableType item)
             {
                 Data.Add(item);
-                await DataChanged.InvokeAsync(Data);
+                await ItemAdded.InvokeAsync(item);
             }
             CreateGroupsBasedOn(SelectedGroupable);
         }
