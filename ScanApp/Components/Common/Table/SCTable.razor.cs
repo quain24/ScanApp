@@ -74,18 +74,25 @@ namespace ScanApp.Components.Common.Table
 
         /// <summary>
         /// Gets or sets data to be displayed in table. One item will be displayed as one row.
+        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public List<TTableType> Data { get; set; }
 
+        /// <summary>
+        /// Called when data collection displayed by table had it's count changed by said table (an item has been added).
+        /// <br />@bind-... notation is supported
+        /// </summary>
+        [Parameter] public EventCallback<List<TTableType>> DataChanged { get; set; }
+
         ///<summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItem" />
-        /// <br />@Bind-... notation is supported
+        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public TTableType SelectedItem { get; set; }
 
         ///<summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItemChanged" />
-        /// <br />@Bind-... notation is supported
+        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public EventCallback<TTableType> SelectedItemChanged { get; set; }
 
@@ -100,13 +107,13 @@ namespace ScanApp.Components.Common.Table
 
         ///<summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItems" />
-        /// <br />@Bind-... notation is supported
+        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public HashSet<TTableType> SelectedItems { get; set; }
 
         /// <summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItemsChanged" />
-        /// <br />@Bind-... notation is supported
+        /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public EventCallback<HashSet<TTableType>> SelectedItemsChanged { get; set; }
 
@@ -235,10 +242,14 @@ namespace ScanApp.Components.Common.Table
 
         /// <summary>
         /// Gets or sets <typeparam name="TTableType" /> object factory necessary for creating new table items for when 'Add' is enabled. Supported delegates are:
-        /// <para><see cref="Func{TTableType, TTableType}">Func&lt;TTableType&gt;</see> - Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
+        /// <para><see cref="Func{TTableType}">Func&lt;TTableType&gt;</see> - Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
         /// <para><see cref="Func{TTableType, TTableType}">Func&lt;TTableType, TTableType&gt;</see> - Delegate taking as a parameter currently selected item, creating new <typeparamref name="TTableType" />.</para>
         /// <para><see cref="Func{HashSet{TTableType}, TTableType}">Func&lt;HashSet&lt;TTableType&gt;, TTableType&gt;</see> - Delegate taking as a parameter currently selected items, creating new <typeparamref name="TTableType" />.</para>
         /// <para><see cref="Func{IEnumerable{TTableType}, TTableType}">Func&lt;IEnumerable&lt;TTableType&gt;, TTableType&gt;</see> - Delegate taking as a parameter this tables data-set (<see cref="Data" />), creating new <typeparamref name="TTableType" />.</para>
+        /// <para><see cref="Func{Task{TTableType}}">Func&lt;Task&lt;TTableType&gt;&gt;</see> - Async Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
+        /// <para><see cref="Func{TTableType, Task{TTableType}}">Func&lt;TTableType, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter currently selected item, creating new <typeparamref name="TTableType" />.</para>
+        /// <para><see cref="Func{HashSet{TTableType}, Task{TTableType}}">Func&lt;HashSet&lt;TTableType&gt;, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter currently selected items, creating new <typeparamref name="TTableType" />.</para>
+        /// <para><see cref="Func{IEnumerable{TTableType}, Task{TTableType}}">Func&lt;IEnumerable&lt;TTableType&gt;, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter this tables data-set (<see cref="Data" />), creating new <typeparamref name="TTableType" />.</para>
         /// </summary>
         [Parameter] public object ItemFactory { get; set; }
 
@@ -355,7 +366,7 @@ namespace ScanApp.Components.Common.Table
                     FieldType.Time => value.ToString("t", CultureInfo.CurrentCulture),
                     FieldType.DateAndTime => value.ToString("G", CultureInfo.CurrentCulture),
                     FieldType.PlainText => value.ToString(),
-                    _ => throw new ArgumentOutOfRangeException(nameof(FieldType),$"Unknown value of {nameof(FieldType)} was used.")
+                    _ => throw new ArgumentOutOfRangeException(nameof(FieldType), $"Unknown value of {nameof(FieldType)} was used.")
                 };
             }
 
@@ -448,7 +459,7 @@ namespace ScanApp.Components.Common.Table
                 new DialogParameters
                 {
                     ["Configs"] = Configs,
-                    ["SourceItem"] = CreateNewItem()
+                    ["SourceItem"] = await CreateNewItem()
                 },
                 Globals.Gui.DefaultDialogOptions);
 
@@ -457,20 +468,27 @@ namespace ScanApp.Components.Common.Table
                 return;
 
             if (result.Data is TTableType item)
+            {
                 Data.Add(item);
+                await DataChanged.InvokeAsync(Data);
+            }
             CreateGroupsBasedOn(SelectedGroupable);
         }
 
-        private TTableType CreateNewItem()
+        private async Task<TTableType> CreateNewItem()
         {
             try
             {
                 return ItemFactory switch
                 {
                     Func<TTableType> factory => factory.Invoke(),
+                    Func<Task<TTableType>> factory => await factory.Invoke().ConfigureAwait(false),
                     Func<TTableType, TTableType> factory => factory.Invoke(SelectedItem),
+                    Func<TTableType, Task<TTableType>> factory => await factory.Invoke(SelectedItem).ConfigureAwait(false),
                     Func<IEnumerable<TTableType>, TTableType> factory => factory.Invoke(Data),
+                    Func<IEnumerable<TTableType>, Task<TTableType>> factory => await factory.Invoke(SelectedItems).ConfigureAwait(false),
                     Func<HashSet<TTableType>, TTableType> factory => factory.Invoke(SelectedItems),
+                    Func<HashSet<TTableType>, Task<TTableType>> factory => await factory.Invoke(SelectedItems).ConfigureAwait(false),
                     null => throw new ArgumentNullException(nameof(ItemFactory), "No factory delegate was provided"),
                     _ => throw new ArgumentOutOfRangeException(nameof(ItemFactory), "Provided factory type is not compatible with allowed delegate types.")
                 };
