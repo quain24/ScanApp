@@ -99,7 +99,7 @@ namespace ScanApp.Components.Common.Table
         /// Called when a new item is successfully created by 'Add item' table functionality.
         /// </summary>
         /// <value>Callback providing freshly created <typeparamref name="TTableType" /> item.</value>
-        [Parameter] public EventCallback<TTableType> ItemAdded { get; set; }
+        [Parameter] public EventCallback<TTableType> ItemCreated { get; set; }
 
         ///<inheritdoc cref="MudTableBase.MultiSelection" />
         [Parameter] public bool MultiSelection { get; set; }
@@ -469,7 +469,7 @@ namespace ScanApp.Components.Common.Table
             if (result.Data is TTableType item)
             {
                 Data.Add(item);
-                await ItemAdded.InvokeAsync(item);
+                await ItemCreated.InvokeAsync(item);
             }
             CreateGroupsBasedOn(SelectedGroupable);
         }
