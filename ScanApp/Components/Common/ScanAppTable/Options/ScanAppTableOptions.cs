@@ -6,6 +6,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
     {
         private readonly bool _allowGrouping;
         private readonly bool _allowFiltering;
+        private readonly bool _allowAdding;
 
         public ScanAppTableOptions()
         {
@@ -31,6 +32,16 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             {
                 if (value is true) ShowToolBar = true;
                 _allowFiltering = value;
+            }
+        }
+
+        public bool AllowAdding
+        {
+            get => _allowAdding;
+            init
+            {
+                if (value is true) ShowToolBar = true;
+                _allowAdding = value;
             }
         }
 

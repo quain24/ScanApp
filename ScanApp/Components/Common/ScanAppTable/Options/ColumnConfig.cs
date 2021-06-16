@@ -20,6 +20,27 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsEditable { get; init; } = true;
         public bool IsSelectable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
+        private object _default;
+        public object Default
+        {
+            get
+            {
+                return _default;
+            }
+            set
+            {
+                if (value.GetType() == PropertyType)
+                {
+                    _default = value;
+                }
+                else
+                {
+                    throw new ArgumentException("Default value "+ value.ToString() + " of type  "+ value.GetType().ToString() + " provided is not of the same type as the property type " +
+                        PropertyType.ToString(),
+                        nameof(ColumnConfig<T>.Default));
+                }
+            }
+        }
 
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator = null)
         {

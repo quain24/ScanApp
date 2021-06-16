@@ -3,11 +3,13 @@
 @inject ISnackbar SnackBar
 @using System.Reflection;
 @using Newtonsoft.Json.Bson
+@using ScanApp.Components.Common.ScanAppTable.AddDialog
 @using ScanApp.Components.Common.ScanAppTable.EditDialog;
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog;
 @using ScanApp.Components.Common.ScanAppTable.GroupDialog;
 @using ScanApp.Components.Common.ScanAppTable.Options;
 @using ScanApp.Components.Common.ScanAppTable.Sorter;
+@using System.ComponentModel
 
 @if (Loading)
 {
@@ -90,10 +92,13 @@ else
     @if (Options.ShowToolBar)
     {
         <MudToolBar>
-
             @if (MenuOpened)
             {
                 <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+                @if (Options.AllowAdding)
+                {
+                    <MudIconButton OnClick="() => OpenAddDialog()" Icon="@Icons.Material.Outlined.Add"></MudIconButton>
+                }
                 @if (Options.AllowGrouping)
                 {
                     @if (!GroupingEnabled && Options.AllowFiltering)
@@ -138,6 +143,9 @@ else
     [Parameter]
     public EventCallback ValuesChanged { get; set; }
 
+    [Parameter]
+    public EventCallback ItemAdded { get; set; }
+
     /// <summary>
     /// Required: List of <paramref name="ColumnConfig" /> objects used for column configuration including
     /// validators and permissions for editing, filtering and grouping for each column.
@@ -173,10 +181,14 @@ else
     [Parameter]
     public DialogOptions DialogOptions { get; set; }
 
+
+    public TItem RecentlyAddedItem { get; set; }
+
     private PropertyInfo[] Properties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
     private List<TItem> ShownItems { get; set; }
+    private Type ItemType { get; set; }
     private bool DataIsFiltered { get; set; }
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
@@ -238,7 +250,8 @@ else
 
         DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
 
-        Properties = Items.FirstOrDefault()?.GetType().GetProperties();
+        ItemType = Items.FirstOrDefault()?.GetType();
+        Properties = ItemType?.GetProperties();
 
         AssignPropertiesToColumnConfigs();
         ExtractOnlyUsefulPropertiesInOrder();
@@ -360,6 +373,35 @@ else
         ShownItems = ItemCloner.Clone(Items);
     }
 
+    private async Task OpenAddDialog()
+    {
+        var constructor = GetPublicParameterlessConstructor(ItemType);
+        if (constructor is null)
+        {
+            throw new Exception("Class provided to the ScanAppTable does not implement a public parametereless constructor." +
+                                " It is not possible to use Adding feature of the table without it.");
+        }
+
+        TItem newItem = (TItem)constructor.Invoke(null);
+
+        var parameter = new DialogParameters()
+        {
+            ["ColumnConfigs"] = ColumnConfigs,
+            ["NewItem"] = newItem
+        };
+        var dialog = DialogService.Show<ScanAppTableAddDialog<TItem>>("Add", parameter, DialogOptions);
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        RecentlyAddedItem = (TItem)result.Data;
+        ShownItems.Add(RecentlyAddedItem);
+        Items.Add(RecentlyAddedItem);
+        
+        await ItemAdded.InvokeAsync();
+    }
+
     private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
     {
         sorter.CurrentlySorted = header;
@@ -429,5 +471,10 @@ else
     private bool IsAnyFieldEditable()
     {
         return ColumnConfigs.Any(x => x.IsEditable);
+    }
+
+    private ConstructorInfo? GetPublicParameterlessConstructor(Type type)
+    {
+        return type.GetConstructor(Type.EmptyTypes);
     }
 }
