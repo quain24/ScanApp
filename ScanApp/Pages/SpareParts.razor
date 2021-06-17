@@ -6,7 +6,6 @@
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
 @using ScanApp.Common
 @using ScanApp.Models.SpareParts
-@using ScanApp.Common.Extensions
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
@@ -15,43 +14,41 @@
 @inject ArticleNumberValidator ArticleNumberValidator
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" EditOnRowClick="true"/>
-
-<MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" />
+<MudSelect T="RepairWorkshopModel" Value="_selectedWorkshop" ValueChanged="@(w => _selectedWorkshop = w)" Label="Repair workshops"
+           FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller" Class="ml-0">
+    <MudSelectItem T="RepairWorkshopModel" Value="null">None</MudSelectItem>
+    @foreach (var cc in _repairWorkshopModels)
+    {
+        <MudSelectItem Value="cc">@cc.Number</MudSelectItem>
+    }
+</MudSelect>
+<MudTextField @bind-Value="_articleId" Placeholder="Article ID" FullWidth="false"/>
 
 <SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" MaxTableHeight="500"
-         EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
+         EditOnRowClick="true" FixedFooter="true" FixedHeader="true" />
 
-<MudButton OnClick="Submit" Disabled="SubmitDisable()">Submit</MudButton>
+<MudButton OnClick="Submit">Submit</MudButton>
 <MudButton OnClick="ResetForm">Clear</MudButton>
 @code
 {
     private List<SparePartGUIModel> _spareParts = new();
-    private List<SparePartGUIModel> _sparePartsEmpty = new();
     private List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
-        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
             .ColumnStyle("width: 150px;")
             .Build(),
-        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
             .UnderName("Part name")
             .ColumnStyle("width: 300px;")
             .AsReadOnly()
             .Build()
-    };
+        };
     private bool _busy;
-    private bool _submitDisabled = true;
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
-    private string _height = "400px";
-    private string _tableStyle = "max-width: 500px;";
-    private string[] _repairWorkshops;
-    private string _selectedRepairWorkshop = string.Empty;
-    private string _article = string.Empty;
-    private bool _submitInProgress;
-    
-
+    private RepairWorkshopModel _selectedWorkshop;
+    private string _articleId;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -74,7 +71,6 @@
             return;
         }
         _repairWorkshopModels = storagePlacesResult.Output;
-        _repairWorkshops = _repairWorkshopModels.Select(m => m.Number).ToArray();
     }
 
     private async Task RetrievePartModels()
@@ -89,80 +85,42 @@
         _spareParts = sparePartsTypesResult.Output
             .Select(m => new SparePartGUIModel(m.Name))
             .ToList();
-
-        _sparePartsEmpty = ClearSparePartList(_spareParts);
     }
-
-    private Task<IEnumerable<string>> SearchRepairWorkshop(string value) => Task.FromResult(_repairWorkshops.AsEnumerable());
 
     private async Task Submit()
     {
-        if (_submitInProgress)
-            return;
-
-        _submitInProgress = true;
-        var parts = _spareParts
-            .Where(s => s.Amount > 0)
-            .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
-            .ToArray();
-
-        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
-
-        if (createResult.Conclusion is false)
+        try
         {
-            Snackbar.Add("Creation of spare parts has failed!");
-            return;
+            if (_busy) return;
+
+            _busy = true;
+
+            var parts = _spareParts
+                .Where(s => s.Amount > 0)
+                .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
+                .ToArray();
+
+            var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+
+            if (createResult.Conclusion is false)
+            {
+                Snackbar.Add("Creation of spare parts has failed!");
+                return;
+            }
+
+            Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
+            ResetForm();
         }
-
-        Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
-        await ResetForm(false);
-        _submitInProgress = false;
-    }
-
-    private string GetRepairWorkshopId(string selectedWorkshop)
-    {
-        return _repairWorkshopModels
-            .FirstOrDefault(s => s.Number.Equals(selectedWorkshop))
-            ?.Id;
-    }
-
-    private Task ResetForm(bool flushLHM)
-    {
-        _article = string.Empty;
-        if (flushLHM)
+        finally
         {
-            _selectedRepairWorkshop = string.Empty;
+            _busy = false;
         }
-        _spareParts = ClearSparePartList(_sparePartsEmpty);
-        //OnItemsChanged();
+    }
+    
+    private void ResetForm()
+    {
+        _spareParts.ForEach(s => s.Amount = 0);
+        _articleId = null;
         StateHasChanged();
-        //_table.UpdateTable(_spareParts);
-        return Task.CompletedTask;
     }
-
-    private List<SparePartGUIModel> ClearSparePartList(List<SparePartGUIModel> sparePartList)
-    {
-
-        return sparePartList
-            .Select(s => new SparePartGUIModel(s?.Name))
-            .ToList();
-    }
-
-    //private void OnItemsChanged() => OnValidationChanged(_form.IsValid);
-
-    private void OnValidationChanged(bool isFormValid)
-    {
-        if (AnyOfRequiredFieldsIsEmpty() || IsAnyAmountOverZero() is false || isFormValid is false)
-        {
-            _submitDisabled = true;
-            return;
-        }
-        _submitDisabled = false;
-    }
-
-    private bool AnyOfRequiredFieldsIsEmpty() => string.IsNullOrWhiteSpace(_article) || string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
-
-    private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
-
-    private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s?.Amount > 0) ?? false;
 }
