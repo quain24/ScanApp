@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
+using ScanApp.Components.Common.Table.Buttons;
 using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
@@ -16,6 +17,8 @@ namespace ScanApp.Components.Common.Table
     {
         [Inject] internal IDialogService DialogService { get; set; }
 
+        #region Outside parameters
+
         /// <inheritdoc cref="MudTableBase.FixedHeader" />
         [Parameter] public bool FixedHeader { get; set; }
 
@@ -24,6 +27,12 @@ namespace ScanApp.Components.Common.Table
 
         /// <inheritdoc cref="MudTableBase.Height" />
         [Parameter] public int MaxTableHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
+        /// </summary>
+        /// <value>Maximum height of dialogs content in pixels.</value>
+        [Parameter] public int MaxDialogContentHeight { get; set; }
 
         ///<summary>
         /// Gets or sets number of rows per single table page.<br />
@@ -60,6 +69,13 @@ namespace ScanApp.Components.Common.Table
 
         /// <summary>
         /// <inheritdoc cref="MudComponentBase.Style" />.<br />
+        /// This parameter restyles rows displaying groups when table it is in grouped mode.
+        /// </summary>
+        /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding-left: 10px;"</c>.</value>
+        [Parameter] public string GroupedRowStyle { get; set; } = "padding-left: 10px;";
+
+        /// <summary>
+        /// <inheritdoc cref="MudComponentBase.Style" />.<br />
         /// This parameter restyles headers of sub-tables when main table is in grouped mode.
         /// </summary>
         /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"border: thin solid darkgray; padding: 2px 10px 2px 10px;"</c>.</value>
@@ -76,7 +92,7 @@ namespace ScanApp.Components.Common.Table
         /// Gets or sets data to be displayed in table. One item will be displayed as one row.
         /// </summary>
         [Parameter] public List<TTableType> Data { get; set; }
-        
+
         ///<summary>
         ///<inheritdoc cref="MudTable{T}.SelectedItem" />
         /// <br />@bind-... notation is supported
@@ -223,16 +239,16 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public bool EditDialogStartsExpanded { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets how the filter dialog fields will be visible when dialog is opened.
-        /// </summary>
-        /// <value>If set to <see langword="true" />, dialog will start with all fields expanded.</value>
-        [Parameter] public bool FilterDialogStartsExpanded { get; set; }
-
-        /// <summary>
         /// Gets or sets how the edit dialog fields that are marked by validation as invalid will be visible when dialog is opened.
         /// </summary>
         /// <value>If set to <see langword="true" />, dialog will start with all invalid fields expanded (<strong>default</strong>).</value>
         [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets how the filter dialog fields will be visible when dialog is opened.
+        /// </summary>
+        /// <value>If set to <see langword="true" />, dialog will start with all fields expanded.</value>
+        [Parameter] public bool FilterDialogStartsExpanded { get; set; }
 
         /// <inheritdoc cref="MudTable{T}.RowStyleFunc" />
         /// <remarks>If not set, will be used to mark currently selected row(s) by default.</remarks>
@@ -242,15 +258,11 @@ namespace ScanApp.Components.Common.Table
         /// <summary>
         /// Gets or sets <typeparam name="TTableType" /> object factory necessary for creating new table items for when 'Add' is enabled. Supported delegates are:
         /// <para><see cref="Func{TTableType}">Func&lt;TTableType&gt;</see> - Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{TTableType, TTableType}">Func&lt;TTableType, TTableType&gt;</see> - Delegate taking as a parameter currently selected item, creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{HashSet{TTableType}, TTableType}">Func&lt;HashSet&lt;TTableType&gt;, TTableType&gt;</see> - Delegate taking as a parameter currently selected items, creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{IEnumerable{TTableType}, TTableType}">Func&lt;IEnumerable&lt;TTableType&gt;, TTableType&gt;</see> - Delegate taking as a parameter this tables data-set (<see cref="Data" />), creating new <typeparamref name="TTableType" />.</para>
         /// <para><see cref="Func{Task{TTableType}}">Func&lt;Task&lt;TTableType&gt;&gt;</see> - Async Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{TTableType, Task{TTableType}}">Func&lt;TTableType, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter currently selected item, creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{HashSet{TTableType}, Task{TTableType}}">Func&lt;HashSet&lt;TTableType&gt;, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter currently selected items, creating new <typeparamref name="TTableType" />.</para>
-        /// <para><see cref="Func{IEnumerable{TTableType}, Task{TTableType}}">Func&lt;IEnumerable&lt;TTableType&gt;, Task&lt;TTableType&gt;&gt;</see> - Async Delegate taking as a parameter this tables data-set (<see cref="Data" />), creating new <typeparamref name="TTableType" />.</para>
         /// </summary>
         [Parameter] public object ItemFactory { get; set; }
+
+        #endregion Outside parameters
 
         private ColumnConfig<TTableType> SelectedGroupable { get; set; }
 
@@ -260,18 +272,18 @@ namespace ScanApp.Components.Common.Table
         private bool _editingEnabled;
         private bool _addingEnabled;
         private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
-        private KeyValuePair<string, List<TTableType>> SelectedGroup { get; set; }
         private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
         private MarkupString ColumnStyles { get; set; }
+        private TableToolbar<TTableType> _toolbar;
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
             AssignColumnsByProperties();
             EnableAvailableFunctionality();
-            ColumnStyles = new ColumnStyleBuilder<TTableType>(Configs).Build();
+            ColumnStyles = new ColumnStyleBuilder<TTableType>().BuildUsing(Configs);
             RowStyleFunc ??= DefaultRowStyleFunc;
         }
 
@@ -344,9 +356,7 @@ namespace ScanApp.Components.Common.Table
 
         private IEnumerable<TTableType> FilterDataSource(IEnumerable<TTableType> data)
         {
-            return _filters.Count == 0
-                ? data
-                : data.Filter(_filters);
+            return _filters.Count == 0 ? data : data.Filter(_filters);
         }
 
         private static dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
@@ -387,29 +397,33 @@ namespace ScanApp.Components.Common.Table
         }
 
         /// <summary>
-        /// Opens editing dialog which context is currently selected item.
+        /// Opens up 'Add new item' dialog if this function is enabled.
+        /// </summary>
+        /// <returns>Awaitable task.</returns>
+        public async Task OpenAddItemDialog()
+        {
+            if (_addingEnabled && _toolbar is not null)
+                await _toolbar.CallAdd();
+        }
+
+        private async Task OnAddNewItemHandler(TTableType item)
+        {
+            Data.Add(item);
+            await ItemCreated.InvokeAsync(item);
+            CreateGroupsBasedOn(SelectedGroupable);
+        }
+
+        /// <summary>
+        /// Opens editing dialog which context is currently selected item, if this function is enabled.
         /// </summary>
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            var dialog = DialogService.Show<EditDialog<TTableType>>("Edit item",
-                new DialogParameters
-                {
-                    ["Configs"] = Configs,
-                    ["SourceItem"] = SelectedItem,
-                    ["StartExpanded"] = EditDialogStartsExpanded,
-                    ["ExpandInvalidPanelsOnStart"] = EditDialogInvalidFieldsStartExpanded
-                },
-                Globals.Gui.DefaultDialogOptions);
-
-            var result = await dialog.Result;
-            if (result.Cancelled)
-                return;
-            var data = (TTableType)result.Data;
-            await EditItem(data);
+            if (_editingEnabled && _toolbar is not null)
+                await _toolbar.CallEdit();
         }
 
-        private Task EditItem(TTableType editedItem)
+        private Task OnEditItemHandler(TTableType editedItem)
         {
             var oldItemIndex = Data.FindIndex(tt => tt.Equals(SelectedItem));
             if (oldItemIndex == -1)
@@ -428,7 +442,8 @@ namespace ScanApp.Components.Common.Table
                 new DialogParameters
                 {
                     ["Configs"] = Configs,
-                    ["StartExpanded"] = FilterDialogStartsExpanded
+                    ["StartExpanded"] = FilterDialogStartsExpanded,
+                    ["DialogContentHeight"] = MaxDialogContentHeight,
                 },
                 Globals.Gui.DefaultDialogOptions);
 
@@ -446,56 +461,6 @@ namespace ScanApp.Components.Common.Table
         {
             _filters.Clear();
             CreateGroupsBasedOn(SelectedGroupable);
-        }
-
-        /// <summary>
-        /// Opens up 'Add new item' dialog.
-        /// </summary>
-        /// <returns>Awaitable task.</returns>
-        public async Task OpenAddItemDialog()
-        {
-            var dialog = DialogService.Show<AddDialog<TTableType>>("Add new item",
-                new DialogParameters
-                {
-                    ["Configs"] = Configs,
-                    ["SourceItem"] = await CreateNewItem()
-                },
-                Globals.Gui.DefaultDialogOptions);
-
-            var result = await dialog.Result;
-            if (result.Cancelled)
-                return;
-
-            if (result.Data is TTableType item)
-            {
-                Data.Add(item);
-                await ItemCreated.InvokeAsync(item);
-            }
-            CreateGroupsBasedOn(SelectedGroupable);
-        }
-
-        private async Task<TTableType> CreateNewItem()
-        {
-            try
-            {
-                return ItemFactory switch
-                {
-                    Func<TTableType> factory => factory.Invoke(),
-                    Func<Task<TTableType>> factory => await factory.Invoke().ConfigureAwait(false),
-                    Func<TTableType, TTableType> factory => factory.Invoke(SelectedItem),
-                    Func<TTableType, Task<TTableType>> factory => await factory.Invoke(SelectedItem).ConfigureAwait(false),
-                    Func<IEnumerable<TTableType>, TTableType> factory => factory.Invoke(Data),
-                    Func<IEnumerable<TTableType>, Task<TTableType>> factory => await factory.Invoke(SelectedItems).ConfigureAwait(false),
-                    Func<HashSet<TTableType>, TTableType> factory => factory.Invoke(SelectedItems),
-                    Func<HashSet<TTableType>, Task<TTableType>> factory => await factory.Invoke(SelectedItems).ConfigureAwait(false),
-                    null => throw new ArgumentNullException(nameof(ItemFactory), "No factory delegate was provided"),
-                    _ => throw new ArgumentOutOfRangeException(nameof(ItemFactory), "Provided factory type is not compatible with allowed delegate types.")
-                };
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Something went wrong when trying to create new item using provided {nameof(ItemFactory)}: {ex.Message}", ex);
-            }
         }
 
         private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)

@@ -6,20 +6,25 @@
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
+@using ScanApp.Components.Common.Table.Buttons
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="@forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" />
-<MudButton OnClick="@(_ => Remove())">Delete</MudButton>
-<MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit</MudButton>
-<MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add</MudButton>
-<MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter</MudButton>
+<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
+         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" />
+
+<MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
+<MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>
+<MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add using table function</MudButton>
+<MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter using table function</MudButton>
+
+<AddItemButton T="WeatherForecast" Configs="@cc.ToList()" OnItemCreated="@(i => forecasts.Add(i))" ItemFactory="@(new Func<WeatherForecast>(Create))">Add using custom button</AddItemButton>
+<EditItemButton T="WeatherForecast" Configs="@cc.ToList()" SourceItem="@WeatherForecast" SourceItemChanged="ChangeUsingExternalButton">Edit selected item  using custom button</EditItemButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
-<MudText>@(aaa?.Summary ?? string.Empty)</MudText>
+<MudText>@(ItemCreatedByTable?.Summary ?? string.Empty)</MudText>
 <MudText>
     <li>
         @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
@@ -31,20 +36,35 @@
 
 @code
 {
-    public async Task Created(WeatherForecast item)
+    public void ChangeUsingExternalButton(WeatherForecast ob)
     {
-        Console.WriteLine(item?.Summary);
-        aaa = item;
+        var i = forecasts.FindIndex(w => w == WeatherForecast);
+        if (i < 0)
+            return;
+        WeatherForecast = ob;
+        forecasts[i] = ob;
     }
 
-    WeatherForecast aaa;
+    new List<WeatherForecast> emptyCol = new();
 
-    public ColumnConfig<WeatherForecast>[] cc = 
+    private WeatherForecast Create()
+    {
+        return new WeatherForecast(11);
+    }
+
+    private void Created(WeatherForecast item)
+    {
+        ItemCreatedByTable = item;
+    }
+
+    WeatherForecast ItemCreatedByTable;
+
+    public ColumnConfig<WeatherForecast>[] cc =
     {
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)
             .UnderName("Simple summary")
             .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-            .ColumnStyle("width: 60%;")
+            .ColumnStyle("width: 30%;")
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")
@@ -82,10 +102,7 @@
             .Build()
     };
 
-    public WeatherForecast Create()
-    {
-        return new WeatherForecast(11);
-    }
+
 
     public ColumnConfig<WeatherForecast>[] altConifgWay = new[]
     {

@@ -1,4 +1,5 @@
 ﻿@using SharedExtensions
+@using ScanApp.Components.Common.Table.Buttons
 @typeparam TTableType
 
 @if (GroupedData?.Count > 0)
@@ -7,13 +8,13 @@
               FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
               Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <ToolBarContent>
-            @if (Configs?.Count > 0 && _groupables.Count > 0)
+            @if (Configs?.Count > 0)
             {
-                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
-                              OnAddClick="@OpenAddItemDialog" AddVisible="_addingEnabled" AddDisabled="false"
-                              OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
-                              FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
-                              OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+                <TableToolbar @ref="_toolbar" T="TTableType" Configs="Configs" MaxDialogContentHeight="MaxDialogContentHeight"
+                              Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
+                              AddVisible="_addingEnabled" AddDisabled="false" ItemFactory="ItemFactory" OnNewItemCreated="OnAddNewItemHandler"
+                              EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" SelectedItem="SelectedItem" OnSelectedItemChanged="OnEditItemHandler" EditDialogStartsExpanded="EditDialogStartsExpanded" EditDialogInvalidFieldsStartExpanded="EditDialogInvalidFieldsStartExpanded"
+                              FilterVisible="_filteringEnabled" OnFilterClick="OpenFilterItemDialog" OnRemoveFilterClick="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
             }
         </ToolBarContent>
 
@@ -24,7 +25,7 @@
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="@context.Key">@context.Key</MudTd>
+            <MudTd Style="@GroupedRowStyle" DataLabel="@context.Key">@context.Key</MudTd>
         </RowTemplate>
         <ChildRowContent>
             @if (_selectedGroupId == context.Key)
@@ -80,13 +81,13 @@ else
               Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
 
         <ToolBarContent>
-            @if (Configs?.Count > 0 && _groupables.Count > 0)
+            @if (Configs?.Count > 0)
             {
-                <TableToolbar T="TTableType" Groupables="_groupables" SelectedGroupableChanged="@(s => CreateGroupsBasedOn(s))" SelectedGroupable="SelectedGroupable"
-                              OnAddClick="@OpenAddItemDialog" AddVisible="_addingEnabled" AddDisabled="false"
-                              OnEditClick="@OpenEditItemDialog" OnFilterClick="@OpenFilterItemDialog" EditVisible="@_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())"
-                              FilterVisible="@_filteringEnabled" GroupingVisible="@_groupingEnabled" FiltersApplied="@(_filters?.Any() ?? false)"
-                              OnRemoveFilterClick="RemoveFilters"></TableToolbar>
+                <TableToolbar @ref="_toolbar" T="TTableType" Configs="Configs" MaxDialogContentHeight="MaxDialogContentHeight"
+                              Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
+                              AddVisible="_addingEnabled" AddDisabled="false" ItemFactory="ItemFactory" OnNewItemCreated="OnAddNewItemHandler"
+                              EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" SelectedItem="SelectedItem" OnSelectedItemChanged="OnEditItemHandler" EditDialogStartsExpanded="EditDialogStartsExpanded" EditDialogInvalidFieldsStartExpanded="EditDialogInvalidFieldsStartExpanded"
+                              FilterVisible="_filteringEnabled" OnFilterClick="OpenFilterItemDialog" OnRemoveFilterClick="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
             }
         </ToolBarContent>
 
