@@ -9,12 +9,13 @@
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
+@using ScanApp.Common.Extensions
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<MudSelect T="RepairWorkshopModel" Value="_selectedWorkshop" ValueChanged="@(w => _selectedWorkshop = w)" Label="Repair workshops"
+<MudSelect T="RepairWorkshopModel" @bind-Value="_selectedWorkshop" Label="Repair workshops"
            FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller" Class="ml-0">
     <MudSelectItem T="RepairWorkshopModel" Value="null">None</MudSelectItem>
     @foreach (var cc in _repairWorkshopModels)
@@ -23,7 +24,7 @@
     }
 </MudSelect>
 
-<MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" />
+<MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
 
 <SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" MaxTableHeight="500"
          EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
@@ -44,18 +45,20 @@
                 .ColumnStyle("width: 300px;")
                 .AsReadOnly()
                 .Build()
-        };
-    private bool _busy;
+    };
 
+    private volatile bool _busy;
+    private string _articleId;
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private RepairWorkshopModel _selectedWorkshop;
-    private string _articleId;
+    private Func<string, IEnumerable<string>> _articleNrValidator;
     protected override async Task OnInitializedAsync()
     {
         try
         {
             _busy = true;
             await Task.WhenAll(RetrieveRepairWorkshops(), RetrievePartModels());
+            _articleNrValidator = ArticleNumberValidator.ToMudFormFieldValidator("Article number");
         }
         finally
         {
