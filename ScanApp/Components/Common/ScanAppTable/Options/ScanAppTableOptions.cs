@@ -7,13 +7,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private readonly bool _allowGrouping;
         private readonly bool _allowFiltering;
         private readonly bool _allowAdding;
+        private readonly bool _allowDeleting;
 
-        public ScanAppTableOptions()
-        {
-            ShowToolBar = IsToolBarEnabled();
-        }
+        public ScanAppTableOptions() { }
 
         public bool ShowToolBar { get; private set; }
+        public bool ToolBarAlwaysOpened { get; set; }
 
         public bool AllowGrouping
         {
@@ -45,13 +44,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             }
         }
 
-        private bool IsToolBarEnabled()
+        public bool AllowDeleting
         {
-            if (AllowGrouping is false && AllowFiltering is false)
+            get => _allowDeleting;
+            init
             {
-                return false;
+                if (value is true) ShowToolBar = true;
+                _allowDeleting = value;
             }
-            return true;
         }
     }
 }
