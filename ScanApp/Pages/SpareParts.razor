@@ -36,11 +36,11 @@
     private List<SparePartGUIModel> _spareParts = new();
     private List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
-        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
                 .ColumnStyle("width: 75px;")
             .Build(),
-        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
             .UnderName("Part name")
             .AsReadOnly()
             .Build()
@@ -103,7 +103,7 @@
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
             .ToArray();
 
-        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+            var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
         if (createResult.Conclusion is false)
         {
