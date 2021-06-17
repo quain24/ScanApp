@@ -38,11 +38,10 @@
     {
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
                 .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
-                .ColumnStyle("width: 150px;")
+                .ColumnStyle("width: 75px;")
                 .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
                 .UnderName("Part name")
-                .ColumnStyle("width: 300px;")
                 .AsReadOnly()
                 .Build()
     };
