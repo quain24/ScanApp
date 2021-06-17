@@ -19,11 +19,16 @@ namespace ScanApp.Common.Extensions
         /// </summary>
         /// <typeparam name="T">Input type of field that will be validated</typeparam>
         /// <param name="validator">Source validator from which a validating delegate will be created</param>
-        /// <returns>Delegate that can be assigned to <see cref="MudBlazor"/> filed supporting validation</returns>
-        /// <exception cref="ArgumentNullException">Given <paramref name="validator"/> is <see langword="null"/></exception>
-        public static Func<T, Task<IEnumerable<string>>> ToAsyncMudFormFieldValidator<T>(this IValidator<T> validator)
+        /// <param name="name">Optional name that will be used in validation messages displayed.</param>
+        /// <returns>Delegate that can be assigned to <see cref="MudBlazor"/> filed supporting validation.</returns>
+        /// <exception cref="ArgumentNullException">Given <paramref name="validator"/> is <see langword="null"/>.</exception>
+        public static Func<T, Task<IEnumerable<string>>> ToAsyncMudFormFieldValidator<T>(this IValidator<T> validator, string name = null)
         {
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
+
+            if (string.IsNullOrWhiteSpace(name) is false)
+                SetValueNameInValidator(name, validator);
+
             return async value =>
             {
                 var res = await validator.ValidateAsync(value).ConfigureAwait(false);
@@ -38,11 +43,16 @@ namespace ScanApp.Common.Extensions
         /// </summary>
         /// <typeparam name="T">Input type of field that will be validated</typeparam>
         /// <param name="validator">Source validator from which a validating delegate will be created</param>
-        /// <returns>Delegate that can be assigned to <see cref="MudBlazor"/> filed supporting validation</returns>
-        /// <exception cref="ArgumentNullException">Given <paramref name="validator"/> is <see langword="null"/></exception>
-        public static Func<T, IEnumerable<string>> ToMudFormFieldValidator<T>(this IValidator<T> validator)
+        /// <param name="name">Optional name that will be used in validation messages displayed.</param>
+        /// <returns>Delegate that can be assigned to <see cref="MudBlazor"/> filed supporting validation.</returns>
+        /// <exception cref="ArgumentNullException">Given <paramref name="validator"/> is <see langword="null"/>.</exception>
+        public static Func<T, IEnumerable<string>> ToMudFormFieldValidator<T>(this IValidator<T> validator, string name = null)
         {
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
+
+            if (string.IsNullOrWhiteSpace(name) is false)
+                SetValueNameInValidator(name, validator);
+
             return value =>
             {
                 var result = validator.Validate(value);
@@ -52,9 +62,19 @@ namespace ScanApp.Common.Extensions
             };
         }
 
-        public static Func<dynamic, IEnumerable<string>> ToMudFormFieldValidator(this IValidator validator)
+        /// <summary>
+        /// Creates delegate to be used with <see cref="MudBlazor"/> components that supports validation.
+        /// </summary>
+        /// <param name="validator">Source validator from which a validating delegate will be created</param>
+        /// <param name="name">Optional name that will be used in validation messages displayed.</param>
+        /// <returns>Delegate that can be assigned to <see cref="MudBlazor"/> filed supporting validation.</returns>
+        /// <exception cref="ArgumentNullException">Given <paramref name="validator"/> is <see langword="null"/>.</exception>
+        public static Func<dynamic, IEnumerable<string>> ToMudFormFieldValidator(this IValidator validator, string name = null)
         {
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
+
+            if (string.IsNullOrWhiteSpace(name) is false)
+                SetValueNameInValidator(name, validator);
 
             return value =>
             {
@@ -74,6 +94,15 @@ namespace ScanApp.Common.Extensions
                 errors.Add(failure.ErrorMessage);
             }
             return errors;
+        }
+
+        private static void SetValueNameInValidator(string name, IValidator validator)
+        {
+            var descriptor = validator.CreateDescriptor();
+            foreach (var validationRule in descriptor.Rules)
+            {
+                validationRule.PropertyName = name;
+            }
         }
     }
 }
