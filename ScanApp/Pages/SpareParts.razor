@@ -22,12 +22,13 @@
         <MudSelectItem Value="cc">@cc.Number</MudSelectItem>
     }
 </MudSelect>
-<MudTextField @bind-Value="_articleId" Placeholder="Article ID" FullWidth="false"/>
+
+<MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" />
 
 <SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" MaxTableHeight="500"
-         EditOnRowClick="true" FixedFooter="true" FixedHeader="true" />
+         EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
 
-<MudButton OnClick="Submit">Submit</MudButton>
+<MudButton OnClick="Submit" Disabled="SubmitDisable()">Submit</MudButton>
 <MudButton OnClick="ResetForm">Clear</MudButton>
 @code
 {
@@ -35,14 +36,14 @@
     private List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
-            .ColumnStyle("width: 150px;")
-            .Build(),
+                .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+                .ColumnStyle("width: 150px;")
+                .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-            .UnderName("Part name")
-            .ColumnStyle("width: 300px;")
-            .AsReadOnly()
-            .Build()
+                .UnderName("Part name")
+                .ColumnStyle("width: 300px;")
+                .AsReadOnly()
+                .Build()
         };
     private bool _busy;
 
@@ -104,7 +105,7 @@
 
             if (createResult.Conclusion is false)
             {
-                Snackbar.Add("Creation of spare parts has failed!");
+                Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
                 return;
             }
 
@@ -116,7 +117,19 @@
             _busy = false;
         }
     }
+
+    private bool SubmitDisable()
+    {
+        if (_busy) return true;
+        if (_selectedWorkshop is null || string.IsNullOrEmpty(_articleId)) return true;
+        return _spareParts.All(s => s.Amount == 0);
+    }
     
+    private void RefreshStateOnSelectionChange()
+    {
+        StateHasChanged();
+    }
+
     private void ResetForm()
     {
         _spareParts.ForEach(s => s.Amount = 0);
