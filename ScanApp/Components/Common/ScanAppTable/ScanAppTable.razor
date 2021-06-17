@@ -2,14 +2,12 @@
 @inject IDialogService DialogService
 @inject ISnackbar SnackBar
 @using System.Reflection;
-@using Newtonsoft.Json.Bson
 @using ScanApp.Components.Common.ScanAppTable.AddDialog
 @using ScanApp.Components.Common.ScanAppTable.EditDialog;
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog;
 @using ScanApp.Components.Common.ScanAppTable.GroupDialog;
 @using ScanApp.Components.Common.ScanAppTable.Options;
 @using ScanApp.Components.Common.ScanAppTable.Sorter;
-@using System.ComponentModel
 
 @if (Loading)
 {
@@ -60,7 +58,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable Style="@TableStyle" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
+            <MudTable Style="@TableStyle" MultiSelection="MultiSelectionEnabled" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @for (int i = 0; i < ColumnConfigs.Count; i++)
@@ -92,9 +90,12 @@ else
     @if (Options.ShowToolBar)
     {
         <MudToolBar>
-            @if (MenuOpened)
+            @if (MenuOpened || Options.ToolBarAlwaysOpened)
             {
-                <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+                @if (!Options.ToolBarAlwaysOpened)
+                {
+                    <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+                }
                 @if (Options.AllowAdding)
                 {
                     <MudIconButton OnClick="() => OpenAddDialog()" Icon="@Icons.Material.Outlined.Add"></MudIconButton>
@@ -122,6 +123,14 @@ else
                 {
                     <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
                 }
+                @if (Options.AllowDeleting && !GroupingEnabled)
+                {
+                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.SelectAll"></MudIconButton>
+                }
+                @if (MultiSelectionEnabled && _selectedItems.Count > 0 && !GroupingEnabled)
+                {
+                    <MudFab Color="Color.Error" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" @onclick="@OpenDeleteConfirmationDialog" />
+                }
             }
             else
             {
@@ -130,21 +139,40 @@ else
             <MudToolBarSpacer />
         </MudToolBar>
     }
+
+    <MudMessageBox @ref="_confirmDeletionBox" Title="Warning">
+        <MessageContent>
+            Are you sure you want to delete @_selectedItems.Count.ToString() items?
+        </MessageContent>
+        <NoButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Filled.Cancel">Cancel</MudButton>
+        </NoButton>
+        <YesButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Delete</MudButton>
+        </YesButton>
+    </MudMessageBox>
 }
 
 @code
 {
+    /// <summary>
+    /// Collection of items that the table will display
+    /// </summary>
     [Parameter]
     public List<TItem> Items { get; set; } = new List<TItem>(0);
 
+    /// <summary>
+    /// Delegate that is invoked every time when an Item is added to the table through Add dialog.
+    /// Returns an added item.
+    /// </summary>
     [Parameter]
-    public EventCallback<List<TItem>> ItemsChanged { get; set; }
+    public Action<TItem> ItemAdded { get; set; }
 
+    /// <summary>
+    /// List of <paramref name="Items" /> that were deleted in the last deleting operation.
+    /// </summary>
     [Parameter]
-    public EventCallback ValuesChanged { get; set; }
-
-    [Parameter]
-    public EventCallback ItemAdded { get; set; }
+    public List<TItem> RecentlyDeletedItems { get; set; }
 
     /// <summary>
     /// Required: List of <paramref name="ColumnConfig" /> objects used for column configuration including
@@ -161,27 +189,60 @@ else
     public ScanAppTableOptions Options { get; set; }
 
     [Parameter]
+    public EventCallback<List<TItem>> ItemsChanged { get; set; }
+
+    /// <summary>
+    /// Height of the table
+    /// </summary>
+    [Parameter]
     public string Height { get; set; }
 
+    /// <summary>
+    /// Style passed to the table component
+    /// </summary>
     [Parameter]
     public string TableStyle { get; set; }
 
     [Parameter]
     public RenderFragment<TItem> ChildContent { get; set; }
 
+    /// <summary>
+    /// Delegate that is invoked every time an item has been edited in the table.
+    /// Passes an edited Item as a parameter.
+    /// </summary>
     [Parameter]
     public Action<TItem> SaveChanges { get; set; }
 
+    /// <summary>
+    /// Required: A delegate to the setup function that will get data needed for the table to render.
+    /// The function should include setting up <paramref name="ColumnConfigs" /> parameter as well as populating the <paramref name="Items" /> collection,
+    /// for example by database call.
+    /// This function is called every time the table is initialized.
+    /// </summary>
     [Parameter]
     public Func<Task> GetData { get; set; }
 
+    /// <summary>
+    /// Event raised every time any value has changed in the table.
+    /// </summary>
+    [Parameter]
+    public EventCallback ValuesChanged { get; set; }
+
+    /// <summary>
+    /// Delegate that is invoked every time an item has been deleted from the table. Returns a list of deleted <paramref name="Items" />.
+    /// </summary>
     [Parameter]
     public Action<List<TItem>> DeleteData { get; set; }
 
+    /// <summary>
+    /// <paramref name="DialogOptions" /> object which defines how all dialogs look like in all dialog based features in the table.
+    /// </summary>
     [Parameter]
     public DialogOptions DialogOptions { get; set; }
 
-
+    /// <summary>
+    /// <paramref name="Item" /> that was added in the last add operation.
+    /// </summary>
     public TItem RecentlyAddedItem { get; set; }
 
     private PropertyInfo[] Properties { get; set; }
@@ -193,13 +254,15 @@ else
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
     private bool Loading { get; set; } = true;
+    private bool MultiSelectionEnabled = false;
 
     private List<Group<TItem>> _groupList { get; set; } = new();
     private HashSet<TItem> _selectedItems = new();
+    private MudMessageBox _confirmDeletionBox;
 
     /// <summary>
     /// Updates the table with provided <paramref name="items" />. Disables filtering and grouping to prevent
-    /// errors/not up to date data being displayed.
+    /// errors/not up to date data being displayed. Useful for quick in-table values change.
     /// </summary>
     /// <param name="items"></param>
     public void UpdateTable(List<TItem> items)
@@ -223,10 +286,24 @@ else
         Loading = false;
     }
 
-    private async Task InvokeDeleteData(List<TItem> itemList)
+    private void InvokeDeleteData(List<TItem> itemList)
     {
         DeleteData?.Invoke(itemList);
-        await InvokeGetData();
+    }
+
+    private async Task InvokeDeleteDataAsync(List<TItem> itemList)
+    {
+        await Task.Run(() => InvokeDeleteData(itemList));
+    }
+
+    private void InvokeItemAdded(TItem item)
+    {
+        ItemAdded?.Invoke(item);
+    }
+
+    private async Task InvokeItemAddedAsync(TItem item)
+    {
+        await Task.Run(() => InvokeItemAdded(item));
     }
 
     protected override async Task OnInitializedAsync()
@@ -264,7 +341,7 @@ else
 
     private async Task OpenEditDialog(TItem item)
     {
-        if (!IsAnyFieldEditable())
+        if (!IsAnyFieldEditable() || MultiSelectionEnabled)
         {
             return;
         }
@@ -302,6 +379,7 @@ else
         Items[originalIndex] = (TItem)result.Data;
         ShownItems[ShownItems.IndexOf(item)] = (TItem)result.Data;
         InvokeSaveChanges(item);
+        await ValuesChanged.InvokeAsync();
     }
 
     private async Task OpenGroupDialog()
@@ -378,7 +456,7 @@ else
         var constructor = GetPublicParameterlessConstructor(ItemType);
         if (constructor is null)
         {
-            throw new Exception("Class provided to the ScanAppTable does not implement a public parametereless constructor." +
+            throw new Exception("Class provided to the ScanAppTable does not implement a public parameterless constructor." +
                                 " It is not possible to use Adding feature of the table without it.");
         }
 
@@ -398,9 +476,39 @@ else
         RecentlyAddedItem = (TItem)result.Data;
         ShownItems.Add(RecentlyAddedItem);
         Items.Add(RecentlyAddedItem);
-        
-        await ItemAdded.InvokeAsync();
+
+        await InvokeItemAddedAsync(RecentlyAddedItem);
+        await ValuesChanged.InvokeAsync();
     }
+
+    private async Task OpenDeleteConfirmationDialog()
+    {
+        var result = await _confirmDeletionBox.Show();
+        if (!result.HasValue) return;
+
+        if (result.Value)
+        {
+            await DeleteSelectedItems();
+        }
+    }
+
+    private async Task DeleteSelectedItems()
+    {
+        var deletionList = new List<TItem>();
+        RecentlyDeletedItems?.Clear();
+        foreach (var item in _selectedItems)
+        {
+            Items.RemoveAt(FindIndex(Items, item));
+            ShownItems.RemoveAt(FindIndex(ShownItems, item));
+            deletionList.Add(item);
+        }
+        _selectedItems.Clear();
+        MultiSelectionEnabled = false;
+        RecentlyDeletedItems = deletionList;
+        await InvokeDeleteDataAsync(deletionList);
+    }
+
+    private void ToggleMultiSelection() => MultiSelectionEnabled = !MultiSelectionEnabled;
 
     private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
     {
