@@ -6,7 +6,7 @@
         @if (TargetItem is not null)
         {
             <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <EditFieldCreator T="T" @ref="_fieldCreator" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+                <EditFieldCreator T="T" @ref="_fieldCreator" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
             </MudForm>
         }
     </DialogContent>
@@ -35,6 +35,12 @@
     /// </summary>
     /// <value>Item that's copy will be edited.</value>
     [Parameter] public T SourceItem { get; set; }
+
+    /// <summary>
+    /// Gets or sets height of dialog content (which exclude buttons and header).
+    /// </summary>
+    /// <value>Dialog content height in pixels.</value>
+    [Parameter] public int DialogContentHeight { get; set; }
 
     private T TargetItem { get; set; }
 

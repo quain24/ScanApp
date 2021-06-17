@@ -19,7 +19,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value><see langword="true"/> if fields created by this creator are to be displayed as open initially, otherwise <see langword="false"/>.</value>
         [Parameter] public bool StartExpanded { get; set; }
-
+        
         /// <summary>
         /// Gets or sets date / time picker button label for 'OK' option.
         /// </summary>
@@ -37,6 +37,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value><see cref="string"/> representing picker 'Clear' label if set. Default value is 'Clear'.</value>
         [Parameter] public string PickerClearLabel { get; set; } = "Clear";
+
+        /// <summary>
+        /// Gets or sets maximum height of displayed set of fields in pixels.
+        /// </summary>
+        /// <value>An <see cref="int"/> representing field set height in pixels. Default value is '500'.</value>
+        [Parameter] public int MaxFieldSetHeight { get; set; }
 
         /// <summary>
         /// Gets a dictionary in which keys are <see cref="ColumnConfig{T}"/> objects and values are corresponding <see cref="MudExpansionPanel"/> references used by this creator.

@@ -1,0 +1,100 @@
+﻿@using ScanApp.Components.Common.Table.Dialogs
+@inherits MudButton
+@typeparam T
+@inject IDialogService DialogService
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets <typeparam name="T" /> object factory necessary for creating new table items for when this element is used.
+    /// Supported delegates are:
+    /// <para><see cref="Func{T}">Func&lt;TTableType&gt;</see> - Parameter-less delegate creating new <typeparamref name="T" />.</para>
+    /// <para><see cref="Func{Task{T}}">Func&lt;Task&lt;TTableType&gt;&gt;</see> - Async Parameter-less delegate creating new <typeparamref name="T" />.</para>
+    /// </summary>
+    [Parameter] public object ItemFactory { get; set; }
+
+    /// <summary>
+    /// Gets or sets collection of configuration objects used to generate all necessary fields in 'add' dialog.
+    /// </summary>
+    /// <value>Collection of configuration objects.</value>
+    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
+
+    /// <summary>
+    /// Called when a new item is successfully created by 'Add item' table functionality.
+    /// </summary>
+    /// <value>Callback providing freshly created <typeparamref name="T" /> item.</value>
+    [Parameter] public EventCallback<T> OnItemCreated { get; set; }
+
+    /// <summary>
+    /// Gets or sets height of dialog content (which exclude buttons and header).
+    /// </summary>
+    /// <value>Dialog content height in pixels.</value>
+    [Parameter] public int DialogContentHeight { get; set; }
+
+    private new EventCallback OnClick { get; set; }
+    private bool _isWorking;
+
+    protected override void OnInitialized()
+    {
+        base.OnClick = EventCallback.Factory.Create<MouseEventArgs>(this, OpenAddItemDialog);
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _ = ItemFactory ?? throw new ArgumentNullException(nameof(ItemFactory), "No factory delegate was provided");
+        _ = Configs ?? throw new ArgumentNullException(nameof(Configs));
+        base.OnParametersSet();
+    }
+
+    private async Task OpenAddItemDialog()
+    {
+        try
+        {
+            Disabled = true;
+
+            var dialog = DialogService.Show<AddDialog<T>>("Create new item",
+                new DialogParameters
+                {
+                    ["Configs"] = Configs,
+                    ["SourceItem"] = await CreateNewItem(),
+                    ["DialogContentHeight"] = DialogContentHeight
+                },
+                Globals.Gui.DefaultDialogOptions);
+
+            var result = await dialog.Result;
+            if (result.Cancelled)
+                return;
+
+            if (result.Data is T item)
+            {
+                await OnItemCreated.InvokeAsync(item);
+            }
+        }
+        finally
+        {
+            Disabled = false;
+        }
+    }
+
+    private async Task<T> CreateNewItem()
+    {
+        try
+        {
+            return ItemFactory switch
+            {
+                Func<T> factory => factory.Invoke(),
+                Func<Task<T>> factory => await factory.Invoke().ConfigureAwait(false),
+                null => throw new ArgumentNullException(nameof(ItemFactory), "No factory delegate was provided"),
+                _ => throw new ArgumentOutOfRangeException(nameof(ItemFactory), "Provided factory type is not compatible with allowed delegate types.")
+                };
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Something went wrong when trying to create new item using provided {nameof(ItemFactory)}: {ex.Message}", ex);
+        }
+    }
+}
