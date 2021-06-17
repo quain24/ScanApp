@@ -36,14 +36,14 @@
     private List<SparePartGUIModel> _spareParts = new();
     private List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
-            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-                .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
                 .ColumnStyle("width: 75px;")
-                .Build(),
-            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-                .UnderName("Part name")
-                .AsReadOnly()
-                .Build()
+            .Build(),
+        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+            .UnderName("Part name")
+            .AsReadOnly()
+            .Build()
     };
 
     private volatile bool _busy;
@@ -98,42 +98,42 @@
 
             _busy = true;
 
-            var parts = _spareParts
-                .Where(s => s.Amount > 0)
+        var parts = _spareParts
+            .Where(s => s.Amount > 0)
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
-                .ToArray();
+            .ToArray();
 
-            var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
-            if (createResult.Conclusion is false)
-            {
-                Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
-                return;
-            }
-
-            Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
-            ResetForm();
-        }
-        finally
+        if (createResult.Conclusion is false)
         {
+                Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
+            return;
+        }
+
+        Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
+            ResetForm();
+    }
+        finally
+    {
             _busy = false;
         }
     }
 
     private bool SubmitDisable()
-    {
+        {
         if (_busy) return true;
         if (_selectedWorkshop is null || string.IsNullOrEmpty(_articleId)) return true;
         return _spareParts.All(s => s.Amount == 0);
     }
-    
+
     private void RefreshStateOnSelectionChange()
     {
         StateHasChanged();
     }
 
     private void ResetForm()
-    {
+        {
         _spareParts.ForEach(s => s.Amount = 0);
         _articleId = null;
         StateHasChanged();
