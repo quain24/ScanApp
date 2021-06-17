@@ -12,7 +12,7 @@
 
 <h1>Alt table</h1>
 
-<SCTable @ref="table" RowsPerPage="100" MaxTableHeight="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
+<SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" MaxTableHeight="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
          Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" />
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>

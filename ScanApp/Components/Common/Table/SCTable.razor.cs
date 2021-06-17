@@ -390,13 +390,11 @@ namespace ScanApp.Components.Common.Table
             _selectedGroupId = _selectedGroupId == args.Item.Key ? null : args.Item.Key;
         }
 
-        private async Task OnRowClick(TableRowClickEventArgs<TTableType> args)
+        private Task OnRowClick(TableRowClickEventArgs<TTableType> args)
         {
-            if (EditOnRowClick)
-            {
-                await OpenEditItemDialog();
-                CreateGroupsBasedOn(SelectedGroupable);
-            }
+            return EditOnRowClick
+                ? _toolbar.CallEdit(args.Item)
+                : Task.CompletedTask;
         }
 
         /// <summary>
@@ -458,9 +456,10 @@ namespace ScanApp.Components.Common.Table
             if (result.Cancelled)
                 return;
             _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ?? Enumerable.Empty<IFilter<TTableType>>());
+
+            // This de-selects item after filters are applied and triggers regrouping
             SelectedItem = default;
             await SelectedItemChanged.InvokeAsync();
-            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         /// <summary>
