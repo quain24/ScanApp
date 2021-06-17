@@ -19,7 +19,7 @@
 }
 @if (EditVisible)
 {
-    <EditItemButton @ref="_editButton" T="T" DialogContentHeight="MaxDialogContentHeight" Configs="Configs"
+    <EditItemButton @key="SelectedItem" @ref="_editButton" T="T" DialogContentHeight="MaxDialogContentHeight" Configs="Configs"
                     SourceItem="SelectedItem" SourceItemChanged="OnSelectedItemChanged" DialogStartsExpanded="EditDialogStartsExpanded"
                     DialogInvalidFieldsStartExpanded="EditDialogInvalidFieldsStartExpanded" Variant="Variant.Filled" Class="ml-2"
                     Disabled="EditDisabled" Style="font-size: smaller">Edit</EditItemButton>
@@ -40,7 +40,6 @@
 
     private AddItemButton<T> _addButton;
     private EditItemButton<T> _editButton;
-
 
     /// <summary>
     /// Gets or sets collection of configuration objects used to set all properties and behaviors of corresponding columns in table.
@@ -136,9 +135,12 @@
     /// <value>If set to <see langword="true" />, dialog will start with all invalid fields expanded.</value>
     [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; }
 
-    public Task CallEdit()
+    public async Task CallEdit(T item)
     {
-        return _editButton?.OnClick.InvokeAsync() ?? Task.CompletedTask;
+        if (_editButton is not null)
+        {
+            await _editButton.OpenEditItemDialog(item);
+        }
     }
 
     /// <summary>

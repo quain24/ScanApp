@@ -66,6 +66,12 @@
         base.OnParametersSet();
     }
 
+    public Task OpenEditItemDialog(T item)
+    {
+        SourceItem = item;
+        return OpenEditItemDialog();
+    }
+
     private async Task OpenEditItemDialog()
     {
         try

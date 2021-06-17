@@ -107,7 +107,11 @@ namespace ScanApp.Components.Common.Table
         private TTableType SelectedItemBoundChild
         {
             get => SelectedItem;
-            set => SelectedItemChanged.InvokeAsync(value);
+            set
+            {
+                SelectedItem = value;
+                SelectedItemChanged.InvokeAsync(value);
+            }
         }
 
         /// <summary>
@@ -390,26 +394,8 @@ namespace ScanApp.Components.Common.Table
         {
             if (EditOnRowClick)
             {
-                SelectedItem = args.Item;
                 await OpenEditItemDialog();
             }
-        }
-
-        /// <summary>
-        /// Opens up 'Add new item' dialog if this function is enabled.
-        /// </summary>
-        /// <returns>Awaitable task.</returns>
-        public async Task OpenAddItemDialog()
-        {
-            if (_addingEnabled && _toolbar is not null)
-                await _toolbar.CallAdd();
-        }
-
-        private async Task OnAddNewItemHandler(TTableType item)
-        {
-            Data.Add(item);
-            await ItemCreated.InvokeAsync(item);
-            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         /// <summary>
@@ -419,7 +405,9 @@ namespace ScanApp.Components.Common.Table
         public async Task OpenEditItemDialog()
         {
             if (_editingEnabled && _toolbar is not null)
-                await _toolbar.CallEdit();
+            {
+                await _toolbar.CallEdit(SelectedItem);
+            }
         }
 
         private Task OnEditItemHandler(TTableType editedItem)
@@ -429,6 +417,25 @@ namespace ScanApp.Components.Common.Table
                 return Task.CompletedTask;
             Data[oldItemIndex] = editedItem;
             return SelectedItemChanged.InvokeAsync(editedItem);
+        }
+
+        /// <summary>
+        /// Opens up 'Add new item' dialog if this function is enabled.
+        /// </summary>
+        /// <returns>Awaitable task.</returns>
+        public async Task OpenAddItemDialog()
+        {
+            if (_addingEnabled && _toolbar is not null)
+            {
+                await _toolbar.CallAdd();
+            }
+        }
+
+        private async Task OnAddNewItemHandler(TTableType item)
+        {
+            Data.Add(item);
+            await ItemCreated.InvokeAsync(item);
+            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         /// <summary>
