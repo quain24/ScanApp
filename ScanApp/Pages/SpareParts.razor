@@ -1,0 +1,161 @@
+﻿@page "/spareparts"
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.SpareParts
+@using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
+@using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
+@using ScanApp.Application.SpareParts.Commands.CreateSpareParts
+@using ScanApp.Common
+@using ScanApp.Models.SpareParts
+@using ScanApp.Common.Extensions
+@using ScanApp.Common.Validators
+@using Severity = MudBlazor.Severity
+@using FluentValidation
+@inject IScopedMediator mediator
+@inject ISnackbar Snackbar
+@inject ArticleNumberValidator ArticleNumberValidator
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" EditOnRowClick="true"/>
+
+@code
+{
+    private List<SparePartGUIModel> _spareParts = new();
+    private List<SparePartGUIModel> _sparePartsEmpty = new();
+    private List<ColumnConfig<SparePartGUIModel>> _configs = new()
+    {
+        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+            .ColumnStyle("width: 150px;")
+            .Build(),
+        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+            .UnderName("Part name")
+            .ColumnStyle("width: 300px;")
+            .AsReadOnly()
+            .Build()
+    };
+    private bool _busy;
+    private bool _submitDisabled = true;
+
+    private List<RepairWorkshopModel> _repairWorkshopModels = new();
+    private string _height = "400px";
+    private string _tableStyle = "max-width: 500px;";
+    private string[] _repairWorkshops;
+    private string _selectedRepairWorkshop = string.Empty;
+    private string _article = string.Empty;
+    private bool _submitInProgress;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _busy = true;
+            await Task.WhenAll(RetrieveRepairWorkshops(), RetrievePartModels());
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RetrieveRepairWorkshops()
+    {
+        var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery());
+        if (storagePlacesResult.Conclusion is false)
+        {
+            Snackbar.Add($"Could not fetch possible repair workshops\n{storagePlacesResult.ErrorDescription}", Severity.Error);
+            return;
+        }
+        _repairWorkshopModels = storagePlacesResult.Output;
+        _repairWorkshops = _repairWorkshopModels.Select(m => m.Number).ToArray();
+    }
+
+    private async Task RetrievePartModels()
+    {
+        var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
+        if (sparePartsTypesResult.Conclusion is false)
+        {
+            Snackbar.Add("Could not fetch spare part types.", Severity.Error);
+            return;
+        }
+
+        _spareParts = sparePartsTypesResult.Output
+            .Select(m => new SparePartGUIModel(m.Name))
+            .ToList();
+
+        _sparePartsEmpty = ClearSparePartList(_spareParts);
+    }
+
+    private Task<IEnumerable<string>> SearchRepairWorkshop(string value) => Task.FromResult(_repairWorkshops.AsEnumerable());
+
+    private async Task Submit()
+    {
+        if (_submitInProgress)
+            return;
+
+        _submitInProgress = true;
+        var parts = _spareParts
+            .Where(s => s.Amount > 0)
+            .Select(s => new SparePartModel(s.Name, s.Amount, _article, GetRepairWorkshopId(_selectedRepairWorkshop)))
+            .ToArray();
+
+        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+
+        if (createResult.Conclusion is false)
+        {
+            Snackbar.Add("Creation of spare parts has failed!");
+            return;
+        }
+
+        Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
+        await ResetForm(false);
+        _submitInProgress = false;
+    }
+
+    private string GetRepairWorkshopId(string selectedWorkshop)
+    {
+        return _repairWorkshopModels
+            .FirstOrDefault(s => s.Number.Equals(selectedWorkshop))
+            ?.Id;
+    }
+
+    private Task ResetForm(bool flushLHM)
+    {
+        _article = string.Empty;
+        if (flushLHM)
+        {
+            _selectedRepairWorkshop = string.Empty;
+        }
+        _spareParts = ClearSparePartList(_sparePartsEmpty);
+        //OnItemsChanged();
+        StateHasChanged();
+        //_table.UpdateTable(_spareParts);
+        return Task.CompletedTask;
+    }
+
+    private List<SparePartGUIModel> ClearSparePartList(List<SparePartGUIModel> sparePartList)
+    {
+
+        return sparePartList
+            .Select(s => new SparePartGUIModel(s?.Name))
+            .ToList();
+    }
+
+    //private void OnItemsChanged() => OnValidationChanged(_form.IsValid);
+
+    private void OnValidationChanged(bool isFormValid)
+    {
+        if (AnyOfRequiredFieldsIsEmpty() || IsAnyAmountOverZero() is false || isFormValid is false)
+        {
+            _submitDisabled = true;
+            return;
+        }
+        _submitDisabled = false;
+    }
+
+    private bool AnyOfRequiredFieldsIsEmpty() => string.IsNullOrWhiteSpace(_article) || string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
+
+    private bool RequiredFieldsAreEmpty() => string.IsNullOrWhiteSpace(_article) && string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
+
+    private bool IsAnyAmountOverZero() => _spareParts?.Any(s => s?.Amount > 0) ?? false;
+}
