@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
-using ScanApp.Components.Common.Table.Buttons;
 using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
@@ -112,7 +111,7 @@ namespace ScanApp.Components.Common.Table
         }
 
         /// <summary>
-        /// Called when a new item is successfully created by 'Add item' table functionality.
+        /// Called when a new item is successfully created by 'Add item' table functionality and added to <see cref="Data"/> collection.
         /// </summary>
         /// <value>Callback providing freshly created <typeparamref name="TTableType" /> item.</value>
         [Parameter] public EventCallback<TTableType> ItemCreated { get; set; }

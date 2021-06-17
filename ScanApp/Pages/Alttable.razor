@@ -45,8 +45,6 @@
         forecasts[i] = ob;
     }
 
-    new List<WeatherForecast> emptyCol = new();
-
     private WeatherForecast Create()
     {
         return new WeatherForecast(11);
@@ -125,7 +123,6 @@
     public HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
 
     private List<WeatherForecast> forecasts;
-
     private SCTable<WeatherForecast> table;
 
     private void Remove()
@@ -137,14 +134,6 @@
     protected override async Task OnInitializedAsync()
     {
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
-        //forecasts.Add(new WeatherForecast()
-        //{
-        //    Version = Version.Empty(),
-        //    TemperatureC = 10,
-        //    Summary = null,
-        //    Date = null,
-        //    Model = null
-        //});
         forecasts.Add(new WeatherForecast()
         {
             Version = Version.Create("addddddddd"),
