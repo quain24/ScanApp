@@ -458,6 +458,8 @@ namespace ScanApp.Components.Common.Table
             if (result.Cancelled)
                 return;
             _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ?? Enumerable.Empty<IFilter<TTableType>>());
+            SelectedItem = default;
+            await SelectedItemChanged.InvokeAsync();
             CreateGroupsBasedOn(SelectedGroupable);
         }
 
