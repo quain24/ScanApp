@@ -6,6 +6,7 @@
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
 @using ScanApp.Common
 @using ScanApp.Models.SpareParts
+@using ScanApp.Common.Extensions
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
@@ -34,17 +35,21 @@
 @code
 {
     private List<SparePartGUIModel> _spareParts = new();
+    private List<SparePartGUIModel> _sparePartsEmpty = new();
     private List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
-            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
                 .ColumnStyle("width: 75px;")
             .Build(),
-            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
             .UnderName("Part name")
+            .ColumnStyle("width: 300px;")
             .AsReadOnly()
             .Build()
     };
+    private bool _busy;
+    private bool _submitDisabled = true;
 
     private volatile bool _busy;
     private string _articleId;
@@ -74,6 +79,7 @@
             return;
         }
         _repairWorkshopModels = storagePlacesResult.Output;
+        _repairWorkshops = _repairWorkshopModels.Select(m => m.Number).ToArray();
     }
 
     private async Task RetrievePartModels()
@@ -103,13 +109,13 @@
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
             .ToArray();
 
-            var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+        var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
-            if (createResult.Conclusion is false)
-            {
+        if (createResult.Conclusion is false)
+        {
                 Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
-                return;
-            }
+            return;
+        }
 
         Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
             ResetForm();
@@ -131,9 +137,9 @@
     {
         StateHasChanged();
     }
-    
+
     private void ResetForm()
-    {
+        {
         _spareParts.ForEach(s => s.Amount = 0);
         _articleId = null;
         StateHasChanged();
