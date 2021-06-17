@@ -41,12 +41,11 @@
                 .ColumnStyle("width: 75px;")
             .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-            .UnderName("Part name")
-            .ColumnStyle("width: 300px;")
-            .AsReadOnly()
-            .Build()
+                .UnderName("Part name")
+                .ColumnStyle("width: 300px;")
+                .AsReadOnly()
+                .Build()
     };
-    private bool _busy;
 
     private volatile bool _busy;
     private string _articleId;
@@ -100,10 +99,10 @@
 
             _busy = true;
 
-        var parts = _spareParts
-            .Where(s => s.Amount > 0)
+            var parts = _spareParts
+                .Where(s => s.Amount > 0)
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
-            .ToArray();
+                .ToArray();
 
             var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
@@ -113,11 +112,11 @@
                 return;
             }
 
-        Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
+            Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
             ResetForm();
-    }
+        }
         finally
-    {
+        {
             _busy = false;
         }
     }
@@ -135,7 +134,7 @@
     }
 
     private void ResetForm()
-        {
+    {
         _spareParts.ForEach(s => s.Amount = 0);
         _articleId = null;
         StateHasChanged();
