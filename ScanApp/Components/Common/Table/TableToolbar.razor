@@ -4,7 +4,7 @@
 @if (Groupables?.Count() > 0 && GroupingVisible)
 {
     <MudSelect Value="SelectedGroupable" ValueChanged="SelectedGroupableChanged" T="ColumnConfig<T>" Label="Groups"
-               FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller" Class="ml-0">
+               FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller;">
         <MudSelectItem T="ColumnConfig<T>" Value="null">None</MudSelectItem>
         @foreach (var cc in Groupables)
         {
