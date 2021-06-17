@@ -13,7 +13,7 @@
 <h1>Alt table</h1>
 
 <SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" MaxTableHeight="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" />
+         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" Loading="loading"/>
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>
@@ -36,6 +36,7 @@
 
 @code
 {
+    public bool loading;
     public void ChangeUsingExternalButton(WeatherForecast ob)
     {
         var i = forecasts.FindIndex(w => w == WeatherForecast);
@@ -122,7 +123,7 @@
     public WeatherForecast WeatherForecast { get; set; }
     public HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
 
-    private List<WeatherForecast> forecasts;
+    private List<WeatherForecast> forecasts = new();
     private SCTable<WeatherForecast> table;
 
     private void Remove()
@@ -133,6 +134,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        StateHasChanged();
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
         forecasts.Add(new WeatherForecast()
         {

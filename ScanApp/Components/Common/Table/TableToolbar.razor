@@ -1,5 +1,4 @@
 ﻿@typeparam T
-@using ScanApp.Components.Common.Table.Buttons
 
 @if (Groupables?.Count() > 0 && GroupingVisible)
 {
@@ -14,44 +13,25 @@
 }
 @if (AddVisible)
 {
-    <AddItemButton @ref="_addButton" T="T" DialogContentHeight="MaxDialogContentHeight" Configs="Configs" Variant="Variant.Filled" Class="ml-2"
-                   Disabled="AddDisabled" ItemFactory="ItemFactory" OnItemCreated="OnNewItemCreated" Style="font-size: smaller">Add</AddItemButton>
+    <MudButton OnClick="OnAddClicked" Variant="Variant.Filled" Class="ml-2" Disabled="AddDisabled" Style="font-size: smaller">Add facade</MudButton>
 }
 @if (EditVisible)
 {
-    <EditItemButton @key="SelectedItem" @ref="_editButton" T="T" DialogContentHeight="MaxDialogContentHeight" Configs="Configs"
-                    SourceItem="SelectedItem" SourceItemChanged="OnSelectedItemChanged" DialogStartsExpanded="EditDialogStartsExpanded"
-                    DialogInvalidFieldsStartExpanded="EditDialogInvalidFieldsStartExpanded" Variant="Variant.Filled" Class="ml-2"
-                    Disabled="EditDisabled" Style="font-size: smaller">Edit</EditItemButton>
+    <MudButton OnClick="OnEditClicked" Variant="Variant.Filled" Class="ml-2" Disabled="EditDisabled" Style="font-size: smaller">Edit facade</MudButton>
 }
 @if (FilterVisible)
 {
     @if (FiltersApplied)
     {
-        <MudButton OnClick="OnRemoveFilterClick" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2" Style="font-size: smaller">Remove filters</MudButton>
+        <MudButton OnClick="OnRemoveFilterClicked" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2" Style="font-size: smaller">Remove filters</MudButton>
     }
     else
     {
-        <MudButton OnClick="OnFilterClick" Variant="Variant.Filled" Class="ml-2" Style="font-size: smaller">Filter</MudButton>
+        <MudButton OnClick="OnFilterClicked" Variant="Variant.Filled" Class="ml-2" Style="font-size: smaller">Filter facade</MudButton>
     }
 }
 
 @code {
-
-    private AddItemButton<T> _addButton;
-    private EditItemButton<T> _editButton;
-
-    /// <summary>
-    /// Gets or sets collection of configuration objects used to set all properties and behaviors of corresponding columns in table.
-    /// </summary>
-    /// <value>Collection of configuration objects.</value>
-    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
-
-    /// <summary>
-    /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
-    /// </summary>
-    /// <value>Maximum height of dialogs content in pixels.</value>
-    [Parameter] public int MaxDialogContentHeight { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating if grouping function should be disabled.
@@ -74,6 +54,11 @@
     [Parameter] public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
 
     /// <summary>
+    /// Occurs when 'add' button has been clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnAddClicked { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating if add function (button) should be visible.
     /// </summary>
     [Parameter] public bool AddVisible { get; set; }
@@ -84,22 +69,9 @@
     [Parameter] public bool AddDisabled { get; set; }
 
     /// <summary>
-    /// Gets or sets <typeparam name="TTableType" /> object factory necessary for creating new table items for when 'Add' is enabled. Supported delegates are:
-    /// <para><see cref="Func{TTableType}">Func&lt;TTableType&gt;</see> - Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
-    /// <para><see cref="Func{Task{TTableType}}">Func&lt;Task&lt;TTableType&gt;&gt;</see> - Async Parameter-less delegate creating new <typeparamref name="TTableType" />.</para>
+    /// Occurs when 'edit' button has been clicked.
     /// </summary>
-    [Parameter] public object ItemFactory { get; set; }
-
-    /// <summary>
-    /// Occurs when 'add' dialog produced new item.
-    /// </summary>
-    /// <value>Newly created <typeparamref name="T" /> item.</value>
-    [Parameter] public EventCallback<T> OnNewItemCreated { get; set; }
-
-    public Task CallAdd()
-    {
-        return _addButton?.OnClick.InvokeAsync() ?? Task.CompletedTask;
-    }
+    [Parameter] public EventCallback OnEditClicked { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating if editing function (button) should be visible.
@@ -111,56 +83,24 @@
     /// </summary>
     [Parameter] public bool EditDisabled { get; set; }
 
-    ///<summary>
-    ///<inheritdoc cref="MudTable{T}.SelectedItem" />
-    /// <br />@bind-... notation is supported
-    /// </summary>
-    [Parameter] public T SelectedItem { get; set; }
-
-    ///<summary>
-    ///<inheritdoc cref="MudTable{T}.SelectedItemChanged" />
-    /// <br />@bind-... notation is supported
-    /// </summary>
-    [Parameter] public EventCallback<T> OnSelectedItemChanged { get; set; }
-
-    /// <summary>
-    /// Gets or sets how the edit dialog fields will be visible when dialog is opened.
-    /// </summary>
-    /// <value>If set to <see langword="true" />, dialog will start with all fields expanded.</value>
-    [Parameter] public bool EditDialogStartsExpanded { get; set; }
-
-    /// <summary>
-    /// Gets or sets how the edit dialog fields that are marked by validation as invalid will be visible when dialog is opened.
-    /// </summary>
-    /// <value>If set to <see langword="true" />, dialog will start with all invalid fields expanded.</value>
-    [Parameter] public bool EditDialogInvalidFieldsStartExpanded { get; set; }
-
-    public async Task CallEdit(T item)
-    {
-        if (_editButton is not null)
-        {
-            await _editButton.OpenEditItemDialog(item);
-        }
-    }
-
     /// <summary>
     /// Gets or sets a value indicating if filtering function should be disabled.
     /// </summary>
     [Parameter] public bool FilterVisible { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating if any table filters are applied.
-    /// </summary>
-    /// <value>If <see langword="true" />, this will replace filter button with 'remove filers' button.</value>
-    [Parameter] public bool FiltersApplied { get; set; }
-
-    /// <summary>
     /// Occurs when 'filter' button is clicked.
     /// </summary>
-    [Parameter] public EventCallback OnFilterClick { get; set; }
+    [Parameter] public EventCallback OnFilterClicked { get; set; }
 
     /// <summary>
     /// Occurs when 'remove filters' button is clicked.
     /// </summary>
-    [Parameter] public EventCallback OnRemoveFilterClick { get; set; }
+    [Parameter] public EventCallback OnRemoveFilterClicked { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if any table filters are applied.
+    /// </summary>
+    /// <value>If <see langword="true" />, this will replace filter button with 'remove filers' button.</value>
+    [Parameter] public bool FiltersApplied { get; set; }
 }

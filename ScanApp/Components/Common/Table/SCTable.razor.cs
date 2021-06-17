@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
-using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
@@ -17,6 +16,9 @@ namespace ScanApp.Components.Common.Table
         [Inject] internal IDialogService DialogService { get; set; }
 
         #region Outside parameters
+
+        /// <inheritdoc cref="MudTableBase.Loading"/>
+        [Parameter] public bool Loading { get; set; }
 
         /// <inheritdoc cref="MudTableBase.FixedHeader" />
         [Parameter] public bool FixedHeader { get; set; }
@@ -279,7 +281,7 @@ namespace ScanApp.Components.Common.Table
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
         private MarkupString ColumnStyles { get; set; }
-        private TableToolbar<TTableType> _toolbar;
+        private DialogFacade<TTableType> _dialogFacade;
 
         protected override void OnInitialized()
         {
@@ -288,6 +290,7 @@ namespace ScanApp.Components.Common.Table
             EnableAvailableFunctionality();
             ColumnStyles = new ColumnStyleBuilder<TTableType>().BuildUsing(Configs);
             RowStyleFunc ??= DefaultRowStyleFunc;
+            _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs);
         }
 
         protected override void OnParametersSet()
@@ -393,7 +396,7 @@ namespace ScanApp.Components.Common.Table
         private Task OnRowClick(TableRowClickEventArgs<TTableType> args)
         {
             return EditOnRowClick
-                ? _toolbar.CallEdit(args.Item)
+                ? OpenEditItemDialog()
                 : Task.CompletedTask;
         }
 
@@ -403,9 +406,14 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            if (_editingEnabled && _toolbar is not null)
+            if (_editingEnabled)
             {
-                await _toolbar.CallEdit(SelectedItem);
+                var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
+
+                if (result.Cancelled)
+                    return;
+
+                await OnEditItemHandler((TTableType)result.Data);
             }
         }
 
@@ -424,9 +432,12 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenAddItemDialog()
         {
-            if (_addingEnabled && _toolbar is not null)
+            if (_addingEnabled)
             {
-                await _toolbar.CallAdd();
+                var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
+                if (result.Cancelled)
+                    return;
+                await OnAddNewItemHandler((TTableType)result.Data);
             }
         }
 
@@ -443,16 +454,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenFilterItemDialog()
         {
-            var dialog = DialogService.Show<FilterDialog<TTableType>>("Filter by...",
-                new DialogParameters
-                {
-                    ["Configs"] = Configs,
-                    ["StartExpanded"] = FilterDialogStartsExpanded,
-                    ["DialogContentHeight"] = MaxDialogContentHeight,
-                },
-                Globals.Gui.DefaultDialogOptions);
-
-            var result = await dialog.Result;
+            var result = await _dialogFacade.ShowFilterDialog(FilterDialogStartsExpanded, MaxDialogContentHeight);
             if (result.Cancelled)
                 return;
             _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ?? Enumerable.Empty<IFilter<TTableType>>());
