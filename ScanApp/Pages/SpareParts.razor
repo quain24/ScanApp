@@ -107,11 +107,11 @@
 
             var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
 
-        if (createResult.Conclusion is false)
-        {
+            if (createResult.Conclusion is false)
+            {
                 Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
-            return;
-        }
+                return;
+            }
 
         Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
             ResetForm();
@@ -123,12 +123,12 @@
     }
 
     private bool SubmitDisable()
-        {
+    {
         if (_busy) return true;
         if (_selectedWorkshop is null || string.IsNullOrEmpty(_articleId)) return true;
         return _spareParts.All(s => s.Amount == 0);
     }
-
+    
     private void RefreshStateOnSelectionChange()
     {
         StateHasChanged();
