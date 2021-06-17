@@ -395,6 +395,7 @@ namespace ScanApp.Components.Common.Table
             if (EditOnRowClick)
             {
                 await OpenEditItemDialog();
+                CreateGroupsBasedOn(SelectedGroupable);
             }
         }
 
