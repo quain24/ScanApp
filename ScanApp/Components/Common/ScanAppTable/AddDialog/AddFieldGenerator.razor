@@ -34,10 +34,8 @@
             if (ColumnConfigs[i].Default is not null)
             {
                 GenerateNonEditableFieldWithDefaultValue(builder, i);
-                continue;
             }
-            int localIterator = i;
-            if (TypeChecker.IsInteger(ColumnConfigs[i].PropertyType) || TypeChecker.IsString(ColumnConfigs[i].PropertyType))
+            else if ( TypeChecker.IsString(ColumnConfigs[i].PropertyType))
             {
                 GenerateTextFields(builder, i);
             }
@@ -45,7 +43,7 @@
             {
                 GenerateDatePickers(builder, i);
             }
-            else if (TypeChecker.IsDecimal(ColumnConfigs[i].PropertyType))
+            else if (TypeChecker.IsIntegerOrDecimal(ColumnConfigs[i].PropertyType))
             {
                 GenerateNumericFields(builder, i);
             }
@@ -69,7 +67,7 @@
 
     private void GenerateTextFields(RenderTreeBuilder builder, int index)
     {
-        builder.OpenRegion(0);
+        builder.OpenRegion(1);
         Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType);
         builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
         builder.AddAttribute(1, nameof(MudTextField<string>.Variant), Variant.Outlined);
@@ -85,7 +83,7 @@
 
     private void GenerateDatePickers(RenderTreeBuilder builder, int index)
     {
-        builder.OpenRegion(1);
+        builder.OpenRegion(2);
         builder.OpenComponent(0, typeof(MudDatePicker));
         builder.AddAttribute(1, nameof(MudDatePicker.Elevation), 7);
         builder.AddAttribute(2, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
@@ -100,7 +98,7 @@
 
     private void GenerateNumericFields(RenderTreeBuilder builder, int index)
     {
-        builder.OpenRegion(2);
+        builder.OpenRegion(3);
         Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType);
         builder.OpenComponent(0, typeof(MudNumericField<>).MakeGenericType(nullableType));
         builder.AddAttribute(1, nameof(MudNumericField<string>.Variant), Variant.Outlined);

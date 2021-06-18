@@ -77,6 +77,17 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
             return type == typeof(string);
         }
 
+        public static bool IsIntegerOrDecimal(Type type)
+        {
+            return IsInteger(type) || IsDecimal(type);
+        }
+
+        public static bool IsIntegerOrDecimal(object obj)
+        {
+            var type = obj.GetType();
+            return IsInteger(type) || IsDecimal(type);
+        }
+
         public static Type GetNullableType(Type type) 
         {
             type = Nullable.GetUnderlyingType(type) ?? type; 
