@@ -10,9 +10,11 @@
 @using Severity = MudBlazor.Severity
 @using FluentValidation
 @using ScanApp.Common.Extensions
+@using System.Threading
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
+@implements IDisposable
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <MudSelect T="RepairWorkshopModel" @bind-Value="_selectedWorkshop" Label="Repair workshops"
@@ -26,7 +28,7 @@
 
 <MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
 
-<SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" MaxTableHeight="500"
+<SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
          EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
 
 <MudButton OnClick="Submit" Disabled="SubmitDisable()">Submit</MudButton>
@@ -53,6 +55,7 @@
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private RepairWorkshopModel _selectedWorkshop;
     private Func<string, IEnumerable<string>> _articleNrValidator;
+    private CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,7 +73,7 @@
 
     private async Task RetrieveRepairWorkshops()
     {
-        var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery());
+        var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery(), _cts.Token);
         if (storagePlacesResult.Conclusion is false)
         {
             Snackbar.Add($"Could not fetch possible repair workshops\n{storagePlacesResult.ErrorDescription}", Severity.Error);
@@ -81,7 +84,7 @@
 
     private async Task RetrievePartModels()
     {
-        var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
+        var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery(), _cts.Token);
         if (sparePartsTypesResult.Conclusion is false)
         {
             Snackbar.Add("Could not fetch spare part types.", Severity.Error);
@@ -106,7 +109,7 @@
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
                 .ToArray();
 
-            var createResult = await mediator.Send(new CreateSparePartsCommand(parts));
+            var createResult = await mediator.Send(new CreateSparePartsCommand(parts), _cts.Token);
 
             if (createResult.Conclusion is false)
             {
@@ -140,5 +143,10 @@
         _spareParts.ForEach(s => s.Amount = 0);
         _articleId = null;
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
     }
 }
