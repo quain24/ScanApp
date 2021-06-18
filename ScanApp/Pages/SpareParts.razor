@@ -28,7 +28,7 @@
 
 <MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
 
-<SCTable TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
+<SCTable ReadOnly="@(_busyOutgoing || _busyIncoming)" Loading="_busyIncoming" TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
          EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
 
 <MudButton OnClick="Submit" Disabled="SubmitDisable()">Submit</MudButton>
@@ -47,7 +47,7 @@
                 .AsReadOnly()
                 .Build()
     };
-
+    
     private volatile bool _busyIncoming;
     private volatile bool _busyOutgoing;
     private string _articleId;
@@ -55,13 +55,14 @@
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private RepairWorkshopModel _selectedWorkshop;
     private Func<string, IEnumerable<string>> _articleNrValidator;
-    private CancellationTokenSource _cts = new();
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             _busyIncoming = true;
+            await Task.Delay(3000);
             await Task.WhenAll(RetrieveRepairWorkshops(), RetrievePartModels());
             _articleNrValidator = ArticleNumberValidator.ToMudFormFieldValidator("Article number");
         }

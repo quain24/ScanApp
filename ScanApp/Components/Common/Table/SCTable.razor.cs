@@ -239,6 +239,12 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public Show ShowGroupsField { get; set; } = Show.Auto;
 
         /// <summary>
+        /// Gets or sets value indicating whether table should allow editing / adding.
+        /// </summary>
+        /// <value>If set to <see langword="true" />, Add and edit functions will be disabled (if they are available).</value>
+        [Parameter] public bool ReadOnly { get; set; }
+
+        /// <summary>
         /// Gets or sets how the edit dialog fields will be visible when dialog is opened.
         /// </summary>
         /// <value>If set to <see langword="true" />, dialog will start with all fields expanded (<strong>default</strong>).</value>
@@ -417,7 +423,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            if (_editingEnabled is false) return;
+            if (_editingEnabled is false || ReadOnly) return;
 
             var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
             if (result.Cancelled)
@@ -441,7 +447,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenAddItemDialog()
         {
-            if (_addingEnabled is false) return;
+            if (_addingEnabled is false || ReadOnly) return;
 
             var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
             if (result.Cancelled)

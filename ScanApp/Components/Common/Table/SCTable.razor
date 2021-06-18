@@ -83,9 +83,9 @@ else
             {
                 <TableToolbar T="TTableType"
                               Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
-                              AddVisible="_addingEnabled" AddDisabled="false" OnAddClicked="OpenAddItemDialog"
-                              EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" OnEditClicked="OpenEditItemDialog"
-                              FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
+                              AddVisible="_addingEnabled" AddDisabled="ReadOnly" OnAddClicked="OpenAddItemDialog"
+                              EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || ReadOnly)" OnEditClicked="OpenEditItemDialog"
+                              FilterVisible="_filteringEnabled" FilterDisabled="Loading" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
             }
         </ToolBarContent>
 

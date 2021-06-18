@@ -1,9 +1,9 @@
 ﻿@typeparam T
 
-@if (Groupables?.Count() > 0 && GroupingVisible)
+@if (GroupingVisible)
 {
     <MudSelect Value="SelectedGroupable" ValueChanged="SelectedGroupableChanged" T="ColumnConfig<T>" Label="Groups"
-               FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller;">
+               Disabled="GroupingDisabled" FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller;">
         <MudSelectItem T="ColumnConfig<T>" Value="null">None</MudSelectItem>
         @foreach (var cc in Groupables)
         {
@@ -23,20 +23,25 @@
 {
     @if (FiltersApplied)
     {
-        <MudButton OnClick="OnRemoveFilterClicked" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2" Style="font-size: smaller">Remove filters</MudButton>
+        <MudButton OnClick="OnRemoveFilterClicked" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2" Disabled="FilterDisabled" Style="font-size: smaller">Remove filters</MudButton>
     }
     else
     {
-        <MudButton OnClick="OnFilterClicked" Variant="Variant.Filled" Class="ml-2" Style="font-size: smaller">Filter facade</MudButton>
+        <MudButton OnClick="OnFilterClicked" Variant="Variant.Filled" Class="ml-2" Disabled="FilterDisabled" Style="font-size: smaller">Filter facade</MudButton>
     }
 }
 
 @code {
 
     /// <summary>
-    /// Gets or sets a value indicating if grouping function should be disabled.
+    /// Gets or sets a value indicating if grouping function should be visible.
     /// </summary>
     [Parameter] public bool GroupingVisible { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating if grouping function should be disabled.
+    /// </summary>
+    [Parameter] public bool GroupingDisabled { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of <see cref="ColumnConfig{T}" /> that will be set as options for grouping.
@@ -84,9 +89,14 @@
     [Parameter] public bool EditDisabled { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating if filtering function should be disabled.
+    /// Gets or sets a value indicating if filtering function should be visible.
     /// </summary>
     [Parameter] public bool FilterVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if filtering function should be disabled.
+    /// </summary>
+    [Parameter] public bool FilterDisabled { get; set; }
 
     /// <summary>
     /// Occurs when 'filter' button is clicked.
