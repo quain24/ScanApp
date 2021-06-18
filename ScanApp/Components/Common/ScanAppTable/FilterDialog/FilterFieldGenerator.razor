@@ -1,6 +1,7 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using Microsoft.AspNetCore.Components.Rendering
 @using System.Linq.Expressions
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @typeparam TItem
 
 @FilterFields
@@ -47,15 +48,15 @@
             if (!ColumnConfigs[i].IsFilterable)
                 continue;
             
-            if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
+            if (ColumnConfigs[i].PropertyType.IsDateTime())
             {
                 GenerateBetweenDateTimeFilterFields(builder, i);
             }
-            else if (TypeChecker.IsString(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsString())
             {
                 GenerateContainsFilterFields(builder, i);
             }
-            else if (TypeChecker.IsIntegerOrDecimal(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsIntegerOrDecimal())
             {
                 GenerateBetweenFilterFields(builder, i);
             }
@@ -79,7 +80,7 @@
             builder2.AddAttribute(9, nameof(MudDatePicker.ShowWeekNumbers), true);
             builder2.AddAttribute(10, nameof(MudDatePicker.Validation), GetValidator(index));
 
-            var callbackType = typeof(EventCallback<>).MakeGenericType(TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType));
+            var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType.GetNullableType());
 
             async Task EditFromDateDelegate(dynamic obj)
             {
@@ -152,7 +153,7 @@
         builder.AddAttribute(2, nameof(MudExpansionPanel.Style), "margin-left: 5px; margin-right: 5px;");
         builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment)(builder2 =>
         {
-            Type type = TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType);
+            Type type = ColumnConfigs[index].PropertyType.GetNullableType();
             builder2.OpenComponent(4, typeof(MudNumericField<>).MakeGenericType(type));
             builder2.AddAttribute(5, nameof(MudNumericField<string>.Label), "Between this value");
             builder2.AddAttribute(6, nameof(MudNumericField<string>.Variant), Variant.Outlined);
@@ -206,7 +207,7 @@
 
     private Delegate GetValidatorWithNullableType(int iterator)
     {
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
 
         var methodInfo =
             ColumnConfigs[iterator]
