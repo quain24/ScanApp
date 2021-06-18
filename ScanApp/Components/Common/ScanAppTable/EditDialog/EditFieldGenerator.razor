@@ -1,6 +1,7 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
 @using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Rendering
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog
 @typeparam TItem
 
@@ -33,52 +34,83 @@
             int localIterator = i;
             if (!ColumnConfigs[i].IsEditable)
             {
-                builder.OpenRegion(0);
-                builder.OpenComponent(0, typeof(MudField));
-                builder.AddAttribute(1, nameof(MudField.Label), ColumnConfigs[i].DisplayName);
-                builder.AddAttribute(2, nameof(MudField.Variant), Variant.Filled);
-                builder.AddAttribute(3, nameof(MudField.ChildContent), (RenderFragment)(builder2 =>
-                {
-                    builder2.AddContent(4, ColumnConfigs[localIterator].PropInfo.GetValue(Item));
-                }));
-                builder.CloseComponent();
-                builder.CloseRegion();
-                continue;
+                GenerateNonEditableField(builder, i);
             }
-
-            if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
+            else if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
             {
-                builder.OpenRegion(1);
-                builder.OpenComponent(0, typeof(MudDatePicker));
-                builder.AddAttribute(1, nameof(MudDatePicker.Elevation), 7);
-                builder.AddAttribute(2, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
-                builder.AddAttribute(3, nameof(MudDatePicker.Label), ColumnConfigs[i].DisplayName);
-                builder.AddAttribute(4, nameof(MudDatePicker.Editable), true);
-                builder.AddAttribute(5, nameof(MudDatePicker.ShowWeekNumbers), true);
-                builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateNullableEditDelegate(i));
-                builder.AddAttribute(7, nameof(MudDatePicker.Date), ColumnConfigs[localIterator].PropInfo.GetValue(Item));
-                builder.AddAttribute(8, nameof(MudDatePicker.Validation), GetValidator(i));
-                builder.CloseComponent();
-                builder.CloseRegion();
-                continue;
+                GenerateDateTimeField(builder, i);
+            }
+            else if (TypeChecker.IsIntegerOrDecimal(ColumnConfigs[i].PropertyType))
+            {
+                Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
+                GenerateNumericField(builder, i, nullableType);
+            }
+            else
+            {
+                Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
+                GenerateTextField(builder, i, nullableType);
             }
 
-            builder.OpenRegion(2);
-            Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
-            builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
-            builder.AddAttribute(1, nameof(MudTextField<string>.Value), ColumnConfigs[localIterator].PropInfo.GetValue(Item));
-            builder.AddAttribute(2, nameof(MudTextField<string>.Variant), Variant.Outlined);
-            builder.AddAttribute(3, nameof(MudTextField<string>.Label), ColumnConfigs[i].DisplayName);
-            builder.AddAttribute(4, nameof(MudTextField<string>.Immediate), true);
-            builder.AddAttribute(5, nameof(MudTextField<string>.Validation), GetNullableValidator(i));
-            builder.AddAttribute(6, nameof(MudTextField<string>.ValueChanged), CreateNullableEditDelegate(i));
-            builder.AddAttribute(7, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
-
-            builder.CloseComponent();
-            builder.CloseRegion();
         }
     };
 
+    private void GenerateNonEditableField(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(0);
+        builder.OpenComponent(0, typeof(MudField));
+        builder.AddAttribute(1, nameof(MudField.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(2, nameof(MudField.Variant), Variant.Filled);
+        builder.AddAttribute(3, nameof(MudField.ChildContent), (RenderFragment)(builder2 =>
+        {
+            builder2.AddContent(4, ColumnConfigs[index].PropInfo.GetValue(Item));
+        }));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateDateTimeField(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(1);
+        builder.OpenComponent(0, typeof(MudDatePicker));
+        builder.AddAttribute(1, nameof(MudDatePicker.Elevation), 7);
+        builder.AddAttribute(2, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
+        builder.AddAttribute(3, nameof(MudDatePicker.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(4, nameof(MudDatePicker.Editable), true);
+        builder.AddAttribute(5, nameof(MudDatePicker.ShowWeekNumbers), true);
+        builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(7, nameof(MudDatePicker.Date), ColumnConfigs[index].PropInfo.GetValue(Item));
+        builder.AddAttribute(8, nameof(MudDatePicker.Validation), GetValidator(index));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateNumericField(RenderTreeBuilder builder, int index, Type nullableType)
+    {
+        builder.OpenRegion(2);
+        builder.OpenComponent(0, typeof(MudNumericField<>).MakeGenericType(nullableType));
+        builder.AddAttribute(1, nameof(MudNumericField<string>.Label), "Between this value");
+        builder.AddAttribute(2, nameof(MudNumericField<string>.Variant), Variant.Outlined);
+        builder.AddAttribute(3, nameof(MudNumericField<string>.Immediate), true);
+        builder.AddAttribute(4, nameof(MudNumericField<string>.Validation), GetNullableValidator(index));
+        builder.AddAttribute(5, nameof(MudNumericField<string>.ValueChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(6, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
+        builder.AddAttribute(7, nameof(MudNumericField<string>.Value), ColumnConfigs[index].PropInfo.GetValue(Item));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateTextField(RenderTreeBuilder builder, int index, Type nullableType)
+    {
+        builder.OpenRegion(3);
+        builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
+        builder.AddAttribute(1, nameof(MudTextField<string>.Value), ColumnConfigs[index].PropInfo.GetValue(Item));
+        builder.AddAttribute(2, nameof(MudTextField<string>.Variant), Variant.Outlined);
+        builder.AddAttribute(3, nameof(MudTextField<string>.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(4, nameof(MudTextField<string>.Immediate), true);
+        builder.AddAttribute(5, nameof(MudTextField<string>.Validation), GetNullableValidator(index));
+        builder.AddAttribute(6, nameof(MudTextField<string>.ValueChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(7, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
+    }
     private dynamic CreateEditDelegate(int iterator)
     {
         var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[iterator].PropertyType);
