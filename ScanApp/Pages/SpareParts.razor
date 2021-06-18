@@ -95,7 +95,7 @@ else
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery(), _cts.Token);
         if (sparePartsTypesResult.Conclusion is false)
         {
-            Snackbar.Add("Could not fetch spare part types.", Severity.Error);
+            Snackbar.Add($"Could not fetch spare part types.\n{sparePartsTypesResult.ErrorDescription}", Severity.Error);
             return;
         }
 
