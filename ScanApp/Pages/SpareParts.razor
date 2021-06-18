@@ -34,22 +34,23 @@
 
 @code
 {
-    private List<SparePartGUIModel> _spareParts = new();
-    private List<ColumnConfig<SparePartGUIModel>> _configs = new()
+    private readonly List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
-            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+        ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+                .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
                 .ColumnStyle("width: 75px;")
-            .Build(),
-            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+                .Build(),
+        ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
                 .UnderName("Part name")
                 .ColumnStyle("width: 300px;")
                 .AsReadOnly()
                 .Build()
     };
 
-    private volatile bool _busy;
+    private volatile bool _busyIncoming;
+    private volatile bool _busyOutgoing;
     private string _articleId;
+    private List<SparePartGUIModel> _spareParts = new();
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private RepairWorkshopModel _selectedWorkshop;
     private Func<string, IEnumerable<string>> _articleNrValidator;
@@ -58,13 +59,13 @@
     {
         try
         {
-            _busy = true;
+            _busyIncoming = true;
             await Task.WhenAll(RetrieveRepairWorkshops(), RetrievePartModels());
             _articleNrValidator = ArticleNumberValidator.ToMudFormFieldValidator("Article number");
         }
         finally
         {
-            _busy = false;
+            _busyIncoming = false;
         }
     }
 
@@ -97,9 +98,9 @@
     {
         try
         {
-            if (_busy) return;
+            if (_busyIncoming) return;
 
-            _busy = true;
+            _busyOutgoing = true;
 
             var parts = _spareParts
                 .Where(s => s.Amount > 0)
@@ -119,17 +120,17 @@
         }
         finally
         {
-            _busy = false;
+            _busyOutgoing = false;
         }
     }
 
     private bool SubmitDisable()
     {
-        if (_busy) return true;
+        if (_busyIncoming || _busyOutgoing) return true;
         if (_selectedWorkshop is null || string.IsNullOrEmpty(_articleId)) return true;
         return _spareParts.All(s => s.Amount == 0);
     }
-    
+
     private void RefreshStateOnSelectionChange()
     {
         StateHasChanged();
