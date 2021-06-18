@@ -132,7 +132,8 @@
             builder2.AddAttribute(9, nameof(MudDatePicker.ShowWeekNumbers), true);
             builder2.AddAttribute(10, nameof(MudDatePicker.Validation), GetValidator(index));
 
-            var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType);
+            var callbackType = typeof(EventCallback<>).MakeGenericType(TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType));
+
 
             async Task EditFromDateDelegate(dynamic obj)
             {
