@@ -3,6 +3,7 @@
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog
 @using System.Linq.Expressions
 @using System.Reflection
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @typeparam TItem
 
 @AddFields
@@ -35,15 +36,15 @@
             {
                 GenerateNonEditableFieldWithDefaultValue(builder, i);
             }
-            else if ( TypeChecker.IsString(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsString())
             {
                 GenerateTextFields(builder, i);
             }
-            else if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsDateTime())
             {
                 GenerateDatePickers(builder, i);
             }
-            else if (TypeChecker.IsIntegerOrDecimal(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsIntegerOrDecimal())
             {
                 GenerateNumericFields(builder, i);
             }
@@ -68,7 +69,7 @@
     private void GenerateTextFields(RenderTreeBuilder builder, int index)
     {
         builder.OpenRegion(1);
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType);
+        Type nullableType = ColumnConfigs[index].PropertyType.GetNullableType();
         builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
         builder.AddAttribute(1, nameof(MudTextField<string>.Variant), Variant.Outlined);
         builder.AddAttribute(2, nameof(MudTextField<string>.Label), ColumnConfigs[index].DisplayName);
@@ -99,7 +100,7 @@
     private void GenerateNumericFields(RenderTreeBuilder builder, int index)
     {
         builder.OpenRegion(3);
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[index].PropertyType);
+        Type nullableType = ColumnConfigs[index].PropertyType.GetNullableType();
         builder.OpenComponent(0, typeof(MudNumericField<>).MakeGenericType(nullableType));
         builder.AddAttribute(1, nameof(MudNumericField<string>.Variant), Variant.Outlined);
         builder.AddAttribute(2, nameof(MudNumericField<string>.Label), ColumnConfigs[index].DisplayName);
@@ -126,7 +127,7 @@
 
     private dynamic CreateNullableEditDelegate(int iterator)
     {
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
         var callbackType = typeof(EventCallback<>).MakeGenericType(nullableType);
 
         async Task EditDelegate(dynamic obj)
@@ -149,7 +150,7 @@
 
     private Delegate GetNullableValidator(int iterator)
     {
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
 
         var methodInfo = ColumnConfigs[iterator]
             .GetType()

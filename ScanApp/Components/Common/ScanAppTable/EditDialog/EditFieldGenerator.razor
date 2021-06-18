@@ -2,6 +2,7 @@
 @using System.Reflection
 @using System.Linq.Expressions
 @using Microsoft.AspNetCore.Components.Rendering
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog
 @typeparam TItem
 
@@ -36,18 +37,18 @@
             {
                 GenerateNonEditableField(builder, i);
             }
-            else if (TypeChecker.IsDateTime(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsDateTime())
             {
                 GenerateDateTimeField(builder, i);
             }
-            else if (TypeChecker.IsIntegerOrDecimal(ColumnConfigs[i].PropertyType))
+            else if (ColumnConfigs[i].PropertyType.IsIntegerOrDecimal())
             {
-                Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
+                Type nullableType = ColumnConfigs[i].PropertyType.GetNullableType();
                 GenerateNumericField(builder, i, nullableType);
             }
             else
             {
-                Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[i].PropertyType);
+                Type nullableType = ColumnConfigs[i].PropertyType.GetNullableType();
                 GenerateTextField(builder, i, nullableType);
             }
 
@@ -88,7 +89,7 @@
     {
         builder.OpenRegion(2);
         builder.OpenComponent(0, typeof(MudNumericField<>).MakeGenericType(nullableType));
-        builder.AddAttribute(1, nameof(MudNumericField<string>.Label), "Between this value");
+        builder.AddAttribute(1, nameof(MudNumericField<string>.Label), ColumnConfigs[index].DisplayName);
         builder.AddAttribute(2, nameof(MudNumericField<string>.Variant), Variant.Outlined);
         builder.AddAttribute(3, nameof(MudNumericField<string>.Immediate), true);
         builder.AddAttribute(4, nameof(MudNumericField<string>.Validation), GetNullableValidator(index));
@@ -125,7 +126,7 @@
 
     private dynamic CreateNullableEditDelegate(int iterator)
     {
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
         var callbackType = typeof(EventCallback<>).MakeGenericType(nullableType);
 
         async Task EditDelegate(dynamic obj)
@@ -148,7 +149,7 @@
 
     private Delegate GetNullableValidator(int iterator)
     {
-        Type nullableType = TypeChecker.GetNullableType(ColumnConfigs[iterator].PropertyType);
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
 
         var methodInfo = ColumnConfigs[iterator]
             .GetType()
