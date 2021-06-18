@@ -224,14 +224,34 @@
 
             builder2.AddAttribute(9, nameof(MudNumericField<string>.ValueChanged), editFromDelegate);
             builder2.AddAttribute(10, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
-            builder2.AddAttribute(11, nameof(MudNumericField<string>.Step), ".01M");
+            try
+            {
+                builder2.AddAttribute(11, "Step", Convert.ChangeType(0.1M, ColumnConfigs[index].PropertyType));
+            }
+            catch
+            {
+                Console.WriteLine(ColumnConfigs[index].PropertyType.ToString());
+                if (ColumnConfigs[index].PropertyType == typeof(double?))
+                {
+                    builder2.AddAttribute(12, "Step", new double?(0.1));
+
+                }
+                else if (ColumnConfigs[index].PropertyType == typeof(float?))
+                {
+                    builder2.AddAttribute(13, "Step", new float?(0.1F));
+                }
+                else if (ColumnConfigs[index].PropertyType == typeof(decimal?))
+                {
+                    builder2.AddAttribute(14, "Step", new decimal?(0.1M));
+                }
+            }
             builder2.CloseComponent();
 
-            builder2.OpenComponent(12, typeof(MudNumericField<>).MakeGenericType(type));
-            builder2.AddAttribute(13, nameof(MudNumericField<string>.Label), "and this value");
-            builder2.AddAttribute(14, nameof(MudNumericField<string>.Variant), Variant.Outlined);
-            builder2.AddAttribute(15, nameof(MudNumericField<string>.Immediate), true);
-            builder2.AddAttribute(16, nameof(MudNumericField<string>.Validation), GetValidator(index));
+            builder2.OpenComponent(15, typeof(MudNumericField<>).MakeGenericType(type));
+            builder2.AddAttribute(16, nameof(MudNumericField<string>.Label), "and this value");
+            builder2.AddAttribute(17, nameof(MudNumericField<string>.Variant), Variant.Outlined);
+            builder2.AddAttribute(18, nameof(MudNumericField<string>.Immediate), true);
+            builder2.AddAttribute(19, nameof(MudNumericField<string>.Validation), GetValidator(index));
 
 
             async Task EditToDelegate(dynamic obj)
@@ -243,7 +263,6 @@
 
             builder2.AddAttribute(17, nameof(MudNumericField<string>.ValueChanged), editToDelegate);
             builder2.AddAttribute(18, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
-            builder2.AddAttribute(19, nameof(MudNumericField<string>.Step), ".01M");
             builder2.CloseComponent();
         }));
         builder.CloseComponent();
