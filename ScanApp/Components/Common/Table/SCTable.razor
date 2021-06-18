@@ -3,7 +3,7 @@
 
 @if (GroupedData?.Count > 0)
 {
-    <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupClick" Loading="Loading"
+    <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupRowClick" Loading="Loading"
               FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
               Class="m-0 p-0" Elevation="0" Bordered="false" Striped="true" Hover="true" Outlined="false" Dense="true" Breakpoint="Breakpoint.None">
         <ToolBarContent>

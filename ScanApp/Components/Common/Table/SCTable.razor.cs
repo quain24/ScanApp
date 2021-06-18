@@ -28,7 +28,7 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public bool FixedFooter { get; set; }
 
         /// <inheritdoc cref="MudTableBase.Height" />
-        [Parameter] public int MaxTableHeight { get; set; }
+        [Parameter] public int Height { get; set; }
 
         /// <summary>
         /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
@@ -289,18 +289,11 @@ namespace ScanApp.Components.Common.Table
 
         protected override void OnInitialized()
         {
-            base.OnInitialized();
             AssignColumnsByProperties();
             EnableAvailableFunctionality();
             ColumnStyles = new ColumnStyleBuilder<TTableType>().BuildUsing(Configs);
             RowStyleFunc ??= DefaultRowStyleFunc;
             _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs);
-        }
-
-        protected override void OnParametersSet()
-        {
-            base.OnParametersSet();
-            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         private void AssignColumnsByProperties()
@@ -315,6 +308,21 @@ namespace ScanApp.Components.Common.Table
             }
         }
 
+        private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
+        {
+            if (config.PropertyType.IsValueType) return true;
+
+            var interfaces = config.PropertyType.GetInterfaces();
+            return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
+        }
+
+        private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
+        {
+            return _comparables.Contains(config)
+                ? new Func<TTableType, dynamic>(config.GetValueFrom)
+                : item => config.GetValueFrom(item)?.ToString();
+        }
+
         private void EnableAvailableFunctionality()
         {
             _filteringEnabled = (Configs?.Any(c => c.IsFilterable) ?? false) &&
@@ -326,10 +334,9 @@ namespace ScanApp.Components.Common.Table
             _addingEnabled = (ItemFactory is not null && ShowAddButton is Show.Auto) || ShowAddButton is Show.Yes;
         }
 
-        private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
+        protected override void OnParametersSet()
         {
-            var interfaces = config.PropertyType.GetInterfaces();
-            return interfaces.Any(i => i == typeof(IComparable) || i == typeof(IComparable<>).MakeGenericType(config.PropertyType));
+            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         private void CreateGroupsBasedOn(ColumnConfig<TTableType> selectedColumn)
@@ -392,7 +399,7 @@ namespace ScanApp.Components.Common.Table
             return value ?? string.Empty;
         }
 
-        private void OnGroupClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
+        private void OnGroupRowClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)
         {
             _selectedGroupId = _selectedGroupId == args.Item.Key ? null : args.Item.Key;
         }
@@ -434,13 +441,12 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenAddItemDialog()
         {
-            if (_addingEnabled)
-            {
-                var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
-                if (result.Cancelled)
-                    return;
-                await OnAddNewItemHandler((TTableType)result.Data);
-            }
+            if (_addingEnabled is false) return;
+
+            var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
+            if (result.Cancelled)
+                return;
+            await OnAddNewItemHandler((TTableType)result.Data);
         }
 
         private Task OnAddNewItemHandler(TTableType item)
@@ -474,28 +480,21 @@ namespace ScanApp.Components.Common.Table
             CreateGroupsBasedOn(SelectedGroupable);
         }
 
-        private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
-        {
-            return _comparables.Contains(config)
-                ? new Func<TTableType, dynamic>(config.GetValueFrom)
-                : item => config.GetValueFrom(item)?.ToString();
-        }
-
         private string CalculateHeight(int rows = 0, bool isNested = false)
         {
             // No height set
-            if (MaxTableHeight < 1)
+            if (Height < 1)
                 return null;
 
             // non-nested table is either unlimited or always set to given MaxHeight
             if (isNested is false)
-                return MaxTableHeight < 1 ? null : MaxTableHeight + "px";
+                return Height < 1 ? null : Height + "px";
 
             // rows in group * row height + header height and some
             var theoreticalSize = (rows * 38) + 120;
 
             // 70% for nested table, so user can grab below nested table and drag to other groupings
-            return (theoreticalSize > MaxTableHeight * 0.7 ? MaxTableHeight * 0.7 : theoreticalSize) + "px";
+            return (theoreticalSize > Height * 0.7 ? Height * 0.7 : theoreticalSize) + "px";
         }
 
         private string DefaultRowStyleFunc(TTableType rowValue, int rowNumber)
