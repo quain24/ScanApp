@@ -55,8 +55,8 @@
                 builder.AddAttribute(3, nameof(MudDatePicker.Label), ColumnConfigs[i].DisplayName);
                 builder.AddAttribute(4, nameof(MudDatePicker.Editable), true);
                 builder.AddAttribute(5, nameof(MudDatePicker.ShowWeekNumbers), true);
-                builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateEditDelegate(i));
-                builder.AddAttribute(7, nameof(MudDatePicker.Date), ColumnConfigs[localIterator].PropInfo.GetValue(Item) as DateTime?);
+                builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateNullableEditDelegate(i));
+                builder.AddAttribute(7, nameof(MudDatePicker.Date), ColumnConfigs[localIterator].PropInfo.GetValue(Item));
                 builder.AddAttribute(8, nameof(MudDatePicker.Validation), GetValidator(i));
                 builder.CloseComponent();
                 builder.CloseRegion();
