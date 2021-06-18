@@ -31,6 +31,7 @@
 
 <MudButton OnClick="Submit" Disabled="SubmitDisable()">Submit</MudButton>
 <MudButton OnClick="ResetForm">Clear</MudButton>
+
 @code
 {
     private List<SparePartGUIModel> _spareParts = new();
@@ -51,6 +52,7 @@
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private RepairWorkshopModel _selectedWorkshop;
     private Func<string, IEnumerable<string>> _articleNrValidator;
+
     protected override async Task OnInitializedAsync()
     {
         try
