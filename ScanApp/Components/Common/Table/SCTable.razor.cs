@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
+using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
@@ -267,6 +268,9 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         [Parameter] public object ItemFactory { get; set; }
 
+        /// <inheritdoc cref="EditDialog{T}.ItemCopier"/>
+        [Parameter] public object ItemCopier { get; set; }
+
         #endregion Outside parameters
 
         private ColumnConfig<TTableType> SelectedGroupable { get; set; }
@@ -406,15 +410,13 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            if (_editingEnabled)
-            {
-                var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
+            if (_editingEnabled is false) return;
 
-                if (result.Cancelled)
-                    return;
+            var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
+            if (result.Cancelled)
+                return;
 
-                await OnEditItemHandler((TTableType)result.Data);
-            }
+            await OnEditItemHandler((TTableType)result.Data);
         }
 
         private Task OnEditItemHandler(TTableType editedItem)
@@ -441,11 +443,10 @@ namespace ScanApp.Components.Common.Table
             }
         }
 
-        private async Task OnAddNewItemHandler(TTableType item)
+        private Task OnAddNewItemHandler(TTableType item)
         {
             Data.Add(item);
-            await ItemCreated.InvokeAsync(item);
-            CreateGroupsBasedOn(SelectedGroupable);
+            return ItemCreated.InvokeAsync(item);
         }
 
         /// <summary>

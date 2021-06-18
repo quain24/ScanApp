@@ -37,6 +37,15 @@
     [Parameter] public T SourceItem { get; set; }
 
     /// <summary>
+    /// Gets or sets <typeparam name="T" /> object copier delegate necessary to create a copy of source item for editing.<br />
+    /// By default source item will be copied by built-in deep-copy mechanism that can be replaced if needed.
+    /// Supported delegates are:
+    /// <para><see cref="Func{T, T}">Func&lt;T, T&gt;</see></para>
+    /// <para><see cref="Func{T, Task{T}}">Func&lt;T, Task&lt;T&gt;&gt;</see></para>
+    /// </summary>
+    [Parameter] public object ItemCopier { get; set; }
+
+    /// <summary>
     /// Gets or sets height of dialog content (which exclude buttons and header).
     /// </summary>
     /// <value>Dialog content height in pixels.</value>
@@ -48,9 +57,28 @@
     private EditFieldCreator<T> _fieldCreator;
     private bool _success = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        TargetItem = SourceItem.Copy();
+        TargetItem = await CreateCopy();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task<T> CreateCopy()
+    {
+        try
+        {
+            return ItemCopier switch
+            {
+                null => SourceItem.Copy(),
+                Func<T, T> factory => factory.Invoke(SourceItem),
+                Func<T, Task<T>> factory => await factory.Invoke(SourceItem).ConfigureAwait(false),
+                _ => throw new ArgumentOutOfRangeException(nameof(ItemCopier), "Provided copy delegate type is not compatible with allowed delegate types.")
+                };
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new Exception($"Something went wrong when trying to create item copy for editing using provided {nameof(ItemCopier)}: {ex.Message}", ex);
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)
