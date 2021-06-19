@@ -13,7 +13,20 @@
 <h1>Alt table</h1>
 
 <SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" Loading="loading"/>
+         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts"
+         ItemCreated="Created" Loading="loading">
+
+    <SCColumn T="WeatherForecast" Context="item" Order="0">
+        <MudButton Color="@(item.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => item.TemperatureC = ++item.TemperatureC)">
+            @(item.TemperatureC)
+        </MudButton>
+    </SCColumn>
+    <SCColumn T="WeatherForecast" Context="item">
+        <MudButton Color="@(item.Summary.Length > 5 ? Color.Primary : Color.Secondary)">
+            @(item.Summary)
+        </MudButton>
+    </SCColumn>
+</SCTable>
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>

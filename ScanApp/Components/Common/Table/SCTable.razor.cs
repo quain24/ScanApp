@@ -278,9 +278,15 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public object ItemCopier { get; set; }
 
         #endregion Outside parameters
+        
+        /// <summary>
+        /// Gets or sets optional columns for displaying additional <see cref="RenderFragment"/> in table.
+        /// </summary>
+        /// <value>One or more <see cref="SCColumn{T}"/> objects if set, otherwise <see langword="null"/>.</value>
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         private ColumnConfig<TTableType> SelectedGroupable { get; set; }
-
+        private MudTable<TTableType> _mainTable;
         private string _selectedGroupId;
         private bool _groupingEnabled;
         private bool _filteringEnabled;
@@ -292,6 +298,21 @@ namespace ScanApp.Components.Common.Table
         private readonly List<IFilter<TTableType>> _filters = new();
         private MarkupString ColumnStyles { get; set; }
         private DialogFacade<TTableType> _dialogFacade;
+        private List<SCColumn<TTableType>> _columns = new();
+        private List<SCColumn<TTableType>> _columnsDisp = new();
+
+        public void AddColumn(SCColumn<TTableType> row)
+        {
+            _columns.Add(row);
+            _columns.Sort((l, r) => Comparer<int?>.Default.Compare(l.Order, r.Order));
+        }
+
+        public void RemoveColumn(SCColumn<TTableType> row) => _columns.Remove(row);
+
+
+        private int counter = 0;
+        private int vari = 0;
+        private int lastval = 0;
 
         protected override void OnInitialized()
         {
@@ -343,6 +364,7 @@ namespace ScanApp.Components.Common.Table
         protected override void OnParametersSet()
         {
             CreateGroupsBasedOn(SelectedGroupable);
+            _columnsDisp = _columns.ToList();
         }
 
         private void CreateGroupsBasedOn(ColumnConfig<TTableType> selectedColumn)

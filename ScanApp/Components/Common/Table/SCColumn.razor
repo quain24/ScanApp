@@ -1,0 +1,16 @@
+﻿@implements IDisposable
+@typeparam T;
+
+@code {
+    [CascadingParameter] public SCTable<T> ScTable { get; set; }
+
+    [Parameter] public RenderFragment<T> ChildContent { get; set; }
+
+    [Parameter] public string Header { get; set; }
+
+    [Parameter] public int? Order { get; set; }
+
+    protected override void OnInitialized() => ScTable.AddColumn(this);
+
+    public void Dispose() => ScTable.RemoveColumn(this);
+}
