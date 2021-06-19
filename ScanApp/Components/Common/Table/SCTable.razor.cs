@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
-using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
@@ -278,7 +277,7 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public object ItemCopier { get; set; }
 
         #endregion Outside parameters
-        
+
         /// <summary>
         /// Gets or sets optional columns for displaying additional <see cref="RenderFragment"/> in table.
         /// </summary>
@@ -286,33 +285,32 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         private ColumnConfig<TTableType> SelectedGroupable { get; set; }
-        private MudTable<TTableType> _mainTable;
+        private MarkupString ColumnStyles { get; set; }
         private string _selectedGroupId;
         private bool _groupingEnabled;
         private bool _filteringEnabled;
         private bool _editingEnabled;
         private bool _addingEnabled;
-        private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
+        private SortedDictionary<string, List<TTableType>> GroupedData { get; } = new(new WordAndNumberStringComparer());
         private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
-        private MarkupString ColumnStyles { get; set; }
+        private readonly List<SCColumn<TTableType>> _columns = new();
         private DialogFacade<TTableType> _dialogFacade;
-        private List<SCColumn<TTableType>> _columns = new();
-        private List<SCColumn<TTableType>> _columnsDisp = new();
 
-        public void AddColumn(SCColumn<TTableType> row)
-        {
-            _columns.Add(row);
-            _columns.Sort((l, r) => Comparer<int?>.Default.Compare(l.Order, r.Order));
-        }
+        /// <summary>
+        /// Registers new custom <see cref="SCColumn{T}"/> component to this table.<br/>
+        /// Typically this is done by itself by column being registered.
+        /// </summary>
+        /// <param name="column">A column component being registered.</param>
+        public void AddColumn(SCColumn<TTableType> column) => _columns.Add(column);
 
-        public void RemoveColumn(SCColumn<TTableType> row) => _columns.Remove(row);
-
-
-        private int counter = 0;
-        private int vari = 0;
-        private int lastval = 0;
+        /// <summary>
+        /// Removes given <paramref name="column"/> component from this table.<br/>
+        /// Typically this is done by itself by column being registered.
+        /// </summary>
+        /// <param name="column">A column component being unregistered.</param>
+        public void RemoveColumn(SCColumn<TTableType> column) => _columns.Remove(column);
 
         protected override void OnInitialized()
         {
@@ -364,7 +362,6 @@ namespace ScanApp.Components.Common.Table
         protected override void OnParametersSet()
         {
             CreateGroupsBasedOn(SelectedGroupable);
-            _columnsDisp = _columns.ToList();
         }
 
         private void CreateGroupsBasedOn(ColumnConfig<TTableType> selectedColumn)

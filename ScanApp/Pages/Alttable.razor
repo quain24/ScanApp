@@ -15,15 +15,13 @@
 <SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
          Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts"
          ItemCreated="Created" Loading="loading">
-
-    <SCColumn T="WeatherForecast" Context="item" Order="0">
-        <MudButton Color="@(item.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => item.TemperatureC = ++item.TemperatureC)">
-            @(item.TemperatureC)
+    <SCColumn T="WeatherForecast" BoundConfig="@cc[1]">
+        <MudButton Color="@(context.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => context.TemperatureC = ++context.TemperatureC)">
+            @(context.TemperatureC)
         </MudButton>
-    </SCColumn>
-    <SCColumn T="WeatherForecast" Context="item">
-        <MudButton Color="@(item.Summary.Length > 5 ? Color.Primary : Color.Secondary)">
-            @(item.Summary)
+        @context.TemperatureC
+        <MudButton Color="@(context.Summary.Length > 5 ? Color.Primary : Color.Secondary)">
+            @(context.Summary)
         </MudButton>
     </SCColumn>
 </SCTable>
