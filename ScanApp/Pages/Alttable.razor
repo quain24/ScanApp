@@ -24,6 +24,7 @@
             @(context.Summary)
         </MudButton>
     </SCColumn>
+    <SCColumn T="WeatherForecast" BoundConfig="@cc[4]"><MudButton>Test button</MudButton></SCColumn>
 </SCTable>
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
@@ -89,6 +90,8 @@
             .FormatAs(FieldType.Time)
             .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
             .Build(),
+        ColumnBuilder<WeatherForecast>.ForPresentation("test"),
+
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))

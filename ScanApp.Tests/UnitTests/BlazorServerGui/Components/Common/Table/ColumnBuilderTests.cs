@@ -1,15 +1,24 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using Moq;
 using ScanApp.Components.Common.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
+using System;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 {
     public class ColumnBuilderTests
     {
+        [Fact]
+        public void Builds_with_name_only_as_col_conf_set_as_presenter()
+        {
+            var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
+                .ForPresentation("name");
+
+            subject.DisplayName.Should().Be("name");
+        }
+
         [Fact]
         public void Builds_with_given_target()
         {

@@ -58,8 +58,8 @@ namespace ScanApp.Components.Common.Table
         /// <inheritdoc cref="MudComponentBase.Style" />.<br />
         /// This parameter restyles table header, when table is in non-grouped mode..
         /// </summary>
-        /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px"</c>.</value>
-        [Parameter] public string HeaderStyle { get; set; } = "padding: 10px";
+        /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px; font-size: smaller"</c>.</value>
+        [Parameter] public string HeaderStyle { get; set; } = "padding: 10px; font-size: smaller";
 
         /// <summary>
         /// <inheritdoc cref="MudComponentBase.Style" />.<br />
@@ -335,6 +335,7 @@ namespace ScanApp.Components.Common.Table
 
         private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
         {
+            if (config.IsPresenter) return false;
             if (config.PropertyType.IsValueType) return true;
 
             var interfaces = config.PropertyType.GetInterfaces();
@@ -343,6 +344,7 @@ namespace ScanApp.Components.Common.Table
 
         private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
         {
+            if (config.IsPresenter) return null;
             return _comparables.Contains(config)
                 ? new Func<TTableType, dynamic>(config.GetValueFrom)
                 : item => config.GetValueFrom(item)?.ToString();

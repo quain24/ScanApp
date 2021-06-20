@@ -31,13 +31,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
             var now = DateTime.Now.Date;
+            var to = now + TimeSpan.FromDays(100);
 
-            var subject = new InBetweenInclusiveFilterDateOnly<ColumnConfigFixtures.SubClass>(config, now, now + TimeSpan.FromDays(100));
+            var subject = new InBetweenInclusiveFilterDateOnly<ColumnConfigFixtures.SubClass>(config, now, to);
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime <= (now + TimeSpan.FromDays(100)) && (d.NullableDateTime >= now))
+                .Where(d => d.NullableDateTime <= (to) && (d.NullableDateTime >= now))
                 .ToList();
 
             using (new AssertionScope())

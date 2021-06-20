@@ -112,7 +112,7 @@ namespace ScanApp.Components.Common.Table
         /// <param name="displayName">Name under which column configured in this instance will be displayed (name of column).</param>
         public ColumnConfig(string displayName)
         {
-            DisplayName = displayName;
+            DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
             IsPresenter = true;
         }
 
