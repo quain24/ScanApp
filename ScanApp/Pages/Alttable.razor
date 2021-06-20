@@ -6,7 +6,6 @@
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
-@using ScanApp.Components.Common.Table.Buttons
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
@@ -31,9 +30,6 @@
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter using table function</MudButton>
-
-<AddItemButton T="WeatherForecast" Configs="@cc.ToList()" OnItemCreated="@(i => forecasts.Add(i))" ItemFactory="@(new Func<WeatherForecast>(Create))">Add using custom button</AddItemButton>
-<EditItemButton T="WeatherForecast" Configs="@cc.ToList()" SourceItem="@WeatherForecast" SourceItemChanged="ChangeUsingExternalButton">Edit selected item  using custom button</EditItemButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
 <MudText>@(ItemCreatedByTable?.Summary ?? string.Empty)</MudText>
