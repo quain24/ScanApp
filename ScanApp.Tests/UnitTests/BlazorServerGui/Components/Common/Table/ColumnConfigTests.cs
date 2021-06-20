@@ -25,7 +25,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Throws_arg_null_exc_if_no_target_is_given_on_initialization()
         {
-            Action act = () => _ = new ColumnConfig<TestObject>(null);
+            Action act = () => _ = new ColumnConfig<TestObject>((Expression<Func<TestObject, dynamic>>)null);
 
             act.Should().Throw<ArgumentNullException>();
         }

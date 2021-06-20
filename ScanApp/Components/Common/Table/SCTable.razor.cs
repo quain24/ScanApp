@@ -343,6 +343,7 @@ namespace ScanApp.Components.Common.Table
 
         private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
         {
+            if (config.IsPresenter) return null;
             return _comparables.Contains(config)
                 ? new Func<TTableType, dynamic>(config.GetValueFrom)
                 : item => config.GetValueFrom(item)?.ToString();
