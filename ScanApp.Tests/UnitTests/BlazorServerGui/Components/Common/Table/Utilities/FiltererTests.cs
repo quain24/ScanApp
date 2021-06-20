@@ -1,10 +1,10 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Execution;
 using Moq;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -31,7 +31,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         public void Throws_arg_null_exc_when_one_of_filters_is_null()
         {
             var source = new string[0];
-            var filters = new [] { Mock.Of<IFilter<string>>(), null };
+            var filters = new[] { Mock.Of<IFilter<string>>(), null };
             Action act = () => _ = source.Filter(filters);
 
             act.Should().Throw<ArgumentNullException>();
@@ -51,8 +51,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
         {
             var filterMock = new Mock<IFilter<string>>();
             filterMock.Setup(x => x.Check(It.IsAny<string>())).Returns(true);
-            var source = new string[2]{"a", "b"};
-            var _ = source.Filter(new List<IFilter<string>>{filterMock.Object});
+            var source = new string[2] { "a", "b" };
+            var _ = source.Filter(new List<IFilter<string>> { filterMock.Object });
 
             filterMock.Verify(x => x.Run(It.Is<IEnumerable<string>>(s => s == source)), Times.Once);
             filterMock.VerifyNoOtherCalls();
@@ -67,8 +67,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             filterMock.Setup(x => x.Check(It.Is<string>(s => s == "b"))).Returns(false).Callback<string>(s => Output.WriteLine("f: " + s));
             filterMock2.Setup(x => x.Check(It.Is<string>(s => s == "b" || s == "c"))).Returns(true).Callback<string>(s => Output.WriteLine("s: " + s));
             filterMock2.Setup(x => x.Check(It.Is<string>(s => s == "a"))).Returns(false).Callback<string>(s => Output.WriteLine("s: " + s));
-            var source = new string[3]{"a", "b", "c"};
-            var result = source.Filter(new List<IFilter<string>>{filterMock.Object, filterMock2.Object});
+            var source = new string[3] { "a", "b", "c" };
+            var result = source.Filter(new List<IFilter<string>> { filterMock.Object, filterMock2.Object });
 
             using var assertionScope = new AssertionScope();
             filterMock.Verify(x => x.Check(It.IsAny<string>()), Times.AtLeastOnce);

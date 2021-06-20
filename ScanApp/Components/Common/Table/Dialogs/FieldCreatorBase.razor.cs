@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Components;
+using MudBlazor;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
@@ -19,7 +19,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value><see langword="true"/> if fields created by this creator are to be displayed as open initially, otherwise <see langword="false"/>.</value>
         [Parameter] public bool StartExpanded { get; set; }
-        
+
         /// <summary>
         /// Gets or sets date / time picker button label for 'OK' option.
         /// </summary>
@@ -49,6 +49,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value><see cref="Dictionary{TKey,TValue}"/> of <see cref="ColumnConfig{T}"/> and <see cref="MudExpansionPanel"/> if set, otherwise empty collection.</value>
         public Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
+
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();
 

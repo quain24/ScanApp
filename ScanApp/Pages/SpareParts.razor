@@ -41,19 +41,18 @@ else
     <MudButton OnClick="Submit" Disabled="SubmitDisable()" Variant="Variant.Filled" Color="Color.Primary" Style="font-size: smaller" Class="ml-2">Submit</MudButton>
 }
 
-
 @code
 {
     private readonly List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-                    .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
-                    .ColumnStyle("width: 75px;")
-                    .Build(),
+                            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+                            .ColumnStyle("width: 75px;")
+                            .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-                    .UnderName("Part name")
-                    .AsReadOnly()
-                    .Build()
+                            .UnderName("Part name")
+                            .AsReadOnly()
+                            .Build()
         };
 
     private volatile bool _busyIncoming;

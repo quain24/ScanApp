@@ -2,12 +2,12 @@
 
 <MudDialog>
     <DialogContent>
-            @if (Configs?.Count > 0)
-            {
-                <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                    <FilterFieldCreator T="T" @ref="_filterFields" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"></FilterFieldCreator>
-                </MudForm>
-            }
+        @if (Configs?.Count > 0)
+        {
+            <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+                <FilterFieldCreator T="T" @ref="_filterFields" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"></FilterFieldCreator>
+            </MudForm>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>

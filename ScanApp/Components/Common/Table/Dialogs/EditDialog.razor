@@ -76,7 +76,7 @@
                 Func<T, T> factory => factory.Invoke(SourceItem),
                 Func<T, Task<T>> factory => await factory.Invoke(SourceItem).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(ItemCopier), "Provided copy delegate type is not compatible with allowed delegate types.")
-                };
+            };
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

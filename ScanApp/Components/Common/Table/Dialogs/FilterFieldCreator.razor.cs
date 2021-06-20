@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Common.Helpers;
 using ScanApp.Components.Common.Table.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
@@ -86,7 +86,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             foreach (var (key, value) in _includingValues)
             {
                 var config = Configs.First(c => c.Identifier == key);
-                if(value is null)
+                if (value is null)
                     continue;
                 filters.Add(new IncludeFilter<T>(config, value));
             }

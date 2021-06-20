@@ -37,17 +37,17 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Services
         {
             public PropertyPathTheoryData()
             {
-                Add(c => c.AString, new []{typeof(TestObject).GetMember(nameof(TestObject.AString)).First()});
-                Add(c => c.AnNullableInt, new []{typeof(TestObject).GetMember(nameof(TestObject.AnNullableInt)).First()});
-                Add(c => c.AnInt, new []{typeof(TestObject).GetMember(nameof(TestObject.AnInt)).First()});
-                Add(c => c.SubClassProp, new []{typeof(TestObject).GetMember(nameof(TestObject.SubClassProp)).First()});
-                Add(c => c.SubClassField, new []{typeof(TestObject).GetMember(nameof(TestObject.SubClassField)).First()});
-                Add(c => c.SubClassProp.DoubleField, new []
+                Add(c => c.AString, new[] { typeof(TestObject).GetMember(nameof(TestObject.AString)).First() });
+                Add(c => c.AnNullableInt, new[] { typeof(TestObject).GetMember(nameof(TestObject.AnNullableInt)).First() });
+                Add(c => c.AnInt, new[] { typeof(TestObject).GetMember(nameof(TestObject.AnInt)).First() });
+                Add(c => c.SubClassProp, new[] { typeof(TestObject).GetMember(nameof(TestObject.SubClassProp)).First() });
+                Add(c => c.SubClassField, new[] { typeof(TestObject).GetMember(nameof(TestObject.SubClassField)).First() });
+                Add(c => c.SubClassProp.DoubleField, new[]
                 {
                     typeof(TestObject).GetMember(nameof(TestObject.SubClassProp)).First(),
                     typeof(SubClass).GetMember(nameof(SubClass.DoubleField)).First(),
                 });
-                Add(c => c.SubClassProp.SubClassField.AString, new []
+                Add(c => c.SubClassProp.SubClassField.AString, new[]
                 {
                     typeof(TestObject).GetMember(nameof(TestObject.SubClassProp)).First(),
                     typeof(SubClass).GetMember(nameof(SubClass.SubClassField)).First(),
