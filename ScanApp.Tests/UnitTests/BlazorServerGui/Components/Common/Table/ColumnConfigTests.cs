@@ -23,6 +23,24 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         }
 
         [Fact]
+        public void Creates_instance_when_only_display_name_is_given_configured_as_presenter()
+        {
+            var subject = new ColumnConfig<TestObject>("name");
+
+            subject.Should().BeOfType<ColumnConfig<TestObject>>();
+            subject.IsPresenter.Should().BeTrue();
+            subject.DisplayName.Should().Be("name");
+        }
+
+        [Fact]
+        public void Throws_arg_null_exc_if_tried_to_create_presenter_col_conf_with_null_name()
+        {
+            Action act = () => _ = new ColumnConfig<TestObject>((string)null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
         public void Throws_arg_null_exc_if_no_target_is_given_on_initialization()
         {
             Action act = () => _ = new ColumnConfig<TestObject>((Expression<Func<TestObject, dynamic>>)null);

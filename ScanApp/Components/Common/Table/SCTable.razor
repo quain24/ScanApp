@@ -17,7 +17,7 @@
                     <TableToolbar T="TTableType" Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
                                   AddVisible="_addingEnabled" AddDisabled="false" OnAddClicked="OpenAddItemDialog"
                                   EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" OnEditClicked="OpenEditItemDialog"
-                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)"/>
+                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
                 }
             </ToolBarContent>
 
@@ -44,10 +44,17 @@
                         <HeaderContent>
                             @foreach (var cfg in Configs)
                             {
-                                <MudTh Style="@GroupHeaderStyle">
-                                    <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@ChooseSortingAlgorithm(cfg)">
+                                <MudTh Style="@HeaderStyle">
+                                    @if (cfg.IsPresenter)
+                                    {
                                         @cfg.DisplayName
-                                    </MudTableSortLabel>
+                                    }
+                                    else
+                                    {
+                                        <MudTableSortLabel T="TTableType" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
+                                            @cfg.DisplayName
+                                        </MudTableSortLabel>
+                                    }
                                 </MudTh>
                             }
                         </HeaderContent>
@@ -64,7 +71,7 @@
                         <PagerContent>
                             @if (context.Value.Count > RowsPerPage)
                             {
-                                <MudTablePager PageSizeOptions="PageSizeOptions"/>
+                                <MudTablePager PageSizeOptions="PageSizeOptions" />
                             }
                         </PagerContent>
                     </MudTable>
@@ -74,7 +81,7 @@
             <PagerContent>
                 @if (GroupedData.Count > RowsPerPage)
                 {
-                    <MudTablePager PageSizeOptions="PageSizeOptions"/>
+                    <MudTablePager PageSizeOptions="PageSizeOptions" />
                 }
             </PagerContent>
         </MudTable>
@@ -93,7 +100,7 @@
                                   Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
                                   AddVisible="_addingEnabled" AddDisabled="ReadOnly" OnAddClicked="OpenAddItemDialog"
                                   EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || ReadOnly)" OnEditClicked="OpenEditItemDialog"
-                                  FilterVisible="_filteringEnabled" FilterDisabled="Loading" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)"/>
+                                  FilterVisible="_filteringEnabled" FilterDisabled="Loading" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
                 }
             </ToolBarContent>
 
@@ -105,9 +112,16 @@
                 @foreach (var cfg in Configs)
                 {
                     <MudTh Style="@HeaderStyle">
-                        <MudTableSortLabel T="TTableType" Style="font-size: smaller" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
+                        @if (cfg.IsPresenter)
+                        {
                             @cfg.DisplayName
-                        </MudTableSortLabel>
+                        }
+                        else
+                        {
+                            <MudTableSortLabel T="TTableType" SortLabel="@cfg.Identifier.ToString()" SortBy="@(ChooseSortingAlgorithm(cfg))">
+                                @cfg.DisplayName
+                            </MudTableSortLabel>
+                        }
                     </MudTh>
                 }
             </HeaderContent>
@@ -125,7 +139,7 @@
             <PagerContent>
                 @if (Data?.Count > RowsPerPage)
                 {
-                    <MudTablePager PageSizeOptions="PageSizeOptions"/>
+                    <MudTablePager PageSizeOptions="PageSizeOptions" />
                 }
             </PagerContent>
         </MudTable>

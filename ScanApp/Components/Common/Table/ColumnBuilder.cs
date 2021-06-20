@@ -39,11 +39,7 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <param name="displayName">name used as a column name for this config.</param>
         /// <returns>A <see cref="ColumnConfig{T}"/> configured as a 'presenter'.</returns>
-        public static ColumnConfig<T> ForPresentation(string displayName)
-        {
-            _ = displayName ?? throw new ArgumentNullException(nameof(displayName));
-            return new ColumnConfig<T>(displayName);
-        }
+        public static ColumnConfig<T> ForPresentation(string displayName) => new(displayName);
 
         public IColumnBuilder<T> AsReadOnly()
         {
