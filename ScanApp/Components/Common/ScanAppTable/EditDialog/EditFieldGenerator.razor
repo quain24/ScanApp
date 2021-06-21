@@ -111,6 +111,8 @@
         builder.AddAttribute(5, nameof(MudTextField<string>.Validation), GetNullableValidator(index));
         builder.AddAttribute(6, nameof(MudTextField<string>.ValueChanged), CreateNullableEditDelegate(index));
         builder.AddAttribute(7, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
+        builder.CloseComponent();
+        builder.CloseRegion();
     }
     private dynamic CreateEditDelegate(int iterator)
     {
