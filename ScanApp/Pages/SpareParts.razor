@@ -47,7 +47,6 @@
 
 @code {
     private List<SparePartGUIModel> _spareParts;
-    private List<SparePartGUIModel> _sparePartsEmpty;
     private MudForm _form;
     private bool _submitDisabled = true;
 
@@ -120,7 +119,7 @@
             .Select(m => new SparePartGUIModel(m.Name))
             .ToList();
 
-        _sparePartsEmpty = ClearSparePartList(_spareParts);
+        ResetSparePartAmountsToZero(_spareParts);
     }
 
     private async Task Submit()
@@ -161,19 +160,19 @@
         {
             _selectedRepairWorkshop = string.Empty;
         }
-        _spareParts = ClearSparePartList(_sparePartsEmpty);
+        ResetSparePartAmountsToZero(_spareParts);
         OnItemsChanged();
         StateHasChanged();
         _table.UpdateTable(_spareParts);
         return Task.CompletedTask;
     }
 
-    private List<SparePartGUIModel> ClearSparePartList(List<SparePartGUIModel> sparePartList)
+    private void ResetSparePartAmountsToZero(List<SparePartGUIModel> sparePartList)
     {
-
-        return sparePartList
-            .Select(s => new SparePartGUIModel(s?.Name))
-            .ToList();
+        foreach (var sparePart in sparePartList.Where(s => s.Amount != 0))
+        {
+            sparePart.Amount = 0;
+        }
     }
 
     private void OnItemsChanged() => OnValidationChanged(_form.IsValid);
