@@ -80,7 +80,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             foreach (var config in Configs)
             {
                 if (config.IsValidatable() is false)
-                    return;
+                    continue;
 
                 var methodType = config.GetType().GetMethod(nameof(config.Validate))?.MakeGenericMethod(config.PropertyType)
                                  ?? throw new ArgumentException("Method for validator func creation is not accessible / not existing" +
