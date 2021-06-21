@@ -41,15 +41,15 @@ namespace ScanApp.Components.Common.Table
         /// <returns>A <see cref="ColumnConfig{T}"/> configured as a 'presenter'.</returns>
         public static ColumnConfig<T> ForPresentation(string displayName) => new(displayName);
 
-        public IColumnBuilder<T> AsReadOnly()
+        public IColumnBuilder<T> Editable()
         {
-            _isEditable = false;
+            _isEditable = true;
             return this;
         }
 
-        public IColumnBuilder<T> DisableGrouping()
+        public IColumnBuilder<T> Groupable()
         {
-            _isGroupable = false;
+            _isGroupable = true;
             return this;
         }
 

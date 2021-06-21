@@ -38,7 +38,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime <= (to) && (d.NullableDateTime >= now))
+                .Where(d => d.NullableDateTime.Value.Date <= (to) && (d.NullableDateTime.Value.Date >= now))
                 .ToList();
 
             using (new AssertionScope())
@@ -60,7 +60,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime >= now)
+                .Where(d => d.NullableDateTime.Value.Date >= now)
                 .ToList();
 
             using (new AssertionScope())
@@ -76,13 +76,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
             var now = DateTime.Now.Date;
+            var to = now + TimeSpan.FromDays(100);
 
             var subject = new InBetweenInclusiveFilterDateOnly<ColumnConfigFixtures.SubClass>(config, null, now + TimeSpan.FromDays(100));
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime <= (now + TimeSpan.FromDays(100)))
+                .Where(d => d.NullableDateTime.GetValueOrDefault() <= to)
                 .ToList();
 
             using (new AssertionScope())

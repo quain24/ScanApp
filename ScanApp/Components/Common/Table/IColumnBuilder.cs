@@ -16,7 +16,8 @@ namespace ScanApp.Components.Common.Table
         IColumnBuilder<T> UnderName(string name);
 
         /// <summary>
-        /// Set validator that will be used to validate objects pointed to by built <see cref="ColumnConfig{T}"/> <c>target</c>.
+        /// Set validator that will be used to validate objects pointed to by built <see cref="ColumnConfig{T}"/> <c>target</c>.<para/>
+        /// Provided <see cref="IValidator"/> <b>must</b> be compatible with target item pointed to by this instance of <see cref="ColumnConfig{T}"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
         IColumnBuilder<T> ValidateUsing(IValidator validator);
@@ -34,16 +35,16 @@ namespace ScanApp.Components.Common.Table
         IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter);
 
         /// <summary>
-        /// Set <see cref="ColumnConfig{T}"/> being configured as 'read-only'.
+        /// Parent <see cref="SCTable{TTableType}"/> will be allowed to edit item pointed to by this instance of <see cref="ColumnConfig{T}"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
-        IColumnBuilder<T> AsReadOnly();
+        IColumnBuilder<T> Editable();
 
         /// <summary>
-        /// Set <see cref="ColumnConfig{T}"/> being configured as 'non-groupable'.
+        /// Parent <see cref="SCTable{TTableType}"/> will be allowed to group by this <see cref="ColumnConfig{T}"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
-        IColumnBuilder<T> DisableGrouping();
+        IColumnBuilder<T> Groupable();
 
         /// <summary>
         /// Set <see cref="ColumnConfig{T}"/> being configured as 'non-filterable'.

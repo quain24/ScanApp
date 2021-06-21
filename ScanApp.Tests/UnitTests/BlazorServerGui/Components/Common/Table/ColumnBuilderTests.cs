@@ -41,26 +41,25 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             subject.DisplayName.Should().Be("test name");
         }
 
-        [Fact]
-        public void Builds_as_readonly()
+        [Fact] public void Builds_as_editable()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x)
-                .AsReadOnly()
+                .Editable()
                 .Build();
 
-            subject.IsEditable.Should().BeFalse();
+            subject.IsEditable.Should().BeTrue();
         }
 
         [Fact]
-        public void Builds_as_non_groupable()
+        public void Builds_as_groupable()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x)
-                .DisableGrouping()
+                .Groupable()
                 .Build();
 
-            subject.IsGroupable.Should().BeFalse();
+            subject.IsGroupable.Should().BeTrue();
         }
 
         [Fact]

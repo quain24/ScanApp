@@ -75,13 +75,13 @@ namespace ScanApp.Components.Common.Table
         /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can edit value that it is pointing to.
         /// </summary>
         /// <value><see langword="true"/> if table can be edit data pointed to by this <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
-        public bool IsEditable { get; init; } = true;
+        public bool IsEditable { get; init; }
 
         /// <summary>
         /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can group data by objects pointed to by this instance.
         /// </summary>
         /// <value><see langword="true"/> if table can be grouped by using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
-        public bool IsGroupable { get; init; } = true;
+        public bool IsGroupable { get; init; }
 
         /// <summary>
         /// Gets or sets custom CSS style to be used when displaying table column configured by this instance.
