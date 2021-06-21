@@ -163,7 +163,6 @@
         ResetSparePartAmountsToZero(_spareParts);
         OnItemsChanged();
         StateHasChanged();
-        _table.UpdateTable(_spareParts);
         return Task.CompletedTask;
     }
 
