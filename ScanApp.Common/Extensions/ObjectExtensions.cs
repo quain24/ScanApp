@@ -33,7 +33,7 @@ namespace ScanApp.Common.Extensions
                 var arrayType = typeToReflect.GetElementType();
                 if (IsPrimitive(arrayType) == false)
                 {
-                    var clonedArray = (Array) cloneObject;
+                    var clonedArray = (Array)cloneObject;
                     clonedArray.ForEach((array, indices) =>
                         array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
                 }
@@ -79,7 +79,7 @@ namespace ScanApp.Common.Extensions
         /// <returns>A new, deep cloned object of type <typeparamref name="T"/>.</returns>
         public static T Copy<T>(this T original)
         {
-            return (T) Copy((object) original);
+            return (T)Copy((object)original);
         }
     }
 

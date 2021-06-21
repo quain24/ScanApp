@@ -15,8 +15,8 @@ namespace ScanApp.Components.Common.Table
         private dynamic _converter;
         private FieldType _type;
         private bool _isFilterable = true;
-        private bool _isEditable = true;
-        private bool _isGroupable = true;
+        private bool _isEditable;
+        private bool _isGroupable;
         private string _columnStyle;
 
         private ColumnBuilder(Expression<Func<T, dynamic>> target)
@@ -34,15 +34,22 @@ namespace ScanApp.Components.Common.Table
             return new ColumnBuilder<T>(target);
         }
 
-        public IColumnBuilder<T> AsReadOnly()
+        /// <summary>
+        /// Immediately builds a 'presenter' <see cref="ColumnConfig{T}"/> to be used with accompanying <see cref="SCColumn{T}"/> component.
+        /// </summary>
+        /// <param name="displayName">name used as a column name for this config.</param>
+        /// <returns>A <see cref="ColumnConfig{T}"/> configured as a 'presenter'.</returns>
+        public static ColumnConfig<T> ForPresentation(string displayName) => new(displayName);
+
+        public IColumnBuilder<T> Editable()
         {
-            _isEditable = false;
+            _isEditable = true;
             return this;
         }
 
-        public IColumnBuilder<T> DisableGrouping()
+        public IColumnBuilder<T> Groupable()
         {
-            _isGroupable = false;
+            _isGroupable = true;
             return this;
         }
 

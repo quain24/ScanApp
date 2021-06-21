@@ -6,22 +6,30 @@
 @using ScanApp.Common.Interfaces
 @using ScanApp.Common
 @using FluentValidation
-@using ScanApp.Components.Common.Table.Buttons
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
 <h1>Alt table</h1>
 
 <SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" ItemCreated="Created" Loading="loading"/>
+         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts"
+         ItemCreated="Created" Loading="loading">
+    <SCColumn T="WeatherForecast" BoundConfig="@cc[1]">
+        <MudButton Color="@(context.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => context.TemperatureC = ++context.TemperatureC)">
+            @(context.TemperatureC)
+        </MudButton>
+        @context.TemperatureC
+        <MudButton Color="@(context.Summary.Length > 5 ? Color.Primary : Color.Secondary)">
+            @(context.Summary)
+        </MudButton>
+    </SCColumn>
+    <SCColumn T="WeatherForecast" BoundConfig="@cc[4]"><MudButton>Test button</MudButton></SCColumn>
+</SCTable>
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
 <MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add using table function</MudButton>
 <MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter using table function</MudButton>
-
-<AddItemButton T="WeatherForecast" Configs="@cc.ToList()" OnItemCreated="@(i => forecasts.Add(i))" ItemFactory="@(new Func<WeatherForecast>(Create))">Add using custom button</AddItemButton>
-<EditItemButton T="WeatherForecast" Configs="@cc.ToList()" SourceItem="@WeatherForecast" SourceItemChanged="ChangeUsingExternalButton">Edit selected item  using custom button</EditItemButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
 <MudText>@(ItemCreatedByTable?.Summary ?? string.Empty)</MudText>
@@ -64,20 +72,30 @@
             .UnderName("Simple summary")
             .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
             .ColumnStyle("width: 30%;")
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .FormatAs(FieldType.Date)
             .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .UnderName("Separate time column")
             .FormatAs(FieldType.Time)
             .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            .Groupable()
+            .Editable()
             .Build(),
+        ColumnBuilder<WeatherForecast>.ForPresentation("test"),
+
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
@@ -86,22 +104,24 @@
                 SetFunc = value => value?.Value,
                 GetFunc = Version.Create
             })
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Number)
             .UnderName("Const number")
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Model.Name)
             .UnderName("Model name")
+            .Groupable()
+            .Editable()
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
             .UnderName("Null Date")
             .DisableFiltering()
-            .DisableGrouping()
-            .AsReadOnly()
             .Build()
     };
-
-
 
     public ColumnConfig<WeatherForecast>[] altConifgWay = new[]
     {
@@ -134,7 +154,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        StateHasChanged();
         forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
         forecasts.Add(new WeatherForecast()
         {

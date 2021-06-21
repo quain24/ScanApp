@@ -1,0 +1,23 @@
+﻿@implements IDisposable
+@typeparam T
+
+@code {
+    /// <summary>
+    /// Gets or set value representing parent <see cref="ScTable" /> instance.
+    /// </summary>
+    [CascadingParameter] public SCTable<T> ScTable { get; set; }
+
+    /// <summary>
+    /// Gets or sets alternative representation of data to be displayed instead of one contained in bound <see cref="ColumnConfig{T}" />.
+    /// </summary>
+    [Parameter] public RenderFragment<T> ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets <see cref="ColumnConfig{T}" /> which representation of data will be replaced by this component.
+    /// </summary>
+    [Parameter] public ColumnConfig<T> BoundConfig { get; set; }
+
+    protected override void OnInitialized() => ScTable.AddColumn(this);
+
+    public void Dispose() => ScTable.RemoveColumn(this);
+}

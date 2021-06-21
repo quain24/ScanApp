@@ -6,7 +6,6 @@ using ScanApp.Components.Common.Table.Utilities;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilities

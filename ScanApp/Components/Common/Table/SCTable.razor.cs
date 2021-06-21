@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
-using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
@@ -59,8 +58,8 @@ namespace ScanApp.Components.Common.Table
         /// <inheritdoc cref="MudComponentBase.Style" />.<br />
         /// This parameter restyles table header, when table is in non-grouped mode..
         /// </summary>
-        /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px"</c>.</value>
-        [Parameter] public string HeaderStyle { get; set; } = "padding: 10px";
+        /// <value>A <see cref="string" /> representing CSS style if set. By default <c>"padding: 10px; font-size: smaller"</c>.</value>
+        [Parameter] public string HeaderStyle { get; set; } = "padding: 10px; font-size: smaller";
 
         /// <summary>
         /// <inheritdoc cref="MudComponentBase.Style" />.<br />
@@ -239,6 +238,12 @@ namespace ScanApp.Components.Common.Table
         [Parameter] public Show ShowGroupsField { get; set; } = Show.Auto;
 
         /// <summary>
+        /// Gets or sets value indicating whether table should allow editing / adding.
+        /// </summary>
+        /// <value>If set to <see langword="true" />, Add and edit functions will be disabled (if they are available).</value>
+        [Parameter] public bool ReadOnly { get; set; }
+
+        /// <summary>
         /// Gets or sets how the edit dialog fields will be visible when dialog is opened.
         /// </summary>
         /// <value>If set to <see langword="true" />, dialog will start with all fields expanded (<strong>default</strong>).</value>
@@ -273,19 +278,39 @@ namespace ScanApp.Components.Common.Table
 
         #endregion Outside parameters
 
-        private ColumnConfig<TTableType> SelectedGroupable { get; set; }
+        /// <summary>
+        /// Gets or sets optional columns for displaying additional <see cref="RenderFragment"/> in table.
+        /// </summary>
+        /// <value>One or more <see cref="SCColumn{T}"/> objects if set, otherwise <see langword="null"/>.</value>
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
+        private ColumnConfig<TTableType> SelectedGroupable { get; set; }
+        private MarkupString ColumnStyles { get; set; }
         private string _selectedGroupId;
         private bool _groupingEnabled;
         private bool _filteringEnabled;
         private bool _editingEnabled;
         private bool _addingEnabled;
-        private SortedDictionary<string, List<TTableType>> GroupedData { get; set; } = new(new WordAndNumberStringComparer());
+        private SortedDictionary<string, List<TTableType>> GroupedData { get; } = new(new WordAndNumberStringComparer());
         private readonly HashSet<ColumnConfig<TTableType>> _comparables = new();
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
-        private MarkupString ColumnStyles { get; set; }
+        private readonly List<SCColumn<TTableType>> _columns = new();
         private DialogFacade<TTableType> _dialogFacade;
+
+        /// <summary>
+        /// Registers new custom <see cref="SCColumn{T}"/> component to this table.<br/>
+        /// Typically this is done by itself by column being registered.
+        /// </summary>
+        /// <param name="column">A column component being registered.</param>
+        public void AddColumn(SCColumn<TTableType> column) => _columns.Add(column);
+
+        /// <summary>
+        /// Removes given <paramref name="column"/> component from this table.<br/>
+        /// Typically this is done by itself by column being registered.
+        /// </summary>
+        /// <param name="column">A column component being unregistered.</param>
+        public void RemoveColumn(SCColumn<TTableType> column) => _columns.Remove(column);
 
         protected override void OnInitialized()
         {
@@ -310,6 +335,7 @@ namespace ScanApp.Components.Common.Table
 
         private static bool CanBeComparedDirectly(ColumnConfig<TTableType> config)
         {
+            if (config.IsPresenter) return false;
             if (config.PropertyType.IsValueType) return true;
 
             var interfaces = config.PropertyType.GetInterfaces();
@@ -318,6 +344,7 @@ namespace ScanApp.Components.Common.Table
 
         private Func<TTableType, dynamic> ChooseSortingAlgorithm(ColumnConfig<TTableType> config)
         {
+            if (config.IsPresenter) return null;
             return _comparables.Contains(config)
                 ? new Func<TTableType, dynamic>(config.GetValueFrom)
                 : item => config.GetValueFrom(item)?.ToString();
@@ -417,7 +444,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            if (_editingEnabled is false) return;
+            if (_editingEnabled is false || ReadOnly) return;
 
             var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
             if (result.Cancelled)
@@ -441,7 +468,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenAddItemDialog()
         {
-            if (_addingEnabled is false) return;
+            if (_addingEnabled is false || ReadOnly) return;
 
             var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
             if (result.Cancelled)

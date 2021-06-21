@@ -1,9 +1,10 @@
 ﻿using MudBlazor;
+using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.Table.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Common.Extensions;
 
 namespace ScanApp.Components.Common.Table.Utilities
 {
@@ -14,7 +15,7 @@ namespace ScanApp.Components.Common.Table.Utilities
 
         public DialogFacade(IDialogService dialogService, IReadOnlyList<ColumnConfig<T>> configs)
         {
-            _configs = configs;
+            _configs = configs?.Where(c => c.IsPresenter is false).ToList();
             DialogService = dialogService;
         }
 

@@ -1,0 +1,163 @@
+﻿@page "/spareparts"
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.SpareParts
+@using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
+@using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
+@using ScanApp.Application.SpareParts.Commands.CreateSpareParts
+@using ScanApp.Common
+@using ScanApp.Models.SpareParts
+@using ScanApp.Common.Validators
+@using Severity = MudBlazor.Severity
+@using FluentValidation
+@using ScanApp.Common.Extensions
+@using System.Threading
+@inject IScopedMediator mediator
+@inject ISnackbar Snackbar
+@inject ArticleNumberValidator ArticleNumberValidator
+@implements IDisposable
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<MudSelect T="RepairWorkshopModel" @bind-Value="_selectedWorkshop" Label="Repair workshops"
+           FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller" Class="ml-0">
+    <MudSelectItem T="RepairWorkshopModel" Value="null">None</MudSelectItem>
+    @foreach (var cc in _repairWorkshopModels)
+    {
+        <MudSelectItem Value="cc">@cc.Number</MudSelectItem>
+    }
+</MudSelect>
+
+<MudTextField @ref="_articleIdField" @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
+
+<SCTable ReadOnly="@(_busyOutgoing || _busyIncoming)" Loading="_busyIncoming" TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
+         EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
+
+<MudButton OnClick="ResetForm" Disabled="_busyOutgoing" Variant="Variant.Filled" Style="font-size: smaller" Class="ml-auto">Clear</MudButton>
+@if (_busyOutgoing)
+{
+    <MudButton Variant="Variant.Filled" Color="Color.Tertiary" Style="font-size: smaller" DisableRipple="true" Class="ml-2">Submitting...</MudButton>
+}
+else
+{
+    <MudButton OnClick="Submit" Disabled="SubmitDisable()" Variant="Variant.Filled" Color="Color.Primary" Style="font-size: smaller" Class="ml-2">Submit</MudButton>
+}
+
+@code
+{
+    private readonly List<ColumnConfig<SparePartGUIModel>> _configs = new()
+    {
+            ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
+                            .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+                            .ColumnStyle("width: 75px;")
+                            .Groupable()    
+                            .Editable()
+                            .Build(),
+            ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
+                            .UnderName("Part name")
+                            .Groupable()
+                            .Build()
+        };
+
+    private volatile bool _busyIncoming;
+    private volatile bool _busyOutgoing;
+    private string _articleId;
+    private List<SparePartGUIModel> _spareParts = new();
+    private List<RepairWorkshopModel> _repairWorkshopModels = new();
+    private RepairWorkshopModel _selectedWorkshop;
+    private Func<string, IEnumerable<string>> _articleNrValidator;
+    private readonly CancellationTokenSource _cts = new();
+    private MudTextField<string> _articleIdField;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _busyIncoming = true;
+            await Task.WhenAll(RetrieveRepairWorkshops(), RetrievePartModels());
+            _articleNrValidator = ArticleNumberValidator.ToMudFormFieldValidator("Article number");
+        }
+        finally
+        {
+            _busyIncoming = false;
+        }
+    }
+
+    private async Task RetrieveRepairWorkshops()
+    {
+        var storagePlacesResult = await mediator.Send(new SparePartStoragePlacesForCurrentUserQuery(), _cts.Token);
+        if (storagePlacesResult.Conclusion is false)
+        {
+            Snackbar.Add($"Could not fetch possible repair workshops\n{storagePlacesResult.ErrorDescription}", Severity.Error);
+            return;
+        }
+        _repairWorkshopModels = storagePlacesResult.Output;
+    }
+
+    private async Task RetrievePartModels()
+    {
+        var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery(), _cts.Token);
+        if (sparePartsTypesResult.Conclusion is false)
+        {
+            Snackbar.Add($"Could not fetch spare part types.\n{sparePartsTypesResult.ErrorDescription}", Severity.Error);
+            return;
+        }
+
+        _spareParts = sparePartsTypesResult.Output
+            .Select(m => new SparePartGUIModel(m.Name))
+            .ToList();
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            if (_busyIncoming) return;
+
+            _busyOutgoing = true;
+
+            var parts = _spareParts
+                .Where(s => s.Amount > 0)
+                .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
+                .ToArray();
+            await Task.Delay(3000);
+            StateHasChanged();
+            var createResult = await mediator.Send(new CreateSparePartsCommand(parts), _cts.Token);
+
+            if (createResult.Conclusion is false)
+            {
+                Snackbar.Add($"Creation of spare parts has failed!\n{createResult.ErrorDescription}");
+                return;
+            }
+
+            Snackbar.Add($"{parts.Sum(p => p.Amount)} new spare parts created!", Severity.Success);
+            ResetForm();
+        }
+        finally
+        {
+            _busyOutgoing = false;
+        }
+    }
+
+    private bool SubmitDisable()
+    {
+        if (_busyIncoming || _busyOutgoing) return true;
+        if (_selectedWorkshop is null || _articleIdField.Error || string.IsNullOrWhiteSpace(_articleId)) return true;
+        return _spareParts.All(s => s.Amount == 0);
+    }
+
+    private void RefreshStateOnSelectionChange()
+    {
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        _spareParts.ForEach(s => s.Amount = 0);
+        _articleId = null;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+    }
+}

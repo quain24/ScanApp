@@ -42,7 +42,6 @@
             </PagerContent>
         </MudTable>
 
-        
         <MudTextField @bind-Value="v" Validation="@valll"></MudTextField>
     }
 </MudContainer>
@@ -54,7 +53,6 @@
     //ColumnConfigAlt<WeatherForecast> _conf = new ColumnConfigAlt<WeatherForecast>(w => w.Summary, null, new FluentValidationWrapper<int>(x => x.Equal(10)));
     Func<int, IEnumerable<string>> valll = new FluentValidationWrapper<int>(x => x.GreaterThan(10)).Validation;
 
-
     int v = 0;
 
     protected override async Task OnInitializedAsync()
@@ -65,4 +63,3 @@
     }
 
 }
-

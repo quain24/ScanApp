@@ -25,6 +25,9 @@
     /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
     [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
 
+    /// <summary>
+    /// Gets or sets value indicating whether panels containing fields marked as invalid should start in expanded state.
+    /// </summary>
     [Parameter] public bool ExpandInvalidPanelsOnStart { get; set; } = true;
 
     /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
@@ -73,7 +76,7 @@
                 Func<T, T> factory => factory.Invoke(SourceItem),
                 Func<T, Task<T>> factory => await factory.Invoke(SourceItem).ConfigureAwait(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(ItemCopier), "Provided copy delegate type is not compatible with allowed delegate types.")
-                };
+            };
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

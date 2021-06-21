@@ -75,13 +75,13 @@ namespace ScanApp.Components.Common.Table
         /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can edit value that it is pointing to.
         /// </summary>
         /// <value><see langword="true"/> if table can be edit data pointed to by this <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
-        public bool IsEditable { get; init; } = true;
+        public bool IsEditable { get; init; }
 
         /// <summary>
         /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can group data by objects pointed to by this instance.
         /// </summary>
         /// <value><see langword="true"/> if table can be grouped by using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
-        public bool IsGroupable { get; init; } = true;
+        public bool IsGroupable { get; init; }
 
         /// <summary>
         /// Gets or sets custom CSS style to be used when displaying table column configured by this instance.
@@ -89,15 +89,35 @@ namespace ScanApp.Components.Common.Table
         /// <value>A <see cref="string"/> representation of CSS style if set, otherwise <see langword="null"/>.</value>>
         public string ColumnStyle { get; set; }
 
+        /// <summary>
+        /// Gets or sets value indicating whether this instance is a 'Presenter' Column Config. if <see langword="true"/>,<br/>
+        /// than it will not be bind to any presented values nor will it be able to display anything on its own - it has to be paired with corresponding <see cref="SCColumn{T}"/>.
+        /// </summary>
+        /// <value>if <see langword="true"/>, then this instance of <see cref="ColumnConfig{T}"/> is only a 'presenter' and will not display anything on its own.</value>
+        public bool IsPresenter { get; }
+
         private IValidator Validator { get; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
-        private Expression<Func<T, dynamic>> TargetItemSelector { get; }
+        private Expression<Func<T, dynamic>> Target { get; }
         private Func<T, dynamic> _getter;
         private Action<T, dynamic> _setter;
         private Func<T, dynamic, T> _valueSetter;
 
         /// <summary>
-        /// Creates new instance of <see cref="ColumnConfig{T}"/> configuring given <paramref name="target"/>.
+        /// Creates new instance of <see cref="ColumnConfig{T}"/> configured as a 'Presenter column' that should be paired with <see cref="SCColumn{T}"/>.<br/>
+        /// A presenter <see cref="ColumnConfig{T}"/> does not enable editing for any value that corresponding <see cref="SCColumn{T}"/> will display.<para/>
+        /// Typical use for this object is to facilitate display of additional buttons, images, external content without need to bind such content to one of values inside of <typeparamref name="T"/><br/>
+        /// displayed by <see cref="SCTable{TTableType}"/>
+        /// </summary>
+        /// <param name="displayName">Name under which column configured in this instance will be displayed (name of column).</param>
+        public ColumnConfig(string displayName)
+        {
+            DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
+            IsPresenter = true;
+        }
+
+        /// <summary>
+        /// Creates new instance of <see cref="ColumnConfig{T}"/> configured given <paramref name="target"/>.
         /// </summary>
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target)
@@ -138,8 +158,8 @@ namespace ScanApp.Components.Common.Table
         /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
-            TargetItemSelector = target ?? throw new ArgumentNullException(nameof(target));
-            PathToItem = PropertyPath<T>.GetFrom(TargetItemSelector);
+            Target = target ?? throw new ArgumentNullException(nameof(target));
+            PathToItem = PropertyPath<T>.GetFrom(Target);
 
             PropertyName = ExtractPropertyName();
             PropertyType = ExtractPropertyType();
@@ -230,7 +250,7 @@ namespace ScanApp.Components.Common.Table
             return target;
         }
 
-        private void CreatePrecompiledGetterForItem() => _getter = TargetItemSelector.Compile();
+        private void CreatePrecompiledGetterForItem() => _getter = Target.Compile();
 
         private void CreatePrecompiledSetterForItem()
         {
@@ -239,13 +259,13 @@ namespace ScanApp.Components.Common.Table
                 return;
 
             var valueParameterExpression = Expression.Parameter(typeof(object));
-            var targetExpression = TargetItemSelector.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : TargetItemSelector.Body;
+            var targetExpression = Target.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : Target.Body;
 
             var assign = Expression.Lambda<Action<T, dynamic>>
             (
                 Expression.Assign(targetExpression,
                     Expression.Convert(valueParameterExpression, targetExpression.Type)),
-                TargetItemSelector.Parameters.Single(),
+                Target.Parameters.Single(),
                 valueParameterExpression
             );
 
