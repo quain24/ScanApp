@@ -68,13 +68,29 @@
 
     public ColumnConfig<WeatherForecast>[] cc =
     {
-        ColumnBuilder<WeatherForecast>.For(c => c.Summary)
-            .UnderName("Simple summary")
-            .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-            .ColumnStyle("width: 30%;")
-            .Groupable()
-            .Editable()
-            .Build(),
+        //ColumnBuilder<WeatherForecast>.For(c => c.Summary)
+        //    .UnderName("Simple summary")
+        //    .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+        //    .ColumnStyle("width: 30%;")
+        //    .Groupable()
+        //    .Editable()
+        //    .Build(),
+        (new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary",
+            new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+        {
+            IsGroupable = true,
+            IsEditable = true,
+            IsFilterable = true
+        }).LimitAcceptedValuesTo(new List<string>()
+        {
+            "yes",
+            "no",
+            "maybe"
+        }).AssignConverter(new Converter<string>()
+        {
+            SetFunc = x => x + "conv."
+        }),
+
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))

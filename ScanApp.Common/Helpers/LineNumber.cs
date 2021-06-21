@@ -4,11 +4,12 @@ namespace ScanApp.Common.Helpers
 {
     public static class LineNumber
     {
+        private static int GetLine([CallerLineNumber] int line = 0) => line;
+
         /// <summary>
-        /// Returns line number on which this method was called.
+        /// Gets line number on which this method was called.
         /// </summary>
-        /// <param name="line">Compile time resolved parameter - will not work if manually set.</param>
         /// <returns>Line number.</returns>
-        public static int Get([CallerLineNumber] int line = 0) => line;
+        public static int Get => GetLine();
     }
 }
