@@ -232,7 +232,7 @@ else
     /// Delegate that is invoked every time an item has been deleted from the table. Returns a list of deleted <paramref name="Items" />.
     /// </summary>
     [Parameter]
-    public Action<List<TItem>> DeleteData { get; set; }
+    public Action<List<TItem>> ItemsDeleted { get; set; }
 
     /// <summary>
     /// <paramref name="DialogOptions" /> object which defines how all dialogs look like in all dialog based features in the table.
@@ -261,15 +261,74 @@ else
     private MudMessageBox _confirmDeletionBox;
 
     /// <summary>
-    /// Updates the table with provided <paramref name="items" />. Disables filtering and grouping to prevent
-    /// errors/not up to date data being displayed. Useful for quick in-table values change.
+    /// Note: Remember to replace items binded to the table as well before calling this function.
+    /// Replaces current items in the table with provided <paramref name="items" />.
+    /// Disables filtering and grouping to prevent errors/not up to date data being displayed.
+    /// Useful for quick in-table values change.
     /// </summary>
     /// <param name="items"></param>
-    public void UpdateTable(List<TItem> items)
+    public void ReplaceWith(List<TItem> items)
     {
-        ShownItems = ItemCloner.Clone(items);
+        var newItems = ItemCloner.Clone(items);
+        ShownItems = newItems;
+        Items = newItems;
         DataIsFiltered = false;
         GroupingEnabled = false;
+    }
+
+    /// <summary>
+    /// Adds an <paramref name="item"/> to the table.
+    /// </summary>
+    /// <param name="item"></param>
+    public void AddItem(TItem item)
+    {
+        Items.Add(item);
+        ShownItems.Add(item);
+        RecentlyAddedItem = item;
+        InvokeItemAdded(item);
+    }
+
+    /// <summary>
+    /// Deletes an <paramref name="item"/> from the table.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns>True if deletion was successful, otherwise false</returns>
+    public bool DeleteItem(TItem item)
+    {
+        try
+        {
+            Items.RemoveAt(FindIndex(Items, item));
+            ShownItems.RemoveAt(FindIndex(ShownItems, item));
+            RecentlyDeletedItems = new List<TItem>() {item};
+            InvokeItemsDeleted(new List<TItem>() { item });
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Deletes an item at <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns>True if deletion was successful, otherwise false </returns>
+    public bool DeleteItem(int index)
+    {
+        try
+        {
+            var itemForDeletion = Items[index];
+            Items.RemoveAt(index);
+            ShownItems.RemoveAt(index);
+            RecentlyDeletedItems = new List<TItem>(){itemForDeletion};
+            InvokeItemsDeleted(new List<TItem>() {itemForDeletion});
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void InvokeSaveChanges(TItem titem)
@@ -286,14 +345,14 @@ else
         Loading = false;
     }
 
-    private void InvokeDeleteData(List<TItem> itemList)
+    private void InvokeItemsDeleted(List<TItem> itemList)
     {
-        DeleteData?.Invoke(itemList);
+        ItemsDeleted?.Invoke(itemList);
     }
 
     private async Task InvokeDeleteDataAsync(List<TItem> itemList)
     {
-        await Task.Run(() => InvokeDeleteData(itemList));
+        await Task.Run(() => InvokeItemsDeleted(itemList));
     }
 
     private void InvokeItemAdded(TItem item)
