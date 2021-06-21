@@ -26,7 +26,7 @@
     }
 </MudSelect>
 
-<MudTextField @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
+<MudTextField @ref="_articleIdField" @bind-Value="_articleId" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
 
 <SCTable ReadOnly="@(_busyOutgoing || _busyIncoming)" Loading="_busyIncoming" TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
          EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
@@ -48,10 +48,12 @@ else
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
                             .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
                             .ColumnStyle("width: 75px;")
+                            .Groupable()    
+                            .Editable()
                             .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
                             .UnderName("Part name")
-                            .AsReadOnly()
+                            .Groupable()
                             .Build()
         };
 
@@ -63,6 +65,7 @@ else
     private RepairWorkshopModel _selectedWorkshop;
     private Func<string, IEnumerable<string>> _articleNrValidator;
     private readonly CancellationTokenSource _cts = new();
+    private MudTextField<string> _articleIdField;
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,7 +140,7 @@ else
     private bool SubmitDisable()
     {
         if (_busyIncoming || _busyOutgoing) return true;
-        if (_selectedWorkshop is null || string.IsNullOrEmpty(_articleId)) return true;
+        if (_selectedWorkshop is null || _articleIdField.Error || string.IsNullOrWhiteSpace(_articleId)) return true;
         return _spareParts.All(s => s.Amount == 0);
     }
 
