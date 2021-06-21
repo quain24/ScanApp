@@ -15,8 +15,8 @@ namespace ScanApp.Components.Common.Table
         private dynamic _converter;
         private FieldType _type;
         private bool _isFilterable = true;
-        private bool _isEditable = true;
-        private bool _isGroupable = true;
+        private bool _isEditable;
+        private bool _isGroupable;
         private string _columnStyle;
 
         private ColumnBuilder(Expression<Func<T, dynamic>> target)
