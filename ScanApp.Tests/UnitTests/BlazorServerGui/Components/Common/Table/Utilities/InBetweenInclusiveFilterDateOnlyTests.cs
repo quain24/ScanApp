@@ -76,14 +76,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.Utilit
             var data = Fixture.CreateMany<ColumnConfigFixtures.SubClass>(250);
             var config = new ColumnConfig<ColumnConfigFixtures.SubClass>(x => x.NullableDateTime);
             var now = DateTime.Now.Date;
-            var to = now + TimeSpan.FromDays(100);
+            var to = now.Date + TimeSpan.FromDays(100);
 
             var subject = new InBetweenInclusiveFilterDateOnly<ColumnConfigFixtures.SubClass>(config, null, now + TimeSpan.FromDays(100));
 
             var result = subject.Run(data).ToList();
 
             var compareTo = data
-                .Where(d => d.NullableDateTime.GetValueOrDefault() <= to)
+                .Where(d => d.NullableDateTime.Value.Date <= to.Date)
                 .ToList();
 
             using (new AssertionScope())
