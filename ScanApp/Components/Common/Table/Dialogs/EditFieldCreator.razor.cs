@@ -99,6 +99,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             // Set common options
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.OnKeyDown), OnKeyDown);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Disabled), !config.IsEditable);
 
             // Add field reference to collection.

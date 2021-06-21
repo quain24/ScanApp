@@ -137,8 +137,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), FromLabel);
-            var callbackRevalidateFromTo = CallbackFactory.Create<KeyboardEventArgs>(this, _ => ValidateFromToPair(config.Identifier));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+            //var callbackRevalidateFromTo = CallbackFactory.Create<KeyboardEventArgs>(this, _ => ValidateFromToPair(config.Identifier));
+            //builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
 
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
@@ -154,7 +155,8 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
             builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Validation), CreateValidationDelegate(config, valueType));
             builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), ToLabel);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
+            //builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
@@ -255,6 +257,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             var callbackValueChanged = CallbackFactory.Create<string>(this, s => _includingValues[config.Identifier] = string.IsNullOrEmpty(s) ? null : s);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
             builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Label), IncludeLabel);
+            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.OnKeyPress), OnKeyDown);
             builder.CloseComponent();
         }
 

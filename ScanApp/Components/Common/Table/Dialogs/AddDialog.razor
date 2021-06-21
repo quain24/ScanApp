@@ -1,9 +1,10 @@
-﻿@typeparam T
+﻿@inherits Dialog<T>
+@typeparam T
 
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-            <EditFieldCreator T="T" @ref="_fieldCreator" MaxFieldSetHeight="DialogContentHeight" StartExpanded="true" Configs="Configs" @bind-TargetItem="@SourceItem"></EditFieldCreator>
+            <EditFieldCreator T="T" @ref="_fieldCreator" onkeypress="OnKeyPress" MaxFieldSetHeight="DialogContentHeight" StartExpanded="true" Configs="Configs" @bind-TargetItem="@SourceItem"></EditFieldCreator>
         </MudForm>
     </DialogContent>
     <DialogActions>
@@ -13,13 +14,6 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-
-    /// <summary>
-    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
-    /// </summary>
-    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
-    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
 
     /// <summary>
     /// Gets or sets anew clean item which will have it's values edited.
@@ -27,17 +21,11 @@
     /// <value>Item that's values will be edited.</value>
     [Parameter] public T SourceItem { get; set; }
 
-    /// <summary>
-    /// Gets or sets height of dialog content (which exclude buttons and header).
-    /// </summary>
-    /// <value>Dialog content height in pixels.</value>
-    [Parameter] public int DialogContentHeight { get; set; }
-
     private MudForm _form;
     private EditFieldCreator<T> _fieldCreator;
     private bool _success = true;
 
-    Task Submit()
+    protected override Task Submit()
     {
         if (_form is null)
         {
@@ -54,5 +42,5 @@
         return Task.CompletedTask;
     }
 
-    void Cancel() => MudDialog.Cancel();
+    protected override void Cancel() => MudDialog.Cancel();
 }

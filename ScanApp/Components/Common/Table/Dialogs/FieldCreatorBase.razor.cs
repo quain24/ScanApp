@@ -3,6 +3,7 @@ using MudBlazor;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
@@ -45,10 +46,16 @@ namespace ScanApp.Components.Common.Table.Dialogs
         [Parameter] public int MaxFieldSetHeight { get; set; }
 
         /// <summary>
+        /// Fired when a key is pressed in an active text / numeric field generated
+        /// </summary>
+        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+
+        /// <summary>
         /// Gets a dictionary in which keys are <see cref="ColumnConfig{T}"/> objects and values are corresponding <see cref="MudExpansionPanel"/> references used by this creator.
         /// </summary>
         /// <value><see cref="Dictionary{TKey,TValue}"/> of <see cref="ColumnConfig{T}"/> and <see cref="MudExpansionPanel"/> if set, otherwise empty collection.</value>
         public Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
+
 
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();

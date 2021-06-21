@@ -1,4 +1,5 @@
 ﻿@using ScanApp.Common.Extensions
+@inherits Dialog<T>
 @typeparam T
 
 <MudDialog>
@@ -6,7 +7,7 @@
         @if (TargetItem is not null)
         {
             <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <EditFieldCreator T="T" @ref="_fieldCreator" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+                <EditFieldCreator T="T" @ref="_fieldCreator" onkeypress="OnKeyPress" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
             </MudForm>
         }
     </DialogContent>
@@ -17,14 +18,6 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-
-    /// <summary>
-    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
-    /// </summary>
-    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
-    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
-
     /// <summary>
     /// Gets or sets value indicating whether panels containing fields marked as invalid should start in expanded state.
     /// </summary>
@@ -47,15 +40,8 @@
     /// <para><see cref="Func{T, Task{T}}">Func&lt;T, Task&lt;T&gt;&gt;</see></para>
     /// </summary>
     [Parameter] public object ItemCopier { get; set; }
-
-    /// <summary>
-    /// Gets or sets height of dialog content (which exclude buttons and header).
-    /// </summary>
-    /// <value>Dialog content height in pixels.</value>
-    [Parameter] public int DialogContentHeight { get; set; }
-
+    
     private T TargetItem { get; set; }
-
     private MudForm _form;
     private EditFieldCreator<T> _fieldCreator;
     private bool _success = true;
@@ -63,7 +49,6 @@
     protected override async Task OnInitializedAsync()
     {
         TargetItem = await CreateCopy();
-        await base.OnInitializedAsync();
     }
 
     private async Task<T> CreateCopy()
@@ -86,7 +71,6 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        base.OnAfterRender(firstRender);
         if (firstRender is false) return;
 
         _form?.Validate();
@@ -95,7 +79,7 @@
             _fieldCreator?.ExpandInvalidPanels();
     }
 
-    Task Submit()
+    protected override Task Submit()
     {
         if (_form is null)
         {
@@ -110,5 +94,5 @@
         return Task.CompletedTask;
     }
 
-    void Cancel() => MudDialog.Cancel();
+    protected override void Cancel() => MudDialog.Cancel();
 }
