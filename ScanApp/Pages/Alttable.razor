@@ -81,10 +81,10 @@
                 "no",
                 "maybe"
             })
-            //.ConvertUsing(new Converter<string>()
-            //{
-            //    SetFunc = x => x + " conv."
-            //})
+            .ConvertUsing(new Converter<string>()
+            {
+                SetFunc = x => x + " conv."
+            })
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")

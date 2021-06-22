@@ -28,7 +28,7 @@
             </HeaderContent>
 
             <RowTemplate>
-                <MudTd Style="@GroupedRowStyle" DataLabel="@context.Key">@(context.Key)</MudTd>
+                <MudTd Style="@GroupedRowStyle" DataLabel="@context.Key">@(SelectedGroupable.Converter is null ? context.Key : SelectedGroupable.Converter.SetFunc(context.Key))</MudTd>
             </RowTemplate>
             <ChildRowContent>
                 @if (_selectedGroupId == context.Key)
