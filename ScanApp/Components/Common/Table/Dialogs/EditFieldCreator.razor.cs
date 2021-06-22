@@ -111,13 +111,6 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ChildContent), (RenderFragment)(builderInternal =>
             {
-                // Default value always available
-                builderInternal.OpenComponent(LineNumber.Get, itemFieldType);
-                builderInternal.AddAttribute(LineNumber.Get, nameof(MudSelectItem<int>.Value), config.PropertyType.GetDefaultValue() as object);
-
-                builderInternal.CloseComponent();
-
-                // Rest of values
                 foreach (var value in config.AllowedValues)
                 {
                     builderInternal.OpenComponent(LineNumber.Get, itemFieldType);
