@@ -29,6 +29,16 @@ namespace ScanApp.Components.Common.Table
         /// <inheritdoc cref="MudTableBase.Height" />
         [Parameter] public int Height { get; set; }
 
+        /// <inheritdoc cref="MudTableBase.Outlined" />
+        /// <remarks>Default value is <see langword="true"/>.</remarks>
+        [Parameter] public bool Outlined { get; set; } = true;
+
+        /// <inheritdoc cref="MudTableBase.Bordered" />
+        [Parameter] public bool Bordered { get; set; }
+
+        /// <inheritdoc cref="MudTableBase.Virtualize" />
+        [Parameter] public bool Virtualize { get; set; }
+
         /// <summary>
         /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
         /// </summary>

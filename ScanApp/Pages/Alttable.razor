@@ -12,15 +12,15 @@
 <h1>Alt table</h1>
 
 <SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts"
+         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" Virtualize="true"
          ItemCreated="Created" Loading="loading">
     <SCColumn T="WeatherForecast" BoundConfig="@cc[1]">
         <MudButton Color="@(context.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => context.TemperatureC = ++context.TemperatureC)">
             @(context.TemperatureC)
         </MudButton>
         @context.TemperatureC
-        <MudButton Color="@(context.Summary.Length > 5 ? Color.Primary : Color.Secondary)">
-            @(context.Summary)
+        <MudButton Color="@(context?.Summary?.Length > 5 ? Color.Primary : Color.Secondary)">
+            @(context?.Summary)
         </MudButton>
     </SCColumn>
     <SCColumn T="WeatherForecast" BoundConfig="@cc[4]"><MudButton>Test button</MudButton></SCColumn>
@@ -37,7 +37,7 @@
     <li>
         @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
         {
-            <ul>@w.Summary</ul>
+            <ul>@w?.Summary</ul>
         }
     </li>
 </MudText>
@@ -68,29 +68,24 @@
 
     public ColumnConfig<WeatherForecast>[] cc =
     {
-        //ColumnBuilder<WeatherForecast>.For(c => c.Summary)
-        //    .UnderName("Simple summary")
-        //    .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-        //    .ColumnStyle("width: 30%;")
-        //    .Groupable()
-        //    .Editable()
-        //    .Build(),
-        (new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary",
-            new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-        {
-            IsGroupable = true,
-            IsEditable = true,
-            IsFilterable = true
-        }).LimitAcceptedValuesTo(new List<string>()
-        {
-            "yes",
-            "no",
-            "maybe"
-        }).AssignConverter(new Converter<string>()
-        {
-            SetFunc = x => x + "conv."
-        }),
-
+        ColumnBuilder<WeatherForecast>.For(c => c.Summary)
+            .UnderName("Simple summary")
+            .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+            .ColumnStyle("width: 30%;")
+            .Groupable()
+            .Editable()
+            .LimitValuesTo(new List<string>()
+            {
+                null,
+                "yes",
+                "no",
+                "maybe"
+            })
+            //.ConvertUsing(new Converter<string>()
+            //{
+            //    SetFunc = x => x + " conv."
+            //})
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")
             .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
@@ -99,7 +94,7 @@
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .FormatAs(FieldType.Date)
-            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            //.ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
             .Groupable()
             .Editable()
             .Build(),
