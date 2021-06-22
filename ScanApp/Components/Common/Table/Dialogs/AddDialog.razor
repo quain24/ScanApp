@@ -4,7 +4,7 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-            <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyPress" MaxFieldSetHeight="DialogContentHeight" StartExpanded="true" Configs="Configs" @bind-TargetItem="@SourceItem"></EditFieldCreator>
+            <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="true" Configs="Configs" @bind-TargetItem="@SourceItem"></EditFieldCreator>
         </MudForm>
     </DialogContent>
     <DialogActions>

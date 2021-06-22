@@ -7,7 +7,7 @@
         @if (TargetItem is not null)
         {
             <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyPress" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+                <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
             </MudForm>
         }
     </DialogContent>

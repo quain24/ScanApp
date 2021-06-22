@@ -25,18 +25,18 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// <summary>
         /// Fired when a key is pressed in an active text / numeric field generated
         /// </summary>
-        public EventCallback<KeyboardEventArgs> OnKeyPress { get; set; }
+        [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
         protected override void OnInitialized()
         {
-            OnKeyPress = OnKeyPress.HasDelegate ? OnKeyPress : EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDown);
+            OnKeyDown = OnKeyDown.HasDelegate ? OnKeyDown : EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDownPress);
         }
 
         protected abstract Task Submit();
 
         protected abstract void Cancel();
 
-        private void OnKeyDown(KeyboardEventArgs args)
+        private void OnKeyDownPress(KeyboardEventArgs args)
         {
             switch (args.Key)
             {
