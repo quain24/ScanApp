@@ -66,7 +66,8 @@ namespace ScanApp.Components.Common.Table
         public dynamic Converter { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can filter data by objects pointed to by this instance.
+        /// Gets a value indicating if table using this <see cref="ColumnConfig{T}"/> can filter data by objects pointed to by this instance.<para/>
+        /// By default this is set to <see langword="true"/>.
         /// </summary>
         /// <value><see langword="true"/> if table can be filtered using this instance of <see cref="ColumnConfig{T}"/>, otherwise <see langword="false"/>.</value>
         public bool IsFilterable { get; init; } = true;
@@ -87,7 +88,7 @@ namespace ScanApp.Components.Common.Table
         /// Gets or sets custom CSS style to be used when displaying table column configured by this instance.
         /// </summary>
         /// <value>A <see cref="string"/> representation of CSS style if set, otherwise <see langword="null"/>.</value>>
-        public string ColumnStyle { get; set; }
+        public string ColumnStyle { get; init; }
 
         /// <summary>
         /// Gets or sets value indicating whether this instance is a 'Presenter' Column Config. if <see langword="true"/>,<br/>
@@ -96,6 +97,7 @@ namespace ScanApp.Components.Common.Table
         /// <value>if <see langword="true"/>, then this instance of <see cref="ColumnConfig{T}"/> is only a 'presenter' and will not display anything on its own.</value>
         public bool IsPresenter { get; }
 
+        public IEnumerable<dynamic> AllowedValues { get; private set; } = Enumerable.Empty<dynamic>();
         private IValidator Validator { get; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> Target { get; }
@@ -114,6 +116,7 @@ namespace ScanApp.Components.Common.Table
         {
             DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
             IsPresenter = true;
+            IsFilterable = false;
         }
 
         /// <summary>
@@ -361,6 +364,26 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
             }
             Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
+        }
+
+        /// <summary>
+        /// Enforces usage of one of given <paramref name="values"/> when editing or adding <typeparamref name="T"/> item.<br/>
+        /// This constraint is valid only for target set by <see cref="ColumnConfig{T}"/> currently being configured.
+        /// </summary>
+        /// <typeparam name="TType">Type of value - must be compatible with type of current <see cref="ColumnConfig{T}"/> target.</typeparam>
+        /// <param name="values">Set of values allowed when adding or editing targeted value in one of <typeparamref name="T"/> items.</param>
+        /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> were <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Type of items in <paramref name="values"/> is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        public ColumnConfig<T> LimitAcceptedValuesTo<TType>(IEnumerable<TType> values)
+        {
+            if (typeof(TType).IsAssignableTo(PropertyType) is false)
+            {
+                throw new ArgumentException($"Given values are not compatible with target pointed to by this instance of {nameof(ColumnConfig<T>)}: (property - {PropertyType.FullName}), value collection - {typeof(TType).FullName})");
+            }
+
+            AllowedValues = (IEnumerable<dynamic>)values ?? throw new ArgumentNullException(nameof(values));
             return this;
         }
     }

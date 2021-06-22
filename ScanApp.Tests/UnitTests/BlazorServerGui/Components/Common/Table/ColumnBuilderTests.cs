@@ -4,6 +4,8 @@ using Moq;
 using ScanApp.Components.Common.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
 using System;
+using System.Collections.Generic;
+using MudBlazor;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
@@ -14,9 +16,21 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void Builds_with_name_only_as_col_conf_set_as_presenter()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
-                .ForPresentation("name");
+                .ForPresentation("name")
+                .Build();
 
             subject.DisplayName.Should().Be("name");
+        }
+
+        [Fact] public void Builds_with_name_and_column_style_as_col_conf_set_as_presenter()
+        {
+            var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
+                .ForPresentation("name")
+                .ColumnStyle("color: red;")
+                .Build();
+
+            subject.DisplayName.Should().Be("name");
+            subject.ColumnStyle.Should().Be("color: red;");
         }
 
         [Fact]
@@ -108,6 +122,17 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 
             ((object)subject.Converter).Should().NotBeNull()
                 .And.BeAssignableTo<MudBlazor.Converter<string>>();
+        }
+
+        [Fact]
+        public void Builds_with_given_limiting_value_set()
+        {
+            var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
+                .For(x => x.AString)
+                .LimitValuesTo(new List<string>{ "a", "B"})
+                .Build();
+
+            subject.AllowedValues.Should().BeEquivalentTo(new List<string> {"a", "B"});
         }
     }
 }
