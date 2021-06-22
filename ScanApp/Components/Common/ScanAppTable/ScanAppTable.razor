@@ -8,6 +8,7 @@
 @using ScanApp.Components.Common.ScanAppTable.GroupDialog;
 @using ScanApp.Components.Common.ScanAppTable.Options;
 @using ScanApp.Components.Common.ScanAppTable.Sorter;
+@using ScanApp.Components.Common.ScanAppTable.Extensions;
 
 @if (Loading)
 {
@@ -81,7 +82,7 @@ else
                     @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                        <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@ColumnConfigs[local].PropInfo.GetValue(context)</MudTd>
+                        <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@ColumnConfigs[local].PropInfo.GetValue(context, ColumnConfigs[local].DateTimeFormat)</MudTd>
                             }
                 </RowTemplate>
             </MudTable>
@@ -167,6 +168,13 @@ else
     /// </summary>
     [Parameter]
     public Action<TItem> ItemAdded { get; set; }
+
+    /// <summary>
+    /// Delegate that is invoked every time an Item is edited successfully.
+    /// Returns an edited item.
+    /// </summary>
+    [Parameter]
+    public Action<TItem> ItemEdited { get; set; }
 
     /// <summary>
     /// List of <paramref name="Items" /> that were deleted in the last deleting operation.
@@ -331,6 +339,11 @@ else
         }
     }
 
+    private void InvokeItemEdited(TItem item)
+    {
+        ItemEdited?.Invoke(item);
+    }
+
     private void InvokeSaveChanges(TItem titem)
     {
         SaveChanges?.Invoke(titem);
@@ -437,6 +450,7 @@ else
 
         Items[originalIndex] = (TItem)result.Data;
         ShownItems[ShownItems.IndexOf(item)] = (TItem)result.Data;
+        InvokeItemEdited(item);
         InvokeSaveChanges(item);
         await ValuesChanged.InvokeAsync();
     }

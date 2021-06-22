@@ -1,10 +1,10 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using ScanApp.Components.Common.ScanAppTable.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
@@ -21,24 +21,32 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsSelectable { get; init; } = true;
         public bool IsGroupable { get; init; } = true;
         private object _default;
+        private DateTimeFormat.Show _dateTimeFormat;
+
+        public DateTimeFormat.Show DateTimeFormat
+        {
+            get => _dateTimeFormat;
+            set
+            {
+                if (PropertyType.IsDateTime())
+                    _dateTimeFormat = value;
+                else
+                    throw new ArgumentException("Cannot set DateTimeFormat for a property of type " + PropertyType.ToString(),
+                        nameof(ColumnConfig<T>.DateTimeFormat));
+            }
+        }
+
         public object Default
         {
-            get
-            {
-                return _default;
-            }
+            get => _default;
             set
             {
                 if (value.GetType() == PropertyType)
-                {
                     _default = value;
-                }
                 else
-                {
-                    throw new ArgumentException("Default value "+ value.ToString() + " of type  "+ value.GetType().ToString() + " provided is not of the same type as the property type " +
-                        PropertyType.ToString(),
+                    throw new ArgumentException("Default value " + value.ToString() + " of type  " + value.GetType().ToString() + " provided is not of the same type as the property type " +
+                                                PropertyType.ToString(),
                         nameof(ColumnConfig<T>.Default));
-                }
             }
         }
 
@@ -91,12 +99,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             return errors;
         }
 
-
         public Func<TValue, IEnumerable<string>> ToMudFormFieldValidator<TValue>()
         {
             if (Validator is null)
                 return null;
-            
+
             _ = Validator;
             return value =>
             {
@@ -125,6 +132,5 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 ? Array.Empty<string>()
                 : ExtractErrorsFrom(validationResult);
         }
-
     }
 }
