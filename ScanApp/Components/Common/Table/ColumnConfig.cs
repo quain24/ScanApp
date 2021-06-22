@@ -116,6 +116,7 @@ namespace ScanApp.Components.Common.Table
         {
             DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
             IsPresenter = true;
+            IsFilterable = false;
         }
 
         /// <summary>
@@ -366,6 +367,15 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
+        /// <summary>
+        /// Enforces usage of one of given <paramref name="values"/> when editing or adding <typeparamref name="T"/> item.<br/>
+        /// This constraint is valid only for target set by <see cref="ColumnConfig{T}"/> currently being configured.
+        /// </summary>
+        /// <typeparam name="TType">Type of value - must be compatible with type of current <see cref="ColumnConfig{T}"/> target.</typeparam>
+        /// <param name="values">Set of values allowed when adding or editing targeted value in one of <typeparamref name="T"/> items.</param>
+        /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="values"/> were <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Type of items in <paramref name="values"/> is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
         public ColumnConfig<T> LimitAcceptedValuesTo<TType>(IEnumerable<TType> values)
         {
             if (typeof(TType).IsAssignableTo(PropertyType) is false)

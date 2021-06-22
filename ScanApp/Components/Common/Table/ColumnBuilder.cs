@@ -1,13 +1,14 @@
 ﻿using FluentValidation;
 using MudBlazor;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ScanApp.Components.Common.Table
 {
     /// <inheritdoc cref="IColumnBuilder{T}"/>
     /// <typeparam name="T">Type that will be configured by built <see cref="ColumnConfig{T}"/>.</typeparam>
-    public class ColumnBuilder<T> : IColumnBuilder<T>
+    public class ColumnBuilder<T> : IColumnBuilder<T>, IPresentationColumnBuilder<T>
     {
         private readonly Expression<Func<T, dynamic>> _target;
         private string _name;
@@ -18,8 +19,9 @@ namespace ScanApp.Components.Common.Table
         private bool _isEditable;
         private bool _isGroupable;
         private string _columnStyle;
+        private dynamic _allowedValues;
 
-        private ColumnBuilder(Expression<Func<T, dynamic>> target)
+        private ColumnBuilder(Expression<Func<T, dynamic>> target = null)
         {
             _target = target;
         }
@@ -39,7 +41,7 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <param name="displayName">name used as a column name for this config.</param>
         /// <returns>A <see cref="ColumnConfig{T}"/> configured as a 'presenter'.</returns>
-        public static ColumnConfig<T> ForPresentation(string displayName) => new(displayName);
+        public static IPresentationColumnBuilder<T> ForPresentation(string displayName) => new ColumnBuilder<T> { _name = displayName };
 
         public IColumnBuilder<T> Editable()
         {
@@ -89,18 +91,43 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
+        IPresentationColumnBuilder<T> IPresentationColumnBuilder<T>.ColumnStyle(string cssColumnStyle)
+        {
+            _columnStyle = cssColumnStyle;
+            return this;
+        }
+
+        public IColumnBuilder<T> LimitValuesTo(IEnumerable<dynamic> values)
+        {
+            _allowedValues = values;
+            return this;
+        }
+
         public ColumnConfig<T> Build()
         {
-            var config = new ColumnConfig<T>(_target, _name, _type, _validator)
+            ColumnConfig<T> config;
+            if (_target is null)
             {
-                IsEditable = _isEditable,
-                IsGroupable = _isGroupable,
-                IsFilterable = _isFilterable,
-                ColumnStyle = _columnStyle
-            };
+                config = new ColumnConfig<T>(_name)
+                {
+                    ColumnStyle = _columnStyle
+                };
+            }
+            else
+            {
+                config = new ColumnConfig<T>(_target, _name, _type, _validator)
+                {
+                    IsEditable = _isEditable,
+                    IsGroupable = _isGroupable,
+                    IsFilterable = _isFilterable,
+                    ColumnStyle = _columnStyle
+                };
+            }
 
             if (_converter is not null)
                 config.AssignConverter(_converter);
+            if (_allowedValues is not null)
+                config.LimitAcceptedValuesTo(_allowedValues);
             return config;
         }
     }

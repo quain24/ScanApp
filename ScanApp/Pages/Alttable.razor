@@ -110,8 +110,8 @@
             .Groupable()
             .Editable()
             .Build(),
-        ColumnBuilder<WeatherForecast>.ForPresentation("test"),
-
+        ColumnBuilder<WeatherForecast>.ForPresentation("test")
+            .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
             .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))

@@ -6,7 +6,9 @@ using MudBlazor;
 using ScanApp.Common;
 using ScanApp.Components.Common.Table;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Areas;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
@@ -87,6 +89,30 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             var subject = new ColumnConfig<TestObject>(c => c);
 
             subject.FieldType.Should().Be(FieldType.AutoDetect);
+        }
+
+        [Fact]
+        public void Given_input_limiting_collection_will_contain_it()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString).LimitAcceptedValuesTo(new List<string>{"a", "b", "c"});
+
+            subject.AllowedValues.Should().BeEquivalentTo(new List<string> {"a", "b", "c"});
+        }
+
+        [Fact]
+        public void Throws_arg_null_exc_if_given_limiting_collection_was_null()
+        {
+            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(null as IEnumerable<string>);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void Throws_arg_exc_if_given_limiting_collection_item_types_are_not_compatible_with_target_type()
+        {
+            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(new List<int> {1, 2, 3});
+
+            act.Should().Throw<ArgumentException>();
         }
 
         [Theory]
