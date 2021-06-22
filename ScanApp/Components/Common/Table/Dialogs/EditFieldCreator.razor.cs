@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ScanApp.Common.Extensions;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
@@ -114,14 +113,24 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 foreach (var value in config.AllowedValues)
                 {
                     builderInternal.OpenComponent(LineNumber.Get, itemFieldType);
-                    builderInternal.AddAttribute(LineNumber.Get, nameof(MudSelectItem<int>.Value), (object) value);
+                    builderInternal.AddAttribute(LineNumber.Get, nameof(MudSelectItem<int>.Value), (object)value);
+                    if ((value is null && config.GetValueFrom(TargetItem) is null) || (value?.Equals(config.GetValueFrom(TargetItem)) ?? false || config.GetValueFrom(TargetItem)?.Equals(value) ?? false))
+                    {
+                        builderInternal.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReference = o);
+                    }
                     builderInternal.CloseComponent();
                 }
             }));
 
+            if (_selectFieldReference is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Value), _selectFieldReference.Value as object);
+            }
             builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
+
+        private dynamic _selectFieldReference;
 
         private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
