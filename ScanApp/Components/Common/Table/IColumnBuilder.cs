@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MudBlazor;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.Common.Table
 {
@@ -55,9 +56,17 @@ namespace ScanApp.Components.Common.Table
         /// <summary>
         /// Sets up CSS style for column configured by <see cref="ColumnConfig{T}"/> being configured.
         /// </summary>
-        /// <param name="cssColumnStyle"></param>
+        /// <param name="cssColumnStyle">String representation of CSS style to be applied.</param>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
         IColumnBuilder<T> ColumnStyle(string cssColumnStyle);
+
+        /// <summary>
+        /// Limits possible input values for <see cref="ColumnConfig{T}"/> target for when <typeparamref name="T"/> item is being edited or added.
+        /// </summary>
+        /// <param name="values">Allowed values - user will be able to choose from this set only when editing or adding value inside <typeparamref name="T"/> item
+        /// targeted by <see cref="ColumnConfig{T}"/>being configured.</param>
+        /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
+        IColumnBuilder<T> LimitValuesTo(IEnumerable<object> values);
 
         /// <summary>
         /// Creates new configured <see cref="ColumnConfig{T}"/>.

@@ -127,37 +127,37 @@ namespace ScanApp.Components.Common.Table.Dialogs
             var readDelegate = Delegate.CreateDelegate(Expression.GetFuncType(typeof(Guid), typeof(bool), valueType), this, readMethod);
 
             // Create 'from'
-            builder.OpenComponent(LineNumber.Get(), fieldType);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, true));
+            builder.OpenComponent(LineNumber.Get, fieldType);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, true));
 
             var callbackType = typeof(EventCallback<>).MakeGenericType(valueType);
             void SaveFromDelegate(dynamic obj) => _fromToValues[config.Identifier] = (obj, _fromToValues[config.Identifier].To);
             dynamic callbackFrom = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveFromDelegate);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.ValueChanged), callbackFrom);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.ValueChanged), callbackFrom);
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), FromLabel);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Label), FromLabel);
             //var callbackRevalidateFromTo = CallbackFactory.Create<KeyboardEventArgs>(this, _ => ValidateFromToPair(config.Identifier));
-            //builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
+            //builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
 
-            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, true));
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config, true));
             builder.CloseComponent();
 
             // Create 'To'
-            builder.OpenComponent(LineNumber.Get(), fieldType);
+            builder.OpenComponent(LineNumber.Get, fieldType);
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, false));
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Value), readDelegate.DynamicInvoke(config.Identifier, false));
             void SaveToDelegate(dynamic obj) => _fromToValues[config.Identifier] = (_fromToValues[config.Identifier].From, obj);
             dynamic callbackTo = Activator.CreateInstance(callbackType, this, (Action<dynamic>)SaveToDelegate);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.ValueChanged), callbackTo);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.ValueChanged), callbackTo);
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Immediate), true);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Validation), CreateValidationDelegate(config, valueType));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.Label), ToLabel);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
-            //builder.AddAttribute(LineNumber.Get(), nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
-            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, false));
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Immediate), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Validation), CreateValidationDelegate(config, valueType));
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.Label), ToLabel);
+            builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<string>.OnKeyDown), OnKeyDown);
+            //builder.AddAttribute(LineNumber.Get, nameof(MudNumericField<int>.OnKeyUp), callbackRevalidateFromTo);
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config, false));
             builder.CloseComponent();
         }
 
@@ -252,12 +252,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
         {
             _includingValues.TryAdd(config.Identifier, null);
 
-            builder.OpenComponent(LineNumber.Get(), typeof(MudTextField<string>));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Value), _includingValues[config.Identifier]);
+            builder.OpenComponent(LineNumber.Get, typeof(MudTextField<string>));
+            builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Value), _includingValues[config.Identifier]);
             var callbackValueChanged = CallbackFactory.Create<string>(this, s => _includingValues[config.Identifier] = string.IsNullOrEmpty(s) ? null : s);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Label), IncludeLabel);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.OnKeyPress), OnKeyDown);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Label), IncludeLabel);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.OnKeyPress), OnKeyDown);
             builder.CloseComponent();
         }
 
@@ -265,13 +265,13 @@ namespace ScanApp.Components.Common.Table.Dialogs
         {
             DateTime? value = isFrom ? _fromToValues[config.Identifier].From : _fromToValues[config.Identifier].To;
 
-            builder.OpenComponent(LineNumber.Get(), typeof(MudDatePicker));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Date), value);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DisableToolbar), true);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Editable), true);
+            builder.OpenComponent(LineNumber.Get, typeof(MudDatePicker));
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Date), value);
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Editable), true);
 
             var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config, isFrom));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateChanged), callback);
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DateChanged), callback);
 
             if (shouldValidate)
             {
@@ -289,34 +289,34 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 }
 
                 var callbackRevalidateFromTo = CallbackFactory.Create(this, () => ValidateFromToPair(config.Identifier));
-                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerClosed), callbackRevalidateFromTo);
-                builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), (Func<DateTime?, string>)Validate);
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.PickerClosed), callbackRevalidateFromTo);
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Validation), (Func<DateTime?, string>)Validate);
             }
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Close());
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), okCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerOKLabel)));
                builderInternal.CloseComponent();
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Close(false));
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), cancelCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerCancelLabel)));
                builderInternal.CloseComponent();
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudDatePicker)FromToField(config, isFrom)).Clear(false));
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), clearCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerClearLabel)));
                builderInternal.CloseComponent();
            }));
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Label), isFrom ? FromLabel : ToLabel);
-            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
+            builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Label), isFrom ? FromLabel : ToLabel);
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config, isFrom));
             builder.CloseComponent();
         }
 
@@ -402,42 +402,42 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 };
             }
 
-            builder.OpenComponent(LineNumber.Get(), typeof(MudTimePicker));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.DisableToolbar), true);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Editable), true);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Time), time);
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeChanged), editingCallback);
+            builder.OpenComponent(LineNumber.Get, typeof(MudTimePicker));
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.DisableToolbar), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Editable), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Time), time);
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.TimeChanged), editingCallback);
 
             if (shouldValidate)
             {
                 var callbackRevalidateFromTo = CallbackFactory.Create(this, () => ValidateFromToPair(config.Identifier));
-                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validationFunc);
-                builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerClosed), callbackRevalidateFromTo);
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Validation), validationFunc);
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.PickerClosed), callbackRevalidateFromTo);
             }
 
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.PickerActions), (RenderFragment)(builderInternal =>
            {
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var okCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Close());
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), okCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerOKLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), okCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerOKLabel)));
                builderInternal.CloseComponent();
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var cancelCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Close(false));
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), cancelCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerCancelLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), cancelCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerCancelLabel)));
                builderInternal.CloseComponent();
-               builderInternal.OpenComponent(LineNumber.Get(), typeof(MudButton));
+               builderInternal.OpenComponent(LineNumber.Get, typeof(MudButton));
                var clearCallback = CallbackFactory.Create<MouseEventArgs>(this, _ => ((MudTimePicker)FromToField(config, isFrom)).Clear(false));
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.OnClick), clearCallback);
-               builderInternal.AddAttribute(LineNumber.Get(), nameof(MudButton.ChildContent),
-                   (RenderFragment)(b => b.AddContent(LineNumber.Get(), PickerClearLabel)));
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.OnClick), clearCallback);
+               builderInternal.AddAttribute(LineNumber.Get, nameof(MudButton.ChildContent),
+                   (RenderFragment)(b => b.AddContent(LineNumber.Get, PickerClearLabel)));
                builderInternal.CloseComponent();
            }));
-            builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Label), isFrom ? FromLabel : ToLabel);
-            builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config, isFrom));
+            builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Label), isFrom ? FromLabel : ToLabel);
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config, isFrom));
 
             builder.CloseComponent();
         }
