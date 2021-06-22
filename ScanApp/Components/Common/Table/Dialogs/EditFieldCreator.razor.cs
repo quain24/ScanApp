@@ -27,12 +27,24 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
         private readonly Dictionary<ColumnConfig<T>, dynamic> _fieldReferences = new();
         private readonly Dictionary<ColumnConfig<T>, MudTimePicker> _fieldReferencesForTimePartInDateTime = new();
+        private Dictionary<ColumnConfig<T>, (dynamic Reference, bool Touched)> _selectFieldReferences;
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            base.OnAfterRender(firstRender);
+        }
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
+            CreateEmptyReferencesForSelectFields();
             if (TargetItem is null)
                 throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set (You can use @bind-TargetItem)");
+        }
+
+        private void CreateEmptyReferencesForSelectFields()
+        {
+            _selectFieldReferences = Configs.Where(c => c.AllowedValues is not null).ToDictionary(c => c, _ => ((dynamic)null, false));
         }
 
         public void ExpandInvalidPanels()
@@ -94,11 +106,6 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Strict), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Label), "Choose...");
 
-            if (config.Converter is not null)
-            {
-                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ToStringFunc), config.Converter.SetFunc);
-            }
-
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
             {
@@ -108,29 +115,38 @@ namespace ScanApp.Components.Common.Table.Dialogs
             dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ValueChanged), callback);
 
+            if (config.Converter is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ToStringFunc), config.Converter.SetFunc);
+            }
+
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ChildContent), (RenderFragment)(builderInternal =>
             {
                 foreach (var value in config.AllowedValues)
                 {
                     builderInternal.OpenComponent(LineNumber.Get, itemFieldType);
                     builderInternal.AddAttribute(LineNumber.Get, nameof(MudSelectItem<int>.Value), (object)value);
-                    if ((value is null && config.GetValueFrom(TargetItem) is null) || (value?.Equals(config.GetValueFrom(TargetItem)) ?? false || config.GetValueFrom(TargetItem)?.Equals(value) ?? false))
+                    if (config.GetValueFrom(TargetItem) == value && _selectFieldReferences[config].Touched is false)
                     {
-                        builderInternal.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReference = o);
+                        // Reference created only for when current targeted prop value matches one from 'allowed values'
+                        // And only when control was not touched by auto value setter few lines bellow
+                        builderInternal.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReferences[config] = (o, false));
                     }
                     builderInternal.CloseComponent();
                 }
             }));
 
-            if (_selectFieldReference is not null)
+            if (_selectFieldReferences[config].Reference is not null && _selectFieldReferences[config].Touched is false)
             {
-                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Value), _selectFieldReference.Value as object);
+                // Got reference, so current value of prop in TargetItem matches one from 'allowed values' and it was
+                // not set automatically previously (Touched = false).
+                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Value), (object)_selectFieldReferences[config].Reference.Value);
+                _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, true);
             }
+
             builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
-
-        private dynamic _selectFieldReference;
 
         private void CreateTextField(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
