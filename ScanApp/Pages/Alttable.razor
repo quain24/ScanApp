@@ -109,7 +109,7 @@
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
-            .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c != "unsupported")))
+            //.ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c != "unsupported")))
             .ConvertUsing(new Converter<Version>
             {
                 SetFunc = value => value?.Value,

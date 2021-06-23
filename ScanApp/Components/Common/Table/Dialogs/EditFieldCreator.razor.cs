@@ -122,25 +122,27 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 {
                     builderInternal.OpenComponent(LineNumber.Get, itemFieldType);
                     builderInternal.AddAttribute(LineNumber.Get, nameof(MudSelectItem<int>.Value), (object)value);
-                    if (config.GetValueFrom(TargetItem) == value && _selectFieldReferences[config].Touched is false)
-                    {
-                        // Reference created only for when current targeted prop value matches one from 'allowed values'
-                        // And only when control was not touched by auto value setter few lines bellow
-                        builderInternal.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReferences[config] = (o, false));
-                    }
                     builderInternal.CloseComponent();
                 }
             }));
 
-            if (_selectFieldReferences[config].Reference is not null && _selectFieldReferences[config].Touched is false)
+            if (_selectFieldReferences[config].Touched is false && _selectFieldReferences[config].Reference is not null)
             {
-                // Got reference, so current value of prop in TargetItem matches one from 'allowed values' and it was
-                // not set automatically previously (Touched = false).
-                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Value), (object)_selectFieldReferences[config].Reference.Value);
+                // Value from edited item is outside of constraints set in 'AllowedValues'
+                // Automatically set it to first valid option and show the updated value as selected in selection field.
+                var value = config.GetValueFrom(TargetItem);
+                if (Enumerable.Contains(config.AllowedValues, value) is false)
+                {
+                    _selectFieldReferences[config].Reference.Value = config.AllowedValues.FirstOrDefault();
+                    config.SetValue(TargetItem, _selectFieldReferences[config].Reference.Value);
+                    TargetItemChanged.InvokeAsync(TargetItem);
+                }
                 _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, true);
             }
 
-            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config));
+            builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Value), (object)_selectFieldReferences[config].Reference?.Value);
+
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReferences[config] = (o, false));
             builder.CloseComponent();
         }
 
