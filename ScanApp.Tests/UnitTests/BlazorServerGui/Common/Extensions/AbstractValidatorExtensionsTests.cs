@@ -48,6 +48,47 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
         }
 
         [Fact]
+        public void ToMudFormFieldValidator_typeless_creates_proper_delegate()
+        {
+            var validatorMock = new Mock<IValidator>();
+            validatorMock.Setup(v => v.Validate(It.Is<ValidationContext<string>>(x =>
+                    x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase))))
+                .Returns(new ValidationResult());
+
+            validatorMock.Setup(v => v.Validate(It.Is<ValidationContext<string>>(x =>
+                    !x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase))))
+                .Returns(new ValidationResult(new[] { new ValidationFailure("property_name", "error") }));
+
+            var subject = validatorMock.Object.ToMudFormFieldValidator();
+            subject("ok").Should().BeEmpty();
+            subject("invalid").Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void ToMudFormFieldValidator_typeless_uses_prevalidate()
+        {
+            IValidator validator = new AbstractValidatorExtensionsFixtures.testValidatorString();
+            var subject = validator.ToMudFormFieldValidator("test");
+
+            var result = subject(null);
+
+            result.Should().HaveCount(1).And.Subject.First().Should().Contain("test");
+        }
+
+        [Fact]
+        public void ToMudFormFieldValidator_typeless_validates_value_type()
+        {
+            IValidator validator = new AbstractValidatorExtensionsFixtures.testValidatorInt();
+            var subject = validator.ToMudFormFieldValidator("test");
+
+            var result = subject(1);
+            var invalidResult = subject(123);
+
+            result.Should().BeEmpty();
+            invalidResult.Should().HaveCount(1).And.Subject.First().Should().Contain("test");
+        }
+
+        [Fact]
         public async Task ToAsyncMudFormFieldValidator_creates_proper_delegate()
         {
             var validatorMock = new Mock<AbstractValidator<string>>();
