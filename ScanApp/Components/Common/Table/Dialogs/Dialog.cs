@@ -36,15 +36,17 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
         protected abstract void Cancel();
 
-        private void OnKeyDownPress(KeyboardEventArgs args)
+        private Task OnKeyDownPress(KeyboardEventArgs args)
         {
             switch (args.Key)
             {
-                case "Enter": Submit();
-                    break;
+                case "Enter": return Submit();
+
                 case "Escape": Cancel();
                     break;
             }
+
+            return Task.CompletedTask;
         }
     }
 }

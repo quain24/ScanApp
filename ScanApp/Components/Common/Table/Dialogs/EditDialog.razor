@@ -1,98 +1,101 @@
 ﻿@using ScanApp.Common.Extensions
 @inherits Dialog<T>
 @typeparam T
+    <div @ref="_div" @onkeydown="OnKeyDown">
+        <MudDialog>
+            <DialogContent>
+                @if (TargetItem is not null)
+                {
+                    <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+                        <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+                    </MudForm>
+                }
+            </DialogContent>
+            <DialogActions>
+                <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+                <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Save changes</MudButton>
+            </DialogActions>
+        </MudDialog>
+    </div>
 
-<MudDialog>
-    <DialogContent>
-        @if (TargetItem is not null)
+    @code {
+        /// <summary>
+        /// Gets or sets value indicating whether panels containing fields marked as invalid should start in expanded state.
+        /// </summary>
+        [Parameter] public bool ExpandInvalidPanelsOnStart { get; set; } = true;
+
+        /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
+        [Parameter] public bool StartExpanded { get; set; }
+
+        /// <summary>
+        /// Gets or sets an item upon which copy editing operations will be performed.
+        /// </summary>
+        /// <value>Item that's copy will be edited.</value>
+        [Parameter] public T SourceItem { get; set; }
+
+        /// <summary>
+        /// Gets or sets <typeparam name="T" /> object copier delegate necessary to create a copy of source item for editing.<br />
+        /// By default source item will be copied by built-in deep-copy mechanism that can be replaced if needed.
+        /// Supported delegates are:
+        /// <para><see cref="Func{T, T}">Func&lt;T, T&gt;</see></para>
+        /// <para><see cref="Func{T, Task{T}}">Func&lt;T, Task&lt;T&gt;&gt;</see></para>
+        /// </summary>
+        [Parameter] public object ItemCopier { get; set; }
+
+        private T TargetItem { get; set; }
+        private MudForm _form;
+        private EditFieldCreator<T> _fieldCreator;
+        private bool _success = true;
+        private ElementReference _div;
+
+        protected override async Task OnInitializedAsync()
         {
-            <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <EditFieldCreator T="T" @ref="_fieldCreator" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
-            </MudForm>
+            TargetItem = await CreateCopy();
         }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Save changes</MudButton>
-    </DialogActions>
-</MudDialog>
 
-@code {
-    /// <summary>
-    /// Gets or sets value indicating whether panels containing fields marked as invalid should start in expanded state.
-    /// </summary>
-    [Parameter] public bool ExpandInvalidPanelsOnStart { get; set; } = true;
-
-    /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
-    [Parameter] public bool StartExpanded { get; set; }
-
-    /// <summary>
-    /// Gets or sets an item upon which copy editing operations will be performed.
-    /// </summary>
-    /// <value>Item that's copy will be edited.</value>
-    [Parameter] public T SourceItem { get; set; }
-
-    /// <summary>
-    /// Gets or sets <typeparam name="T" /> object copier delegate necessary to create a copy of source item for editing.<br />
-    /// By default source item will be copied by built-in deep-copy mechanism that can be replaced if needed.
-    /// Supported delegates are:
-    /// <para><see cref="Func{T, T}">Func&lt;T, T&gt;</see></para>
-    /// <para><see cref="Func{T, Task{T}}">Func&lt;T, Task&lt;T&gt;&gt;</see></para>
-    /// </summary>
-    [Parameter] public object ItemCopier { get; set; }
-    
-    private T TargetItem { get; set; }
-    private MudForm _form;
-    private EditFieldCreator<T> _fieldCreator;
-    private bool _success = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        TargetItem = await CreateCopy();
-    }
-
-    private async Task<T> CreateCopy()
-    {
-        try
+        private async Task<T> CreateCopy()
         {
-            return ItemCopier switch
+            try
             {
-                null => SourceItem.Copy(),
-                Func<T, T> factory => factory.Invoke(SourceItem),
-                Func<T, Task<T>> factory => await factory.Invoke(SourceItem).ConfigureAwait(false),
-                _ => throw new ArgumentOutOfRangeException(nameof(ItemCopier), "Provided copy delegate type is not compatible with allowed delegate types.")
-            };
+                return ItemCopier switch
+                {
+                    null => SourceItem.Copy(),
+                    Func<T, T> factory => factory.Invoke(SourceItem),
+                    Func<T, Task<T>> factory => await factory.Invoke(SourceItem).ConfigureAwait(false),
+                    _ => throw new ArgumentOutOfRangeException(nameof(ItemCopier), "Provided copy delegate type is not compatible with allowed delegate types.")
+                };
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                throw new Exception($"Something went wrong when trying to create item copy for editing using provided {nameof(ItemCopier)}: {ex.Message}", ex);
+            }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+
+        protected override void OnAfterRender(bool firstRender)
         {
-            throw new Exception($"Something went wrong when trying to create item copy for editing using provided {nameof(ItemCopier)}: {ex.Message}", ex);
+            if (firstRender is false) return;
+
+            _form?.Validate();
+
+            if (ExpandInvalidPanelsOnStart)
+                _fieldCreator?.ExpandInvalidPanels();
+            _div.FocusAsync();
         }
-    }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender is false) return;
-
-        _form?.Validate();
-
-        if (ExpandInvalidPanelsOnStart)
-            _fieldCreator?.ExpandInvalidPanels();
-    }
-
-    protected override Task Submit()
-    {
-        if (_form is null)
+        protected override Task Submit()
         {
-            MudDialog.Cancel();
+            if (_form is null)
+            {
+                MudDialog.Cancel();
+                return Task.CompletedTask;
+            }
+
+            if (_success is false)
+                return Task.CompletedTask;
+
+            MudDialog.Close(DialogResult.Ok(TargetItem));
             return Task.CompletedTask;
         }
 
-        if (_success is false)
-            return Task.CompletedTask;
-
-        MudDialog.Close(DialogResult.Ok(TargetItem));
-        return Task.CompletedTask;
+        protected override void Cancel() => MudDialog.Cancel();
     }
-
-    protected override void Cancel() => MudDialog.Cancel();
-}

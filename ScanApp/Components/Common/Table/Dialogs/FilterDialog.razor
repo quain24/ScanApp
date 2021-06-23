@@ -1,44 +1,40 @@
-﻿@typeparam T
+﻿@inherits Dialog<T>
+@typeparam T
 
-<MudDialog>
-    <DialogContent>
-        @if (Configs?.Count > 0)
-        {
-            <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                <FilterFieldCreator T="T" @ref="_filterFields" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"></FilterFieldCreator>
-            </MudForm>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Apply filters</MudButton>
-    </DialogActions>
-</MudDialog>
-
+<div @ref="_div" @onkeydown="OnKeyDown">*
+    <MudDialog>
+        <DialogContent>
+            @if (Configs?.Count > 0)
+            {
+                <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+                    <FilterFieldCreator T="T" @ref="_filterFields" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"/>
+                </MudForm>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Apply filters</MudButton>
+        </DialogActions>
+    </MudDialog>
+</div>
 @code
 {
-    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
-
-    /// <summary>
-    /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields for this dialog.
-    /// </summary>
-    /// <value>Collection of <see cref="ColumnConfig{T}" /> objects if set, otherwise <see langword="null" />.</value>
-    [Parameter] public List<ColumnConfig<T>> Configs { get; set; }
-
     /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />
     [Parameter] public bool StartExpanded { get; set; }
 
-    /// <summary>
-    /// Gets or sets height of dialog content (which exclude buttons and header).
-    /// </summary>
-    /// <value>Dialog content height in pixels.</value>
-    [Parameter] public int DialogContentHeight { get; set; }
-
     private MudForm _form;
     private bool _success = true;
+    private ElementReference _div;
     private FilterFieldCreator<T> _filterFields;
 
-    Task Submit()
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+            _div.FocusAsync();
+    }
+
+    protected override Task Submit()
     {
         if (_form is null)
         {
@@ -50,12 +46,11 @@
 
         if (_success is false)
             return Task.CompletedTask;
-
         var filters = _filterFields.GetFilters();
 
         MudDialog.Close(DialogResult.Ok(filters));
         return Task.CompletedTask;
     }
 
-    void Cancel() => MudDialog.Cancel();
+    protected override void Cancel() => MudDialog.Cancel();
 }

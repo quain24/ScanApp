@@ -29,11 +29,6 @@ namespace ScanApp.Components.Common.Table.Dialogs
         private readonly Dictionary<ColumnConfig<T>, MudTimePicker> _fieldReferencesForTimePartInDateTime = new();
         private Dictionary<ColumnConfig<T>, (dynamic Reference, bool Touched)> _selectFieldReferences;
 
-        protected override void OnAfterRender(bool firstRender)
-        {
-            base.OnAfterRender(firstRender);
-        }
-
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -105,6 +100,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Disabled), !config.IsEditable);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Strict), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Label), "Choose...");
+            builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.OnKeyDown), OnKeyDown);
 
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
