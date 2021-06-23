@@ -109,7 +109,7 @@
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
-            .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
+            .ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c != "unsupported")))
             .ConvertUsing(new Converter<Version>
             {
                 SetFunc = value => value?.Value,
@@ -117,6 +117,12 @@
             })
             .Groupable()
             .Editable()
+            .LimitValuesTo(new List<Version>()
+            {
+                Version.Empty(),
+                Version.Create("v one"),
+                Version.Create("v two")
+            })
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Number)
             .UnderName("Const number")

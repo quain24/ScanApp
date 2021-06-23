@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
@@ -46,6 +47,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
         [Parameter] public int MaxFieldSetHeight { get; set; }
 
         /// <summary>
+        /// Gets or sets <see cref="CultureInfo"/> used in all text and picker fields.
+        /// </summary>
+        /// <value><see cref="CultureInfo"/> set by user, otherwise <see langword="null"/>.</value>
+        [Parameter] public CultureInfo CultureInfo { get; set; }
+
+        /// <summary>
         /// Fired when a key is pressed in an active text / numeric field generated
         /// </summary>
         [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
@@ -55,7 +62,6 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value><see cref="Dictionary{TKey,TValue}"/> of <see cref="ColumnConfig{T}"/> and <see cref="MudExpansionPanel"/> if set, otherwise empty collection.</value>
         public Dictionary<ColumnConfig<T>, MudExpansionPanel> Panels { get; } = new();
-
 
         protected Dictionary<ColumnConfig<T>, Delegate> Validators { get; } = new();
         protected EventCallbackFactory CallbackFactory { get; } = new();

@@ -112,9 +112,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ValueChanged), callback);
 
             if (config.Converter is not null)
-            {
                 builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ToStringFunc), config.Converter.SetFunc);
-            }
+            if (CultureInfo is not null)
+                builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Culture), CultureInfo);
 
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ChildContent), (RenderFragment)(builderInternal =>
             {
@@ -176,6 +176,8 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Immediate), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.OnKeyDown), OnKeyDown);
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Disabled), !config.IsEditable);
+            if (CultureInfo is not null)
+                builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Culture), CultureInfo);
 
             // Add field reference to collection.
             builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config));
@@ -194,6 +196,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DisableToolbar), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Disabled), !config.IsEditable);
+
+            if (CultureInfo is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DateFormat), CultureInfo.DateTimeFormat.ShortDatePattern);
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Culture), CultureInfo);
+            }
             if (config.Converter is not null)
                 builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
@@ -268,12 +276,17 @@ namespace ScanApp.Components.Common.Table.Dialogs
             }
 
             builder.OpenComponent(LineNumber.Get, typeof(MudTimePicker));
-
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Time), time);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.TimeChanged), callback);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.DisableToolbar), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Disabled), !config.IsEditable);
+
+            if (CultureInfo is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.TimeFormat), CultureInfo.DateTimeFormat.ShortTimePattern);
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Culture), CultureInfo);
+            }
             if (config.Converter is not null)
                 builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))

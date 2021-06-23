@@ -7,7 +7,7 @@
             @if (Configs?.Count > 0)
             {
                 <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                    <FilterFieldCreator T="T" @ref="_filterFields" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"/>
+                    <FilterFieldCreator T="T" @ref="_filterFields" CultureInfo="CultureInfo" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs"/>
                 </MudForm>
             }
         </DialogContent>
@@ -17,6 +17,7 @@
         </DialogActions>
     </MudDialog>
 </div>
+
 @code
 {
     /// <inheritdoc cref="FieldCreatorBase{T}.StartExpanded" />

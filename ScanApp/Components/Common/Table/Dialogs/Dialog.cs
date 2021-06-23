@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace ScanApp.Components.Common.Table.Dialogs
@@ -21,6 +22,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
         /// </summary>
         /// <value>Dialog content height in pixels.</value>
         [Parameter] public int DialogContentHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets <see cref="CultureInfo"/> used in all text and picker fields in this dialog.
+        /// </summary>
+        /// <value><see cref="CultureInfo"/> set by user, otherwise <see langword="null"/>.</value>
+        [Parameter] public CultureInfo CultureInfo { get; set; }
 
         /// <summary>
         /// Fired when a key is pressed in an active text / numeric field generated

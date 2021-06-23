@@ -3,6 +3,7 @@ using ScanApp.Common.Extensions;
 using ScanApp.Components.Common.Table.Dialogs;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,11 +13,13 @@ namespace ScanApp.Components.Common.Table.Utilities
     {
         private readonly IReadOnlyList<ColumnConfig<T>> _configs;
         private IDialogService DialogService { get; }
+        private CultureInfo CultureInfo { get; }
 
-        public DialogFacade(IDialogService dialogService, IReadOnlyList<ColumnConfig<T>> configs)
+        public DialogFacade(IDialogService dialogService, IReadOnlyList<ColumnConfig<T>> configs, CultureInfo cultureInfo)
         {
             _configs = configs?.Where(c => c.IsPresenter is false).ToList();
             DialogService = dialogService;
+            CultureInfo = cultureInfo;
         }
 
         public Task<DialogResult> ShowFilterDialog(bool startExpanded, int maxContentHeight)
@@ -25,6 +28,7 @@ namespace ScanApp.Components.Common.Table.Utilities
                 new DialogParameters
                 {
                     ["Configs"] = _configs,
+                    ["CultureInfo"] = CultureInfo,
                     ["StartExpanded"] = startExpanded,
                     ["DialogContentHeight"] = maxContentHeight,
                 },
@@ -41,6 +45,7 @@ namespace ScanApp.Components.Common.Table.Utilities
                     ["SourceItem"] = await CreateCopy(item, copier),
                     ["StartExpanded"] = startExpanded,
                     ["DialogContentHeight"] = maxContentHeight,
+                    ["CultureInfo"] = CultureInfo,
                     ["ExpandInvalidPanelsOnStart"] = expandInvalidFieldsOnStart
                 },
                 Globals.Gui.DefaultDialogOptions);
@@ -73,6 +78,7 @@ namespace ScanApp.Components.Common.Table.Utilities
                 {
                     ["Configs"] = _configs,
                     ["SourceItem"] = await CreateNewItem(itemFactory),
+                    ["CultureInfo"] = CultureInfo,
                     ["DialogContentHeight"] = maxContentHeight
                 },
                 Globals.Gui.DefaultDialogOptions);

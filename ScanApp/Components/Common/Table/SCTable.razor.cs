@@ -39,6 +39,19 @@ namespace ScanApp.Components.Common.Table
         /// <inheritdoc cref="MudTableBase.Virtualize" />
         [Parameter] public bool Virtualize { get; set; }
 
+        private CultureInfo _cultureInfo;
+
+        /// <summary>
+        /// Gets or sets variable used to display time and date in the table.
+        /// </summary>
+        /// <value><see cref="CultureInfo"/> set by user, or <see cref="CultureInfo.CurrentCulture"/> otherwise.</value>
+        [Parameter]
+        public CultureInfo CultureInfo
+        {
+            get => _cultureInfo ?? CultureInfo.CurrentCulture;
+            set => _cultureInfo = value;
+        }
+
         /// <summary>
         /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
         /// </summary>
@@ -328,7 +341,7 @@ namespace ScanApp.Components.Common.Table
             EnableAvailableFunctionality();
             ColumnStyles = new ColumnStyleBuilder<TTableType>().BuildUsing(Configs);
             RowStyleFunc ??= DefaultRowStyleFunc;
-            _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs);
+            _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs, CultureInfo);
         }
 
         private void AssignColumnsByProperties()
@@ -395,7 +408,11 @@ namespace ScanApp.Components.Common.Table
 
             foreach (var item in FilterDataSource(Data))
             {
-                string key = selectedColumn.GetValueFrom(item)?.ToString() ?? "No value";
+                string key = selectedColumn.Converter is null
+                    ? selectedColumn.GetValueFrom(item)?.ToString()
+                    : selectedColumn.Converter.SetFunc(selectedColumn.GetValueFrom(item));
+                key ??= "No value";
+
                 if (GroupedData.TryGetValue(key, out var collection))
                     collection.Add(item);
                 else
@@ -413,27 +430,24 @@ namespace ScanApp.Components.Common.Table
             return _filters.Count == 0 ? data : data.Filter(_filters);
         }
 
-        private static dynamic FormatOutput(ColumnConfig<TTableType> config, TTableType context)
+        private string FormatOutput(ColumnConfig<TTableType> config, TTableType context)
         {
-            var value = config.GetValueFrom(context);
-
-            if (config.Converter is not null)
-                return config.Converter.SetFunc(value);
-
-            if (value is DateTime or DateTimeOffset)
+            return config.GetValueFrom(context) switch
             {
-                return config.FieldType switch
+                var v when config.Converter is not null => config.Converter.SetFunc(v) as string,
+                null => string.Empty,
+                var v and (DateTime or DateTimeOffset) => config.FieldType switch
                 {
-                    FieldType.AutoDetect => value,
-                    FieldType.Date => value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
-                    FieldType.Time => value.ToString("t", CultureInfo.CurrentCulture),
-                    FieldType.DateAndTime => value.ToString("G", CultureInfo.CurrentCulture),
-                    FieldType.PlainText => value.ToString(),
+                    FieldType.AutoDetect => v.ToString("f", CultureInfo),
+                    FieldType.Date => v.ToString(CultureInfo.DateTimeFormat.ShortDatePattern),
+                    FieldType.Time => v.ToString("t", CultureInfo),
+                    FieldType.DateAndTime => v.ToString("g", CultureInfo),
+                    FieldType.PlainText => v.ToString(),
                     _ => throw new ArgumentOutOfRangeException(nameof(FieldType), $"Unknown value of {nameof(FieldType)} was used.")
-                };
-            }
-
-            return value ?? string.Empty;
+                },
+                var v and TimeSpan when config.FieldType is FieldType.Time or FieldType.AutoDetect => v.ToString("t", CultureInfo),
+                var v => v.ToString()
+            };
         }
 
         private void OnGroupRowClick(TableRowClickEventArgs<KeyValuePair<string, List<TTableType>>> args)

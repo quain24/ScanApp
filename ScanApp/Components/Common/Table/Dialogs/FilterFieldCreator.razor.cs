@@ -259,6 +259,8 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.ValueChanged), callbackValueChanged);
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Label), IncludeLabel);
             builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.OnKeyDown), OnKeyDown);
+            if (CultureInfo is not null)
+                builder.AddAttribute(LineNumber.Get, nameof(MudTextField<string>.Culture), CultureInfo);
             builder.CloseComponent();
         }
 
@@ -273,6 +275,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
             var callback = CallbackFactory.Create<DateTime?>(this, d => EditDate(d, config, isFrom));
             builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DateChanged), callback);
+
+            if (CultureInfo is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.DateFormat), CultureInfo.DateTimeFormat.ShortDatePattern);
+                builder.AddAttribute(LineNumber.Get, nameof(MudDatePicker.Culture), CultureInfo);
+            }
 
             if (shouldValidate)
             {
@@ -408,6 +416,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Editable), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Time), time);
             builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.TimeChanged), editingCallback);
+
+            if (CultureInfo is not null)
+            {
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.TimeFormat), CultureInfo.DateTimeFormat.ShortTimePattern);
+                builder.AddAttribute(LineNumber.Get, nameof(MudTimePicker.Culture), CultureInfo);
+            }
 
             if (shouldValidate)
             {
