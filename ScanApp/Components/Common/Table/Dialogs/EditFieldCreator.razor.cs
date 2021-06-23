@@ -99,6 +99,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Dense), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Disabled), !config.IsEditable);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Strict), true);
+            builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Immediate), true);
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Label), "Choose...");
             builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.OnKeyDown), OnKeyDown);
 
