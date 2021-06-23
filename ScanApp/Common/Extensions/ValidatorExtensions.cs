@@ -3,6 +3,8 @@ using FluentValidation.Results;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Common.Extensions
@@ -78,11 +80,20 @@ namespace ScanApp.Common.Extensions
 
             return value =>
             {
-                Type contextType = typeof(ValidationContext<>).MakeGenericType(value.GetType());
-                ValidationResult result = validator.Validate(Activator.CreateInstance(contextType, value));
-                return result.IsValid
-                     ? Array.Empty<string>()
-                     : ExtractErrorsFrom(result);
+                try
+                {
+                    Type contextType = typeof(ValidationContext<>).MakeGenericType(value?.GetType() ?? typeof(object));
+                    var result = validator.Validate((IValidationContext) Activator.CreateInstance(contextType, value as object));
+                    return result.IsValid
+                        ? Array.Empty<string>()
+                        : ExtractErrorsFrom(result);
+                }
+                catch (ArgumentNullException ex) when (value is null)
+                {
+                    throw new ArgumentNullException($"Error while trying to validate 'null' using generic {nameof(IValidator)}" +
+                                                  " - make sure, that given validator overrides the protected" +
+                                                  " 'bool PreValidate(ValidationContext<string> context, ValidationResult result)' method.", ex);
+                }
             };
         }
 
