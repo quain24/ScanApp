@@ -151,6 +151,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Error), true);
                 builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ErrorText), "initial value was invalid - select valid one.");
+                _selectFieldReferences[config].Reference?.Validate();
             }
 
             builder.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReferences[config] =
