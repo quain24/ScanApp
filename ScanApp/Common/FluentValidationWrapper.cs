@@ -23,7 +23,7 @@ namespace ScanApp.Common
         /// </summary>
         /// <param name="rule">One rule / set of rules for created validator to use</param>
         /// <param name="allowNull">If <see langword="true"/>, validation will treat <see langword="null"/> as valid.</param>
-        /// <param name="nullMessage">Error message used when validated property is <see langword="null"/></param>
+        /// <param name="nullMessage">Error message used when validated property is <see langword="null"/>.</param>
         public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule, bool allowNull = true, string nullMessage = null)
         {
             _allowNull = allowNull;

@@ -47,7 +47,7 @@
     private T TargetItem { get; set; }
     private MudForm _form;
     private EditFieldCreator<T> _fieldCreator;
-    private bool _success = true;
+    private bool _success;
     private ElementReference _div;
 
     protected override async Task OnInitializedAsync()
