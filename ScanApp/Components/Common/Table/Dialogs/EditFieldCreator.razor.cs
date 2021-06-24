@@ -136,8 +136,12 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 {
                     _selectFieldReferences[config].Reference.Value = config.AllowedValues.FirstOrDefault();
                     config.SetValue(TargetItem, _selectFieldReferences[config].Reference.Value);
-                    TargetItemChanged.InvokeAsync(TargetItem);
                 }
+                else
+                {
+                    _selectFieldReferences[config].Reference.Value = value;
+                }
+                TargetItemChanged.InvokeAsync(TargetItem);
                 _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, true);
             }
 
