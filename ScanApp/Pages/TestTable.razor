@@ -1,5 +1,4 @@
-﻿@page "/Alttable"
-
+﻿@page "/testtable"
 @using Version = ScanApp.Domain.ValueObjects.Version
 @using ScanApp.Data
 @using ScanApp.Models.SpareParts
@@ -9,12 +8,12 @@
 @inject WeatherForecastService ForecastService
 @inject IDateTime DateTime
 
-<h1>Alt table</h1>
+<h1>Test table</h1>
 
-<SCTable @ref="table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
-         Data="forecasts" Configs="@cc.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" Virtualize="true"
-         ItemCreated="Created" Loading="loading">
-    <SCColumn T="WeatherForecast" BoundConfig="@cc[1]">
+<SCTable @ref="_table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
+         Data="_forecasts" Configs="@_configs.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" Virtualize="true"
+         ItemCreated="Created" Loading="_loading">
+    <SCColumn T="WeatherForecast" BoundConfig="@_configs[1]">
         <MudButton Color="@(context.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => context.TemperatureC = ++context.TemperatureC)">
             @(context.TemperatureC)
         </MudButton>
@@ -23,16 +22,16 @@
             @(context?.Summary)
         </MudButton>
     </SCColumn>
-    <SCColumn T="WeatherForecast" BoundConfig="@cc[4]"><MudButton>Test button</MudButton></SCColumn>
+    <SCColumn T="WeatherForecast" BoundConfig="@_configs[4]"><MudButton>Test button</MudButton></SCColumn>
 </SCTable>
 
 <MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
-<MudButton OnClick="@(_ => table.OpenEditItemDialog())">Edit using table function</MudButton>
-<MudButton OnClick="@(_ => table.OpenAddItemDialog())">Add using table function</MudButton>
-<MudButton OnClick="@(_ => table.OpenFilterItemDialog())">Filter using table function</MudButton>
+<MudButton OnClick="@(_ => _table.OpenEditItemDialog())">Edit using table function</MudButton>
+<MudButton OnClick="@(_ => _table.OpenAddItemDialog())">Add using table function</MudButton>
+<MudButton OnClick="@(_ => _table.OpenFilterItemDialog())">Filter using table function</MudButton>
 
 <MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
-<MudText>@(ItemCreatedByTable?.Summary ?? string.Empty)</MudText>
+<MudText>@(_itemCreatedByTable?.Summary ?? string.Empty)</MudText>
 <MudText>
     <li>
         @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
@@ -44,15 +43,7 @@
 
 @code
 {
-    public bool loading;
-    public void ChangeUsingExternalButton(WeatherForecast ob)
-    {
-        var i = forecasts.FindIndex(w => w == WeatherForecast);
-        if (i < 0)
-            return;
-        WeatherForecast = ob;
-        forecasts[i] = ob;
-    }
+    private bool _loading;
 
     private WeatherForecast Create()
     {
@@ -61,12 +52,17 @@
 
     private void Created(WeatherForecast item)
     {
-        ItemCreatedByTable = item;
+        _itemCreatedByTable = item;
     }
 
-    WeatherForecast ItemCreatedByTable;
+    private WeatherForecast _itemCreatedByTable;
+    private WeatherForecast WeatherForecast { get; set; }
+    private HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
 
-    public ColumnConfig<WeatherForecast>[] cc =
+    private List<WeatherForecast> _forecasts = new();
+    private SCTable<WeatherForecast> _table;
+
+    private readonly List<ColumnConfig<WeatherForecast>> _configs = new()
     {
         ColumnBuilder<WeatherForecast>.For(c => c.Summary)
             .UnderName("Simple summary")
@@ -94,7 +90,7 @@
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Date)
             .FormatAs(FieldType.Date)
-            //.ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
             .Groupable()
             .Editable()
             .Build(),
@@ -109,7 +105,6 @@
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.Version)
             .UnderName("A version")
-            //.ValidateUsing(new FluentValidationWrapper<Version>(x => x.Must(c => c != "unsupported")))
             .ConvertUsing(new Converter<Version>
             {
                 SetFunc = value => value?.Value,
@@ -117,7 +112,7 @@
             })
             .Groupable()
             .Editable()
-            .LimitValuesTo(new List<Version>()
+            .LimitValuesTo(new List<Version>
             {
                 Version.Empty(),
                 Version.Create("v one"),
@@ -140,50 +135,27 @@
             .Build()
     };
 
-    public ColumnConfig<WeatherForecast>[] altConifgWay = new[]
-    {
-        new ColumnConfig<WeatherForecast>(c => c.Summary, "Simple summary", new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20))),
-        new ColumnConfig<WeatherForecast>(c => c.TemperatureC, "Temperature in C", new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10))),
-        new ColumnConfig<WeatherForecast>(c => c.Date, null, FieldType.Date, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10)))),
-        new ColumnConfig<WeatherForecast>(c => c.Date, "Separate time column", FieldType.Time, new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10)))),
-        new ColumnConfig<WeatherForecast>(c => c.Version, "A version", new FluentValidationWrapper<Version>(x => x.Must(c => c.IsEmpty != true)))
-            .AssignConverter(new Converter<Version>
-            {
-                SetFunc = value => value.Value,
-                GetFunc = Version.Create
-            }),
-        new ColumnConfig<WeatherForecast>(c => c.Number, "Const number"),
-        new ColumnConfig<WeatherForecast>(c => c.Model.Name, "Model name"),
-        new ColumnConfig<WeatherForecast>(c => c.nulldate, "Null Date")
-    };
-
-    public WeatherForecast WeatherForecast { get; set; }
-    public HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
-
-    private List<WeatherForecast> forecasts = new();
-    private SCTable<WeatherForecast> table;
-
     private void Remove()
     {
-        forecasts.Remove(WeatherForecast);
+        _forecasts.Remove(WeatherForecast);
         WeatherForecast = null;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
-        forecasts.Add(new WeatherForecast()
+        _forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
+        _forecasts.Add(new WeatherForecast()
         {
-            Version = Version.Create("addddddddd"),
+            Version = Version.Create("alternative version"),
             TemperatureC = 21,
-            Summary = "asdasdasdasdasd",
+            Summary = "Test summary",
             Date = System.DateTime.Today,
             Model = new SparePartGUIModel()
         });
         var rand = new Random(12345);
         for (int i = 0; i < 2000; i++)
         {
-            forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = rand.Next(5000000).ToString(), TemperatureC = rand.Next(21, 46) });
+            _forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = rand.Next(5000000).ToString(), TemperatureC = rand.Next(21, 46) });
         }
     }
 }

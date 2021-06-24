@@ -92,6 +92,8 @@
             return Task.CompletedTask;
         }
 
+        _form.Validate();
+
         if (_success is false)
             return Task.CompletedTask;
 
