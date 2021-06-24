@@ -10,7 +10,8 @@
     {
         <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupRowClick" Loading="Loading"
                   FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
-                  Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" Virtualize="Virtualize">
+                  Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Hover="true" Outlined="Outlined" Dense="true"
+                  Breakpoint="Breakpoint.None">
             <ToolBarContent>
                 @if (Configs?.Count > 0)
                 {
