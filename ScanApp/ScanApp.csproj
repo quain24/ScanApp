@@ -31,4 +31,8 @@
     <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Logs\" />
+  </ItemGroup>
+
 </Project>
