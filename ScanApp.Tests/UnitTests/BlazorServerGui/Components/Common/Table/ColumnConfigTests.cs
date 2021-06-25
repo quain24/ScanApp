@@ -424,5 +424,42 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 
             act.Should().Throw<ArgumentException>();
         }
+
+        [Fact]
+        public void LimitAcceptedValues_accepts_valid_collection()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.LimitAcceptedValuesTo(new string[]{"a", "b"});
+
+            act.Should().NotThrow();
+            subject.AllowedValues.Should().BeEquivalentTo(new[] {"b", "a"});
+        }
+
+        [Fact]
+        public void LimitAcceptedValues_throws_arg_null_exc_when_collection_is_null()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.LimitAcceptedValuesTo(null as IEnumerable<string>);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void LimitAcceptedValues_throws_arg_exc_when_collection_is_of_wrong_type()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.LimitAcceptedValuesTo(new[]{1, 2, 3});
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void LimitAcceptedValues_throws_arg_exc_when_collection_is_empty()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.LimitAcceptedValuesTo(Array.Empty<string>());
+
+            act.Should().Throw<ArgumentException>();
+        }
     }
 }

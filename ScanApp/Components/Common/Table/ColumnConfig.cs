@@ -376,14 +376,19 @@ namespace ScanApp.Components.Common.Table
         /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="values"/> were <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Type of items in <paramref name="values"/> is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="values"/> collection is empty.</exception>
         public ColumnConfig<T> LimitAcceptedValuesTo<TType>(IEnumerable<TType> values)
         {
+            _ = values ?? throw new ArgumentNullException(nameof(values));
             if (typeof(TType).IsAssignableTo(PropertyType) is false)
             {
-                throw new ArgumentException($"Given values are not compatible with target pointed to by this instance of {nameof(ColumnConfig<T>)}: (property - {PropertyType.FullName}), value collection - {typeof(TType).FullName})");
+                throw new ArgumentException("Given values are not compatible with target pointed to by this instance of" +
+                                            $" {nameof(ColumnConfig<T>)}: (property - {PropertyType.FullName}), value collection - {typeof(TType).FullName})");
             }
 
-            AllowedValues = (IEnumerable<dynamic>)values ?? throw new ArgumentNullException(nameof(values));
+            AllowedValues = values.Any()
+                ? (IEnumerable<dynamic>)values
+                : throw new ArgumentException("Cannot limit values when given collection is empty", nameof(values));
             return this;
         }
     }
