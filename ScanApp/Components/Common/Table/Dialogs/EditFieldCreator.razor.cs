@@ -27,19 +27,21 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
         private readonly Dictionary<ColumnConfig<T>, dynamic> _fieldReferences = new();
         private readonly Dictionary<ColumnConfig<T>, MudTimePicker> _fieldReferencesForTimePartInDateTime = new();
-        private Dictionary<ColumnConfig<T>, (dynamic Reference, bool Touched, bool startedBad)> _selectFieldReferences;
+        private Dictionary<ColumnConfig<T>, (bool Touched, bool startedBad)> _selectFieldStates;
 
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            CreateEmptyReferencesForSelectFields();
+            CreateInitialStateForSelectFields();
             if (TargetItem is null)
                 throw new ArgumentNullException(nameof(TargetItem), "Target Item must be set (You can use @bind-TargetItem)");
         }
 
-        private void CreateEmptyReferencesForSelectFields()
+        private void CreateInitialStateForSelectFields()
         {
-            _selectFieldReferences = Configs.Where(c => c.AllowedValues is not null).ToDictionary(c => c, _ => ((dynamic)null, false, false));
+            _selectFieldStates = Configs
+                .Where(c => c.AllowedValues is not null)
+                .ToDictionary(c => c, _ => (false, false));
         }
 
         public void ExpandInvalidPanels()
@@ -107,8 +109,8 @@ namespace ScanApp.Components.Common.Table.Dialogs
             async Task EditDelegate(dynamic obj)
             {
                 TargetItem = config.SetValue(TargetItem, obj);
-                // user changed value and value can be only replaced with good one, so startedBad is false
-                _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, _selectFieldReferences[config].Touched, false);
+                // User changed value and value can be only replaced with good one, so startedBad is false
+                _selectFieldStates[config] = (_selectFieldStates[config].Touched, false);
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
             dynamic callback = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
@@ -130,32 +132,32 @@ namespace ScanApp.Components.Common.Table.Dialogs
                 }
             }));
 
-            if (_selectFieldReferences[config].Touched is false && _selectFieldReferences[config].Reference is not null)
+            if (_selectFieldStates[config].Touched is false)
             {
                 // Value from edited item is outside of constraints set in 'AllowedValues'
                 // so mark it as invalid for first value set.
                 var value = config.GetValueFrom(TargetItem);
                 if (Enumerable.Contains(config.AllowedValues, value) is false)
                 {
-                    _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, true, true);
+                    _selectFieldStates[config] = (true, true);
                 }
                 // Otherwise just 'touch' field.
                 else
                 {
-                    _selectFieldReferences[config] = (_selectFieldReferences[config].Reference, true, false);
+                    _selectFieldStates[config] = (true, false);
                 }
                 TargetItemChanged.InvokeAsync(TargetItem);
             }
 
-            if (_selectFieldReferences[config].startedBad)
+            if (_selectFieldStates[config].startedBad)
             {
                 builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.Error), true);
                 builder.AddAttribute(LineNumber.Get, nameof(MudSelect<int>.ErrorText), "initial value was invalid - select valid one.");
-                _selectFieldReferences[config].Reference?.Validate();
+                if (_fieldReferences.TryGetValue(config, out var reference))
+                    reference?.Validate();
             }
 
-            builder.AddComponentReferenceCapture(LineNumber.Get, o => _selectFieldReferences[config] =
-                (o, _selectFieldReferences[config].Touched, _selectFieldReferences[config].startedBad));
+            builder.AddComponentReferenceCapture(LineNumber.Get, o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
 
