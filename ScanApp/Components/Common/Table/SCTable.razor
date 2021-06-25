@@ -12,13 +12,14 @@
                   FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
                   Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Hover="true" Outlined="Outlined" Dense="true"
                   Breakpoint="Breakpoint.None">
+
             <ToolBarContent>
                 @if (Configs?.Count > 0)
                 {
                     <TableToolbar T="TTableType" Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
                                   AddVisible="_addingEnabled" AddDisabled="false" OnAddClicked="OpenAddItemDialog"
                                   EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" OnEditClicked="OpenEditItemDialog"
-                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
+                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)"/>
                 }
             </ToolBarContent>
 
@@ -31,6 +32,7 @@
             <RowTemplate>
                 <MudTd Style="@GroupedRowStyle" DataLabel="@context.Key">@context.Key</MudTd>
             </RowTemplate>
+
             <ChildRowContent>
                 @if (_selectedGroupId == context.Key)
                 {
@@ -76,12 +78,14 @@
                                 </MudTd>
                             }
                         </RowTemplate>
+
                         <PagerContent>
                             @if (context.Value.Count > RowsPerPage)
                             {
-                                <MudTablePager PageSizeOptions="PageSizeOptions" />
+                                <MudTablePager PageSizeOptions="PageSizeOptions"/>
                             }
                         </PagerContent>
+
                     </MudTable>
                 }
             </ChildRowContent>
@@ -89,7 +93,7 @@
             <PagerContent>
                 @if (GroupedData.Count > RowsPerPage)
                 {
-                    <MudTablePager PageSizeOptions="PageSizeOptions" />
+                    <MudTablePager PageSizeOptions="PageSizeOptions"/>
                 }
             </PagerContent>
         </MudTable>
