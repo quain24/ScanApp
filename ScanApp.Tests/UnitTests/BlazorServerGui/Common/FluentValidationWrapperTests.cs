@@ -16,7 +16,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common
         [Fact]
         public void Will_create_instance()
         {
-            var subject = new FluentValidationWrapper<int>(x => x.Equal(1), false,"is null");
+            var subject = new FluentValidationWrapper<int>(x => x.Equal(1), false, "is null");
 
             subject.Should().BeOfType<FluentValidationWrapper<int>>()
                 .And.BeAssignableTo<AbstractValidator<int>>();
@@ -33,7 +33,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common
         [Fact]
         public void Will_accept_rules_when_created()
         {
-            var subject = new FluentValidationWrapper<int>(x => x.GreaterThan(1).LessThan(100), false,"is null");
+            var subject = new FluentValidationWrapper<int>(x => x.GreaterThan(1).LessThan(100), false, "is null");
 
             var result = subject.CreateDescriptor();
             result.Rules.Should().HaveCount(1, "there is only one property being validated");
@@ -46,7 +46,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common
         [Fact]
         public void Validation_creates_actual_validating_delegate()
         {
-            var subject = new FluentValidationWrapper<string>(x => x.MaximumLength(1), false,"is null");
+            var subject = new FluentValidationWrapper<string>(x => x.MaximumLength(1), false, "is null");
 
             var result = subject.Validation;
 
@@ -57,7 +57,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common
         [Fact]
         public void Will_invalidate_if_given_property_is_null_with_given_error_text()
         {
-            var subject = new FluentValidationWrapper<string>(x => x.MaximumLength(1), false ,"is null");
+            var subject = new FluentValidationWrapper<string>(x => x.MaximumLength(1), false, "is null");
 
             var action = subject.Validation;
             var result = action(null);
