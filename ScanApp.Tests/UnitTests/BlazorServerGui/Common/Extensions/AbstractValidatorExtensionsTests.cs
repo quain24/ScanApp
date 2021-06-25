@@ -89,6 +89,17 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
         }
 
         [Fact]
+        public void ToMudFormFieldValidator_throws_arg_null_exc_if_no_prevalidate_method_and_value_is_null()
+        {
+            IValidator validator = new AbstractValidatorExtensionsFixtures.testValidatorStringNoPrevalidate();
+            var subject = validator.ToMudFormFieldValidator("test");
+
+            Action act = () => _ = subject(null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
         public async Task ToAsyncMudFormFieldValidator_creates_proper_delegate()
         {
             var validatorMock = new Mock<AbstractValidator<string>>();

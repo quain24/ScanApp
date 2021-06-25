@@ -1,0 +1,117 @@
+﻿@typeparam T
+
+@if (GroupingVisible)
+{
+    <MudSelect Value="SelectedGroupable" ValueChanged="SelectedGroupableChanged" T="ColumnConfig<T>" Label="Groups"
+               Disabled="GroupingDisabled" FullWidth="false" Dense="true" Strict="true" Style="max-width: 300px; font-size: smaller;">
+        <MudSelectItem T="ColumnConfig<T>" Value="null">None</MudSelectItem>
+        @foreach (var cc in Groupables)
+        {
+            <MudSelectItem Value="cc">@cc.DisplayName</MudSelectItem>
+        }
+    </MudSelect>
+}
+<MudSpacer/>
+@if (AddVisible)
+{
+    <MudButton OnClick="OnAddClicked" Variant="Variant.Filled" Class="ml-2" Disabled="AddDisabled" Style="font-size: smaller">Add</MudButton>
+}
+@if (EditVisible)
+{
+    <MudButton OnClick="OnEditClicked" Variant="Variant.Filled" Class="ml-2" Disabled="EditDisabled" Style="font-size: smaller">Edit</MudButton>
+}
+@if (FilterVisible)
+{
+    @if (FiltersApplied)
+    {
+        <MudButton OnClick="OnRemoveFilterClicked" Variant="Variant.Filled" Color="Color.Warning" Class="ml-2" Disabled="FilterDisabled" Style="font-size: smaller">Remove filters</MudButton>
+    }
+    else
+    {
+        <MudButton OnClick="OnFilterClicked" Variant="Variant.Filled" Class="ml-2" Disabled="FilterDisabled" Style="font-size: smaller">Filter</MudButton>
+    }
+}
+
+@code {
+
+    /// <summary>
+    /// Gets or sets a value indicating if grouping function should be visible.
+    /// </summary>
+    [Parameter] public bool GroupingVisible { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating if grouping function should be disabled.
+    /// </summary>
+    [Parameter] public bool GroupingDisabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of <see cref="ColumnConfig{T}" /> that will be set as options for grouping.
+    /// </summary>
+    [Parameter] public IEnumerable<ColumnConfig<T>> Groupables { get; set; }
+
+    /// <summary>
+    /// Currently selected <see cref="ColumnConfig{T}" />.
+    /// </summary>
+    [Parameter] public ColumnConfig<T> SelectedGroupable { get; set; }
+
+    /// <summary>
+    /// Occurs when new <see cref="ColumnConfig{T}" /> is selected in group chooser.
+    /// </summary>
+    [Parameter] public EventCallback<ColumnConfig<T>> SelectedGroupableChanged { get; set; }
+
+    /// <summary>
+    /// Occurs when 'add' button has been clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnAddClicked { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if add function (button) should be visible.
+    /// </summary>
+    [Parameter] public bool AddVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if add function (button) should be disabled.
+    /// </summary>
+    [Parameter] public bool AddDisabled { get; set; }
+
+    /// <summary>
+    /// Occurs when 'edit' button has been clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnEditClicked { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if editing function (button) should be visible.
+    /// </summary>
+    [Parameter] public bool EditVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if editing function should be disabled.
+    /// </summary>
+    [Parameter] public bool EditDisabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if filtering function should be visible.
+    /// </summary>
+    [Parameter] public bool FilterVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if filtering function should be disabled.
+    /// </summary>
+    [Parameter] public bool FilterDisabled { get; set; }
+
+    /// <summary>
+    /// Occurs when 'filter' button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnFilterClicked { get; set; }
+
+    /// <summary>
+    /// Occurs when 'remove filters' button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback OnRemoveFilterClicked { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating if any table filters are applied.
+    /// </summary>
+    /// <value>If <see langword="true" />, this will replace filter button with 'remove filers' button.</value>
+    [Parameter] public bool FiltersApplied { get; set; }
+}

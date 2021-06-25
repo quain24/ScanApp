@@ -12,8 +12,8 @@
 @inject IDialogService DialogService
 
 <MudGrid>
-    <MudItem xs="12" lg="6" Class="px-1">
-        <MudTable RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicRoleModel" Items="@Roles" @bind-SelectedItem="_selectedRole" RowsPerPage="5" Striped="true"
+    <MudItem xs="12" lg="6" Class="mx-auto">
+        <MudTable Class="px-2" RowStyleFunc="RowStyleFunc" Breakpoint="Breakpoint.None" T="BasicRoleModel" Items="@Roles" @bind-SelectedItem="_selectedRole" RowsPerPage="5" Striped="true"
                   Filter="new Func<BasicRoleModel, bool>(FilterRoles)" OnRowClick="@(async args => await FillSelectedRoleClaimsData(args))" Hover="true" Dense="true" Outlined="false" Elevation="0">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Roles</MudText>
@@ -24,14 +24,14 @@
                 <MudTh>Name</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd Style="height: 51px;">@context.Name</MudTd>
+                <MudTd Style="height: 51px; padding-left: 5px">@context.Name</MudTd>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
             </PagerContent>
         </MudTable>
     </MudItem>
-    <MudItem xs="12" lg="6" Class="px-1">
+    <MudItem xs="12" lg="6" Class="mx-auto">
         <MudTable Breakpoint="Breakpoint.None" Items="@_roleClaims" @bind-SelectedItem="_selectedClaim" RowsPerPage="5" Striped="true"
                   Filter="new Func<(ClaimModel Claim, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true" Outlined="false" Elevation="0">
             <ToolBarContent>

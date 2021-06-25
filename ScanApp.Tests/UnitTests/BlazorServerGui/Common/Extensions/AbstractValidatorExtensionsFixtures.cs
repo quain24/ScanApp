@@ -17,9 +17,17 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
             {
                 if (context.InstanceToValidate is not null) return true;
 
-            var name = CreateDescriptor().Rules?.First()?.PropertyName ?? "Field";
-            result.Errors.Add(new ValidationFailure(name, $"{name} cannot be empty."));
-            return false;
+                var name = CreateDescriptor().Rules?.First()?.PropertyName ?? "Field";
+                result.Errors.Add(new ValidationFailure(name, $"{name} cannot be empty."));
+                return false;
+            }
+        }
+
+        internal class testValidatorStringNoPrevalidate : AbstractValidator<string>
+        {
+            public testValidatorStringNoPrevalidate()
+            {
+                RuleFor(x => x).NotEmpty().MaximumLength(3);
             }
         }
 

@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MudBlazor.Extensions;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Installers;
 using ScanApp.Common.Installers;
+using ScanApp.Common.Services;
 using ScanApp.Data;
 using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
@@ -44,7 +44,7 @@ namespace ScanApp
             services.AddMudBlazor();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
-            services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeExtensions).Assembly });
+            services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeService).Assembly });
             services.AddCommonFluentValidationPropertyValidators();
             services.AddSingleton<WeatherForecastService>();
         }

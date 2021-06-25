@@ -91,8 +91,8 @@ namespace ScanApp.Common.Extensions
                 catch (ArgumentNullException ex) when (value is null)
                 {
                     throw new ArgumentNullException($"Error while trying to validate 'null' using generic {nameof(IValidator)}" +
-                                                  " - make sure, that given validator overrides the protected" +
-                                                  " 'bool PreValidate(ValidationContext<string> context, ValidationResult result)' method.", ex);
+                                                  " - possibly the 'bool PreValidate(ValidationContext<T> context, ValidationResult result)'" +
+                                                  " method in said validator was not provided.", ex);
                 }
             };
         }
