@@ -29,6 +29,8 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<SparePartType> SparePartTypes { get; set; }
         public DbSet<SparePartStoragePlace> SparePartStoragePlaces { get; set; }
 
+        public DbSet<HesDepot> HesDepots { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
