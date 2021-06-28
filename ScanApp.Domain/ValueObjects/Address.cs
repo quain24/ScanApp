@@ -1,6 +1,7 @@
 ﻿using ScanApp.Domain.Common;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ScanApp.Domain.ValueObjects
 {
@@ -57,6 +58,15 @@ namespace ScanApp.Domain.ValueObjects
             yield return ZipCode;
             yield return City;
             yield return Country;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder(StreetName).Append(' ');
+            if (StreetNumber is not null) builder.Append(StreetNumber);
+            builder.Append(", ");
+            builder.Append(ZipCode).Append(' ').Append(City).Append(", ").Append(Country);
+            return builder.ToString();
         }
     }
 }
