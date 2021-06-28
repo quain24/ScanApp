@@ -1,9 +1,9 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Infrastructure.Persistence;
-using System;
 
-namespace ScanApp.Tests.UnitTests.Application
+namespace ScanApp.Tests.UnitTests
 {
     public abstract class SqlLiteInMemoryDbFixture : IDisposable
     {

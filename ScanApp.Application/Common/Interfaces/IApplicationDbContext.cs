@@ -144,6 +144,8 @@ namespace ScanApp.Application.Common.Interfaces
         /// <value>Set of Spare Part Storage Places.</value>
         DbSet<SparePartStoragePlace> SparePartStoragePlaces { get; set; }
 
+        DbSet<HesDepot> HesDepots { get; set; }
+
         /// <inheritdoc cref="DbContext.Add{TEntity}"/>
         EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class;
 
