@@ -9,8 +9,8 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<HesDepot> builder)
         {
             builder.ToTable("HesDepots", "hub");
-            builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).ValueGeneratedNever();
+            builder.HasIndex(e => e.Id).IsUnique();
+            builder.Property(e => e.Id).ValueGeneratedNever().IsRequired();
             builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
             builder.Property(e => e.Email).HasMaxLength(200).IsRequired();
             builder.Property(e => e.PhoneNumber).HasMaxLength(25).IsRequired();
