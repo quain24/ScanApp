@@ -1,0 +1,138 @@
+﻿@page "/hubs"
+@using ScanApp.Domain.Entities
+@using ScanApp.Domain.ValueObjects
+@using ScanApp.Common
+@using System.Data
+@using System.Threading
+@using FluentValidation
+@using Microsoft.EntityFrameworkCore
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.HesHub.Hubs.Queries.AllHubs
+@using ScanApp.Common.Validators
+@inject IScopedMediator _mediator
+@inject IContextFactory _contextFactory 
+
+<h3>Hub list</h3>
+
+<SCTable TTableType="HesDepot" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot"></SCTable>
+
+@code {
+    private List<HesDepot> _depots = new()
+    {
+        new HesDepot(1, "test_name",
+                Address.Create("street", "2A1", "123456", "city a", "country a"),
+                "12pref", "1234567", "em@wp.pl"),
+        new HesDepot(2, "test_name2",
+                Address.Create("street", "2A2", "123457", "city b", "country b"),
+                "12pref", "1234568", "em@wp.pl"),
+        new HesDepot(3, "test_name3",
+                Address.Create("street", "2A3", "123458", "city c", "country c"),
+                "12pref", "1234569", "em@wp.pl"),
+        new HesDepot(4, "test_name4",
+                Address.Create("street", "2A4", "123459", "city d", "country d"),
+                "12pref", "1234560", "em@wp.pl"),
+    };
+
+    private List<ColumnConfig<HesDepot>> _configs = new();
+
+    private HesDepot _selectedDepot;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var t = await _mediator.Send(new AllHubsQuery(), CancellationToken.None);
+        Console.WriteLine(t.Output.First().Version);
+
+        var a = "";
+        List<HesDepot> res;
+        try
+        {
+
+            await using (var ctx = _contextFactory.CreateDbContext())
+            {
+                res = ctx.HesDepots.ToList();
+                res.First().ChangeEmail("newEmail@wp1.pl");
+                ctx.Entry(res[1]).State = EntityState.Detached;
+    //ctx.SaveChanges();
+    //var newhub = new HesDepot(13, "new name", Address.Create("str", "12", "22222", "ci", "coun"), "123", "222222222", "wwwww@wp.pl");
+    //ctx.HesDepots.Attach(newhub);
+    //ctx.Entry(newhub).State = EntityState.Modified;
+                ctx.SaveChanges();
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.InnerException.Message);
+        }
+
+        var g = "";
+    }
+
+    protected override void OnInitialized()
+    {
+
+
+        _configs = _configs = new()
+        {
+            ColumnBuilder<HesDepot>.For(x => x.Id)
+                    .ColumnStyle("width: 50px;")
+                    .Editable()
+                    .Groupable()
+                    .UnderName("ID")
+                    .ValidateUsing(new FluentValidationWrapper<int>(x =>
+                    {
+                        x.GreaterThanOrEqualTo(0)
+                         .Must(x => _depots.Any(d => d.Id == x) is false)
+                         .When(x => x != _selectedDepot?.Id)
+                         .WithMessage("ID mus be unique.");
+                    }))
+                    .Build(),
+
+            ColumnBuilder<HesDepot>.For(x => x.Address)
+                    .Editable()
+                    .Groupable()
+                    .ValidateUsing(new FluentValidationWrapper<Address>(x =>
+                    {
+                        x.ChildRules(p =>
+                        {
+                            p.RuleFor(a => a.City)
+                                .MinimumLength(3)
+                                .MaximumLength(150)
+                                .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator<Address, string>());
+                        });
+                    }, false, "You must provide City name"))
+                    .ConvertUsing(new Converter<Address>()
+                    {
+                        SetFunc = x => x?.City,
+                        GetFunc = x => string.IsNullOrWhiteSpace(x) is false
+                            ? Address.Create(_selectedDepot.Address.StreetName, _selectedDepot.Address.StreetNumber, _selectedDepot.Address.ZipCode, x, _selectedDepot.Address.Country)
+                            : null
+                    })
+                    .UnderName("City")
+                    .Build(),
+
+            ColumnBuilder<HesDepot>.For(x => x.Address)
+                .Editable()
+                .Groupable()
+                .ValidateUsing(new FluentValidationWrapper<Address>(x =>
+                {
+                    x.ChildRules(p =>
+                    {
+                        p.RuleFor(a => a.StreetName)
+                            .MinimumLength(3)
+                            .MaximumLength(150)
+                            .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator<Address, string>());
+                    });
+                }, false, "You must provide street name"))
+                .ConvertUsing(new Converter<Address>()
+                {
+                    SetFunc = x => x?.StreetName,
+                    GetFunc = x => string.IsNullOrWhiteSpace(x) is false
+                        ? Address.Create(x, _selectedDepot.Address.StreetNumber, _selectedDepot.Address.ZipCode, _selectedDepot.Address.City, _selectedDepot.Address.Country)
+                        : _selectedDepot.Address
+                })
+                .UnderName("Street")
+                .Build()
+        };
+    }
+
+}
