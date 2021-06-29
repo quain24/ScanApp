@@ -4,6 +4,7 @@ using ScanApp.Common;
 using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Collections.Generic;
+using ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.ScanAppTableTestsFixtures;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.Options
