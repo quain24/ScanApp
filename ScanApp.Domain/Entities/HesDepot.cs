@@ -1,5 +1,6 @@
 ﻿using ScanApp.Domain.ValueObjects;
 using System;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {
@@ -11,6 +12,7 @@ namespace ScanApp.Domain.Entities
         public Address Address { get; private set; }
         public string PhonePrefix { get; private set; }
         public string PhoneNumber { get; private set; }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// For compliance with EF Core.
@@ -57,7 +59,13 @@ namespace ScanApp.Domain.Entities
             if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email address must be provided", nameof(email));
             if (email.Contains('@') is false && email.Contains('.') is false)
                 throw new ArgumentException($"Email address ({email}) is not a proper email.", nameof(email));
+            //Version = Version.Create(Guid.NewGuid().ToString());
             Email = email;
+        }
+
+        public void ChangeVersion(Version version)
+        {
+            Version = version ?? throw new ArgumentNullException(nameof(version));
         }
     }
 }

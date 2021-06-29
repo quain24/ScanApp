@@ -1,6 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Text;
+using System.Threading;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using ScanApp.Domain.Entities;
+using SharedExtensions;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -17,12 +24,18 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.Property(e => e.PhonePrefix).HasMaxLength(10).IsRequired();
             builder.OwnsOne(e => e.Address, add =>
             {
-                add.Property(a => a.City).HasMaxLength(150).IsRequired();
-                add.Property(a => a.StreetName).HasMaxLength(150).IsRequired();
-                add.Property(a => a.StreetNumber).HasMaxLength(15).IsRequired(false);
-                add.Property(a => a.Country).HasMaxLength(150).IsRequired();
-                add.Property(a => a.ZipCode).HasMaxLength(20).IsRequired();
+                add.Property(a => a.City).HasColumnName("City").HasMaxLength(150).IsRequired();
+                add.Property(a => a.StreetName).HasColumnName("StreetName").HasMaxLength(150).IsRequired();
+                add.Property(a => a.StreetNumber).HasColumnName("StreetNumber").HasMaxLength(15).IsRequired(false);
+                add.Property(a => a.Country).HasColumnName("Country").HasMaxLength(150).IsRequired();
+                add.Property(a => a.ZipCode).HasColumnName("ZipCode").HasMaxLength(20).IsRequired();
             });
+
+            builder.Property(e => e.Version)
+                .HasComment("This Row version is converted to 'Version' object in ScanApp")
+                .IsRowVersion()
+                .HasConversion(c => Convert.FromBase64String(c.Value),
+                    x => x.IsNullOrEmpty() ? Version.Empty() : Version.Create(Convert.ToBase64String(x)));
         }
     }
 }
