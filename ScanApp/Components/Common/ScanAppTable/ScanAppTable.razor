@@ -285,7 +285,7 @@ else
     }
 
     /// <summary>
-    /// Adds an <paramref name="item"/> to the table.
+    /// Adds an <paramref name="item" /> to the table.
     /// </summary>
     /// <param name="item"></param>
     public void AddItem(TItem item)
@@ -297,7 +297,7 @@ else
     }
 
     /// <summary>
-    /// Deletes an <paramref name="item"/> from the table.
+    /// Deletes an <paramref name="item" /> from the table.
     /// </summary>
     /// <param name="item"></param>
     /// <returns>True if deletion was successful, otherwise false</returns>
@@ -307,7 +307,7 @@ else
         {
             Items.RemoveAt(FindIndex(Items, item));
             ShownItems.RemoveAt(FindIndex(ShownItems, item));
-            RecentlyDeletedItems = new List<TItem>() {item};
+            RecentlyDeletedItems = new List<TItem>() { item };
             InvokeItemsDeleted(new List<TItem>() { item });
             return true;
         }
@@ -318,7 +318,7 @@ else
     }
 
     /// <summary>
-    /// Deletes an item at <paramref name="index"/>.
+    /// Deletes an item at <paramref name="index" />.
     /// </summary>
     /// <param name="index"></param>
     /// <returns>True if deletion was successful, otherwise false </returns>
@@ -329,8 +329,8 @@ else
             var itemForDeletion = Items[index];
             Items.RemoveAt(index);
             ShownItems.RemoveAt(index);
-            RecentlyDeletedItems = new List<TItem>(){itemForDeletion};
-            InvokeItemsDeleted(new List<TItem>() {itemForDeletion});
+            RecentlyDeletedItems = new List<TItem>() { itemForDeletion };
+            InvokeItemsDeleted(new List<TItem>() { itemForDeletion });
             return true;
         }
         catch
@@ -635,7 +635,7 @@ else
             for (int j = 0; j < Properties.Length; j++)
             {
                 if (ColumnConfigs[i].PropertyName == Properties[j].Name)
-                    ColumnConfigs[i].PropInfo = Properties[j];
+                        ColumnConfigs[i].PropInfo = Properties[j];
             }
         }
     }

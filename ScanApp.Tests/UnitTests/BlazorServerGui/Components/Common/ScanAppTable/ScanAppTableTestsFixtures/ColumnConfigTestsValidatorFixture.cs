@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
 
-namespace ScanApp.Tests.UnitTests.BlazorServerGui
+namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.ScanAppTableTestsFixtures
 {
     public class ColumnConfigTestsValidatorFixture : AbstractValidator<int>
     {

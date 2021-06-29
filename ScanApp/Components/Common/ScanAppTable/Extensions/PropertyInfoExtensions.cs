@@ -26,14 +26,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         private static object GetDateForm(DateTimeFormat.Show dateShow, DateTime date) =>
             dateShow switch
             {
-                DateTimeFormat.Show.DateOnly => date.Day + "/" + date.Month + "/" + date.Year,
-                DateTimeFormat.Show.DateAndTime => date,
+                DateTimeFormat.Show.DateOnly => date.ToShortDateString(),
+                DateTimeFormat.Show.DateAndTime => date.ToShortDateString() + " " + date.ToShortTimeString(),
                 DateTimeFormat.Show.DayOfWeek => date.DayOfWeek,
                 DateTimeFormat.Show.DayOnly => date.Day,
                 DateTimeFormat.Show.MonthOnly => date.Month,
                 DateTimeFormat.Show.YearOnly => date.Year,
-                DateTimeFormat.Show.TimeOnly => date.Hour + ":" + date.Minute,
-                DateTimeFormat.Show.TimeWithSeconds => date.Hour + ":" + date.Minute + ":" + date.Second,
+                DateTimeFormat.Show.TimeOnly => date.ToShortTimeString(),
+                DateTimeFormat.Show.TimeWithSeconds => date.ToLongTimeString(),
                 _ => date
             };
     }
