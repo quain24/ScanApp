@@ -1,6 +1,6 @@
 ﻿using Version = ScanApp.Domain.ValueObjects.Version;
 
-namespace ScanApp.Application.HesHub.Hubs.Queries.AllHubs
+namespace ScanApp.Application.HesHub.Hubs
 {
     public class HesHubModel
     {
