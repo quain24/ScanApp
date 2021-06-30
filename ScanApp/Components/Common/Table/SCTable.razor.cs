@@ -145,6 +145,12 @@ namespace ScanApp.Components.Common.Table
         /// <value>Callback providing freshly created <typeparamref name="TTableType" /> item.</value>
         [Parameter] public EventCallback<TTableType> ItemCreated { get; set; }
 
+        /// <summary>
+        /// Called when a new item is successfully edited by integrated 'edit' table functionality and added to <see cref="Data"/> collection.
+        /// </summary>
+        /// <value>Callback providing original and edited <typeparamref name="TTableType" /> items.</value>
+        [Parameter] public EventCallback<(TTableType Original, TTableType Edited)> ItemHasBeenEdited { get; set; }
+
         ///<inheritdoc cref="MudTableBase.MultiSelection" />
         [Parameter] public bool MultiSelection { get; set; }
 
@@ -477,13 +483,14 @@ namespace ScanApp.Components.Common.Table
             await OnEditItemHandler((TTableType)result.Data);
         }
 
-        private Task OnEditItemHandler(TTableType editedItem)
+        private async Task OnEditItemHandler(TTableType editedItem)
         {
             var oldItemIndex = Data.FindIndex(tt => tt.Equals(SelectedItem));
-            if (oldItemIndex == -1)
-                return Task.CompletedTask;
+            if (oldItemIndex == -1) return;
+
+            var oldItem = Data[oldItemIndex];
             Data[oldItemIndex] = editedItem;
-            return SelectedItemChanged.InvokeAsync(editedItem);
+            await Task.WhenAll(ItemHasBeenEdited.InvokeAsync((oldItem, editedItem)), SelectedItemChanged.InvokeAsync(editedItem));
         }
 
         /// <summary>
