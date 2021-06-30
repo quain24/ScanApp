@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
+using FluentValidation.Results;
 using System.Text.RegularExpressions;
 
 namespace ScanApp.Common.Validators
@@ -24,21 +24,24 @@ namespace ScanApp.Common.Validators
     /// </list>
     /// </para>
     /// </summary>
-    /// <typeparam name="T">Type of validation context.</typeparam>
-    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
-    public class IdentityNamingValidator<T, TProperty> : PropertyValidator<T, TProperty>
+    public class IdentityNamingValidator : AbstractValidator<string>
     {
         private readonly Regex _namingRegex = new(@"^[a-zA-Z0-9\.\-\\_]{3,450}$");
-        public override string Name => "ASP Identity naming validator";
 
-        public override bool IsValid(ValidationContext<T> context, TProperty value)
+        public IdentityNamingValidator()
         {
-            return value is string name && _namingRegex.IsMatch(name);
+            RuleFor(x => x)
+                .NotEmpty()
+                .Matches(_namingRegex);
         }
 
-        protected override string GetDefaultMessageTemplate(string errorCode)
+        protected override bool PreValidate(ValidationContext<string> context, ValidationResult result)
         {
-            return "{PropertyName} contains illegal characters.";
+            if (context?.InstanceToValidate is not null)
+                return base.PreValidate(context, result);
+
+            result.Errors.Add(new ValidationFailure(context?.PropertyName, "Value cannot be null."));
+            return false;
         }
     }
 }

@@ -54,7 +54,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Name))
                 .WhichValue.Should().HaveCount(1)
-                .And.Subject.First().Should().BeAssignableTo<IdentityNamingValidator<AddUserCommand, string>>();
+                .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<IdentityNamingValidator>();
         }
 
         [Fact]
@@ -67,7 +67,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Email))
                 .WhichValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserCommand, string>))
-                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(EmailValidator<AddUserCommand, string>)));
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<AddUserCommand, string>))
+                    .Subject.As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<EmailValidator>();
         }
 
         [Fact]
@@ -91,7 +92,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Phone))
                 .WhichValue.Should().HaveCount(1)
-                .And.Subject.First().Should().BeAssignableTo<PhoneNumberValidator<AddUserCommand, string>>();
+                .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PhoneNumberValidator>();
         }
 
         [Fact]
@@ -110,7 +111,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
 
             var _ = subject.Validate(command);
 
-            validatorFixture.PhoneValidatorMock.Verify(m => m.IsValid(It.IsAny<ValidationContext<AddUserCommand>>(), It.IsAny<string>()), Times.Never);
+            validatorFixture.PhoneValidatorMock.Verify(m => m.Validate(It.IsAny<ValidationContext<string>>()), Times.Never);
         }
 
         [Fact]
@@ -131,7 +132,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var result = subject.TestValidate(command);
 
             result.ShouldHaveValidationErrorFor(c => c.NewUser.Email);
-            validatorFixture.EmailValidatorMock.Verify(m => m.IsValid(It.IsAny<ValidationContext<AddUserCommand>>(), It.IsAny<string>()), Times.Never);
+            validatorFixture.EmailValidatorMock.Verify(m => m.Validate(It.IsAny<ValidationContext<string>>()), Times.Never);
         }
 
         [Fact]

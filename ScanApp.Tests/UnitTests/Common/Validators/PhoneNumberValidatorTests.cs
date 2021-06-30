@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using FluentValidation;
+using FluentValidation.Results;
 using ScanApp.Common.Validators;
 using Xunit;
 
@@ -14,12 +14,11 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("+012347852587896214857896")]
         public void Validates_proper_phone_number(string phone)
         {
-            var context = new ValidationContext<string>(phone);
-            var subject = new PhoneNumberValidator<string, string>();
+            var subject = new PhoneNumberValidator();
 
-            var result = subject.IsValid(context, phone);
+            var result = subject.Validate(phone);
 
-            result.Should().BeTrue();
+            result.IsValid.Should().BeTrue();
         }
 
         [Theory]
@@ -31,34 +30,21 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("123456D")]
         public void Invalidates_wrong_phone_number(string phone)
         {
-            var context = new ValidationContext<string>(phone);
-            var subject = new PhoneNumberValidator<string, string>();
+            var subject = new PhoneNumberValidator();
 
-            var result = subject.IsValid(context, phone);
+            var result = subject.Validate(phone);
 
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
 
         [Fact]
         public void Returns_false_if_phone_is_null()
         {
-            var subject = new PhoneNumberValidator<string, string>();
+            var subject = new PhoneNumberValidator();
 
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, null);
+            var result = subject.Validate(null as string);
 
-            result.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Returns_false_if_email_is_not_a_string()
-        {
-            var subject = new PhoneNumberValidator<string, int>();
-
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, 1);
-
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
     }
 }

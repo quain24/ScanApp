@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Moq;
 using ScanApp.Application.Admin.Commands.EditUserData;
 using ScanApp.Common.Validators;
@@ -7,19 +8,19 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 {
     public class EditUserCommandValidatorFixture
     {
-        public Mock<IdentityNamingValidator<EditUserDataCommand, string>> NamingValidatorMock { get; }
-        public Mock<EmailValidator<EditUserDataCommand, string>> EmailValidatorMock { get; }
-        public Mock<PhoneNumberValidator<EditUserDataCommand, string>> PhoneValidatorMock { get; }
+        public Mock<IdentityNamingValidator> NamingValidatorMock { get; }
+        public Mock<EmailValidator> EmailValidatorMock { get; }
+        public Mock<PhoneNumberValidator> PhoneValidatorMock { get; }
         public EditUserDataCommandValidator Validator { get; }
 
         public EditUserCommandValidatorFixture()
         {
-            NamingValidatorMock = new Mock<IdentityNamingValidator<EditUserDataCommand, string>>();
-            NamingValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), It.IsAny<string>())).Returns(true);
-            EmailValidatorMock = new Mock<EmailValidator<EditUserDataCommand, string>>();
-            EmailValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), It.IsAny<string>())).Returns(true);
-            PhoneValidatorMock = new Mock<PhoneNumberValidator<EditUserDataCommand, string>>();
-            PhoneValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), It.IsAny<string>())).Returns(true);
+            NamingValidatorMock = new Mock<IdentityNamingValidator>();
+            NamingValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            EmailValidatorMock = new Mock<EmailValidator>();
+            EmailValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            PhoneValidatorMock = new Mock<PhoneNumberValidator>();
+            PhoneValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
             PhoneValidatorMock.SetupAllProperties();
 
             Validator = new EditUserDataCommandValidator(NamingValidatorMock.Object, EmailValidatorMock.Object, PhoneValidatorMock.Object);
