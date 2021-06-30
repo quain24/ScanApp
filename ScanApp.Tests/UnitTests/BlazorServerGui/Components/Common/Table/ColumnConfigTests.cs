@@ -8,7 +8,6 @@ using ScanApp.Components.Common.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Areas;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
@@ -94,9 +93,9 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Given_input_limiting_collection_will_contain_it()
         {
-            var subject = new ColumnConfig<TestObject>(c => c.AString).LimitAcceptedValuesTo(new List<string>{"a", "b", "c"});
+            var subject = new ColumnConfig<TestObject>(c => c.AString).LimitAcceptedValuesTo(new List<string> { "a", "b", "c" });
 
-            subject.AllowedValues.Should().BeEquivalentTo(new List<string> {"a", "b", "c"});
+            subject.AllowedValues.Should().BeEquivalentTo(new List<string> { "a", "b", "c" });
         }
 
         [Fact]
@@ -110,7 +109,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Throws_arg_exc_if_given_limiting_collection_item_types_are_not_compatible_with_target_type()
         {
-            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(new List<int> {1, 2, 3});
+            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(new List<int> { 1, 2, 3 });
 
             act.Should().Throw<ArgumentException>();
         }
@@ -126,22 +125,18 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 
         [Theory]
         [ClassData(typeof(ProperValidatorTypeFixture))]
-        public void Accepts_proper_validator(Expression<Func<TestObject, object>> target, Type expected)
+        public void Accepts_proper_validator(Expression<Func<TestObject, object>> target, dynamic mock)
         {
-            var validatorMock = new Mock<IValidator>();
-            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == expected))).Returns(true);
-            Action act = () => _ = new ColumnConfig<TestObject>(target, null, validatorMock.Object);
+            Action act = () => _ = new ColumnConfig<TestObject>(target, null).AssignValidator(mock);
 
             act.Should().NotThrow();
         }
 
         [Theory]
-        [ClassData(typeof(ProperValidatorTypeFixture))]
-        public void Throws_arg_exc_if_given_validator_cannot_validate_type_pointed_by_target(Expression<Func<TestObject, object>> target, Type expected)
+        [ClassData(typeof(ProperValidatorInvalidTypeFixture))]
+        public void Throws_arg_exc_if_given_validator_cannot_validate_type_pointed_by_target(Expression<Func<TestObject, object>> target, dynamic mock)
         {
-            var validatorMock = new Mock<IValidator>();
-            validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == expected))).Returns(false);
-            Action act = () => _ = new ColumnConfig<TestObject>(target, null, validatorMock.Object);
+            Action act = () => _ = new ColumnConfig<TestObject>(target, null).AssignValidator(mock);
 
             act.Should().Throw<ArgumentException>();
         }
@@ -149,9 +144,9 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void IsValidatable_returns_true_if_there_is_proper_validator()
         {
-            var validatorMock = new Mock<IValidator>();
+            var validatorMock = new Mock<IValidator<int>>();
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.IsAny<Type>())).Returns(true);
-            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validatorMock.Object);
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null).AssignValidator(validatorMock.Object);
 
             subject.IsValidatable().Should().BeTrue();
         }
@@ -161,7 +156,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             var validatorMock = new Mock<IValidator<int>>();
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(int)))).Returns(true);
-            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validatorMock.Object);
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null).AssignValidator(validatorMock.Object);
 
             subject.IsValidatable(typeof(int)).Should().BeTrue();
         }
@@ -171,7 +166,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             var validatorMock = new Mock<IValidator<string>>();
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
-            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null).AssignValidator(validatorMock.Object);
 
             subject.IsValidatable(typeof(int)).Should().BeFalse();
         }
@@ -197,9 +192,9 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             var data = new TestObject { AString = "wowww" };
             var validatorMock = new Mock<IValidator<string>>();
-            validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            validatorMock.Setup(v => v.Validate(It.IsAny<string>())).Returns(new ValidationResult());
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
-            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null).AssignValidator(validatorMock.Object);
 
             var result = subject.Validate(data.AString);
 
@@ -213,10 +208,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             var validatorMock = new Mock<IValidator<string>>();
             var failure1 = new ValidationFailure("prop name 1", "error 1");
             var failure2 = new ValidationFailure("prop name 1", "error 2");
-            validatorMock.Setup(v => v.Validate(It.IsAny<ValidationContext<string>>()))
+            validatorMock.Setup(v => v.Validate(It.IsAny<string>()))
                 .Returns(new ValidationResult(new[] { failure1, failure2 }));
             validatorMock.Setup(v => v.CanValidateInstancesOfType(It.Is<Type>(c => c == typeof(string)))).Returns(true);
-            var subject = new ColumnConfig<TestObject>(c => c.AString, null, validatorMock.Object);
+            var subject = new ColumnConfig<TestObject>(c => c.AString, null).AssignValidator(validatorMock.Object);
 
             var result = subject.Validate(data.AString);
 
@@ -228,11 +223,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             var data = new TestObject { AString = "wowww" };
             var validator = new FluentValidationWrapper<int>(x => x.LessThan(10));
-            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validator);
+            var subject = new ColumnConfig<TestObject>(c => c.AnInt, null).AssignValidator(validator);
 
             Action act = () => _ = subject.Validate(data.AString);
 
-            act.Should().Throw<InvalidOperationException>();
+            act.Should().Throw<InvalidCastException>();
         }
 
         [Fact]
@@ -429,10 +424,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void LimitAcceptedValues_accepts_valid_collection()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
-            Action act = () => subject.LimitAcceptedValuesTo(new string[]{"a", "b"});
+            Action act = () => subject.LimitAcceptedValuesTo(new string[] { "a", "b" });
 
             act.Should().NotThrow();
-            subject.AllowedValues.Should().BeEquivalentTo(new[] {"b", "a"});
+            subject.AllowedValues.Should().BeEquivalentTo(new[] { "b", "a" });
         }
 
         [Fact]
@@ -448,7 +443,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void LimitAcceptedValues_throws_arg_exc_when_collection_is_of_wrong_type()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
-            Action act = () => subject.LimitAcceptedValuesTo(new[]{1, 2, 3});
+            Action act = () => subject.LimitAcceptedValuesTo(new[] { 1, 2, 3 });
 
             act.Should().Throw<ArgumentException>();
         }

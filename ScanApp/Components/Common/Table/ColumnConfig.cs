@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using FluentValidation.Internal;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Services;
@@ -98,7 +97,7 @@ namespace ScanApp.Components.Common.Table
         public bool IsPresenter { get; }
 
         public IEnumerable<dynamic> AllowedValues { get; private set; } = Enumerable.Empty<dynamic>();
-        private IValidator Validator { get; }
+        private IValidator Validator { get; set; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> Target { get; }
         private Func<T, dynamic> _getter;
@@ -124,7 +123,7 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target)
-            : this(target, null, FieldType.AutoDetect, null)
+            : this(target, null, FieldType.AutoDetect)
         {
         }
 
@@ -132,16 +131,7 @@ namespace ScanApp.Components.Common.Table
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName)
-            : this(target, displayName, FieldType.AutoDetect, null)
-        {
-        }
-
-        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
-        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
-        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
-        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
-        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, IValidator validator)
-            : this(target, displayName, FieldType.AutoDetect, validator)
+            : this(target, displayName, FieldType.AutoDetect)
         {
         }
 
@@ -149,17 +139,8 @@ namespace ScanApp.Components.Common.Table
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
+        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format)
-            : this(target, displayName, format, null)
-        {
-        }
-
-        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
-        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
-        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
-        /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
-        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
-        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
             Target = target ?? throw new ArgumentNullException(nameof(target));
             PathToItem = PropertyPath<T>.GetFrom(Target);
@@ -172,7 +153,6 @@ namespace ScanApp.Components.Common.Table
             CreatePrecompiledSetterForItem();
             CreatePrecompiledGetterForItem();
             FieldType = format;
-            Validator = SetUpValidator(validator);
         }
 
         /// <summary>
@@ -275,25 +255,6 @@ namespace ScanApp.Components.Common.Table
             _setter = assign.Compile();
         }
 
-        private IValidator SetUpValidator(IValidator validator)
-        {
-            if (validator is null)
-                return null;
-
-            if (validator.CanValidateInstancesOfType(PropertyType) is false)
-            {
-                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
-                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
-            }
-
-            foreach (var validationRule in validator.CreateDescriptor()?.Rules ?? Enumerable.Empty<IValidationRule>())
-            {
-                validationRule.PropertyName = DisplayName;
-            }
-
-            return validator;
-        }
-
         /// <summary>
         /// Informs if this instance of <see cref="ColumnConfig{T}"/> contains validator for it's target if no <paramref name="type"/> is provided.<br/>
         /// Otherwise checks if this instance contains validator capable of validating given <param name="type">.</param>
@@ -332,8 +293,12 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException("Cannot validate when there is no validator set - " +
                                             "perhaps editing field tried to use this config as one with validation?");
             }
-            var context = new ValidationContext<TValueType>(value, new PropertyChain(new[] { PropertyName }), new DefaultValidatorSelector());
-            var result = Validator.Validate(context);
+
+            var validator = Validator as IValidator<TValueType> ?? throw new InvalidCastException(
+                                $"Given {nameof(value)} cannot be validated by validator in this ColumnConfig " +
+                                $"- cannot cast validator to type {typeof(IValidator<TValueType>).FullName}.");
+
+            var result = validator.Validate(value);
             return result.IsValid
                 ? Array.Empty<string>()
                 : ExtractErrorsFrom(result);
@@ -364,6 +329,33 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
             }
             Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
+        }
+
+        /// <summary>
+        /// Assigns validator used to check values pointed to by this <see cref="ColumnConfig{T}"/> using set of rules provided within.
+        /// </summary>
+        /// /// <typeparam name="TType">Type of value to be validated - must be the same as the type of target set in this <see cref="ColumnConfig{T}"/>.</typeparam>
+        /// <param name="validator">Validates given value.</param>
+        /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="validator"/> was <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Type of validator is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        public ColumnConfig<T> AssignValidator<TType>(IValidator<TType> validator)
+        {
+            if (validator is null) throw new ArgumentNullException(nameof(validator));
+
+            if (validator.CanValidateInstancesOfType(PropertyType) is false || PropertyType.IsAssignableFrom(typeof(TType)) is false)
+            {
+                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
+                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
+            }
+
+            foreach (var validationRule in validator.CreateDescriptor()?.Rules ?? Enumerable.Empty<IValidationRule>())
+            {
+                validationRule.PropertyName = DisplayName;
+            }
+
+            Validator = validator;
             return this;
         }
 
