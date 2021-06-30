@@ -15,8 +15,11 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("test_name")]
         [InlineData("test name")]
         [InlineData("__test")]
+        [InlineData("__test:")]
+        [InlineData("__te\"st")]
         [InlineData("new.test_name-123")]
-        [InlineData("Adam.Łokietek")]
+        [InlineData("/test")]
+        [InlineData("Adam.Łokietek'")]
         [InlineData("Adam Łokietek")]
         public void Validates_proper_string(string data)
         {

@@ -19,6 +19,21 @@ namespace ScanApp.Common.Validators
     /// <description>Dots '.'</description>
     /// </item>
     /// <item>
+    /// <description>Commas ','</description>
+    /// </item>
+    /// <item>
+    /// <description>Double quotes '"'</description>
+    /// </item>
+    /// <item>
+    /// <description>Single quotes '''</description>
+    /// </item>
+    /// <item>
+    /// <description>Colons ':'</description>
+    /// </item>
+    /// <item>
+    /// <description>Slashes '/'</description>
+    /// </item>
+    /// <item>
     /// <description>Underscores '_'</description>
     /// </item>
     /// <item>
@@ -31,7 +46,7 @@ namespace ScanApp.Common.Validators
     /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
     public class MustContainOnlyLettersOrAllowedSymbolsValidator<T, TProperty> : PropertyValidator<T, TProperty>
     {
-        private readonly Regex _allowedCharsRegex = new(@"^[\p{L}0-9\s\\.\-\\_]+$");
+        private readonly Regex _allowedCharsRegex = new(@"^[\p{L}0-9\s.\-_:,/'""]+$");
         public override string Name => "ScanApp allowed chars";
 
         public override bool IsValid(ValidationContext<T> context, TProperty value)
