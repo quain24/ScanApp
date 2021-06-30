@@ -12,7 +12,7 @@ namespace ScanApp.Components.Common.Table
     {
         private readonly Expression<Func<T, dynamic>> _target;
         private string _name;
-        private IValidator _validator;
+        private dynamic _validator;
         private dynamic _converter;
         private FieldType _type;
         private bool _isFilterable = true;
@@ -67,7 +67,7 @@ namespace ScanApp.Components.Common.Table
             return this;
         }
 
-        public IColumnBuilder<T> ValidateUsing(IValidator validator)
+        public IColumnBuilder<T> ValidateUsing<TType>(IValidator<TType> validator)
         {
             _validator = validator;
             return this;
@@ -115,7 +115,7 @@ namespace ScanApp.Components.Common.Table
             }
             else
             {
-                config = new ColumnConfig<T>(_target, _name, _type, _validator)
+                config = new ColumnConfig<T>(_target, _name, _type)
                 {
                     IsEditable = _isEditable,
                     IsGroupable = _isGroupable,
@@ -126,6 +126,8 @@ namespace ScanApp.Components.Common.Table
 
             if (_converter is not null)
                 config.AssignConverter(_converter);
+            if (_validator is not null)
+                config.AssignValidator(_validator);
             if (_allowedValues is not null)
                 config.LimitAcceptedValuesTo(_allowedValues);
             return config;
