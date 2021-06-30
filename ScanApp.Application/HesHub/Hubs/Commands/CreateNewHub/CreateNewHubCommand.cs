@@ -36,7 +36,7 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
                 await ctx.HesDepots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
                 var saved = await ctx.SaveChangesAsync(cancellationToken);
 
-                return saved == 1 ? new Result() : new Result(ErrorType.Unknown);
+                return saved == 1 ? new Result(ResultType.Created) : new Result(ErrorType.Unknown);
             }
             catch (OperationCanceledException ex)
             {
