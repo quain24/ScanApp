@@ -9,6 +9,7 @@ namespace ScanApp.Common.Validators
         public ArticleNumberValidator()
         {
             RuleFor(n => n)
+                .NotEmpty()
                 .MinimumLength(5)
                 .MaximumLength(20)
                 .Must(n => !(n[0].Equals(' ') || n[^1].Equals(' ') || n.Contains("  ")))

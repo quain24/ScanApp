@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
+using ScanApp.Common.Extensions;
 using System.Text.RegularExpressions;
 
 namespace ScanApp.Common.Validators
@@ -42,26 +42,20 @@ namespace ScanApp.Common.Validators
     /// </list>
     /// </para>
     /// </summary>
-    /// <typeparam name="T">Type of validation context.</typeparam>
-    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
     public class MustContainOnlyLettersOrAllowedSymbolsValidator : AbstractValidator<string>
     {
         private readonly Regex _allowedCharsRegex = new(@"^[\p{L}0-9\s.\-_:,/'""]+$");
+
+        public MustContainOnlyLettersOrAllowedSymbolsValidator(string propertyName) : this()
+        {
+            this.SetCommonName(propertyName);
+        }
 
         public MustContainOnlyLettersOrAllowedSymbolsValidator()
         {
             RuleFor(x => x)
                 .NotEmpty()
                 .Matches(_allowedCharsRegex);
-        }
-
-        protected override bool PreValidate(ValidationContext<string> context, ValidationResult result)
-        {
-            if (context?.InstanceToValidate is not null)
-                return base.PreValidate(context, result);
-
-            result.Errors.Add(new ValidationFailure(context?.PropertyName, "Value cannot be null."));
-            return false;
         }
     }
 }

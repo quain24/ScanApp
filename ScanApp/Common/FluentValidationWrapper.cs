@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ScanApp.Common.Extensions;
 
 namespace ScanApp.Common
 {
@@ -40,14 +41,22 @@ namespace ScanApp.Common
                 : result.Errors.Select(e => e.ErrorMessage);
         }
 
-        protected override bool PreValidate(ValidationContext<T> context, ValidationResult result)
+        protected override void EnsureInstanceNotNull(object instanceToValidate)
         {
-            if (context.InstanceToValidate is null && _allowNull) return false;
-            if (context.InstanceToValidate is not null) return true;
-
-            result.Errors.Add(new ValidationFailure(context.PropertyName, _nullMessage?.Replace("{PropertyName}", context.PropertyName)));
-            return false;
+            // todo Testing replacement of prevalidate and usage of notempy / notnull in validators
         }
+
+        //protected override bool PreValidate(ValidationContext<T> context, ValidationResult result)
+        //{
+        //    if (context.InstanceToValidate is null && _allowNull) return false;
+        //    if (context.InstanceToValidate is not null) return true;
+
+        //    var name = CreateDescriptor()
+        //        .Rules
+        //        .FirstOrDefault(r => r.PropertyName is not null)?.PropertyName ?? "Value";
+        //    result.Errors.Add(new ValidationFailure(context.PropertyName, _nullMessage?.Replace("{PropertyName}", name)));
+        //    return false;
+        //}
 
         /// <summary>
         /// Gets delegate that can be used with <see cref="MudBlazor"/> components that support validation,<br/>
