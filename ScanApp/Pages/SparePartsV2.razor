@@ -121,7 +121,6 @@
                 .Where(s => s.Amount > 0)
                 .Select(s => new SparePartModel(s.Name, s.Amount, _articleId, _selectedWorkshop.Id))
                 .ToArray();
-            await Task.Delay(3000);
             StateHasChanged();
             var createResult = await mediator.Send(new CreateSparePartsCommand(parts), _cts.Token);
 
