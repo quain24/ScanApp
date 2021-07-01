@@ -11,20 +11,20 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
     public class AddUserCommandValidatorFixture
     {
         private readonly Mock<IUserManager> _userManagerMock = new();
-        public Mock<IdentityNamingValidator<AddUserCommand, string>> NamingValidatorMock { get; }
-        public Mock<EmailValidator<AddUserCommand, string>> EmailValidatorMock { get; }
-        public Mock<PhoneNumberValidator<AddUserCommand, string>> PhoneValidatorMock { get; }
+        public Mock<IdentityNamingValidator> NamingValidatorMock { get; }
+        public Mock<EmailValidator> EmailValidatorMock { get; }
+        public Mock<PhoneNumberValidator> PhoneValidatorMock { get; }
         public Mock<PasswordValidator> PasswordValidatorMock { get; }
         public AddUserCommandValidator Validator { get; }
 
         public AddUserCommandValidatorFixture()
         {
-            NamingValidatorMock = new Mock<IdentityNamingValidator<AddUserCommand, string>>();
-            NamingValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<AddUserCommand>>(), It.IsAny<string>())).Returns(true);
-            EmailValidatorMock = new Mock<EmailValidator<AddUserCommand, string>>();
-            EmailValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<AddUserCommand>>(), It.IsAny<string>())).Returns(true);
-            PhoneValidatorMock = new Mock<PhoneNumberValidator<AddUserCommand, string>>();
-            PhoneValidatorMock.Setup(m => m.IsValid(It.IsAny<ValidationContext<AddUserCommand>>(), It.IsAny<string>())).Returns(true);
+            NamingValidatorMock = new Mock<IdentityNamingValidator>();
+            NamingValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            EmailValidatorMock = new Mock<EmailValidator>();
+            EmailValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
+            PhoneValidatorMock = new Mock<PhoneNumberValidator>();
+            PhoneValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
             PhoneValidatorMock.SetupAllProperties();
             PasswordValidatorMock = new Mock<PasswordValidator>(_userManagerMock.Object);
             PasswordValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());

@@ -12,7 +12,7 @@ namespace ScanApp.Application.Admin.Commands.AddUserToRole
         /// Creates new instance of <see cref="AddUserToRoleCommandValidator"/>.
         /// </summary>
         /// <param name="standardChars">Validator enforcing naming rules.</param>
-        public AddUserToRoleCommandValidator(IdentityNamingValidator<AddUserToRoleCommand, string> standardChars)
+        public AddUserToRoleCommandValidator(IdentityNamingValidator standardChars)
         {
             RuleFor(c => c.RoleName)
                 .Cascade(CascadeMode.Stop)

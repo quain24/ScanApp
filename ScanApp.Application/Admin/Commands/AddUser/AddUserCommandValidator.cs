@@ -17,9 +17,9 @@ namespace ScanApp.Application.Admin.Commands.AddUser
         /// <param name="phoneValidator">Object validating phone numbers</param>
         /// <param name="passwordValidator">Object validating user passwords</param>
         public AddUserCommandValidator(
-            IdentityNamingValidator<AddUserCommand, string> identityNamingValidator,
-            EmailValidator<AddUserCommand, string> emailValidator,
-            PhoneNumberValidator<AddUserCommand, string> phoneValidator,
+            IdentityNamingValidator identityNamingValidator,
+            EmailValidator emailValidator,
+            PhoneNumberValidator phoneValidator,
             PasswordValidator passwordValidator)
         {
             RuleFor(c => c.NewUser)

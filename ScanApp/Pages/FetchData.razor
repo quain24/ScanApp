@@ -57,7 +57,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        new IdentityNamingValidator<string, string>();
+        new IdentityNamingValidator();
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
 
     }

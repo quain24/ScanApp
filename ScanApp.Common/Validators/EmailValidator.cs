@@ -1,34 +1,33 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
+using FluentValidation.Results;
 using System.Text.RegularExpressions;
 
 namespace ScanApp.Common.Validators
 {
     /// <summary>
-    /// Represents an Email property validator.
+    /// Represents an Email validator.
     /// </summary>
-    /// <typeparam name="T">Type of validation context.</typeparam>
-    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
-    public class EmailValidator<T, TProperty> : PropertyValidator<T, TProperty>
+    public class EmailValidator : AbstractValidator<string>
     {
         private readonly Regex _emailRegex = new(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,10})|(([0-9]{1,3}\.){3}[0-9]{1,3}))\z$");
-        public override string Name => "Email validator";
 
-        public override bool IsValid(ValidationContext<T> context, TProperty value)
+        /// <summary>
+        /// Creates new instance of <see cref="EmailValidator"/>.
+        /// </summary>
+        public EmailValidator()
         {
-            if (value is string email)
-            {
-                return _emailRegex.IsMatch(email);
-            }
-
-            return false;
+            RuleFor(x => x)
+                .NotEmpty()
+                .Matches(_emailRegex);
         }
 
-        protected override string GetDefaultMessageTemplate(string errorCode)
+        protected override bool PreValidate(ValidationContext<string> context, ValidationResult result)
         {
-            return "{PropertyValue} is not a valid email address.";
-            // TODO Check localization options.
-            // return Localized(errorCode, Name);
+            if (context?.InstanceToValidate is not null)
+                return base.PreValidate(context, result);
+
+            result.Errors.Add(new ValidationFailure(context?.PropertyName, "Email cannot be empty."));
+            return false;
         }
     }
 }

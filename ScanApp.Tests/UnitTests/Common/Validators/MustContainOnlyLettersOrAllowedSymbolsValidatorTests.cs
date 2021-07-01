@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using FluentValidation;
 using ScanApp.Common.Validators;
 using Xunit;
 
@@ -23,12 +22,11 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("Adam Łokietek")]
         public void Validates_proper_string(string data)
         {
-            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator<string, string>();
+            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator();
 
-            var context = new ValidationContext<string>(data);
-            var result = subject.IsValid(context, data);
+            var result = subject.Validate(data);
 
-            result.Should().BeTrue();
+            result.IsValid.Should().BeTrue();
         }
 
         [Theory]
@@ -38,34 +36,21 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("new.test_name-123`0")]
         public void Bad_strings_are_set_as_invalid(string data)
         {
-            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator<string, string>();
+            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator();
 
-            var context = new ValidationContext<string>(data);
-            var result = subject.IsValid(context, data);
+            var result = subject.Validate(data);
 
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
 
         [Fact]
         public void Null_is_invalid()
         {
-            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator<string, string>();
+            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator();
 
-            var context = new ValidationContext<string>(null);
-            var result = subject.IsValid(context, null);
+            var result = subject.Validate(null as string);
 
-            result.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Not_string_is_invalid()
-        {
-            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator<string, int>();
-
-            var context = new ValidationContext<string>("test");
-            var result = subject.IsValid(context, 10);
-
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
     }
 }

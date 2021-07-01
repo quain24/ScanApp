@@ -12,7 +12,7 @@ namespace ScanApp.Application.Admin.Commands.AddClaimToRole
         /// Creates new instance of <see cref="AddClaimToRoleCommandValidator"/>
         /// </summary>
         /// <param name="allowedCharsValidator">Validator enforcing naming rules</param>
-        public AddClaimToRoleCommandValidator(IdentityNamingValidator<AddClaimToRoleCommand, string> allowedCharsValidator)
+        public AddClaimToRoleCommandValidator(IdentityNamingValidator allowedCharsValidator)
         {
             RuleFor(c => c.Claim.Type)
                 .SetValidator(allowedCharsValidator);
