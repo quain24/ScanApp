@@ -32,41 +32,39 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.EditHub
 
                 return await strategy.ExecuteAsync(async token =>
                 {
-                    using (var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token))
+                    await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
+                    var (originalModel, editedModel) = request;
+
+                    var originalDepot = new HesDepot(originalModel.Id, originalModel.Name,
+                        Address.Create(originalModel.StreetName, originalModel.StreetNumber, originalModel.ZipCode, originalModel.City, originalModel.Country),
+                        originalModel.PhonePrefix, originalModel.PhoneNumber, originalModel.Email);
+                    originalDepot.ChangeVersion(originalModel.Version);
+                    var editedDepot = new HesDepot(editedModel.Id, editedModel.Name,
+                        Address.Create(editedModel.StreetName, editedModel.StreetNumber, editedModel.ZipCode, editedModel.City, editedModel.Country),
+                        editedModel.PhonePrefix, editedModel.PhoneNumber, editedModel.Email);
+                    editedDepot.ChangeVersion(editedModel.Version);
+
+                    if (originalDepot.Id != editedDepot.Id)
                     {
-                        var (originalModel, editedModel) = request;
-
-                        var originalDepot = new HesDepot(originalModel.Id, originalModel.Name,
-                            Address.Create(originalModel.StreetName, originalModel.StreetNumber, originalModel.ZipCode, originalModel.City, originalModel.Country),
-                            originalModel.PhonePrefix, originalModel.PhoneNumber, originalModel.Email);
-                        originalDepot.ChangeVersion(originalModel.Version);
-                        var editedDepot = new HesDepot(editedModel.Id, editedModel.Name,
-                            Address.Create(editedModel.StreetName, editedModel.StreetNumber, editedModel.ZipCode, editedModel.City, editedModel.Country),
-                            editedModel.PhonePrefix, editedModel.PhoneNumber, editedModel.Email);
-                        editedDepot.ChangeVersion(editedModel.Version);
-
-                        if (originalDepot.Id != editedDepot.Id)
-                        {
-                            ctx.Remove(originalDepot);
-                            ctx.SaveChanges();
-                            ctx.Add(editedDepot);
-                        }
-                        else
-                        {
-                            ctx.HesDepots.Attach(originalDepot);
-                            ctx.Entry(originalDepot).CurrentValues.SetValues(editedDepot);
-                            if (originalDepot.Address != editedDepot.Address)
-                                originalDepot.ChangeAddress(editedDepot.Address);
-                        }
-
-                        token.ThrowIfCancellationRequested();
-                        var saved = await ctx.SaveChangesAsync(token).ConfigureAwait(false);
-                        await dbContextTransaction.CommitAsync(token);
-
-                        return saved == 1
-                            ? new Result<Version>(ResultType.Updated, editedDepot.Id != originalDepot.Id ? editedDepot.Version : originalDepot.Version)
-                            : new Result<Version>(ErrorType.Unknown);
+                        ctx.Remove(originalDepot);
+                        ctx.SaveChanges();
+                        ctx.Add(editedDepot);
                     }
+                    else
+                    {
+                        ctx.HesDepots.Attach(originalDepot);
+                        ctx.Entry(originalDepot).CurrentValues.SetValues(editedDepot);
+                        if (originalDepot.Address != editedDepot.Address)
+                            originalDepot.ChangeAddress(editedDepot.Address);
+                    }
+
+                    token.ThrowIfCancellationRequested();
+                    var saved = await ctx.SaveChangesAsync(token).ConfigureAwait(false);
+                    await dbContextTransaction.CommitAsync(token).ConfigureAwait(false);
+
+                    return saved == 1
+                        ? new Result<Version>(ResultType.Updated, editedDepot.Id != originalDepot.Id ? editedDepot.Version : originalDepot.Version)
+                        : new Result<Version>(ResultType.NotChanged, originalDepot.Version);
                 }, cancellationToken);
             }
             catch (OperationCanceledException ex)
