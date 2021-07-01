@@ -14,23 +14,15 @@ namespace ScanApp.Common
     /// <typeparam name="T">Type of property that will be validated</typeparam>
     public class FluentValidationWrapper<T> : AbstractValidator<T>
     {
-        private readonly bool _allowNull;
-        private readonly string _nullMessage;
 
         /// <summary>
-        /// Creates simple wrapper to use <see cref="FluentValidation"/> inside of Razor files with <see cref="MudBlazor"/> components that support validation<para/>
-        /// Mind that <see langword="null"/> validation must be set using <paramref name="allowNull"/> - due to constraint of FluentValidation itself - it does not allow
-        /// context of validation when using <see cref="IValidator"/> to be <see langword="null"/>.
+        /// Creates simple wrapper to use <see cref="FluentValidation"/> inside of Razor files with <see cref="MudBlazor"/> components that support validation.
         /// </summary>
         /// <param name="rule">One rule / set of rules for created validator to use</param>
-        /// <param name="allowNull">If <see langword="true"/>, validation will treat <see langword="null"/> as valid.</param>
-        /// <param name="nullMessage">Error message used when validated property is <see langword="null"/>.</param>
-        public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule, bool allowNull = true, string nullMessage = null)
+        public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule)
         {
-            _allowNull = allowNull;
             _ = rule ?? throw new ArgumentNullException(nameof(rule), "Validator wrapper should be given at least one rule to validate");
             rule(RuleFor(x => x));
-            _nullMessage = nullMessage ?? string.Empty;
         }
 
         private IEnumerable<string> ValidateValue(T arg)

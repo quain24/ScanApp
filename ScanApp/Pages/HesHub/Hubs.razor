@@ -46,7 +46,7 @@
                     .Must(id => _depots.Any(d => d.Id == id) is false)
                     .When(id => _selectedDepot is null || id != _selectedDepot.Id)
                     .WithMessage("{PropertyName} must be unique.");
-                }, false))
+                }))
                 .Build(),
             ColumnBuilder<HesHubModel>.For(x => x.Name)
                 .Editable()
@@ -56,7 +56,7 @@
                     x.NotNull()
                         .MaximumLength(20)
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
-                }, false))
+                }))
                 .Build(),
             ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable().Groupable()
                 .UnderName("Street name")
@@ -84,7 +84,7 @@
                         .NotNull()
                         .MaximumLength(150)
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
-                }, false))
+                }))
                 .Build(),
             ColumnBuilder<HesHubModel>.For(x => x.Country).Editable().Groupable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
