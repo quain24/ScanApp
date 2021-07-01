@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
+using ScanApp.Common.Extensions;
 using System.Text.RegularExpressions;
 
 namespace ScanApp.Common.Validators
@@ -42,26 +42,20 @@ namespace ScanApp.Common.Validators
     /// </list>
     /// </para>
     /// </summary>
-    /// <typeparam name="T">Type of validation context.</typeparam>
-    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
-    public class MustContainOnlyLettersOrAllowedSymbolsValidator<T, TProperty> : PropertyValidator<T, TProperty>
+    public class MustContainOnlyLettersOrAllowedSymbolsValidator : AbstractValidator<string>
     {
         private readonly Regex _allowedCharsRegex = new(@"^[\p{L}0-9\s.\-_:,/'""]+$");
-        public override string Name => "ScanApp allowed chars";
 
-        public override bool IsValid(ValidationContext<T> context, TProperty value)
+        public MustContainOnlyLettersOrAllowedSymbolsValidator(string propertyName) : this()
         {
-            if (value is string name)
-            {
-                return _allowedCharsRegex.IsMatch(name);
-            }
-
-            return false;
+            this.SetCommonName(propertyName);
         }
 
-        protected override string GetDefaultMessageTemplate(string errorCode)
+        public MustContainOnlyLettersOrAllowedSymbolsValidator()
         {
-            return "\"{PropertyName}\" field contains illegal symbols.";
+            RuleFor(x => x)
+                .NotEmpty()
+                .Matches(_allowedCharsRegex);
         }
     }
 }

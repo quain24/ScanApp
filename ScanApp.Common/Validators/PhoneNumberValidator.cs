@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using System.Linq;
+using SharedExtensions;
 
 namespace ScanApp.Common.Validators
 {
@@ -21,15 +22,13 @@ namespace ScanApp.Common.Validators
     /// </list>
     /// </para>
     /// </summary>
-    /// <typeparam name="T">Type of validation context.</typeparam>
-    /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
     public class PhoneNumberValidator : AbstractValidator<string>
     {
         public PhoneNumberValidator()
         {
             RuleFor(x => x)
                 .NotEmpty()
-                .Length(6, 25)
+                .MaximumLength(25)
                 .Must(s =>
                 {
                     if (char.IsNumber(s[0]) || s[0].Equals('+'))
@@ -39,16 +38,8 @@ namespace ScanApp.Common.Validators
 
                     return false;
                 })
+                .When(x => string.IsNullOrEmpty(x) is false)
                 .WithMessage(s => $"'{s}' is not a valid phone number.");
-        }
-
-        protected override bool PreValidate(ValidationContext<string> context, ValidationResult result)
-        {
-            if (context?.InstanceToValidate is not null)
-                return base.PreValidate(context, result);
-
-            result.Errors.Add(new ValidationFailure(context?.PropertyName, "Phone number cannot be null."));
-            return false;
         }
     }
 }
