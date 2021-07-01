@@ -59,7 +59,6 @@ namespace ScanApp.Domain.Entities
             if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email address must be provided", nameof(email));
             if (email.Contains('@') is false && email.Contains('.') is false)
                 throw new ArgumentException($"Email address ({email}) is not a proper email.", nameof(email));
-            //Version = Version.Create(Guid.NewGuid().ToString());
             Email = email;
         }
 
