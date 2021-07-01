@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Moq;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -264,15 +265,15 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             public ProperValidatorTypeFixture()
             {
-                Add(c => c, Mock.Of<IValidator<TestObject>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.AString, Mock.Of<IValidator<string>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.TestMethod(), Mock.Of<IValidator<int>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.AnNullableInt, Mock.Of<IValidator<int?>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.SubClassProp.DoubleField, Mock.Of<IValidator<double>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.SubClassProp.NullableDateTime, Mock.Of<IValidator<DateTime?>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.SubClassProp.SubClassParFieldInSubClass.DoubleField, Mock.Of<IValidator<double>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.IntVal, Mock.Of<IValidator<int>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
-                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.StructVal.StrVal, Mock.Of<IValidator<string>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>())));
+                Add(c => c, Mock.Of<IValidator<TestObject>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.AString, Mock.Of<IValidator<string>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.TestMethod(), Mock.Of<IValidator<int>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.AnNullableInt, Mock.Of<IValidator<int?>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.SubClassProp.DoubleField, Mock.Of<IValidator<double>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.SubClassProp.NullableDateTime, Mock.Of<IValidator<DateTime?>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.SubClassProp.SubClassParFieldInSubClass.DoubleField, Mock.Of<IValidator<double>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.IntVal, Mock.Of<IValidator<int>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
+                Add(c => c.SubClassProp.SubClassStructFieldInSubClass.StructVal.StrVal, Mock.Of<IValidator<string>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>())));
             }
         }
 

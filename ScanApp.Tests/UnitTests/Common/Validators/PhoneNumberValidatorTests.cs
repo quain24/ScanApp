@@ -22,7 +22,6 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         }
 
         [Theory]
-        [InlineData("12345")]
         [InlineData("123-456-789")]
         [InlineData("(00)12347852587")]
         [InlineData("+ 01234785258789621485")]
@@ -33,16 +32,6 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
             var subject = new PhoneNumberValidator();
 
             var result = subject.Validate(phone);
-
-            result.IsValid.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Returns_false_if_phone_is_null()
-        {
-            var subject = new PhoneNumberValidator();
-
-            var result = subject.Validate(null as string);
 
             result.IsValid.Should().BeFalse();
         }

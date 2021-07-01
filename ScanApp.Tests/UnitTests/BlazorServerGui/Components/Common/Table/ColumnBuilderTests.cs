@@ -5,6 +5,7 @@ using ScanApp.Components.Common.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using MudBlazor;
 using Xunit;
@@ -102,7 +103,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Builds_with_validation()
         {
-            var val = Mock.Of<IValidator<PropertyPathTestsFixtures.TestObject>>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()));
+            var val = Mock.Of<IValidator<PropertyPathTestsFixtures.TestObject>>(x =>
+                x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>()));
 
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x)
