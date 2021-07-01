@@ -32,7 +32,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _depots = (await _mediator.Send(new AllHubsQuery(), CancellationToken.None)).Output;
+        try
+        {
+            _loading = true;
+            var result = await _mediator.Send(new AllHubsQuery(), _exitCancellationSource.Token);
+
+            if (result is null || result.Conclusion is false)
+            {
+                _snackbar.Add(result?.ErrorDescription?.ToString(), Severity.Error);
+                return;
+            }
+
+            _depots = result.Output;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task OnAdd(HesHubModel model)
@@ -68,7 +84,7 @@
             var (old, updated) = items;
             var result = await _mediator.Send(new EditHubCommand(old, updated), _exitCancellationSource.Token);
 
-            if(result is null)
+            if (result is null)
                 return;
 
             if (result.Conclusion is false)
@@ -98,7 +114,7 @@
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<HesHubModel>>
-        {
+    {
             ColumnBuilder<HesHubModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
