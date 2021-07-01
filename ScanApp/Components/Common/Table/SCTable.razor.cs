@@ -149,7 +149,7 @@ namespace ScanApp.Components.Common.Table
         /// Called when a new item is successfully edited by integrated 'edit' table functionality and added to <see cref="Data"/> collection.
         /// </summary>
         /// <value>Callback providing original and edited <typeparamref name="TTableType" /> items.</value>
-        [Parameter] public EventCallback<(TTableType Original, TTableType Edited)> ItemHasBeenEdited { get; set; }
+        [Parameter] public EventCallback<(TTableType, TTableType)> ItemHasBeenEdited { get; set; }
 
         ///<inheritdoc cref="MudTableBase.MultiSelection" />
         [Parameter] public bool MultiSelection { get; set; }
