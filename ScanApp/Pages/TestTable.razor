@@ -70,17 +70,17 @@
             .ColumnStyle("width: 30%;")
             .Groupable()
             .Editable()
-            .LimitValuesTo(new List<string>()
-            {
-                null,
-                "yes",
-                "no",
-                "maybe"
-            })
-            .ConvertUsing(new Converter<string>()
-            {
-                SetFunc = x => x + " conv."
-            })
+            //.LimitValuesTo(new List<string>()
+            //{
+            //    null,
+            //    "yes",
+            //    "no",
+            //    "maybe"
+            //})
+            //.ConvertUsing(new Converter<string>()
+            //{
+            //    SetFunc = x => x + " conv."
+            //})
             .Build(),
         ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
             .UnderName("Temperature in C")

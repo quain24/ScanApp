@@ -350,11 +350,7 @@ namespace ScanApp.Components.Common.Table
                                             $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
             }
 
-            foreach (var validationRule in validator.CreateDescriptor()?.Rules ?? Enumerable.Empty<IValidationRule>())
-            {
-                validationRule.PropertyName = DisplayName;
-            }
-
+            validator.SetCommonName(PropertyName);
             Validator = validator;
             return this;
         }
