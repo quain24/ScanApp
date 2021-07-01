@@ -8,6 +8,7 @@
 @using Microsoft.EntityFrameworkCore
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.HesHub.Hubs
+@using ScanApp.Application.HesHub.Hubs.Commands
 @using ScanApp.Application.HesHub.Hubs.Queries.AllHubs
 @using ScanApp.Common.Validators
 @inject IScopedMediator _mediator
@@ -15,11 +16,12 @@
 
 <h3>Hub list</h3>
 
-<SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot"></SCTable>
+<SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" ItemFactory=""></SCTable>
 
 @code {
     private List<HesHubModel> _depots = new();
     private HesHubModel _selectedDepot;
+
 
     private List<ColumnConfig<HesHubModel>> _configs = new();
 
@@ -46,7 +48,12 @@
                          .When(id => id != _selectedDepot?.Id)
                          .WithMessage("ID must be unique.");
                     }))
-                    .Build()
+                    .Build(),
+            ColumnBuilder<HesHubModel>.For(x => x.Name)
+                .Editable()
+                .Groupable()
+                .ValidateUsing(new StandardNamingValidator(200))
+                .Build()
         };
     }
 
