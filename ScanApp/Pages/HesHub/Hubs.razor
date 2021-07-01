@@ -9,17 +9,24 @@
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.HesHub.Hubs
 @using ScanApp.Application.HesHub.Hubs.Commands
+@using ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
+@using ScanApp.Application.HesHub.Hubs.Commands.EditHub
 @using ScanApp.Application.HesHub.Hubs.Queries.AllHubs
 @using ScanApp.Common.Validators
+@using Severity = MudBlazor.Severity
+@using Version = ScanApp.Domain.ValueObjects.Version
 @inject IScopedMediator _mediator
 @inject IContextFactory _contextFactory
+@inject ISnackbar _snackbar
 
 <h3>Hub list</h3>
 
 <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs"
-         @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="800" ItemFactory="new Func<HesHubModel>(() => new HesHubModel())"></SCTable>
+         @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="800" ItemFactory="new Func<HesHubModel>(() => new HesHubModel(){Version = Version.Empty()})"
+         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="@(x => OnEdit(x))"></SCTable>
 
 @code {
+    private volatile bool _loading;
     private List<HesHubModel> _depots = new();
     private HesHubModel _selectedDepot;
 
@@ -28,13 +35,62 @@
     protected override async Task OnInitializedAsync()
     {
         _depots = (await _mediator.Send(new AllHubsQuery(), CancellationToken.None)).Output;
+    }
 
+    private async Task OnAdd(HesHubModel model)
+    {
+        try
+        {
+            _loading = true;
+            var result = await _mediator.Send(new CreateNewHubCommand(model));
+
+            if (result.Conclusion is false)
+            {
+                _depots.Remove(model);
+                _snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+                return;
+            }
+
+            _snackbar.Add("Added new depot to Database!", Severity.Success);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OnEdit((HesHubModel, HesHubModel) items)
+    {
+        try
+        {
+            _loading = true;
+            var old = items.Item1;
+            var updated = items.Item2;
+
+            var result = await _mediator.Send(new EditHubCommand(old, updated));
+
+            if (result.Conclusion is false)
+            {
+                var index = _depots.FindIndex(d => Equals(d, updated));
+                if (index > -1)
+                    _depots[index] =  old;
+                _snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+                return;
+            }
+
+            _snackbar.Add("Edited depot!", Severity.Success);
+            updated.Version = result.Output;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<HesHubModel>>
-        {
+    {
             ColumnBuilder<HesHubModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
