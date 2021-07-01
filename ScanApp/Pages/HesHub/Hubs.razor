@@ -1,20 +1,17 @@
 ﻿@page "/hubs"
-@using ScanApp.Domain.Entities
-@using ScanApp.Domain.ValueObjects
 @using ScanApp.Common
-@using System.Data
 @using System.Threading
 @using FluentValidation
-@using Microsoft.EntityFrameworkCore
+@using ScanApp.Application.Common.Helpers.Result
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.HesHub.Hubs
-@using ScanApp.Application.HesHub.Hubs.Commands
 @using ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
 @using ScanApp.Application.HesHub.Hubs.Commands.EditHub
 @using ScanApp.Application.HesHub.Hubs.Queries.AllHubs
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using Version = ScanApp.Domain.ValueObjects.Version
+@implements IDisposable
 @inject IScopedMediator _mediator
 @inject IContextFactory _contextFactory
 @inject ISnackbar _snackbar
@@ -22,11 +19,12 @@
 <h3>Hub list</h3>
 
 <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs"
-         @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="800" ItemFactory="new Func<HesHubModel>(() => new HesHubModel(){Version = Version.Empty()})"
+         @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel(){Version = Version.Empty()})"
          ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="@(x => OnEdit(x))"></SCTable>
 
 @code {
     private volatile bool _loading;
+    private readonly CancellationTokenSource _exitCancellationSource = new();
     private List<HesHubModel> _depots = new();
     private HesHubModel _selectedDepot;
 
@@ -42,7 +40,10 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new CreateNewHubCommand(model));
+            var result = await _mediator.Send(new CreateNewHubCommand(model), _exitCancellationSource.Token);
+
+            if (result is null)
+                return;
 
             if (result.Conclusion is false)
             {
@@ -64,17 +65,24 @@
         try
         {
             _loading = true;
-            var old = items.Item1;
-            var updated = items.Item2;
+            var (old, updated) = items;
+            var result = await _mediator.Send(new EditHubCommand(old, updated), _exitCancellationSource.Token);
 
-            var result = await _mediator.Send(new EditHubCommand(old, updated));
+            if(result is null)
+                return;
 
             if (result.Conclusion is false)
             {
                 var index = _depots.FindIndex(d => Equals(d, updated));
                 if (index > -1)
-                    _depots[index] =  old;
+                    _depots[index] = old;
                 _snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+                return;
+            }
+
+            if (result.ResultType is ResultType.NotChanged)
+            {
+                _snackbar.Add("No changes in depot data...", Severity.Info);
                 return;
             }
 
@@ -90,7 +98,7 @@
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<HesHubModel>>
-    {
+        {
             ColumnBuilder<HesHubModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
@@ -160,7 +168,7 @@
                         .SetValidator(new ZipCodeValidator());
                 }))
                 .Build(),
-                ColumnBuilder<HesHubModel>.For(x => x.Email).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.Email).Editable().Groupable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()
@@ -169,7 +177,7 @@
                         .SetValidator(new EmailValidator());
                 }))
                 .Build(),
-                ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable().Groupable()
                 .UnderName("Phone prefix")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
@@ -179,7 +187,7 @@
                         .SetValidator(new PhoneNumberValidator());
                 }))
                 .Build(),
-                ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable().Groupable()
                 .UnderName("Phone number")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
@@ -190,5 +198,11 @@
                 }))
                 .Build(),
         };
+    }
+
+    public void Dispose()
+    {
+        _exitCancellationSource?.Cancel();
+        _snackbar.Clear();
     }
 }
