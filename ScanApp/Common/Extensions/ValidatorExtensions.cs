@@ -3,8 +3,6 @@ using FluentValidation.Results;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Common.Extensions
@@ -29,11 +27,12 @@ namespace ScanApp.Common.Extensions
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
 
             if (string.IsNullOrWhiteSpace(name) is false)
-                SetValueNameInValidator(name, validator);
+                validator.SetCommonName(name);
+            var val = new FluentValidationWrapper<T>(x => x.SetValidator(validator));
 
             return async value =>
             {
-                var res = await validator.ValidateAsync(value).ConfigureAwait(false);
+                var res = await val.ValidateAsync(value).ConfigureAwait(false);
                 return res.IsValid
                     ? Array.Empty<string>()
                     : ExtractErrorsFrom(res);
@@ -53,11 +52,12 @@ namespace ScanApp.Common.Extensions
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
 
             if (string.IsNullOrWhiteSpace(name) is false)
-                SetValueNameInValidator(name, validator);
+                validator.SetCommonName(name);
+            var val = new FluentValidationWrapper<T>(x => x.SetValidator(validator));
 
             return value =>
             {
-                var result = validator.Validate(value);
+                var result = val.Validate(value);
                 return result.IsValid
                     ? Array.Empty<string>()
                     : ExtractErrorsFrom(result);
@@ -76,14 +76,14 @@ namespace ScanApp.Common.Extensions
             _ = validator ?? throw new ArgumentNullException(nameof(validator));
 
             if (string.IsNullOrWhiteSpace(name) is false)
-                SetValueNameInValidator(name, validator);
+                validator.SetCommonName(name);
 
             return value =>
             {
                 try
                 {
                     Type contextType = typeof(ValidationContext<>).MakeGenericType(value?.GetType() ?? typeof(object));
-                    var result = validator.Validate((IValidationContext) Activator.CreateInstance(contextType, value as object));
+                    var result = validator.Validate((IValidationContext)Activator.CreateInstance(contextType, value as object));
                     return result.IsValid
                         ? Array.Empty<string>()
                         : ExtractErrorsFrom(result);
@@ -105,15 +105,6 @@ namespace ScanApp.Common.Extensions
                 errors.Add(failure.ErrorMessage);
             }
             return errors;
-        }
-
-        private static void SetValueNameInValidator(string name, IValidator validator)
-        {
-            var descriptor = validator.CreateDescriptor();
-            foreach (var validationRule in descriptor.Rules)
-            {
-                validationRule.PropertyName = name;
-            }
         }
     }
 }
