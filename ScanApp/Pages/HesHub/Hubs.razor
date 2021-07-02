@@ -160,7 +160,6 @@
             ColumnBuilder<HesHubModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
-                .Groupable()
                 .UnderName("ID")
                 .ValidateUsing(new FluentValidationWrapper<int>(x =>
                 {
@@ -172,7 +171,6 @@
                 .Build(),
             ColumnBuilder<HesHubModel>.For(x => x.Name)
                 .Editable()
-                .Groupable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotNull()
@@ -180,7 +178,7 @@
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable()
                 .UnderName("Street name")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
@@ -190,7 +188,7 @@
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.StreetNumber).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.StreetNumber).Editable()
                 .UnderName("Street number")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
@@ -199,7 +197,7 @@
                         .When(x => string.IsNullOrEmpty(x) is false);
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.City).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.City).Editable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()
@@ -208,7 +206,7 @@
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.Country).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.Country).Editable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()
@@ -217,7 +215,7 @@
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.ZipCode).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.ZipCode).Editable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()
@@ -226,7 +224,7 @@
                         .SetValidator(new ZipCodeValidator());
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.Email).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.Email).Editable()
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()
@@ -235,7 +233,7 @@
                         .SetValidator(new EmailValidator());
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable()
                 .UnderName("Phone prefix")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
@@ -245,7 +243,7 @@
                         .SetValidator(new PhoneNumberValidator());
                 }))
                 .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable().Groupable()
+            ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable()
                 .UnderName("Phone number")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
