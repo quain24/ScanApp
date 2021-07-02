@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {
-    public interface IFilteringOperation
+    public interface IFilteringOperation<TItem>
     {
-        string PropertyName { get; set; }
+        ColumnConfig<TItem> ColumnConfig { get; set; }
 
-        IEnumerable<T> Run<T>(IEnumerable<T> items);
+        IEnumerable<TItem> Run(IEnumerable<TItem> items);
     }
 }

@@ -3,29 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ScanApp.Components.Common.ScanAppTable.Extensions;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {
-    public class FilterContainsOperation : IFilteringOperation
+    public class FilterContainsOperation<TItem> : IFilteringOperation<TItem>
     {
-        private string _propertyName;
         private string _contains;
 
-        public FilterContainsOperation(string propertyName, string contains)
+        public FilterContainsOperation(ColumnConfig<TItem> columnConfig, string contains)
         {
-            _propertyName = propertyName;
+            ColumnConfig = columnConfig;
             _contains = contains;
         }
 
-        public string PropertyName
-        {
-            get => _propertyName;
-            set => _propertyName = value;
-        }
+        public ColumnConfig<TItem> ColumnConfig { get; set; }
 
-        public IEnumerable<T> Run<T>(IEnumerable<T> items)
+        public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterContains(_propertyName, _contains);
+            return items.FilterContains(ColumnConfig, _contains);
         }
     }
 }

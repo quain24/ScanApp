@@ -79,7 +79,7 @@
         {
             properties[i] = ColumnConfigs[i].PropInfo;
         }
-        var filteringOperationFactory = new FilteringOperationsFactory(properties, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
+        var filteringOperationFactory = new FilteringOperationsFactory<TItem>(ColumnConfigs, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
         var filteringOperations = filteringOperationFactory.CreateOperations();
 
         foreach (var operation in filteringOperations)

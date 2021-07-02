@@ -1,108 +1,102 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, string propertyName, int? from, int? to)
+        public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, int? from, int? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
                 return enumerable;
             }
 
-            var propInfo = typeof(T).GetProperty(propertyName);
-
             if (from is null)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
+                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to)
                     .ToList();
             }
 
             if (to is null)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from)
+                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from)
                     .ToList();
             }
 
             if (from <= to)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) >= from &&
-                                Convert.ToInt32(propInfo.GetValue(x, null)) <= to)
+                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
+                                Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to)
                     .ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToInt32(propInfo.GetValue(x, null)) <= from &&
-                            Convert.ToInt32(propInfo.GetValue(x, null)) >= to)
+                .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= from &&
+                            Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= to)
                 .ToList();
         }
 
-        public static IEnumerable<T> FilterContains<T>(this IEnumerable<T> enumerable, string propertyName,
+        public static IEnumerable<T> FilterContains<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig,
             string containTerm)
         {
             if (string.IsNullOrEmpty(containTerm))
                 return enumerable;
 
-            var propInfo = typeof(T).GetProperty(propertyName);
             return enumerable
-                .Where(x => propInfo.GetValue(x, null)
+                .Where(x => columnConfig.PropInfo.GetValue(x, columnConfig)
                     .ToString()
                     .Contains(containTerm, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
-        public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, string propertyName, DateTime? from, DateTime? to)
+        public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, DateTime? from, DateTime? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
                 return enumerable;
             }
 
-            var propInfo = typeof(T).GetProperty(propertyName);
-
             if (from is null)
             {
-                return enumerable.Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) <= to).ToList();
+                return enumerable.Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
             }
 
             if (to is null)
             {
-                return enumerable.Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= from).ToList();
+                return enumerable.Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from).ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToDateTime(propInfo.GetValue(x, null)) >= from &&
-                            Convert.ToDateTime(propInfo.GetValue(x, null)) <= to).ToList();
+                .Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
+                            Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
         }
 
-        public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, string propertyName, decimal? from, decimal? to)
+        public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, decimal? from, decimal? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
                 return enumerable;
             }
 
-            var propInfo = typeof(T).GetProperty(propertyName);
-
             if (from is null)
             {
-                return enumerable.Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) <= to).ToList();
+                return enumerable.Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
             }
 
             if (to is null)
             {
-                return enumerable.Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) >= from).ToList();
+                return enumerable.Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from).ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToDecimal(propInfo.GetValue(x, null)) >= from &&
-                            Convert.ToDecimal(propInfo.GetValue(x, null)) <= to).ToList();
+                .Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
+                            Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
         }
 
         public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, string propertyName)
