@@ -31,13 +31,13 @@ else
                             @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, ColumnConfigs[local].PropInfo, ColumnConfigs[local].DisplayName)">
+                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, ColumnConfigs[local])">
                                     @ColumnConfigs[local].DisplayName
-                                    @if (SubScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyName)
+                                    @if (SubScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyFullName)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
                                     }
-                                    else if (SubScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyName)
+                                    else if (SubScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyFullName)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
                                     }
@@ -65,13 +65,13 @@ else
                     @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, ColumnConfigs[local].PropInfo, ColumnConfigs[local].DisplayName)">
+                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, ColumnConfigs[local])">
                             @ColumnConfigs[local].DisplayName
-                            @if (ScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyName)
+                            @if (ScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyFullName)
                                     {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
                                     }
-                                    else if (ScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyName)
+                                    else if (ScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyFullName)
                                     {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
                                     }
@@ -82,7 +82,9 @@ else
                     @for (int i = 0; i < ColumnConfigs.Count; i++)
                             {
                                 int local = i;
-                        <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@ColumnConfigs[local].PropInfo.GetValue(context, ColumnConfigs[local].DateTimeFormat)</MudTd>
+                        <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">
+                            @ColumnConfigs[local].PropInfo.GetValue(context, ColumnConfigs[local])
+                        </MudTd>
                             }
                 </RowTemplate>
             </MudTable>
@@ -253,7 +255,7 @@ else
     /// </summary>
     public TItem RecentlyAddedItem { get; set; }
 
-    private PropertyInfo[] Properties { get; set; }
+    private List<PropertyInfo> ItemProperties { get; set; }
     private ScanAppTableSorter<TItem> ScanAppTableSorter { get; set; }
     private ScanAppTableSorter<TItem> SubScanAppTableSorter { get; set; }
     private List<TItem> ShownItems { get; set; }
@@ -400,11 +402,11 @@ else
         DialogOptions ??= new DialogOptions { MaxWidth = MaxWidth.Large };
 
         ItemType = Items.FirstOrDefault()?.GetType();
-        Properties = ItemType?.GetProperties();
+        ItemProperties = ItemType?.GetProperties().ToList();
 
-        AssignPropertiesToColumnConfigs();
-        ExtractOnlyUsefulPropertiesInOrder();
+
     }
+
 
     private void ToggleMenu()
     {
@@ -583,25 +585,25 @@ else
 
     private void ToggleMultiSelection() => MultiSelectionEnabled = !MultiSelectionEnabled;
 
-    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
+    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, ColumnConfig<TItem> columnConfig)
     {
-        sorter.CurrentlySorted = header;
-        var direction = sorter.ResolveSortDirection(propertyInfo);
-        ShownItems = sorter.OrderByPropertyName(ShownItems, propertyInfo.Name, direction);
+        sorter.CurrentlySorted = columnConfig.PropertyFullName;
+        var direction = sorter.ResolveSortDirection(columnConfig.PropertyFullName);
+        ShownItems = sorter.OrderByPropertyName(ShownItems, columnConfig, direction);
 
         return EventCallback.Empty;
     }
 
-    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, PropertyInfo propertyInfo, string header)
+    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, ColumnConfig<TItem> columnConfig)
     {
         // Recognise which item group it is
         for (int i = 0; i < _groupList.Count; i++)
         {
             if (_groupList[i].ItemGroup[0].Equals(items.First<TItem>()))
             {
-                sorter.CurrentlySorted = header;
-                var direction = sorter.ResolveSortDirection(propertyInfo);
-                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, propertyInfo.Name, direction).ToList();
+                sorter.CurrentlySorted = columnConfig.PropertyFullName;
+                var direction = sorter.ResolveSortDirection(columnConfig.PropertyFullName);
+                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, columnConfig, direction).ToList();
                 break;
             }
         }
@@ -620,33 +622,12 @@ else
 
     private bool ItemsAreIdentical(TItem item1, TItem item2)
     {
-        foreach (var prop in Properties)
+        foreach (var prop in ItemProperties)
         {
             if (prop.GetValue(item1)?.ToString() != prop.GetValue(item2)?.ToString())
                 return false;
         }
         return true;
-    }
-
-    private void AssignPropertiesToColumnConfigs()
-    {
-        for (int i = 0; i < ColumnConfigs.Count; i++)
-        {
-            for (int j = 0; j < Properties.Length; j++)
-            {
-                if (ColumnConfigs[i].PropertyName == Properties[j].Name)
-                        ColumnConfigs[i].PropInfo = Properties[j];
-            }
-        }
-    }
-
-    private void ExtractOnlyUsefulPropertiesInOrder()
-    {
-        Properties = new PropertyInfo[ColumnConfigs.Count];
-        for (int i = 0; i < ColumnConfigs.Count; i++)
-        {
-            Properties[i] = ColumnConfigs[i].PropInfo;
-        }
     }
 
     private bool IsAnyFieldEditable()
