@@ -10,7 +10,7 @@ using ScanApp.Infrastructure.Persistence;
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210629132914_HesHub")]
+    [Migration("20210702072144_HesHub")]
     partial class HesHub
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -492,7 +492,8 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("HesDepotId");
                         });
 
-                    b.Navigation("Address");
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ScanApp.Domain.Entities.SparePart", b =>

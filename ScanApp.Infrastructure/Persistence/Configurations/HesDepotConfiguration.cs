@@ -25,7 +25,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 add.Property(a => a.StreetNumber).HasColumnName("StreetNumber").HasMaxLength(15).IsRequired(false);
                 add.Property(a => a.Country).HasColumnName("Country").HasMaxLength(150).IsRequired();
                 add.Property(a => a.ZipCode).HasColumnName("ZipCode").HasMaxLength(20).IsRequired();
-            });
+            }).Navigation(e => e.Address).IsRequired();
 
             builder.Property(e => e.Version)
                 .HasComment("This Row version is converted to 'Version' object in ScanApp")

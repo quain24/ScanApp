@@ -490,7 +490,8 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("HesDepotId");
                         });
 
-                    b.Navigation("Address");
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ScanApp.Domain.Entities.SparePart", b =>
