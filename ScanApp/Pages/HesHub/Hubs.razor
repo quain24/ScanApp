@@ -6,6 +6,7 @@
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.HesHub.Hubs
 @using ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
+@using ScanApp.Application.HesHub.Hubs.Commands.DeleteHub
 @using ScanApp.Application.HesHub.Hubs.Commands.EditHub
 @using ScanApp.Application.HesHub.Hubs.Queries.AllHubs
 @using ScanApp.Common.Validators
@@ -15,13 +16,16 @@
 @inject IScopedMediator _mediator
 @inject IContextFactory _contextFactory
 @inject ISnackbar _snackbar
+@inject IDialogService _dialogService
 
 <h3>Hub list</h3>
 
 <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs"
          @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel(){Version = Version.Empty()})"
-         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="@(x => OnEdit(x))"></SCTable>
-
+         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit"></SCTable>
+<MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
+           Class="mt-2" Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
+           Color="Color.Error" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
 @code {
     private volatile bool _loading;
     private readonly CancellationTokenSource _exitCancellationSource = new();
@@ -90,7 +94,7 @@
                 var index = _depots.FindIndex(d => Equals(d, updated));
                 if (index > -1)
                     _depots[index] = old;
-                _snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+                _snackbar.Add(result?.ErrorDescription?.ToString(), Severity.Error);
                 return;
             }
 
@@ -109,10 +113,50 @@
         }
     }
 
+    private async Task OnDelete(HesHubModel model)
+    {
+        try
+        {
+            var confirmation = await _dialogService.ShowMessageBox
+                (
+                    "Confirm deletion",
+                    $"Are you sure You want to delete depot {model.Id}?",
+                    "Yes", "No"
+                );
+
+            if (confirmation is false) return;
+
+            _loading = true;
+            var result = await _mediator.Send(new DeleteHubCommand(model.Id, model.Version), _exitCancellationSource.Token);
+
+            if (result is null || result.Conclusion is false)
+            {
+                switch (result?.ErrorDescription.ErrorType)
+                {
+                    case ErrorType.ConcurrencyFailure:
+                        _snackbar.Add("Depot could not be deleted - either it was already deleted or modified in the meantime. Refresh page and try again.", Severity.Warning);
+                        break;
+                    default:
+                        _snackbar.Add(result?.ErrorDescription?.ToString(), Severity.Error);
+                        break;
+                }
+
+                return;
+            }
+            _depots.Remove(model);
+            _selectedDepot = null;
+            _snackbar.Add("Depot has been removed!", Severity.Success);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<HesHubModel>>
-    {
+{
             ColumnBuilder<HesHubModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
