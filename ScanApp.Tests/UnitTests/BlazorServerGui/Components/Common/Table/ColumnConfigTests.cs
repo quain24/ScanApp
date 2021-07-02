@@ -8,7 +8,6 @@ using ScanApp.Components.Common.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Areas;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
@@ -48,6 +47,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             Action act = () => _ = new ColumnConfig<TestObject>((Expression<Func<TestObject, dynamic>>)null);
 
             act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void Is_visible_by_default()
+        {
+            var subject = new ColumnConfig<TestObject>(x => x.AString);
+
+            subject.IsVisible.Should().BeTrue();
         }
 
         [Theory]
@@ -94,9 +101,9 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Given_input_limiting_collection_will_contain_it()
         {
-            var subject = new ColumnConfig<TestObject>(c => c.AString).LimitAcceptedValuesTo(new List<string>{"a", "b", "c"});
+            var subject = new ColumnConfig<TestObject>(c => c.AString).LimitAcceptedValuesTo(new List<string> { "a", "b", "c" });
 
-            subject.AllowedValues.Should().BeEquivalentTo(new List<string> {"a", "b", "c"});
+            subject.AllowedValues.Should().BeEquivalentTo(new List<string> { "a", "b", "c" });
         }
 
         [Fact]
@@ -110,7 +117,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Throws_arg_exc_if_given_limiting_collection_item_types_are_not_compatible_with_target_type()
         {
-            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(new List<int> {1, 2, 3});
+            Action act = () => _ = new ColumnConfig<TestObject>(x => x.AString).LimitAcceptedValuesTo(new List<int> { 1, 2, 3 });
 
             act.Should().Throw<ArgumentException>();
         }
@@ -429,10 +436,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void LimitAcceptedValues_accepts_valid_collection()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
-            Action act = () => subject.LimitAcceptedValuesTo(new string[]{"a", "b"});
+            Action act = () => subject.LimitAcceptedValuesTo(new string[] { "a", "b" });
 
             act.Should().NotThrow();
-            subject.AllowedValues.Should().BeEquivalentTo(new[] {"b", "a"});
+            subject.AllowedValues.Should().BeEquivalentTo(new[] { "b", "a" });
         }
 
         [Fact]
@@ -448,7 +455,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void LimitAcceptedValues_throws_arg_exc_when_collection_is_of_wrong_type()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
-            Action act = () => subject.LimitAcceptedValuesTo(new[]{1, 2, 3});
+            Action act = () => subject.LimitAcceptedValuesTo(new[] { 1, 2, 3 });
 
             act.Should().Throw<ArgumentException>();
         }
