@@ -8,12 +8,13 @@ using System;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
 {
-    public record CreateNewHubCommand(HesHubModel Model) : IRequest<Result>;
+    public record CreateNewHubCommand(HesHubModel Model) : IRequest<Result<Version>>;
 
-    internal class CreateNewHubCommandHandler : IRequestHandler<CreateNewHubCommand, Result>
+    internal class CreateNewHubCommandHandler : IRequestHandler<CreateNewHubCommand, Result<Version>>
     {
         private readonly IContextFactory _factory;
 
@@ -22,7 +23,7 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result> Handle(CreateNewHubCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(CreateNewHubCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -36,21 +37,21 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
                 await ctx.HesDepots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
                 var saved = await ctx.SaveChangesAsync(cancellationToken);
 
-                return saved == 1 ? new Result(ResultType.Created) : new Result(ErrorType.Unknown);
+                return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
             }
             catch (OperationCanceledException ex)
             {
-                return new Result(ErrorType.Cancelled, ex);
+                return new Result<Version>(ErrorType.Cancelled, ex);
             }
             catch (DbUpdateException ex)
             {
                 return ex is DbUpdateConcurrencyException
-                    ? new Result(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
-                    : new Result(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
+                    ? new Result<Version>(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
+                    : new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
             }
             catch (SqlException ex)
             {
-                return new Result(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
+                return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
             }
         }
     }
