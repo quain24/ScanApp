@@ -84,6 +84,13 @@ namespace ScanApp.Components.Common.Table
         public bool IsGroupable { get; init; }
 
         /// <summary>
+        /// Gets a value indicating if table column represented by this <see cref="ColumnConfig{T}"/> should be displayed.<para/>
+        /// Setting this property to <see langword="false"/> only affects visual side - add, edit and filter configurations stored in this instance are still in effect.
+        /// </summary>
+        /// <value><see langword="true"/> if column will be displayed (default), otherwise <see langword="false"/>.</value>
+        public bool IsVisible { get; init; } = true;
+
+        /// <summary>
         /// Gets or sets custom CSS style to be used when displaying table column configured by this instance.
         /// </summary>
         /// <value>A <see cref="string"/> representation of CSS style if set, otherwise <see langword="null"/>.</value>>

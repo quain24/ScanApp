@@ -50,6 +50,14 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             act.Should().Throw<ArgumentNullException>();
         }
 
+        [Fact]
+        public void Is_visible_by_default()
+        {
+            var subject = new ColumnConfig<TestObject>(x => x.AString);
+
+            subject.IsVisible.Should().BeTrue();
+        }
+
         [Theory]
         [ClassData(typeof(AutoDisplayNameFixture))]
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters

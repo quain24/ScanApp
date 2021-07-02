@@ -79,6 +79,17 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         }
 
         [Fact]
+        public void Builds_as_invisible()
+        {
+            var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
+                .For(x => x)
+                .Invisible()
+                .Build();
+
+            subject.IsVisible.Should().BeFalse();
+        }
+
+        [Fact]
         public void Builds_as_non_filterable()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
