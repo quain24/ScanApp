@@ -73,7 +73,7 @@
                                     }
                                     else
                                     {
-                                        @(optionalColumn?.ChildContent(item))
+                                        @(optionalColumn?.ChildContent?.Invoke(item))
                                     }
                                 </MudTd>
                             }
@@ -149,7 +149,7 @@
                         }
                         else
                         {
-                            @(optionalColumn?.ChildContent(context))
+                            @(optionalColumn?.ChildContent?.Invoke(context))
                         }
                     </MudTd>
                 }
