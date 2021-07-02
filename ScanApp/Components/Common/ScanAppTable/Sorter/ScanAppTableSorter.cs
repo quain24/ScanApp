@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ScanApp.Components.Common.ScanAppTable.Extensions;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.Sorter
 {
@@ -10,33 +12,32 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
         public string DescendingOrder { get; set; }
         public string CurrentlySorted { get; set; }
 
-        public string ResolveSortDirection(PropertyInfo propertyInfo)
+        public string ResolveSortDirection(string propFullName)
         {
-            if (propertyInfo.Name == AscendingOrder)
+            if (propFullName == AscendingOrder)
             {
                 return "descending";
             }
-            else if (propertyInfo.Name == DescendingOrder)
+            else if (propFullName == DescendingOrder)
             {
                 return "ascending";
             }
             return null;
         }
 
-        public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, string propertyName, string direction)
+        public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, ColumnConfig<TItem> columnConfig, string direction)
         {
-            var propInfo = typeof(TItem).GetProperty(propertyName);
             if (direction == "descending")
             {
                 AscendingOrder = null;
-                DescendingOrder = propertyName;
-                return items.OrderByDescending(x => propInfo.GetValue(x, null)).ToList();
+                DescendingOrder = columnConfig.PropertyFullName;
+                return items.OrderByDescending(x => columnConfig.PropInfo.GetValue<TItem>(x, columnConfig)).ToList();
             }
             else
             {
-                AscendingOrder = propertyName;
+                AscendingOrder = columnConfig.PropertyFullName;
                 DescendingOrder = null;
-                return items.OrderBy(x => propInfo.GetValue(x, null)).ToList();
+                return items.OrderBy(x => columnConfig.PropInfo.GetValue<TItem>(x, columnConfig)).ToList();
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
@@ -13,9 +14,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private readonly Expression<Func<T, object>> _columnNameSelector;
         public IValidator Validator { get; }
         public string PropertyName { get; }
+        public string PropertyFullName { get;}
         public string DisplayName { get; }
         public Type PropertyType { get; }
         public PropertyInfo PropInfo { get; set; }
+        public bool IsNested { get; private set; }
         public bool IsFilterable { get; init; } = true;
         public bool IsEditable { get; init; } = true;
         public bool IsSelectable { get; init; } = true;
@@ -53,10 +56,25 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator = null)
         {
             _columnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
+            PropertyFullName = ExtractFullPropertyName();
             PropertyName = ExtractPropertyName();
             DisplayName = SetDisplayName(displayName);
             PropertyType = ExtractValidatedType();
             Validator = validator ?? null;
+            PropInfo = ExtractPropertyInfo();
+        }
+
+        private PropertyInfo ExtractPropertyInfo()
+        {
+            try
+            { 
+                return _columnNameSelector.GetPropertyAccess();
+            }
+            catch
+            {
+                IsNested = true;
+                return null;
+            }
         }
 
         private string ExtractPropertyName()
@@ -67,6 +85,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 MemberExpression m => m.Member.Name,
                 { } m => m.Type.Name
             };
+        }
+
+        private string ExtractFullPropertyName()
+        {
+            var str = _columnNameSelector.Body.Print();
+            return str.Substring(str.IndexOf('.')+1);
         }
 
         private string SetDisplayName(string name)
