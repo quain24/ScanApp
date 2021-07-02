@@ -27,11 +27,12 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.EditHub
         {
             try
             {
-                await using var ctx = _factory.CreateDbContext();
-                var strategy = ctx.Database.CreateExecutionStrategy();
+                await using var context = _factory.CreateDbContext();
+                var strategy = context.Database.CreateExecutionStrategy();
 
                 return await strategy.ExecuteAsync(async token =>
                 {
+                    await using var ctx = _factory.CreateDbContext();
                     await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
                     var (originalModel, editedModel) = request;
 
