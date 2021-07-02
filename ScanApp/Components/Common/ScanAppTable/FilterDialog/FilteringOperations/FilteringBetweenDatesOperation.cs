@@ -1,31 +1,27 @@
 ﻿using ScanApp.Components.Common.ScanAppTable.Extensions;
 using System;
 using System.Collections.Generic;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {
-    public class FilteringBetweenDatesOperation : IFilteringOperation
+    public class FilteringBetweenDatesOperation<TItem> : IFilteringOperation<TItem>
     {
-        private string _propertyName;
         private DateTime? _fromDate;
         private DateTime? _toDate;
 
-        public FilteringBetweenDatesOperation(string propertyName, DateTime? fromDate, DateTime? toDate)
+        public FilteringBetweenDatesOperation(ColumnConfig<TItem> columnConfig, DateTime? fromDate, DateTime? toDate)
         {
-            _propertyName = propertyName;
+            ColumnConfig = columnConfig;
             _fromDate = fromDate;
             _toDate = toDate;
         }
 
-        public string PropertyName
-        {
-            get => _propertyName;
-            set => _propertyName = value;
-        }
+        public ColumnConfig<TItem> ColumnConfig { get; set; }
 
-        public IEnumerable<T> Run<T>(IEnumerable<T> items)
+        public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterBetweenDates(_propertyName, _fromDate, _toDate);
+            return items.FilterBetweenDates(ColumnConfig, _fromDate, _toDate);
         }
     }
 }

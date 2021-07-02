@@ -12,8 +12,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         {
             if (columnConfig.IsNested)
             {
-                var test = GetPropertyValue(obj, columnConfig.PropertyFullName);
-                return test;
+                return GetPropertyValue(obj, columnConfig.PropertyFullName);
             }
 
             if (propertyInfo.PropertyType.IsDateTime())
@@ -29,6 +28,21 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                 }
             }
             
+            return propertyInfo.GetValue(obj);
+        }
+
+        public static object? GetDateTimeValue<T>(this PropertyInfo propertyInfo, object? obj,
+            ColumnConfig<T> columnConfig)
+        {
+            if (!columnConfig.PropertyType.IsDateTime())
+            {
+                throw new ArgumentException( nameof(GetDateTimeValue) + " method should only be used with DateTime types!",
+                    nameof(columnConfig.PropertyType));
+            }
+            if (columnConfig.IsNested)
+            {
+                return GetPropertyValue(obj, columnConfig.PropertyFullName);
+            }
             return propertyInfo.GetValue(obj);
         }
 

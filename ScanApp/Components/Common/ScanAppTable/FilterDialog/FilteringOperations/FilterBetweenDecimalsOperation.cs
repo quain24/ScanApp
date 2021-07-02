@@ -1,30 +1,28 @@
 ﻿using ScanApp.Components.Common.ScanAppTable.Extensions;
 using System.Collections.Generic;
+using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {
-    public class FilterBetweenDecimalsOperation : IFilteringOperation
+    public class FilterBetweenDecimalsOperation<TItem> : IFilteringOperation<TItem>
     {
         private string _propertyName;
         private decimal? _from;
         private decimal? _to;
 
-        public FilterBetweenDecimalsOperation(string propertyName, decimal? from, decimal? to)
+        public FilterBetweenDecimalsOperation(ColumnConfig<TItem> columnConfig, decimal? from, decimal? to)
         {
-            _propertyName = propertyName;
+            ColumnConfig = columnConfig;
             _from = from;
             _to = to;
         }
 
-        public string PropertyName
-        {
-            get => _propertyName;
-            set => _propertyName = value;
-        }
+        public ColumnConfig<TItem> ColumnConfig { get; set; }
 
-        public IEnumerable<T> Run<T>(IEnumerable<T> items)
+
+        public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterBetweenDecimals(_propertyName, _from, _to);
+            return items.FilterBetweenDecimals(ColumnConfig, _from, _to);
         }
     }
 }
