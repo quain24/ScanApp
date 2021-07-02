@@ -48,6 +48,13 @@ namespace ScanApp.Components.Common.Table
         IColumnBuilder<T> Groupable();
 
         /// <summary>
+        /// Parent <see cref="SCTable{TTableType}"/> will <b>not</b> display column configured by built <see cref="ColumnConfig{T}"/>.<br/>
+        /// Other configured functionality will stay in effect.
+        /// </summary>
+        /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
+        IColumnBuilder<T> Invisible();
+
+        /// <summary>
         /// Set <see cref="ColumnConfig{T}"/> being configured as 'non-filterable'.
         /// </summary>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>

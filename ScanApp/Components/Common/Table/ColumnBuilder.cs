@@ -18,6 +18,7 @@ namespace ScanApp.Components.Common.Table
         private bool _isFilterable = true;
         private bool _isEditable;
         private bool _isGroupable;
+        private bool _isVisible = true;
         private string _columnStyle;
         private dynamic _allowedValues;
 
@@ -52,6 +53,12 @@ namespace ScanApp.Components.Common.Table
         public IColumnBuilder<T> Groupable()
         {
             _isGroupable = true;
+            return this;
+        }
+
+        public IColumnBuilder<T> Invisible()
+        {
+            _isVisible = false;
             return this;
         }
 
@@ -120,7 +127,8 @@ namespace ScanApp.Components.Common.Table
                     IsEditable = _isEditable,
                     IsGroupable = _isGroupable,
                     IsFilterable = _isFilterable,
-                    ColumnStyle = _columnStyle
+                    ColumnStyle = _columnStyle,
+                    IsVisible = _isVisible
                 };
             }
 
