@@ -85,10 +85,7 @@
             var (old, updated) = items;
             var result = await _mediator.Send(new EditHubCommand(old, updated), _exitCancellationSource.Token);
 
-            if (result is null)
-                return;
-
-            if (result.Conclusion is false)
+            if (result is null || result.Conclusion is false)
             {
                 var index = _depots.FindIndex(d => Equals(d, updated));
                 if (index > -1)
