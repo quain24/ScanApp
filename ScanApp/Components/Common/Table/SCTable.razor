@@ -45,7 +45,7 @@
                         </ColGroup>
 
                         <HeaderContent>
-                            @foreach (var cfg in Configs)
+                            @foreach (var cfg in Configs.Where(c => c.IsVisible))
                             {
                                 <MudTh Style="@HeaderStyle">
                                     @if (cfg.IsPresenter)
@@ -63,7 +63,7 @@
                         </HeaderContent>
 
                         <RowTemplate Context="item">
-                            @foreach (var config in Configs)
+                            @foreach (var config in Configs.Where(c => c.IsVisible))
                             {
                                 var optionalColumn = _columns.FirstOrDefault(x => x.BoundConfig.Equals(config));
                                 <MudTd @key="@(config.Identifier.ToString() + item.GetHashCode())" Style="@RowStyle" DataLabel="@config.DisplayName">
@@ -121,7 +121,7 @@
             </ColGroup>
 
             <HeaderContent>
-                @foreach (var cfg in Configs)
+                @foreach (var cfg in Configs.Where(c => c.IsVisible))
                 {
                     <MudTh Style="@HeaderStyle">
                         @if (cfg.IsPresenter)
@@ -139,7 +139,7 @@
             </HeaderContent>
 
             <RowTemplate>
-                @foreach (var config in Configs)
+                @foreach (var config in Configs.Where(c => c.IsVisible))
                 {
                     var optionalColumn = _columns.FirstOrDefault(x => x.BoundConfig.Equals(config));
                     <MudTd @key="@(config.Identifier.ToString() + context.GetHashCode())" Style="@RowStyle" DataLabel="@config.DisplayName">
