@@ -35,7 +35,7 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
                     model.PhonePrefix, model.PhoneNumber, model.Email);
 
                 await ctx.HesDepots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
-                var saved = await ctx.SaveChangesAsync(cancellationToken);
+                var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
                 return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
             }

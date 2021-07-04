@@ -20,9 +20,13 @@
 
 <h3>Hub list</h3>
 
-<SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs"
-         @bind-SelectedItem="_selectedDepot" MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel(){Version = Version.Empty()})"
-         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit"></SCTable>
+<SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot"
+         MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel() {Version = Version.Empty()})"
+         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
+    <SCColumn T="HesHubModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+
+</SCTable>
+
 <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
            Class="mt-2" Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
            Color="Color.Error" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
