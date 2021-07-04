@@ -1,6 +1,5 @@
 ﻿using AutoFixture;
 using FluentAssertions;
-using Microsoft.CodeAnalysis;
 using Moq;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
@@ -10,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {
