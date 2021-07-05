@@ -15,12 +15,11 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("email.new.123@wp.berlin")]
         public void Returns_true_for_valid_email(string email)
         {
-            var subject = new EmailValidator<string, string>();
+            var subject = new EmailValidator();
 
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, email);
+            var result = subject.Validate(email);
 
-            result.Should().BeTrue();
+            result.IsValid.Should().BeTrue();
         }
 
         [Theory]
@@ -34,34 +33,21 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         [InlineData("email.new<.123@pllll.cop")]
         public void Returns_false_if_email_is_invalid(string email)
         {
-            var subject = new EmailValidator<string, string>();
+            var subject = new EmailValidator();
+            
+            var result = subject.Validate(email);
 
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, email);
-
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
 
         [Fact]
         public void Returns_false_if_email_is_null()
         {
-            var subject = new EmailValidator<string, string>();
+            var subject = new EmailValidator();
+            
+            var result = subject.Validate(null as string);
 
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, null);
-
-            result.Should().BeFalse();
-        }
-
-        [Fact]
-        public void Returns_false_if_email_is_not_a_string()
-        {
-            var subject = new EmailValidator<string, int>();
-
-            var context = new ValidationContext<string>("context");
-            var result = subject.IsValid(context, 1);
-
-            result.Should().BeFalse();
+            result.IsValid.Should().BeFalse();
         }
     }
 }

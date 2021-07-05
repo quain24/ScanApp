@@ -2,6 +2,9 @@
 @inherits OwningComponentBase
 
 @using ScanApp.Data
+@using ScanApp.Common.Validators
+@using ScanApp.Common
+@using FluentValidation
 @inject WeatherForecastService ForecastService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -38,14 +41,25 @@
                 <MudTablePager PageSizeOptions="new[] {3, 5, 10}" />
             </PagerContent>
         </MudTable>
+
+        <MudTextField @bind-Value="v" Validation="@valll"></MudTextField>
     }
 </MudContainer>
 
 @code {
     private WeatherForecast[] forecasts;
+    //ColumnConfig<WeatherForecast> _conf = new ColumnConfig<WeatherForecast>(w => w.Summary, "weather", new FluentValidationWrapper<string>(x => x.Length(10)));
+    //ColumnConfig<WeatherForecast> _conf = new ColumnConfig<WeatherForecast>(w => w.Summary, "weather", new IdentityNamingValidator<string, string>(), "error");
+    //ColumnConfigAlt<WeatherForecast> _conf = new ColumnConfigAlt<WeatherForecast>(w => w.Summary, null, new FluentValidationWrapper<int>(x => x.Equal(10)));
+    Func<int, IEnumerable<string>> valll = new FluentValidationWrapper<int>(x => x.GreaterThan(10)).Validation;
+
+    int v = 0;
 
     protected override async Task OnInitializedAsync()
     {
+        new IdentityNamingValidator();
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+
     }
+
 }

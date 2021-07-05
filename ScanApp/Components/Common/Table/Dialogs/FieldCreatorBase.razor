@@ -1,0 +1,11 @@
+﻿@typeparam T
+<MudContainer Style=@($"{(MaxFieldSetHeight > 0 ? $"max-height: {MaxFieldSetHeight}px; overflow-y: scroll; " : string.Empty)}padding: 10px 5px 10px 5px")>
+    <MudExpansionPanels MultiExpansion="true">
+        @foreach (var config in Configs)
+        {
+            <MudExpansionPanel @ref="@Panels[config]" Text="@config.DisplayName">
+                @CreateField(config)
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+</MudContainer>

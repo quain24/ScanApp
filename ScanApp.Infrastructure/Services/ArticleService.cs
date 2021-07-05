@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using ScanApp.Application.Common.Interfaces;
+using ScanApp.Domain.Entities;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Interfaces;
-using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Services
 {
     public class ArticleService : IArticleService
     {
         private List<Article> _articles;
+
         public ArticleService()
         {
             var Articles = File.ReadAllText("Articles.json");

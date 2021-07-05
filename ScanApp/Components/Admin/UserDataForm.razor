@@ -10,16 +10,16 @@
 
 <MudForm @ref="@_form" IsValidChanged="@(async valid => await SuccessChanged.InvokeAsync(valid))" IsValid="@Success">
     <MudTextField @bind-Value="User.Name" TextChanged="@OnUserChanged" Validation="@_nameValidator.Validation"
-                   Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true" FullWidth="true" />
+                  Variant="Variant.Filled" Label="Name" Disabled="EditingDisabled" Immediate="true" FullWidth="true" />
     @if (DisablePassword is false)
     {
         <MudTextFieldString @bind-Value="Password" TextChanged="@OnUserChanged" Validation="@_passwordValidator" InputType="InputType.Password" Variant="Variant.Filled"
-                             Immediate="true" Label="Password" FullWidth="true" />
+                            Immediate="true" Label="Password" FullWidth="true" />
     }
     <MudTextField @bind-Value="User.Email" TextChanged="@OnUserChanged" Validation="@_emailValidator.Validation" Variant="Variant.Filled"
-                   Label="Email" Disabled="EditingDisabled" Immediate="true" FullWidth="true" />
+                  Label="Email" Disabled="EditingDisabled" Immediate="true" FullWidth="true" />
 
-    <MudSelect AutoFocus="true" T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter"@bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled" FullWidth="true">
+    <MudSelect AutoFocus="true" T="Location" Label="Location" Dense="true" OffsetY="true" ToStringFunc="@_selectConverter" @bind-Value="User.Location" SelectedValuesChanged="@OnUserChanged" Variant="Variant.Filled" Disabled="EditingDisabled" FullWidth="true">
         <MudSelectItem T="Location" Value="null" />
         @foreach (var location in Locations)
         {
@@ -87,20 +87,20 @@
     Func<Location, string> _selectConverter = l => l?.Name ?? "None";
 
     private readonly FluentValidationWrapper<string> _nameValidator = new(x => x
-        .SetValidator(new IdentityNamingValidator<string, string>())
+        .SetValidator(new IdentityNamingValidator())
         .WithMessage("Name contain illegal chars or has length less than 3 or more than 60"));
 
     private readonly FluentValidationWrapper<string> _emailValidator = new(x => x
         .Cascade(CascadeMode.Stop)
         .NotEmpty().WithMessage("Email cannot be empty")
-        .SetValidator(new EmailValidator<string, string>()));
+        .SetValidator(new EmailValidator()));
 
     private readonly FluentValidationWrapper<string> _locationValidator = new(x => x
-        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator<string, string>())
+        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator())
         .WithMessage("Location contains illegal chars or is empty"));
 
     private readonly FluentValidationWrapper<string> _phoneValidator = new(x => x
-        .SetValidator(new PhoneNumberValidator<string, string>())
+        .SetValidator(new PhoneNumberValidator())
         .When(s => !string.IsNullOrEmpty(s))
         .WithMessage("Not a valid phone number"));
 

@@ -14,9 +14,9 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         /// <param name="standardChars">Enforces usage of characters accepted in identity management.</param>
         /// <param name="emailValidator">Email address validator.</param>
         /// <param name="phoneValidator">Phone number validator.</param>
-        public EditUserDataCommandValidator(IdentityNamingValidator<EditUserDataCommand, string> standardChars,
-            EmailValidator<EditUserDataCommand, string> emailValidator,
-            PhoneNumberValidator<EditUserDataCommand, string> phoneValidator)
+        public EditUserDataCommandValidator(IdentityNamingValidator standardChars,
+            EmailValidator emailValidator,
+            PhoneNumberValidator phoneValidator)
         {
             RuleFor(c => c.Name)
                 .Cascade(CascadeMode.Stop)

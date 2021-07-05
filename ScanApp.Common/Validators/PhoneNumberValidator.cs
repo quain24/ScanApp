@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using FluentValidation.Validators;
+using FluentValidation.Results;
 using System.Linq;
 
 namespace ScanApp.Common.Validators
@@ -23,28 +23,32 @@ namespace ScanApp.Common.Validators
     /// </summary>
     /// <typeparam name="T">Type of validation context.</typeparam>
     /// <typeparam name="TProperty">Type of property value to validate.</typeparam>
-    public class PhoneNumberValidator<T, TProperty> : PropertyValidator<T, TProperty>
+    public class PhoneNumberValidator : AbstractValidator<string>
     {
-        public override string Name => "Phone number validator";
-
-        public override bool IsValid(ValidationContext<T> context, TProperty value)
+        public PhoneNumberValidator()
         {
-            if (value is not string phone)
-                return false;
+            RuleFor(x => x)
+                .NotEmpty()
+                .Length(6, 25)
+                .Must(s =>
+                {
+                    if (char.IsNumber(s[0]) || s[0].Equals('+'))
+                    {
+                        return s[1..].All(char.IsDigit);
+                    }
 
-            if (phone.Length is < 6 or > 25)
-                return false;
-
-            if (char.IsNumber(phone[0]) || phone[0].Equals('+'))
-            {
-                return phone[1..].All(char.IsDigit);
-            }
-            return false;
+                    return false;
+                })
+                .WithMessage(s => $"'{s}' is not a valid phone number.");
         }
 
-        protected override string GetDefaultMessageTemplate(string errorCode)
+        protected override bool PreValidate(ValidationContext<string> context, ValidationResult result)
         {
-            return "\"{PropertyValue}\" is not a valid phone number.";
+            if (context?.InstanceToValidate is not null)
+                return base.PreValidate(context, result);
+
+            result.Errors.Add(new ValidationFailure(context?.PropertyName, "Phone number cannot be null."));
+            return false;
         }
     }
 }

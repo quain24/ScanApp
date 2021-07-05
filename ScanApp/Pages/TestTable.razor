@@ -1,0 +1,161 @@
+﻿@page "/testtable"
+@using Version = ScanApp.Domain.ValueObjects.Version
+@using ScanApp.Data
+@using ScanApp.Models.SpareParts
+@using ScanApp.Common.Interfaces
+@using ScanApp.Common
+@using FluentValidation
+@inject WeatherForecastService ForecastService
+@inject IDateTime DateTime
+
+<h1>Test table</h1>
+
+<SCTable @ref="_table" EditOnRowClick="true" RowsPerPage="100" Height="500" MaxDialogContentHeight="500" FixedHeader="true" TTableType="WeatherForecast" ItemFactory="@(new Func<WeatherForecast>(Create))"
+         Data="_forecasts" Configs="@_configs.ToList()" @bind-SelectedItem="@WeatherForecast" @bind-SelectedItems="WeatherForecasts" Virtualize="true"
+         ItemCreated="Created" Loading="_loading">
+    <SCColumn T="WeatherForecast" BoundConfig="@_configs[1]">
+        <MudButton Color="@(context.TemperatureC > 20 ? Color.Error : Color.Info)" OnClick="@(() => context.TemperatureC = ++context.TemperatureC)">
+            @(context.TemperatureC)
+        </MudButton>
+        @context.TemperatureC
+        <MudButton Color="@(context?.Summary?.Length > 5 ? Color.Primary : Color.Secondary)">
+            @(context?.Summary)
+        </MudButton>
+    </SCColumn>
+    <SCColumn T="WeatherForecast" BoundConfig="@_configs[4]"><MudButton>Test button</MudButton></SCColumn>
+</SCTable>
+
+<MudButton OnClick="@(_ => Remove())">External Delete</MudButton>
+<MudButton OnClick="@(_ => _table.OpenEditItemDialog())">Edit using table function</MudButton>
+<MudButton OnClick="@(_ => _table.OpenAddItemDialog())">Add using table function</MudButton>
+<MudButton OnClick="@(_ => _table.OpenFilterItemDialog())">Filter using table function</MudButton>
+
+<MudText>@(WeatherForecast?.Summary ?? string.Empty)</MudText>
+<MudText>@(_itemCreatedByTable?.Summary ?? string.Empty)</MudText>
+<MudText>
+    <li>
+        @foreach (var w in WeatherForecasts ?? Enumerable.Empty<WeatherForecast>())
+        {
+            <ul>@w?.Summary</ul>
+        }
+    </li>
+</MudText>
+
+@code
+{
+    private bool _loading;
+
+    private WeatherForecast Create()
+    {
+        return new WeatherForecast(11);
+    }
+
+    private void Created(WeatherForecast item)
+    {
+        _itemCreatedByTable = item;
+    }
+
+    private WeatherForecast _itemCreatedByTable;
+    private WeatherForecast WeatherForecast { get; set; }
+    private HashSet<WeatherForecast> WeatherForecasts { get; set; } = new HashSet<WeatherForecast>();
+
+    private List<WeatherForecast> _forecasts = new();
+    private SCTable<WeatherForecast> _table;
+
+    private readonly List<ColumnConfig<WeatherForecast>> _configs = new()
+    {
+        ColumnBuilder<WeatherForecast>.For(c => c.Summary)
+            .UnderName("Simple summary")
+            .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+            .ColumnStyle("width: 30%;")
+            .Groupable()
+            .Editable()
+            .LimitValuesTo(new List<string>()
+            {
+                null,
+                "yes",
+                "no",
+                "maybe"
+            })
+            .ConvertUsing(new Converter<string>()
+            {
+                SetFunc = x => x + " conv."
+            })
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
+            .UnderName("Temperature in C")
+            .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
+            .Groupable()
+            .Editable()
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.Date)
+            .FormatAs(FieldType.Date)
+            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            .Groupable()
+            .Editable()
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.Date)
+            .UnderName("Separate time column")
+            .FormatAs(FieldType.Time)
+            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+            .Groupable()
+            .Editable()
+            .Build(),
+        ColumnBuilder<WeatherForecast>.ForPresentation("test")
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.Version)
+            .UnderName("A version")
+            .ConvertUsing(new Converter<Version>
+            {
+                SetFunc = value => value?.Value,
+                GetFunc = Version.Create
+            })
+            .Groupable()
+            .Editable()
+            .LimitValuesTo(new List<Version>
+            {
+                Version.Empty(),
+                Version.Create("v one"),
+                Version.Create("v two")
+            })
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.Number)
+            .UnderName("Const number")
+            .Groupable()
+            .Editable()
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.Model.Name)
+            .UnderName("Model name")
+            .Groupable()
+            .Editable()
+            .Build(),
+        ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
+            .UnderName("Null Date")
+            .DisableFiltering()
+            .Build()
+    };
+
+    private void Remove()
+    {
+        _forecasts.Remove(WeatherForecast);
+        WeatherForecast = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _forecasts = (await ForecastService.GetForecastAsync(DateTime.Now)).ToList();
+        _forecasts.Add(new WeatherForecast()
+        {
+            Version = Version.Create("alternative version"),
+            TemperatureC = 21,
+            Summary = "Test summary",
+            Date = System.DateTime.Today,
+            Model = new SparePartGUIModel()
+        });
+        var rand = new Random(12345);
+        for (int i = 0; i < 2000; i++)
+        {
+            _forecasts.Add(new WeatherForecast() { Date = DateTime.Now, Summary = rand.Next(5000000).ToString(), TemperatureC = rand.Next(21, 46) });
+        }
+    }
+}

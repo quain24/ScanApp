@@ -66,7 +66,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             validators.Should().ContainKey(nameof(EditUserDataCommand.Name))
                 .WhichValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
-                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(IdentityNamingValidator<EditUserDataCommand, string>)));
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<EditUserDataCommand, string>))
+                .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(IdentityNamingValidator));
         }
 
         [Fact]
@@ -79,7 +80,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             validators.Should().ContainKey(nameof(EditUserDataCommand.Email))
                 .WhichValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
-                .And.Subject.Should().ContainSingle(c => c.GetType().IsAssignableTo(typeof(EmailValidator<EditUserDataCommand, string>)));
+                .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<EditUserDataCommand, string>))
+                .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(EmailValidator));
         }
 
         [Fact]
@@ -91,7 +93,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
             validators.Should().ContainKey(nameof(EditUserDataCommand.Phone))
                 .WhichValue.Should().HaveCount(1)
-                .And.Subject.First().Should().BeAssignableTo<PhoneNumberValidator<EditUserDataCommand, string>>();
+                .And.Subject.First().Should().BeOfType<ChildValidatorAdaptor<EditUserDataCommand, string>>()
+                .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(PhoneNumberValidator));
         }
 
         [Fact]
@@ -185,7 +188,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
             result.IsValid.Should().BeTrue();
             result.ShouldNotHaveValidationErrorFor(c => c.Phone);
-            validatorFixture.PhoneValidatorMock.Verify(v => v.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), "123456"), Times.Once);
+            validatorFixture.PhoneValidatorMock.Verify(v => v.Validate(It.Is<ValidationContext<string>>(v => v.InstanceToValidate == "123456")), Times.Once);
             validatorFixture.PhoneValidatorMock.VerifyNoOtherCalls();
         }
 
@@ -225,7 +228,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
             result.IsValid.Should().BeTrue();
             result.ShouldNotHaveValidationErrorFor(c => c.Email);
-            validatorFixture.EmailValidatorMock.Verify(v => v.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), "email@dot.com"), Times.Once);
+            validatorFixture.EmailValidatorMock.Verify(v => v.Validate(It.Is<ValidationContext<string>>(v => v.InstanceToValidate == "email@dot.com")), Times.Once);
             validatorFixture.EmailValidatorMock.VerifyNoOtherCalls();
         }
 
@@ -245,7 +248,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
             result.IsValid.Should().BeTrue();
             result.ShouldNotHaveValidationErrorFor(c => c.NewName);
-            validatorFixture.NamingValidatorMock.Verify(m => m.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), "name"), Times.Once);
+            validatorFixture.NamingValidatorMock.Verify(m => m.Validate(It.Is<ValidationContext<string>>(v => v.InstanceToValidate == "name")), Times.Once);
             validatorFixture.NamingValidatorMock.VerifyNoOtherCalls();
         }
 
@@ -266,8 +269,8 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
             result.IsValid.Should().BeTrue();
             result.ShouldNotHaveValidationErrorFor(c => c.NewName);
-            validatorFixture.NamingValidatorMock.Verify(v => v.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), "new_name"), Times.Once);
-            validatorFixture.NamingValidatorMock.Verify(m => m.IsValid(It.IsAny<ValidationContext<EditUserDataCommand>>(), "name"), Times.Once);
+            validatorFixture.NamingValidatorMock.Verify(v => v.Validate(It.Is<ValidationContext<string>>(v => v.InstanceToValidate == "new_name")), Times.Once);
+            validatorFixture.NamingValidatorMock.Verify(m => m.Validate(It.Is<ValidationContext<string>>(v => v.InstanceToValidate == "name")), Times.Once);
             validatorFixture.NamingValidatorMock.VerifyNoOtherCalls();
         }
     }

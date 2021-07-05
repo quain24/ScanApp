@@ -14,9 +14,9 @@
 <MudContainer MaxWidth="MaxWidth.False">
 
     <MudText Typo="Typo.h4" GutterBottom="true">Admin page</MudText>
-    <MudDivider DividerType="DividerType.Middle" Style="margin-bottom: 15px"></MudDivider>
+    <MudDivider DividerType="DividerType.Middle" Class="mb-3"></MudDivider>
     <MudSwipeArea OnSwipe="@OnSwipe">
-        <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="false" Border="false" Outlined="false" KeepPanelsAlive="false">
+        <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Border="false" Outlined="false" TabPanelClass="mb-1" KeepPanelsAlive="false">
             <MudTabPanel Text="User Management">
                 <ScanApp.Components.Admin.UserEditor @bind-SelectedUser="_selectedUser" @bind-Users="@_users" Locations="@_locations" SelectedRowStyle="@_selectedRowStyle" />
             </MudTabPanel>
@@ -33,7 +33,8 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>
-    AuthenticationStateTask { get; set; }
+    AuthenticationStateTask
+    { get; set; }
 
     private MudTabs _tabPanel;
 
