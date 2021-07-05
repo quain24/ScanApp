@@ -52,6 +52,10 @@ namespace ScanApp.Components.Common.Table
             set => _cultureInfo = value;
         }
 
+        /// <inheritdoc cref="MudTable{T}.HorizontalScrollbar"/>
+        [Parameter]
+        public bool HorizontalScrollbar { get; set; }
+
         /// <summary>
         /// Gets or sets maximum height of displayed Add / edit / filter dialog in pixels.
         /// </summary>
