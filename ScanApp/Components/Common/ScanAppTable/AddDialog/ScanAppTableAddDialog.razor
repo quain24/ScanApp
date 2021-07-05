@@ -1,5 +1,6 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
+@using ScanApp.Components.Common.ScanAppTable.Extensions
 @typeparam TItem
 
 <MudDialog>
@@ -39,9 +40,12 @@
     private MudForm _form;
     private bool _okDisabled;
 
-    private void ItemHasChanged(PropertyInfo property, object value)
+    private void ItemHasChanged(int index, object value)
     {
-        property.SetValue(NewItem, value);
+        if (ColumnConfigs[index].IsNested)
+            ColumnConfigs[index].PropInfo.SetPropertyValue(NewItem, ColumnConfigs[index].PropertyFullName, value);
+        else
+            ColumnConfigs[index].PropInfo.SetValue(NewItem, value);
     }
 
     private void OnValidationChanged(bool isFormValid)
