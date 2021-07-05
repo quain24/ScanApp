@@ -49,14 +49,14 @@
 
     private string _selectedGroupBy;
     private bool SubmitDisabled;
-    private Dictionary<string, string> _headersPropertiesPairs;
+    private Dictionary<string, ColumnConfig<TItem>> _propertiesColumnConfigsPairs;
 
     protected override Task OnInitializedAsync()
     {
-        _headersPropertiesPairs = new Dictionary<string, string>();
+        _propertiesColumnConfigsPairs = new Dictionary<string, ColumnConfig<TItem>>();
         for (int i = 0; i < ColumnConfigs.Count; i++)
         {
-            _headersPropertiesPairs.Add(ColumnConfigs[i].DisplayName, ColumnConfigs[i].PropInfo.Name);
+            _propertiesColumnConfigsPairs.Add(ColumnConfigs[i].DisplayName, ColumnConfigs[i]);
         }
         return base.OnInitializedAsync();
     }
@@ -73,11 +73,11 @@
             return;
         }
 
-        if (!_headersPropertiesPairs.TryGetValue(_selectedGroupBy, out string propertyName))
+        if (!_propertiesColumnConfigsPairs.TryGetValue(_selectedGroupBy, out ColumnConfig<TItem> columnConfig))
         {
             return;
         }
-        var groupingList = Items.GroupByReflected(propertyName).ToList();
+        var groupingList = Items.GroupByReflected(columnConfig).ToList();
         var groupList = GroupingToGroupConverter.Convert(groupingList);
 
         MudDialog.Close(DialogResult.Ok(groupList));

@@ -99,9 +99,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                             Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
         }
 
-        public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, string propertyName)
+        public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, ColumnConfig<T> columnConfig)
         {
-            return items.GroupBy(x => x.GetType().GetProperty(propertyName).GetValue(x, null));
+            return items.GroupBy(x => columnConfig.PropInfo.GetValue(x, columnConfig));
         }
 
         private static bool ArgumentsAreValid(int? from, int? to)
