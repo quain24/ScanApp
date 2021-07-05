@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using ScanApp.Common.Validators;
 
-namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
+namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewHub
 {
     public class CreateNewHubCommandValidator : AbstractValidator<CreateNewHubCommand>
     {

@@ -1,43 +1,41 @@
-﻿using MediatR;
+﻿using System;
+using System.Data.SqlClient;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
-using System;
-using System.Data.SqlClient;
-using System.Threading;
-using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
-namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
+namespace ScanApp.Application.HesHub.Depots.Commands.DeleteHub
 {
-    public record CreateNewHubCommand(DepotModel Model) : IRequest<Result<Version>>;
+    public record DeleteHubCommand(int Id, Version Version) : IRequest<Result>;
 
-    internal class CreateNewHubCommandHandler : IRequestHandler<CreateNewHubCommand, Result<Version>>
+    internal class DeleteHubCommandHandler : IRequestHandler<DeleteHubCommand, Result>
     {
         private readonly IContextFactory _factory;
 
-        public CreateNewHubCommandHandler(IContextFactory factory)
+        public DeleteHubCommandHandler(IContextFactory factory)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result<Version>> Handle(CreateNewHubCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(DeleteHubCommand request, CancellationToken cancellationToken)
         {
             try
             {
                 await using var ctx = _factory.CreateDbContext();
+                var depot = new Depot(request.Id, "name",
+                    Address.Create("name", null, "name", "name", "name"),
+                    "0", "0", "e@m.c");
+                depot.ChangeVersion(request.Version);
 
-                var model = request.Model;
-                var depot = new Depot(model.Id, model.Name,
-                    Address.Create(model.StreetName, model.StreetNumber, model.ZipCode, model.City, model.Country),
-                    model.PhonePrefix, model.PhoneNumber, model.Email);
-
-                await ctx.Depots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
-                var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-                return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
+                ctx.Remove(depot);
+                var removed = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return removed > 0 ? new Result(ResultType.Deleted) : new Result(ErrorType.NotFound);
             }
             catch (OperationCanceledException ex)
             {

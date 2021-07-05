@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace ScanApp.Application.HesHub.Hubs.Commands.DeleteHub
+namespace ScanApp.Application.HesHub.Depots.Commands.DeleteHub
 {
     public class DeleteHubCommandValidator : AbstractValidator<DeleteHubCommand>
     {

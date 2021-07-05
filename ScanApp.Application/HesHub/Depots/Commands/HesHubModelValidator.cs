@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using ScanApp.Common.Validators;
 
-namespace ScanApp.Application.HesHub.Hubs.Commands
+namespace ScanApp.Application.HesHub.Depots.Commands
 {
     public class HesHubModelValidator : AbstractValidator<DepotModel>
     {
