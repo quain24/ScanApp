@@ -2,7 +2,7 @@
 
 namespace ScanApp.Application.HesHub.Hubs
 {
-    public class HesHubModel
+    public class DepotModel
     {
         public int Id { get; set; }
         public string Name { get; set; }

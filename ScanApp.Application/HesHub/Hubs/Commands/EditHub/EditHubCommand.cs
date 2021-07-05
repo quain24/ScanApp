@@ -12,7 +12,7 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Hubs.Commands.EditHub
 {
-    public record EditHubCommand(HesHubModel OriginalModel, HesHubModel EditedModel) : IRequest<Result<Version>>;
+    public record EditHubCommand(DepotModel OriginalModel, DepotModel EditedModel) : IRequest<Result<Version>>;
 
     internal class EditHubCommandHandler : IRequestHandler<EditHubCommand, Result<Version>>
     {

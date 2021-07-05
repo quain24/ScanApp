@@ -22,7 +22,7 @@
     <h3>Depots</h3>
 
     <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
-             MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel() {Version = Version.Empty()})"
+             MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
         <SCColumn T="HesHubModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
     </SCTable>
@@ -35,10 +35,10 @@
 @code {
     private volatile bool _loading;
     private readonly CancellationTokenSource _exitCancellationSource = new();
-    private List<HesHubModel> _depots = new();
-    private HesHubModel _selectedDepot;
+    private List<DepotModel> _depots = new();
+    private DepotModel _selectedDepot;
 
-    private List<ColumnConfig<HesHubModel>> _configs = new();
+    private List<ColumnConfig<DepotModel>> _configs = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,7 +61,7 @@
         }
     }
 
-    private async Task OnAdd(HesHubModel model)
+    private async Task OnAdd(DepotModel model)
     {
         try
         {
@@ -87,7 +87,7 @@
         }
     }
 
-    private async Task OnEdit((HesHubModel, HesHubModel) items)
+    private async Task OnEdit((DepotModel, DepotModel) items)
     {
         try
         {
@@ -119,7 +119,7 @@
         }
     }
 
-    private async Task OnDelete(HesHubModel model)
+    private async Task OnDelete(DepotModel model)
     {
         try
         {
@@ -161,9 +161,9 @@
 
     protected override void OnInitialized()
     {
-        _configs = new List<ColumnConfig<HesHubModel>>
+        _configs = new List<ColumnConfig<DepotModel>>
 {
-        ColumnBuilder<HesHubModel>.For(x => x.Id)
+        ColumnBuilder<DepotModel>.For(x => x.Id)
             .ColumnStyle("width: 50px;")
             .Editable()
             .UnderName("ID")
@@ -175,7 +175,7 @@
                 .WithMessage("{PropertyName} must be unique.");
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.Name)
+        ColumnBuilder<DepotModel>.For(x => x.Name)
             .Editable()
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
@@ -184,7 +184,7 @@
                     .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.StreetName).Editable()
             .UnderName("Street name")
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
@@ -194,7 +194,7 @@
                     .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.StreetNumber).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.StreetNumber).Editable()
             .UnderName("Street number")
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
@@ -203,7 +203,7 @@
                     .When(x => string.IsNullOrEmpty(x) is false);
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.City).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.City).Editable()
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
                 x.NotEmpty()
@@ -212,7 +212,7 @@
                     .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.Country).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.Country).Editable()
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
                 x.NotEmpty()
@@ -221,7 +221,7 @@
                     .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.ZipCode).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.ZipCode).Editable()
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
                 x.NotEmpty()
@@ -230,7 +230,7 @@
                     .SetValidator(new ZipCodeValidator());
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.Email).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.Email).Editable()
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
                 x.NotEmpty()
@@ -239,7 +239,7 @@
                     .SetValidator(new EmailValidator());
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.PhonePrefix).Editable()
             .UnderName("Phone prefix")
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
@@ -249,7 +249,7 @@
                     .SetValidator(new PhoneNumberValidator());
             }))
             .Build(),
-        ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable()
+        ColumnBuilder<DepotModel>.For(x => x.PhoneNumber).Editable()
             .UnderName("Phone number")
             .ValidateUsing(new FluentValidationWrapper<string>(x =>
             {
