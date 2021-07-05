@@ -30,11 +30,11 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
                 await using var ctx = _factory.CreateDbContext();
 
                 var model = request.Model;
-                var depot = new HesDepot(model.Id, model.Name,
+                var depot = new Depot(model.Id, model.Name,
                     Address.Create(model.StreetName, model.StreetNumber, model.ZipCode, model.City, model.Country),
                     model.PhonePrefix, model.PhoneNumber, model.Email);
 
-                await ctx.HesDepots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
+                await ctx.Depots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
                 var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
                 return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
