@@ -10,20 +10,20 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
-namespace ScanApp.Application.HesHub.Depots.Commands.DeleteHub
+namespace ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
 {
-    public record DeleteHubCommand(int Id, Version Version) : IRequest<Result>;
+    public record DeleteDepotCommand(int Id, Version Version) : IRequest<Result>;
 
-    internal class DeleteHubCommandHandler : IRequestHandler<DeleteHubCommand, Result>
+    internal class DeleteDepotCommandHandler : IRequestHandler<DeleteDepotCommand, Result>
     {
         private readonly IContextFactory _factory;
 
-        public DeleteHubCommandHandler(IContextFactory factory)
+        public DeleteDepotCommandHandler(IContextFactory factory)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result> Handle(DeleteHubCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(DeleteDepotCommand request, CancellationToken cancellationToken)
         {
             try
             {

@@ -10,20 +10,20 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
-namespace ScanApp.Application.HesHub.Depots.Commands.EditHub
+namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
 {
-    public record EditHubCommand(DepotModel OriginalModel, DepotModel EditedModel) : IRequest<Result<Version>>;
+    public record EditDepotCommand(DepotModel OriginalModel, DepotModel EditedModel) : IRequest<Result<Version>>;
 
-    internal class EditHubCommandHandler : IRequestHandler<EditHubCommand, Result<Version>>
+    internal class EditDepotCommandHandler : IRequestHandler<EditDepotCommand, Result<Version>>
     {
         private readonly IContextFactory _factory;
 
-        public EditHubCommandHandler(IContextFactory factory)
+        public EditDepotCommandHandler(IContextFactory factory)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result<Version>> Handle(EditHubCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(EditDepotCommand request, CancellationToken cancellationToken)
         {
             try
             {

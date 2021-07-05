@@ -4,9 +4,9 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.HesHub.Depots.Commands
 {
-    public class HesHubModelValidator : AbstractValidator<DepotModel>
+    public class DepotModelValidator : AbstractValidator<DepotModel>
     {
-        public HesHubModelValidator()
+        public DepotModelValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty()

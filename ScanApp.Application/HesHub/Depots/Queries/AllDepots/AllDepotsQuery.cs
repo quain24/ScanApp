@@ -9,20 +9,20 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 
-namespace ScanApp.Application.HesHub.Depots.Queries.AllHubs
+namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 {
-    public record AllHubsQuery : IRequest<Result<List<DepotModel>>>;
+    public record AllDepotsQuery : IRequest<Result<List<DepotModel>>>;
 
-    internal class AllHubsQueryHandler : IRequestHandler<AllHubsQuery, Result<List<DepotModel>>>
+    internal class AllDepotsQueryHandler : IRequestHandler<AllDepotsQuery, Result<List<DepotModel>>>
     {
         private readonly IContextFactory _contextFactory;
 
-        public AllHubsQueryHandler(IContextFactory contextFactory)
+        public AllDepotsQueryHandler(IContextFactory contextFactory)
         {
             _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
         }
 
-        public async Task<Result<List<DepotModel>>> Handle(AllHubsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
             try
             {
