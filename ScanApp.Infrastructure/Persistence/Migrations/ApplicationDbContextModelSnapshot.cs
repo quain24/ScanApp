@@ -243,7 +243,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.ToTable("ClaimsSource", "sca");
                 });
 
-            modelBuilder.Entity("ScanApp.Domain.Entities.HesDepot", b =>
+            modelBuilder.Entity("ScanApp.Domain.Entities.Depot", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("int");
@@ -260,13 +260,8 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
-
-                    b.Property<string>("PhonePrefix")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<byte[]>("Version")
                         .IsConcurrencyToken()
@@ -279,7 +274,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("HesDepots", "hub");
+                    b.ToTable("Depots", "hub");
                 });
 
             modelBuilder.Entity("ScanApp.Domain.Entities.Location", b =>
@@ -446,11 +441,11 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ScanApp.Domain.Entities.HesDepot", b =>
+            modelBuilder.Entity("ScanApp.Domain.Entities.Depot", b =>
                 {
                     b.OwnsOne("ScanApp.Domain.ValueObjects.Address", "Address", b1 =>
                         {
-                            b1.Property<int>("HesDepotId")
+                            b1.Property<int>("DepotId")
                                 .HasColumnType("int");
 
                             b1.Property<string>("City")
@@ -471,23 +466,18 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                                 .HasColumnType("nvarchar(150)")
                                 .HasColumnName("StreetName");
 
-                            b1.Property<string>("StreetNumber")
-                                .HasMaxLength(15)
-                                .HasColumnType("nvarchar(15)")
-                                .HasColumnName("StreetNumber");
-
                             b1.Property<string>("ZipCode")
                                 .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("nvarchar(20)")
                                 .HasColumnName("ZipCode");
 
-                            b1.HasKey("HesDepotId");
+                            b1.HasKey("DepotId");
 
-                            b1.ToTable("HesDepots");
+                            b1.ToTable("Depots");
 
                             b1.WithOwner()
-                                .HasForeignKey("HesDepotId");
+                                .HasForeignKey("DepotId");
                         });
 
                     b.Navigation("Address")

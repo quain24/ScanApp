@@ -36,10 +36,8 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
                     StreetName = h.Address.StreetName,
                     Version = h.Version,
                     ZipCode = h.Address.ZipCode,
-                    StreetNumber = h.Address.StreetNumber,
                     Name = h.Name,
                     PhoneNumber = h.PhoneNumber,
-                    PhonePrefix = h.PhonePrefix
                 }).ToList();
 
                 return new Result<List<DepotModel>>(result);

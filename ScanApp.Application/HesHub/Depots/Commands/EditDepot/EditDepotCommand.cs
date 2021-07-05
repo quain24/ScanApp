@@ -36,13 +36,11 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
                     await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
                     var (originalModel, editedModel) = request;
 
-                    var originalDepot = new Depot(originalModel.Id, originalModel.Name,
-                        Address.Create(originalModel.StreetName, originalModel.StreetNumber, originalModel.ZipCode, originalModel.City, originalModel.Country),
-                        originalModel.PhonePrefix, originalModel.PhoneNumber, originalModel.Email);
+                    var originalDepot = new Depot(originalModel.Id, originalModel.Name,originalModel.PhoneNumber, originalModel.Email,
+                        Address.Create(originalModel.StreetName, originalModel.ZipCode, originalModel.City, originalModel.Country));
                     originalDepot.ChangeVersion(originalModel.Version);
-                    var editedDepot = new Depot(editedModel.Id, editedModel.Name,
-                        Address.Create(editedModel.StreetName, editedModel.StreetNumber, editedModel.ZipCode, editedModel.City, editedModel.Country),
-                        editedModel.PhonePrefix, editedModel.PhoneNumber, editedModel.Email);
+                    var editedDepot = new Depot(editedModel.Id, editedModel.Name, editedModel.PhoneNumber, editedModel.Email,
+                        Address.Create(editedModel.StreetName, editedModel.ZipCode, editedModel.City, editedModel.Country));
                     editedDepot.ChangeVersion(editedModel.Version);
 
                     if (originalDepot.Id != editedDepot.Id)

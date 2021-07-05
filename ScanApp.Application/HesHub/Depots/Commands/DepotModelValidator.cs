@@ -16,13 +16,6 @@ namespace ScanApp.Application.HesHub.Depots.Commands
                 .NotEmpty()
                 .MaximumLength(150)
                 .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
-            When(x => x.StreetNumber is not null, () =>
-            {
-                RuleFor(x => x.StreetNumber)
-                    .NotEmpty()
-                    .MaximumLength(15)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator());
-            });
             RuleFor(x => x.City)
                 .NotEmpty()
                 .MaximumLength(150)
@@ -39,10 +32,6 @@ namespace ScanApp.Application.HesHub.Depots.Commands
                 .NotEmpty()
                 .MaximumLength(200)
                 .SetValidator(new EmailValidator());
-            RuleFor(x => x.PhonePrefix)
-                .NotEmpty()
-                .MaximumLength(10)
-                .SetValidator(new PhoneNumberValidator());
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty()
                 .MaximumLength(25)

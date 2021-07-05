@@ -24,7 +24,7 @@
     <SCTable TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
-        <SCColumn T="DepotModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs[6]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
     </SCTable>
 
     <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
@@ -162,104 +162,85 @@
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<DepotModel>>
-{
-        ColumnBuilder<DepotModel>.For(x => x.Id)
-            .ColumnStyle("width: 50px;")
-            .Editable()
-            .UnderName("ID")
-            .ValidateUsing(new FluentValidationWrapper<int>(x =>
-            {
-                x.GreaterThanOrEqualTo(0)
-                .Must(id => _depots.Any(d => d.Id == id) is false)
-                .When(id => _selectedDepot is null || id != _selectedDepot.Id)
-                .WithMessage("{PropertyName} must be unique.");
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.Name)
-            .Editable()
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotNull()
-                    .MaximumLength(20)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.StreetName).Editable()
-            .UnderName("Street name")
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(150)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.StreetNumber).Editable()
-            .UnderName("Street number")
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.MaximumLength(15)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street number"))
-                    .When(x => string.IsNullOrEmpty(x) is false);
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.City).Editable()
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(150)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.Country).Editable()
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(150)
-                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.ZipCode).Editable()
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(20)
-                    .SetValidator(new ZipCodeValidator());
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.Email).Editable()
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(200)
-                    .SetValidator(new EmailValidator());
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.PhonePrefix).Editable()
-            .UnderName("Phone prefix")
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(10)
-                    .SetValidator(new PhoneNumberValidator());
-            }))
-            .Build(),
-        ColumnBuilder<DepotModel>.For(x => x.PhoneNumber).Editable()
-            .UnderName("Phone number")
-            .ValidateUsing(new FluentValidationWrapper<string>(x =>
-            {
-                x.NotEmpty()
-                    .NotNull()
-                    .MaximumLength(25)
-                    .SetValidator(new PhoneNumberValidator());
-            }))
-            .Build(),
-    };
+        {
+            ColumnBuilder<DepotModel>.For(x => x.Id)
+                .ColumnStyle("width: 50px;")
+                .Editable()
+                .UnderName("ID")
+                .ValidateUsing(new FluentValidationWrapper<int>(x =>
+                {
+                    x.GreaterThanOrEqualTo(0)
+                    .Must(id => _depots.Any(d => d.Id == id) is false)
+                    .When(id => _selectedDepot is null || id != _selectedDepot.Id)
+                    .WithMessage("{PropertyName} must be unique.");
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.Name)
+                .Editable()
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotNull()
+                        .MaximumLength(20)
+                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.StreetName).Editable()
+                .UnderName("Street name")
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(150)
+                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.City).Editable()
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(150)
+                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.Country).Editable()
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(150)
+                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.ZipCode).Editable()
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(20)
+                        .SetValidator(new ZipCodeValidator());
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.Email).Editable()
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(200)
+                        .SetValidator(new EmailValidator());
+                }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.PhoneNumber).Editable()
+                .UnderName("Phone number")
+                .ValidateUsing(new FluentValidationWrapper<string>(x =>
+                {
+                    x.NotEmpty()
+                        .NotNull()
+                        .MaximumLength(30)
+                        .SetValidator(new PhoneNumberValidator());
+                }))
+                .Build(),
+        };
     }
 
     public void Dispose()

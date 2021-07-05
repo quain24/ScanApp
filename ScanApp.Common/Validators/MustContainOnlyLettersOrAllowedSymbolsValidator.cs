@@ -13,6 +13,9 @@ namespace ScanApp.Common.Validators
     /// <description>Letters (all letter chars are allowed)</description>
     /// </item>
     /// <item>
+    /// <description>Numbers</description>
+    /// </item>
+    /// <item>
     /// <description>White spaces ' '</description>
     /// </item>
     /// <item>
