@@ -38,7 +38,7 @@
                 {
                     <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild" OnRowClick="@(async args => await OnRowClick(args))"
                               RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)" Loading="Loading"
-                              RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="Bordered" Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" Virtualize="Virtualize">
+                              RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="Bordered" Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" Virtualize="Virtualize" HorizontalScrollbar="HorizontalScrollbar">
 
                         <ColGroup>
                             @ColumnStyles
@@ -103,7 +103,7 @@
         <MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
                   RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))" Loading="Loading"
                   RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Virtualize="Virtualize"
-                  Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None">
+                  Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" HorizontalScrollbar="HorizontalScrollbar">
 
             <ToolBarContent>
                 @if (Configs?.Count > 0)
