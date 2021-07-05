@@ -1,4 +1,4 @@
-﻿@page "/hubs"
+﻿@page "/depots"
 @using ScanApp.Common
 @using System.Threading
 @using FluentValidation
@@ -21,10 +21,10 @@
 <div class="mx-3">
     <h3>Depots</h3>
 
-    <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
+    <SCTable TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
-        <SCColumn T="HesHubModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
     </SCTable>
 
     <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
