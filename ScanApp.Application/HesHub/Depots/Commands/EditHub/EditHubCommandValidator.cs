@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 
-namespace ScanApp.Application.HesHub.Hubs.Commands.EditHub
+namespace ScanApp.Application.HesHub.Depots.Commands.EditHub
 {
     public class EditHubCommandValidator : AbstractValidator<EditHubCommand>
     {

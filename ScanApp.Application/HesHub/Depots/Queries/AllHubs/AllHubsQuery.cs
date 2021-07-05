@@ -1,15 +1,15 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
 
-namespace ScanApp.Application.HesHub.Hubs.Queries.AllHubs
+namespace ScanApp.Application.HesHub.Depots.Queries.AllHubs
 {
     public record AllHubsQuery : IRequest<Result<List<DepotModel>>>;
 
