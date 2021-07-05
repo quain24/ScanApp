@@ -18,18 +18,20 @@
 @inject ISnackbar _snackbar
 @inject IDialogService _dialogService
 
-<h3>Hub list</h3>
+<div class="mx-3">
+    <h3>Depots</h3>
 
-<SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot"
-         MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel() {Version = Version.Empty()})"
-         ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
-    <SCColumn T="HesHubModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+    <SCTable TTableType="HesHubModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
+             MaxDialogContentHeight="650" ItemFactory="new Func<HesHubModel>(() => new HesHubModel() {Version = Version.Empty()})"
+             ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
+        <SCColumn T="HesHubModel" BoundConfig="_configs[7]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+    </SCTable>
 
-</SCTable>
+    <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
+               Class="mt-2" Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
+               Color="Color.Error" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
+</div>
 
-<MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
-           Class="mt-2" Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
-           Color="Color.Error" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
 @code {
     private volatile bool _loading;
     private readonly CancellationTokenSource _exitCancellationSource = new();
@@ -161,103 +163,103 @@
     {
         _configs = new List<ColumnConfig<HesHubModel>>
 {
-            ColumnBuilder<HesHubModel>.For(x => x.Id)
-                .ColumnStyle("width: 50px;")
-                .Editable()
-                .UnderName("ID")
-                .ValidateUsing(new FluentValidationWrapper<int>(x =>
-                {
-                    x.GreaterThanOrEqualTo(0)
-                    .Must(id => _depots.Any(d => d.Id == id) is false)
-                    .When(id => _selectedDepot is null || id != _selectedDepot.Id)
-                    .WithMessage("{PropertyName} must be unique.");
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.Name)
-                .Editable()
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotNull()
-                        .MaximumLength(20)
-                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable()
-                .UnderName("Street name")
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(150)
-                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.StreetNumber).Editable()
-                .UnderName("Street number")
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.MaximumLength(15)
-                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street number"))
-                        .When(x => string.IsNullOrEmpty(x) is false);
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.City).Editable()
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(150)
-                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.Country).Editable()
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(150)
-                        .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.ZipCode).Editable()
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(20)
-                        .SetValidator(new ZipCodeValidator());
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.Email).Editable()
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(200)
-                        .SetValidator(new EmailValidator());
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable()
-                .UnderName("Phone prefix")
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(10)
-                        .SetValidator(new PhoneNumberValidator());
-                }))
-                .Build(),
-            ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable()
-                .UnderName("Phone number")
-                .ValidateUsing(new FluentValidationWrapper<string>(x =>
-                {
-                    x.NotEmpty()
-                        .NotNull()
-                        .MaximumLength(25)
-                        .SetValidator(new PhoneNumberValidator());
-                }))
-                .Build(),
-        };
+        ColumnBuilder<HesHubModel>.For(x => x.Id)
+            .ColumnStyle("width: 50px;")
+            .Editable()
+            .UnderName("ID")
+            .ValidateUsing(new FluentValidationWrapper<int>(x =>
+            {
+                x.GreaterThanOrEqualTo(0)
+                .Must(id => _depots.Any(d => d.Id == id) is false)
+                .When(id => _selectedDepot is null || id != _selectedDepot.Id)
+                .WithMessage("{PropertyName} must be unique.");
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.Name)
+            .Editable()
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotNull()
+                    .MaximumLength(20)
+                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.StreetName).Editable()
+            .UnderName("Street name")
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(150)
+                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street name"));
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.StreetNumber).Editable()
+            .UnderName("Street number")
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.MaximumLength(15)
+                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Street number"))
+                    .When(x => string.IsNullOrEmpty(x) is false);
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.City).Editable()
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(150)
+                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.Country).Editable()
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(150)
+                    .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("City"));
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.ZipCode).Editable()
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(20)
+                    .SetValidator(new ZipCodeValidator());
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.Email).Editable()
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(200)
+                    .SetValidator(new EmailValidator());
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.PhonePrefix).Editable()
+            .UnderName("Phone prefix")
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(10)
+                    .SetValidator(new PhoneNumberValidator());
+            }))
+            .Build(),
+        ColumnBuilder<HesHubModel>.For(x => x.PhoneNumber).Editable()
+            .UnderName("Phone number")
+            .ValidateUsing(new FluentValidationWrapper<string>(x =>
+            {
+                x.NotEmpty()
+                    .NotNull()
+                    .MaximumLength(25)
+                    .SetValidator(new PhoneNumberValidator());
+            }))
+            .Build(),
+    };
     }
 
     public void Dispose()
