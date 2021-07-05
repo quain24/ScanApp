@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using ScanApp.Components.Common.ScanAppTable.FilterDialog;
+using ScanApp.Components.Common.ScanAppTable.Options;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.FilterDialog
 {
     public class FilteringOperationsFactoryTests
     {
-        private FilteringOperationsFactory CreateInstance()
+        private FilteringOperationsFactory<FiltertingTestsFixture> CreateInstance()
         {
             var objectList = new List<FiltertingTestsFixture>();
 
@@ -28,15 +29,20 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
                 objectList.Add(obj);
             }
 
-            var properties = new FiltertingTestsFixture().GetType().GetProperties();
+            var columnConfigs = new List<ColumnConfig<FiltertingTestsFixture>>();
+            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Decimal, "Decimal"));
+            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Date, "Date"));
+            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Integer, "Integer"));
+            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.String, "String"));
 
-            var from = new int?[properties.Length];
-            var to = new int?[properties.Length];
-            var contains = new string[properties.Length];
-            var fromDate = new DateTime?[properties.Length];
-            var toDate = new DateTime?[properties.Length];
-            var fromDecimal = new decimal?[properties.Length];
-            var toDecimal = new decimal?[properties.Length];
+
+            var from = new int?[columnConfigs.Count];
+            var to = new int?[columnConfigs.Count];
+            var contains = new string[columnConfigs.Count];
+            var fromDate = new DateTime?[columnConfigs.Count];
+            var toDate = new DateTime?[columnConfigs.Count];
+            var fromDecimal = new decimal?[columnConfigs.Count];
+            var toDecimal = new decimal?[columnConfigs.Count];
 
             from[0] = 10;
             to[0] = 20;
@@ -49,16 +55,16 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
             fromDecimal[3] = new decimal(1.20);
             toDecimal[3] = new decimal(1.30);
 
-            return new FilteringOperationsFactory(properties, from, to, contains, fromDate, toDate, fromDecimal, toDecimal);
+            return new FilteringOperationsFactory<FiltertingTestsFixture>(columnConfigs, from, to, contains, fromDate, toDate, fromDecimal, toDecimal);
         }
 
 
         [Fact]
         public void Will_create_instance()
         {
-            var subject = CreateInstance();
+            FilteringOperationsFactory<FiltertingTestsFixture> subject = CreateInstance();
 
-            subject.Should().BeOfType<FilteringOperationsFactory>();
+            subject.Should().BeOfType<FilteringOperationsFactory<FiltertingTestsFixture>>();
         }
 
         [Fact]
