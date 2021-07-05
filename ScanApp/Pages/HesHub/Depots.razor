@@ -5,10 +5,10 @@
 @using ScanApp.Application.Common.Helpers.Result
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.HesHub.Depots
-@using ScanApp.Application.HesHub.Depots.Commands.CreateNewHub
-@using ScanApp.Application.HesHub.Depots.Commands.DeleteHub
-@using ScanApp.Application.HesHub.Depots.Commands.EditHub
-@using ScanApp.Application.HesHub.Depots.Queries.AllHubs
+@using ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
+@using ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
+@using ScanApp.Application.HesHub.Depots.Commands.EditDepot
+@using ScanApp.Application.HesHub.Depots.Queries.AllDepots
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using Version = ScanApp.Domain.ValueObjects.Version
@@ -45,7 +45,7 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new AllHubsQuery(), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new AllDepotsQuery(), _exitCancellationSource.Token);
 
             if (result is null || result.Conclusion is false)
             {
@@ -66,7 +66,7 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new CreateNewHubCommand(model), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new CreateNewDepot(model), _exitCancellationSource.Token);
 
             if (result is null)
                 return;
@@ -93,7 +93,7 @@
         {
             _loading = true;
             var (old, updated) = items;
-            var result = await _mediator.Send(new EditHubCommand(old, updated), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new EditDepotCommand(old, updated), _exitCancellationSource.Token);
 
             if (result is null || result.Conclusion is false)
             {
@@ -133,7 +133,7 @@
             if (confirmation is false) return;
 
             _loading = true;
-            var result = await _mediator.Send(new DeleteHubCommand(model.Id, model.Version), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new DeleteDepotCommand(model.Id, model.Version), _exitCancellationSource.Token);
 
             if (result is null || result.Conclusion is false)
             {

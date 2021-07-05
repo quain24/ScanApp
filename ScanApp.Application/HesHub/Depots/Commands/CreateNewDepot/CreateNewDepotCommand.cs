@@ -10,20 +10,20 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
-namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewHub
+namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
 {
-    public record CreateNewHubCommand(DepotModel Model) : IRequest<Result<Version>>;
+    public record CreateNewDepot(DepotModel Model) : IRequest<Result<Version>>;
 
-    internal class CreateNewHubCommandHandler : IRequestHandler<CreateNewHubCommand, Result<Version>>
+    internal class CreateNewDepotCommandHandler : IRequestHandler<CreateNewDepot, Result<Version>>
     {
         private readonly IContextFactory _factory;
 
-        public CreateNewHubCommandHandler(IContextFactory factory)
+        public CreateNewDepotCommandHandler(IContextFactory factory)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result<Version>> Handle(CreateNewHubCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(CreateNewDepot request, CancellationToken cancellationToken)
         {
             try
             {
