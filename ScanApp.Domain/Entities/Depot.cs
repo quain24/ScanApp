@@ -4,7 +4,7 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {
-    public class HesDepot
+    public class Depot
     {
         public int Id { get; set; }
         public string Email { get; private set; }
@@ -17,11 +17,11 @@ namespace ScanApp.Domain.Entities
         /// <summary>
         /// For compliance with EF Core.
         /// </summary>
-        private HesDepot()
+        private Depot()
         {
         }
 
-        public HesDepot(int id, string name, Address address, string phonePrefix, string phoneNumber, string email)
+        public Depot(int id, string name, Address address, string phonePrefix, string phoneNumber, string email)
         {
             Id = id;
             ChangeName(name);

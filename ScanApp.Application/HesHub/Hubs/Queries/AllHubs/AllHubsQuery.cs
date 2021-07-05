@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Application.SpareParts.Queries.AllSparePartTypes;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -28,7 +27,7 @@ namespace ScanApp.Application.HesHub.Hubs.Queries.AllHubs
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
-                var result = ctx.HesDepots.AsNoTracking().Select(h => new HesHubModel()
+                var result = ctx.Depots.AsNoTracking().Select(h => new HesHubModel()
                 {
                     City = h.Address.City,
                     Country = h.Address.Country,

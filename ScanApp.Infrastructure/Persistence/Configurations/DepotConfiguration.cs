@@ -7,9 +7,9 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    internal class HesDepotConfiguration : IEntityTypeConfiguration<HesDepot>
+    internal class DepotConfiguration : IEntityTypeConfiguration<Depot>
     {
-        public void Configure(EntityTypeBuilder<HesDepot> builder)
+        public void Configure(EntityTypeBuilder<Depot> builder)
         {
             builder.ToTable("HesDepots", "hub");
             builder.HasIndex(e => e.Id).IsUnique();

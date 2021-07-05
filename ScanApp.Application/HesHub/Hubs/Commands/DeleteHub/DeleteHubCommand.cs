@@ -28,7 +28,7 @@ namespace ScanApp.Application.HesHub.Hubs.Commands.DeleteHub
             try
             {
                 await using var ctx = _factory.CreateDbContext();
-                var depot = new HesDepot(request.Id, "name",
+                var depot = new Depot(request.Id, "name",
                     Address.Create("name", null, "name", "name", "name"),
                     "0", "0", "e@m.c");
                 depot.ChangeVersion(request.Version);
