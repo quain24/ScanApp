@@ -25,14 +25,12 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             Fixture.Register<Depot>(() =>
                 new Depot(Fixture.Create<int>(),
                 "name" + DateTime.Now.TimeOfDay,
+                Rand.Next(100000, 9999999).ToString(),
+                "email@wp.pl",
                 Address.Create(Rand.Next(1, 900000).ToString(),
-                    "12",
                     Rand.Next(10000, 99999).ToString(),
                     "aaa city",
-                    "bbb country"),
-                Rand.Next(100, 10000).ToString(),
-                Rand.Next(100000, 9999999).ToString(),
-                "email@wp.pl"));
+                    "bbb country")));
         }
 
         [Fact]
@@ -72,9 +70,8 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
                 ctx.SaveChanges();
             }
 
-            var subject = new Depot(999, "test_name",
-                Address.Create("street", "2A", "12345", "city", "country"),
-                "12pref", "123456", "em@wp.pl");
+            var subject = new Depot(999, "test_name", "123456",
+                "em@wp.pl", Address.Create("street", "12345", "city", "country"));
 
             using (var context = NewDbContext)
             {
@@ -86,7 +83,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             int count = 0;
             using (var contextRead = NewDbContext)
             {
-                result = contextRead.Depots.Where(h => h.Id == 999).FirstOrDefault();
+                result = contextRead.Depots.FirstOrDefault(h => h.Id == 999);
                 count = contextRead.Depots.Count();
             }
 

@@ -28,9 +28,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
             try
             {
                 await using var ctx = _factory.CreateDbContext();
-                var depot = new Depot(request.Id, "name",
-                    Address.Create("name", null, "name", "name", "name"),
-                    "0", "0", "e@m.c");
+                var depot = new Depot(request.Id, "name", "0", "e@m.c", Address.Create("name", "name", "name", "name"));
                 depot.ChangeVersion(request.Version);
 
                 ctx.Remove(depot);

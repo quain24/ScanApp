@@ -11,7 +11,6 @@ namespace ScanApp.Domain.ValueObjects
     public sealed class Address : ValueObject
     {
         public string StreetName { get; }
-        public string StreetNumber { get; }
         public string ZipCode { get; }
         public string City { get; }
         public string Country { get; }
@@ -26,12 +25,10 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="country">Country where given address is located.</param>
         /// <returns>A new instance of <see cref="Address"/>.</returns>
         /// <exception cref="ArgumentException">One of parameters is null, empty or whitespace, excluding street number - it can be null, but not empty or whitespace.</exception>
-        public static Address Create(string streetName, string streetNumber, string zipCode, string city, string country)
+        public static Address Create(string streetName, string zipCode, string city, string country)
         {
             if (string.IsNullOrWhiteSpace(streetName))
                 throw new ArgumentException("Street name cannot be null or whitespace.", nameof(streetName));
-            if (streetNumber is not null && string.IsNullOrWhiteSpace(streetNumber))
-                throw new ArgumentException("Street number cannot be whitespace - it can either be null or must contain actual data.", nameof(streetNumber));
             if (string.IsNullOrWhiteSpace(zipCode))
                 throw new ArgumentException("Zip code cannot be null or whitespace.", nameof(zipCode));
             if (string.IsNullOrWhiteSpace(city))
@@ -39,13 +36,12 @@ namespace ScanApp.Domain.ValueObjects
             if (string.IsNullOrWhiteSpace(country))
                 throw new ArgumentException("Country name cannot be null or whitespace.", nameof(country));
 
-            return new Address(streetName, streetNumber, zipCode, city, country);
+            return new Address(streetName, zipCode, city, country);
         }
 
-        private Address(string streetName, string streetNumber, string zipCode, string city, string country)
+        private Address(string streetName, string zipCode, string city, string country)
         {
             StreetName = streetName;
-            StreetNumber = streetNumber;
             ZipCode = zipCode;
             City = city;
             Country = country;
@@ -54,7 +50,6 @@ namespace ScanApp.Domain.ValueObjects
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return StreetName;
-            yield return StreetNumber;
             yield return ZipCode;
             yield return City;
             yield return Country;
@@ -62,9 +57,7 @@ namespace ScanApp.Domain.ValueObjects
 
         public override string ToString()
         {
-            var builder = new StringBuilder(StreetName).Append(' ');
-            if (StreetNumber is not null) builder.Append(StreetNumber);
-            builder.Append(", ");
+            var builder = new StringBuilder(StreetName).Append(", ");
             builder.Append(ZipCode).Append(' ').Append(City).Append(", ").Append(Country);
             return builder.ToString();
         }

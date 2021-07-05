@@ -11,18 +11,16 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Depot> builder)
         {
-            builder.ToTable("HesDepots", "hub");
+            builder.ToTable("Depots", "hub");
             builder.HasIndex(e => e.Id).IsUnique();
             builder.Property(e => e.Id).ValueGeneratedNever().IsRequired();
             builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
             builder.Property(e => e.Email).HasMaxLength(200).IsRequired();
-            builder.Property(e => e.PhoneNumber).HasMaxLength(25).IsRequired();
-            builder.Property(e => e.PhonePrefix).HasMaxLength(10).IsRequired();
+            builder.Property(e => e.PhoneNumber).HasMaxLength(30).IsRequired();
             builder.OwnsOne(e => e.Address, add =>
             {
                 add.Property(a => a.City).HasColumnName("City").HasMaxLength(150).IsRequired();
                 add.Property(a => a.StreetName).HasColumnName("StreetName").HasMaxLength(150).IsRequired();
-                add.Property(a => a.StreetNumber).HasColumnName("StreetNumber").HasMaxLength(15).IsRequired(false);
                 add.Property(a => a.Country).HasColumnName("Country").HasMaxLength(150).IsRequired();
                 add.Property(a => a.ZipCode).HasColumnName("ZipCode").HasMaxLength(20).IsRequired();
             }).Navigation(e => e.Address).IsRequired();
