@@ -16,7 +16,7 @@
     public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
 
     [Parameter]
-    public EventCallback<(PropertyInfo, object)> ItemChanged { get; set; }
+    public EventCallback<(int, object)> ItemChanged { get; set; }
 
     [Parameter]
     public TItem NewItem { get; set; }
@@ -119,7 +119,7 @@
 
         async Task EditDelegate(dynamic obj)
         {
-            await ItemChanged.InvokeAsync((ColumnConfigs[iterator].PropInfo, obj));
+            await ItemChanged.InvokeAsync((iterator, obj));
         }
 
         return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
@@ -132,7 +132,7 @@
 
         async Task EditDelegate(dynamic obj)
         {
-            await ItemChanged.InvokeAsync((ColumnConfigs[iterator].PropInfo, obj));
+            await ItemChanged.InvokeAsync((iterator, obj));
         }
 
         return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
