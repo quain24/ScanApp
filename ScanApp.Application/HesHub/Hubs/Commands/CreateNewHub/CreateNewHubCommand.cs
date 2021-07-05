@@ -12,7 +12,7 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Hubs.Commands.CreateNewHub
 {
-    public record CreateNewHubCommand(HesHubModel Model) : IRequest<Result<Version>>;
+    public record CreateNewHubCommand(DepotModel Model) : IRequest<Result<Version>>;
 
     internal class CreateNewHubCommandHandler : IRequestHandler<CreateNewHubCommand, Result<Version>>
     {

@@ -4,7 +4,7 @@ using ScanApp.Common.Validators;
 
 namespace ScanApp.Application.HesHub.Hubs.Commands
 {
-    public class HesHubModelValidator : AbstractValidator<HesHubModel>
+    public class HesHubModelValidator : AbstractValidator<DepotModel>
     {
         public HesHubModelValidator()
         {
@@ -51,12 +51,12 @@ namespace ScanApp.Application.HesHub.Hubs.Commands
                 .NotNull();
         }
 
-        protected override bool PreValidate(ValidationContext<HesHubModel> context, ValidationResult result)
+        protected override bool PreValidate(ValidationContext<DepotModel> context, ValidationResult result)
         {
             if (context?.InstanceToValidate is not null)
                 return base.PreValidate(context, result);
 
-            result.Errors.Add(new ValidationFailure(context?.PropertyName, $"Given {nameof(HesHubModel)} was null."));
+            result.Errors.Add(new ValidationFailure(context?.PropertyName, $"Given {nameof(DepotModel)} was null."));
             return false;
         }
     }
