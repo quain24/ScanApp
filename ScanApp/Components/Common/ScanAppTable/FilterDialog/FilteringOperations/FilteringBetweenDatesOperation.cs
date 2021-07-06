@@ -10,18 +10,18 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
         private DateTime? _fromDate;
         private DateTime? _toDate;
 
-        public FilteringBetweenDatesOperation(ColumnConfig<TItem> columnConfig, DateTime? fromDate, DateTime? toDate)
+        public FilteringBetweenDatesOperation(ColumnConfiguration<TItem> columnConfiguration, DateTime? fromDate, DateTime? toDate)
         {
-            ColumnConfig = columnConfig;
+            ColumnConfiguration = columnConfiguration;
             _fromDate = fromDate;
             _toDate = toDate;
         }
 
-        public ColumnConfig<TItem> ColumnConfig { get; set; }
+        public ColumnConfiguration<TItem> ColumnConfiguration { get; set; }
 
         public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterBetweenDates(ColumnConfig, _fromDate, _toDate);
+            return items.FilterBetweenDates(ColumnConfiguration, _fromDate, _toDate);
         }
     }
 }

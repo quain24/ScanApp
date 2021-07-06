@@ -10,19 +10,19 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
         private decimal? _from;
         private decimal? _to;
 
-        public FilterBetweenDecimalsOperation(ColumnConfig<TItem> columnConfig, decimal? from, decimal? to)
+        public FilterBetweenDecimalsOperation(ColumnConfiguration<TItem> columnConfiguration, decimal? from, decimal? to)
         {
-            ColumnConfig = columnConfig;
+            ColumnConfiguration = columnConfiguration;
             _from = from;
             _to = to;
         }
 
-        public ColumnConfig<TItem> ColumnConfig { get; set; }
+        public ColumnConfiguration<TItem> ColumnConfiguration { get; set; }
 
 
         public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterBetweenDecimals(ColumnConfig, _from, _to);
+            return items.FilterBetweenDecimals(ColumnConfiguration, _from, _to);
         }
     }
 }

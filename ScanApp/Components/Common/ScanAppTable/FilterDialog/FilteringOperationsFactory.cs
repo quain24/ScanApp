@@ -8,7 +8,7 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
 {
     public class FilteringOperationsFactory<TItem>
     {
-        public FilteringOperationsFactory(List<ColumnConfig<TItem>> columnConfigs, int?[] from, int?[] to, string[] contains, DateTime?[] fromDate, DateTime?[] toDate,
+        public FilteringOperationsFactory(List<ColumnConfiguration<TItem>> columnConfigs, int?[] from, int?[] to, string[] contains, DateTime?[] fromDate, DateTime?[] toDate,
                 decimal?[] fromDecimal, decimal?[] toDecimal)
         {
             From = from;
@@ -23,7 +23,7 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
             Length = ColumnConfigs.Count;
         }
 
-        private List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+        private List<ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
         private int?[] From { get; set; }
         private int?[] To { get; set; }
         private string[] Contains { get; set; }

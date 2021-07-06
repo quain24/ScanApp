@@ -25,19 +25,19 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
             return null;
         }
 
-        public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, ColumnConfig<TItem> columnConfig, string direction)
+        public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, ColumnConfiguration<TItem> columnConfiguration, string direction)
         {
             if (direction == "descending")
             {
                 AscendingOrder = null;
-                DescendingOrder = columnConfig.PropertyFullName;
-                return items.OrderByDescending(x => columnConfig.PropInfo.GetValue<TItem>(x, columnConfig)).ToList();
+                DescendingOrder = columnConfiguration.PropertyFullName;
+                return items.OrderByDescending(x => columnConfiguration.PropInfo.GetValue<TItem>(x, columnConfiguration)).ToList();
             }
             else
             {
-                AscendingOrder = columnConfig.PropertyFullName;
+                AscendingOrder = columnConfiguration.PropertyFullName;
                 DescendingOrder = null;
-                return items.OrderBy(x => columnConfig.PropInfo.GetValue<TItem>(x, columnConfig)).ToList();
+                return items.OrderBy(x => columnConfiguration.PropInfo.GetValue<TItem>(x, columnConfiguration)).ToList();
             }
         }
 

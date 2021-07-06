@@ -11,17 +11,17 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
     {
         private string _contains;
 
-        public FilterContainsOperation(ColumnConfig<TItem> columnConfig, string contains)
+        public FilterContainsOperation(ColumnConfiguration<TItem> columnConfiguration, string contains)
         {
-            ColumnConfig = columnConfig;
+            ColumnConfiguration = columnConfiguration;
             _contains = contains;
         }
 
-        public ColumnConfig<TItem> ColumnConfig { get; set; }
+        public ColumnConfiguration<TItem> ColumnConfiguration { get; set; }
 
         public IEnumerable<TItem> Run(IEnumerable<TItem> items)
         {
-            return items.FilterContains(ColumnConfig, _contains);
+            return items.FilterContains(ColumnConfiguration, _contains);
         }
     }
 }

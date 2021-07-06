@@ -5,7 +5,7 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
 {
     public interface IFilteringOperation<TItem>
     {
-        ColumnConfig<TItem> ColumnConfig { get; set; }
+        ColumnConfiguration<TItem> ColumnConfiguration { get; set; }
 
         IEnumerable<TItem> Run(IEnumerable<TItem> items);
     }

@@ -11,16 +11,16 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
     {
         private PropertyInfoExtensionsTestsFixture Fixture = new PropertyInfoExtensionsTestsFixture();
 
-        private List<ColumnConfig<PropertyInfoExtensionsTestsFixture>> GetColumnConfigs()
+        private List<ColumnConfiguration<PropertyInfoExtensionsTestsFixture>> GetColumnConfigs()
         {
-            var columnConfigs = new List<ColumnConfig<PropertyInfoExtensionsTestsFixture>>();
-            columnConfigs.Add(new ColumnConfig<PropertyInfoExtensionsTestsFixture>(x => x.TestDate, "TestDate")
+            var columnConfigs = new List<ColumnConfiguration<PropertyInfoExtensionsTestsFixture>>();
+            columnConfigs.Add(new ColumnConfiguration<PropertyInfoExtensionsTestsFixture>(x => x.TestDate, "TestDate")
             {
                 DateTimeFormat = DateTimeFormat.Show.DateOnly
             });
-            columnConfigs.Add(new ColumnConfig<PropertyInfoExtensionsTestsFixture>(x => x.TestString, "TestString"));
-            columnConfigs.Add(new ColumnConfig<PropertyInfoExtensionsTestsFixture>(x => x.Nest.NestDate, "NestDate"));
-            columnConfigs.Add(new ColumnConfig<PropertyInfoExtensionsTestsFixture>(x => x.Nest.NestString, "NestString"));
+            columnConfigs.Add(new ColumnConfiguration<PropertyInfoExtensionsTestsFixture>(x => x.TestString, "TestString"));
+            columnConfigs.Add(new ColumnConfiguration<PropertyInfoExtensionsTestsFixture>(x => x.Nest.NestDate, "NestDate"));
+            columnConfigs.Add(new ColumnConfiguration<PropertyInfoExtensionsTestsFixture>(x => x.Nest.NestString, "NestString"));
             return columnConfigs;
         }
 

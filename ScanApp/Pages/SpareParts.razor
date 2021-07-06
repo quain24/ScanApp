@@ -53,7 +53,7 @@
     {
         AllowFiltering = true
     };
-    List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>>();
+    List<Components.Common.ScanAppTable.Options.ColumnConfiguration<SparePartGUIModel>> ColumnConfigs = new List<Components.Common.ScanAppTable.Options.ColumnConfiguration<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
@@ -99,11 +99,11 @@
     private async Task GetData()
     {
         // Set up columns
-        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfiguration<SparePartGUIModel>(s => s.Name, "Name")
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfiguration<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
 
         // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());

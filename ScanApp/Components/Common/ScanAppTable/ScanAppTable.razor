@@ -190,7 +190,7 @@ else
     /// validators and permissions for editing, filtering and grouping for each column.
     /// </summary>
     [Parameter]
-    public List<Options.ColumnConfig<TItem>> ColumnConfigs { get; set; }
+    public List<Options.ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
 
     /// <summary>
     /// Required: <paramref name="ScanAppTableOptions" /> object that defines basic and global
@@ -586,25 +586,25 @@ else
 
     private void ToggleMultiSelection() => MultiSelectionEnabled = !MultiSelectionEnabled;
 
-    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, Options.ColumnConfig<TItem> columnConfig)
+    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, Options.ColumnConfiguration<TItem> columnConfiguration)
     {
-        sorter.CurrentlySorted = columnConfig.PropertyFullName;
-        var direction = sorter.ResolveSortDirection(columnConfig.PropertyFullName);
-        ShownItems = sorter.OrderByPropertyName(ShownItems, columnConfig, direction);
+        sorter.CurrentlySorted = columnConfiguration.PropertyFullName;
+        var direction = sorter.ResolveSortDirection(columnConfiguration.PropertyFullName);
+        ShownItems = sorter.OrderByPropertyName(ShownItems, columnConfiguration, direction);
 
         return EventCallback.Empty;
     }
 
-    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, Options.ColumnConfig<TItem> columnConfig)
+    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, Options.ColumnConfiguration<TItem> columnConfiguration)
     {
         // Recognise which item group it is
         for (int i = 0; i < _groupList.Count; i++)
         {
             if (_groupList[i].ItemGroup[0].Equals(items.First<TItem>()))
             {
-                sorter.CurrentlySorted = columnConfig.PropertyFullName;
-                var direction = sorter.ResolveSortDirection(columnConfig.PropertyFullName);
-                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, columnConfig, direction).ToList();
+                sorter.CurrentlySorted = columnConfiguration.PropertyFullName;
+                var direction = sorter.ResolveSortDirection(columnConfiguration.PropertyFullName);
+                _groupList[i].ItemGroup = sorter.OrderByPropertyName(_groupList[i].ItemGroup, columnConfiguration, direction).ToList();
                 break;
             }
         }

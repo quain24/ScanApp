@@ -7,7 +7,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, int? from, int? to)
+        public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, int? from, int? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
@@ -17,45 +17,45 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
             if (from is null)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to)
+                    .Where(x => Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to)
                     .ToList();
             }
 
             if (to is null)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from)
+                    .Where(x => Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from)
                     .ToList();
             }
 
             if (from <= to)
             {
                 return enumerable
-                    .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
-                                Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to)
+                    .Where(x => Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from &&
+                                Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to)
                     .ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) <= from &&
-                            Convert.ToInt32(columnConfig.PropInfo.GetValue(x, columnConfig)) >= to)
+                .Where(x => Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= from &&
+                            Convert.ToInt32(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= to)
                 .ToList();
         }
 
-        public static IEnumerable<T> FilterContains<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig,
+        public static IEnumerable<T> FilterContains<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration,
             string containTerm)
         {
             if (string.IsNullOrEmpty(containTerm))
                 return enumerable;
 
             return enumerable
-                .Where(x => columnConfig.PropInfo.GetValue(x, columnConfig)
+                .Where(x => columnConfiguration.PropInfo.GetValue(x, columnConfiguration)
                     .ToString()
                     .Contains(containTerm, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
-        public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, DateTime? from, DateTime? to)
+        public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, DateTime? from, DateTime? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
@@ -64,20 +64,20 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 
             if (from is null)
             {
-                return enumerable.Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
+                return enumerable.Where(x => Convert.ToDateTime(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
             }
 
             if (to is null)
             {
-                return enumerable.Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from).ToList();
+                return enumerable.Where(x => Convert.ToDateTime(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from).ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
-                            Convert.ToDateTime(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
+                .Where(x => Convert.ToDateTime(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from &&
+                            Convert.ToDateTime(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
         }
 
-        public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, ColumnConfig<T> columnConfig, decimal? from, decimal? to)
+        public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, decimal? from, decimal? to)
         {
             if (ArgumentsAreValid(from, to) is false)
             {
@@ -86,22 +86,22 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 
             if (from is null)
             {
-                return enumerable.Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
+                return enumerable.Where(x => Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
             }
 
             if (to is null)
             {
-                return enumerable.Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from).ToList();
+                return enumerable.Where(x => Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from).ToList();
             }
 
             return enumerable
-                .Where(x => Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) >= from &&
-                            Convert.ToDecimal(columnConfig.PropInfo.GetValue(x, columnConfig)) <= to).ToList();
+                .Where(x => Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) >= from &&
+                            Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
         }
 
-        public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, ColumnConfig<T> columnConfig)
+        public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, ColumnConfiguration<T> columnConfiguration)
         {
-            return items.GroupBy(x => columnConfig.PropInfo.GetValue(x, columnConfig));
+            return items.GroupBy(x => columnConfiguration.PropInfo.GetValue(x, columnConfiguration));
         }
 
         private static bool ArgumentsAreValid(int? from, int? to)

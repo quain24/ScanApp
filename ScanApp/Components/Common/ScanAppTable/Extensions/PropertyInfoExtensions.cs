@@ -8,11 +8,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
     public static class PropertyInfoExtensions
     {
-        public static object? GetValue<T>(this PropertyInfo propertyInfo, object? obj, ColumnConfig<T> columnConfig)
+        public static object? GetValue<T>(this PropertyInfo propertyInfo, object? obj, ColumnConfiguration<T> columnConfiguration)
         {
-            if (columnConfig.IsNested)
+            if (columnConfiguration.IsNested)
             {
-                return GetPropertyValue(obj, columnConfig.PropertyFullName);
+                return GetPropertyValue(obj, columnConfiguration.PropertyFullName);
             }
 
             if (propertyInfo.PropertyType.IsDateTime())
@@ -20,7 +20,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                 try
                 {
                     var date = (DateTime)propertyInfo.GetValue(obj);
-                    return GetDateForm(columnConfig.DateTimeFormat, date);
+                    return GetDateForm(columnConfiguration.DateTimeFormat, date);
                 }
                 catch
                 {
@@ -32,16 +32,16 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         }
 
         public static object? GetDateTimeValue<T>(this PropertyInfo propertyInfo, object? obj,
-            ColumnConfig<T> columnConfig)
+            ColumnConfiguration<T> columnConfiguration)
         {
-            if (!columnConfig.PropertyType.IsDateTime())
+            if (!columnConfiguration.PropertyType.IsDateTime())
             {
                 throw new ArgumentException( nameof(GetDateTimeValue) + " method should only be used with DateTime types!",
-                    nameof(columnConfig.PropertyType));
+                    nameof(columnConfiguration.PropertyType));
             }
-            if (columnConfig.IsNested)
+            if (columnConfiguration.IsNested)
             {
-                return GetPropertyValue(obj, columnConfig.PropertyFullName);
+                return GetPropertyValue(obj, columnConfiguration.PropertyFullName);
             }
             return propertyInfo.GetValue(obj);
         }

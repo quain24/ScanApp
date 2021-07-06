@@ -29,11 +29,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable
                 objectList.Add(obj);
             }
 
-            var columnConfigs = new List<ColumnConfig<FiltertingTestsFixture>>();
-            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Decimal, "Decimal"));
-            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Date, "Date"));
-            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.Integer, "Integer"));
-            columnConfigs.Add(new ColumnConfig<FiltertingTestsFixture>(x => x.String, "String"));
+            var columnConfigs = new List<ColumnConfiguration<FiltertingTestsFixture>>();
+            columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.Decimal, "Decimal"));
+            columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.Date, "Date"));
+            columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.Integer, "Integer"));
+            columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.String, "String"));
 
 
             var from = new int?[columnConfigs.Count];

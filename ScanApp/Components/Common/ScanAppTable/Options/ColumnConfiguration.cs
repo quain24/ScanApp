@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
-    public class ColumnConfig<T>
+    public class ColumnConfiguration<T>
     {
         private readonly Expression<Func<T, object>> _columnNameSelector;
         public IValidator Validator { get; }
@@ -35,7 +35,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                     _dateTimeFormat = value;
                 else
                     throw new ArgumentException("Cannot set DateTimeFormat for a property of type " + PropertyType.ToString(),
-                        nameof(ColumnConfig<T>.DateTimeFormat));
+                        nameof(ColumnConfiguration<T>.DateTimeFormat));
             }
         }
 
@@ -49,11 +49,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 else
                     throw new ArgumentException("Default value " + value.ToString() + " of type  " + value.GetType().ToString() + " provided is not of the same type as the property type " +
                                                 PropertyType.ToString(),
-                        nameof(ColumnConfig<T>.Default));
+                        nameof(ColumnConfiguration<T>.Default));
             }
         }
 
-        public ColumnConfig(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator = null)
+        public ColumnConfiguration(Expression<Func<T, object>> columnNameSelector, string displayName, IValidator validator = null)
         {
             _columnNameSelector = columnNameSelector ?? throw new ArgumentNullException(nameof(columnNameSelector));
             PropertyFullName = ExtractFullPropertyName();
