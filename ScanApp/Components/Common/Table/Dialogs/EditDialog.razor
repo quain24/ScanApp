@@ -2,22 +2,20 @@
 @inherits Dialog<T>
 @typeparam T
 
-<div @ref="_div" @onkeydown="OnKeyDown">
-    <MudDialog>
-        <DialogContent>
-            @if (TargetItem is not null)
-            {
-                <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
-                    <EditFieldCreator T="T" @ref="_fieldCreator" CultureInfo="CultureInfo" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
-                </MudForm>
-            }
-        </DialogContent>
-        <DialogActions>
-            <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
-            <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Save changes</MudButton>
-        </DialogActions>
-    </MudDialog>
-</div>
+<MudDialog>
+    <DialogContent>
+        @if (TargetItem is not null)
+        {
+            <MudForm @ref="_form" @bind-IsValid="@_success" Class="m-0 p-0">
+                <EditFieldCreator T="T" @ref="_fieldCreator" CultureInfo="CultureInfo" OnKeyDown="OnKeyDown" MaxFieldSetHeight="DialogContentHeight" StartExpanded="StartExpanded" Configs="Configs" @bind-TargetItem="@TargetItem"></EditFieldCreator>
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Save changes</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
 
@@ -48,7 +46,6 @@
     private MudForm _form;
     private EditFieldCreator<T> _fieldCreator;
     private bool _success;
-    private ElementReference _div;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,30 +72,28 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender is false) return;
+        if (firstRender)
+        {
+            _form?.Validate();
 
-        _form?.Validate();
-
-        if (ExpandInvalidPanelsOnStart)
-            _fieldCreator?.ExpandInvalidPanels();
-        _div.FocusAsync();
+            if (ExpandInvalidPanelsOnStart)
+                _fieldCreator?.ExpandInvalidPanels();
+        }
     }
 
-    protected override Task Submit()
+    protected override void Submit()
     {
         if (_form is null)
         {
             MudDialog.Cancel();
-            return Task.CompletedTask;
         }
 
-        _form.Validate();
+        _form?.Validate();
 
         if (_success is false)
-            return Task.CompletedTask;
+            return;
 
         MudDialog.Close(DialogResult.Ok(TargetItem));
-        return Task.CompletedTask;
     }
 
     protected override void Cancel() => MudDialog.Cancel();

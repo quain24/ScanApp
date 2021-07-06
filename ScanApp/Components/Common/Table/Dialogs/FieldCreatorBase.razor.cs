@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
-    public abstract partial class FieldCreatorBase<T> : ComponentBase
+    public abstract partial class FieldCreatorBase<T> : ComponentBase, IDisposable
     {
         /// <summary>
         /// Gets or sets collection of configuration objects which will be used to get informations needed to create fields.
@@ -68,6 +68,9 @@ namespace ScanApp.Components.Common.Table.Dialogs
 
         protected abstract RenderFragment CreateField(ColumnConfig<T> config);
 
+        private bool _shouldRender = true;
+        protected override bool ShouldRender() => _shouldRender;
+
         protected override void OnInitialized()
         {
             CacheValidators();
@@ -111,6 +114,25 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 Panels.TryAdd(config, null);
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _shouldRender = false;
+                OnKeyDown = EventCallback<KeyboardEventArgs>.Empty;
+                foreach (var panel in Panels)
+                {
+                    panel.Value?.Dispose();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

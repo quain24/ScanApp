@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace ScanApp.Components.Common.Table.Dialogs
 {
-    public abstract class Dialog<T> : ComponentBase
+    public abstract class Dialog<T> : ComponentBase, IDisposable
     {
         [CascadingParameter] protected MudDialogInstance MudDialog { get; set; }
 
@@ -39,21 +39,42 @@ namespace ScanApp.Components.Common.Table.Dialogs
             OnKeyDown = OnKeyDown.HasDelegate ? OnKeyDown : EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDownPress);
         }
 
-        protected abstract Task Submit();
+        protected abstract void Submit();
 
         protected abstract void Cancel();
 
-        private Task OnKeyDownPress(KeyboardEventArgs args)
+        private void OnKeyDownPress(KeyboardEventArgs args)
         {
             switch (args.Key)
             {
-                case "Enter": return Submit();
+                case "Enter":
+                    Submit();
+                    break;
 
-                case "Escape": Cancel();
+                case "Escape":
+                    Cancel();
                     break;
             }
+        }
 
-            return Task.CompletedTask;
+        private bool _shouldRender = true;
+        protected override bool ShouldRender() => _shouldRender || !_disposing;
+
+        private bool _disposing;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _disposing = true;
+                _shouldRender = false;
+                OnKeyDown = EventCallback<KeyboardEventArgs>.Empty;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
