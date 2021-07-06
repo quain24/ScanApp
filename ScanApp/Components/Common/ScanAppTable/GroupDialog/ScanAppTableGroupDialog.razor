@@ -45,15 +45,15 @@
     public IEnumerable<TItem> Items { get; set; }
 
     [Parameter]
-    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+    public List<Options.ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     private string _selectedGroupBy;
     private bool SubmitDisabled;
-    private Dictionary<string, ColumnConfig<TItem>> _propertiesColumnConfigsPairs;
+    private Dictionary<string, Options.ColumnConfig<TItem>> _propertiesColumnConfigsPairs;
 
     protected override Task OnInitializedAsync()
     {
-        _propertiesColumnConfigsPairs = new Dictionary<string, ColumnConfig<TItem>>();
+        _propertiesColumnConfigsPairs = new Dictionary<string, Options.ColumnConfig<TItem>>();
         for (int i = 0; i < ColumnConfigs.Count; i++)
         {
             _propertiesColumnConfigsPairs.Add(ColumnConfigs[i].DisplayName, ColumnConfigs[i]);
@@ -73,7 +73,7 @@
             return;
         }
 
-        if (!_propertiesColumnConfigsPairs.TryGetValue(_selectedGroupBy, out ColumnConfig<TItem> columnConfig))
+        if (!_propertiesColumnConfigsPairs.TryGetValue(_selectedGroupBy, out Options.ColumnConfig<TItem> columnConfig))
         {
             return;
         }

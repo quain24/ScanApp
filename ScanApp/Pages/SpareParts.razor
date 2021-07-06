@@ -28,14 +28,12 @@
 </style>
 
 <MudPaper Elevation="4">
-    <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
-        <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
-                         SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
-                         Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
-        <MudTextField @bind-Value="_article" Validation="@_articleValidator" Label="Article" Immediate="true"
-                      Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
-        &nbsp;
-    </MudForm>
+    <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
+                     SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
+                     Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
+    <MudTextField @bind-Value="_article" @ref="@_articleTextField"Validation="@_articleValidator" Label="Article" Immediate="true"
+                  Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
+    &nbsp;
 </MudPaper>
 <ScanAppTable @ref="_table" @bind-Items="@_spareParts" ColumnConfigs="@ColumnConfigs" ValuesChanged="@OnItemsChanged" TableStyle="@_tableStyle" Options="@TableOptions"
               Height="@_height" GetData="@(async () => await GetData())" />
@@ -43,11 +41,11 @@
 <MudButton Variant="Variant.Filled" OnClick="@(async _ => await ResetForm(true))" Style="float:left; width: 175px; margin-left: 10px; bottom: -15px; max-width: 38%;" StartIcon="@Icons.Material.Filled.Cancel"
            Disabled="@(RequiredFieldsAreEmpty() && !IsAnyAmountOverZero())" Color="Color.Error">Cancel</MudButton>
 <MudButton Variant="Variant.Filled" OnClick="@Submit" Style="float:left; margin-left: 40px; width: 175px; bottom: -15px; max-width: 38%;" Size="Size.Medium"
-           Disabled="@_submitDisabled" Color="Color.Primary">Submit</MudButton>
+           Disabled="@IsSubmitDisabled()" Color="Color.Primary">Submit</MudButton>
 
 @code {
     private List<SparePartGUIModel> _spareParts;
-    private MudForm _form;
+    private MudTextField<string> _articleTextField;
     private bool _submitDisabled = true;
 
     private ScanAppTable<SparePartGUIModel> _table;
@@ -55,7 +53,7 @@
     {
         AllowFiltering = true
     };
-    List<ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<ColumnConfig<SparePartGUIModel>>();
+    List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>> ColumnConfigs = new List<Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>>();
 
     private List<RepairWorkshopModel> _repairWorkshopModels = new();
     private string _height = "400px";
@@ -81,7 +79,7 @@
         _lhmValidator = new(x => x
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
-            .WithMessage("Only predefined repair workshops are allowed"), "Select one of the workshops");
+            .WithMessage("Only predefined repair workshops are allowed"), true,"Select one of the workshops");
     }
 
     private async Task RetrieveRepairWorkshops()
@@ -101,11 +99,11 @@
     private async Task GetData()
     {
         // Set up columns
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Name, "Name")
         {
             IsEditable = false
         });
-        ColumnConfigs.Add(new ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
+        ColumnConfigs.Add(new Components.Common.ScanAppTable.Options.ColumnConfig<SparePartGUIModel>(s => s.Amount, "Amount", new PositiveNumbersOnlyValidator()));
 
         // Call database to get data
         var sparePartsTypesResult = await mediator.Send(new AllSparePartTypesQuery());
@@ -161,7 +159,7 @@
             _selectedRepairWorkshop = string.Empty;
         }
         ResetSparePartAmountsToZero(_spareParts);
-        OnItemsChanged();
+        IsSubmitDisabled();
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -174,17 +172,16 @@
         }
     }
 
-    private void OnItemsChanged() => OnValidationChanged(_form.IsValid);
-
-    private void OnValidationChanged(bool isFormValid)
+    private bool IsSubmitDisabled()
     {
-        if (AnyOfRequiredFieldsIsEmpty() || IsAnyAmountOverZero() is false || isFormValid is false)
+        if (AnyOfRequiredFieldsIsEmpty() || IsAnyAmountOverZero() is false || _articleTextField.Error)
         {
-            _submitDisabled = true;
-            return;
+            return true;
         }
-        _submitDisabled = false;
+        return false;
     }
+
+    private void OnItemsChanged() => IsSubmitDisabled();
 
     private bool AnyOfRequiredFieldsIsEmpty() => string.IsNullOrWhiteSpace(_article) || string.IsNullOrWhiteSpace(_selectedRepairWorkshop);
 

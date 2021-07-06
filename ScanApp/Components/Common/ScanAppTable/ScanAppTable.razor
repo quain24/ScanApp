@@ -2,6 +2,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar SnackBar
 @using System.Reflection;
+@using ScanApp.Common.Extensions
 @using ScanApp.Components.Common.ScanAppTable.AddDialog
 @using ScanApp.Components.Common.ScanAppTable.EditDialog;
 @using ScanApp.Components.Common.ScanAppTable.FilterDialog;
@@ -189,7 +190,7 @@ else
     /// validators and permissions for editing, filtering and grouping for each column.
     /// </summary>
     [Parameter]
-    public List<ColumnConfig<TItem>> ColumnConfigs { get; set; }
+    public List<Options.ColumnConfig<TItem>> ColumnConfigs { get; set; }
 
     /// <summary>
     /// Required: <paramref name="ScanAppTableOptions" /> object that defines basic and global
@@ -279,7 +280,7 @@ else
     /// <param name="items"></param>
     public void ReplaceWith(List<TItem> items)
     {
-        var newItems = ItemCloner.Clone(items);
+        var newItems = items.Select(x => x.Copy()).ToList();
         ShownItems = newItems;
         Items = newItems;
         DataIsFiltered = false;
@@ -389,7 +390,7 @@ else
             throw new ArgumentNullException(nameof(ColumnConfigs), "ScanAppTable cannot render if not provided with ColumnConfig collection");
         }
 
-        ShownItems = ItemCloner.Clone(Items);
+        ShownItems = Items.Select(x => x.Copy()).ToList();
         ScanAppTableSorter = new ScanAppTableSorter<TItem>();
         SubScanAppTableSorter = new ScanAppTableSorter<TItem>();
 
@@ -420,7 +421,7 @@ else
             return;
         }
 
-        var itemClone = ItemCloner.Clone(item);
+        var itemClone = item.Copy();
         int originalIndex = FindIndex(Items, item);
 
         if (originalIndex < 0)
@@ -523,7 +524,7 @@ else
     {
         DataIsFiltered = false;
         sorter.ResetSortingStatus();
-        ShownItems = ItemCloner.Clone(Items);
+        ShownItems = Items.Select(x => x.Copy()).ToList();
     }
 
     private async Task OpenAddDialog()
@@ -585,7 +586,7 @@ else
 
     private void ToggleMultiSelection() => MultiSelectionEnabled = !MultiSelectionEnabled;
 
-    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, ColumnConfig<TItem> columnConfig)
+    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, Options.ColumnConfig<TItem> columnConfig)
     {
         sorter.CurrentlySorted = columnConfig.PropertyFullName;
         var direction = sorter.ResolveSortDirection(columnConfig.PropertyFullName);
@@ -594,7 +595,7 @@ else
         return EventCallback.Empty;
     }
 
-    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, ColumnConfig<TItem> columnConfig)
+    private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, Options.ColumnConfig<TItem> columnConfig)
     {
         // Recognise which item group it is
         for (int i = 0; i < _groupList.Count; i++)
