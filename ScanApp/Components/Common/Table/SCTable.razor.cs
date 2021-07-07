@@ -464,11 +464,13 @@ namespace ScanApp.Components.Common.Table
 
         private async Task SelectedItemHasChangedHandler(TTableType item)
         {
+            // Do not handle if Edit on row click enabled - give control to 'OnRowClick'
+            if(EditOnRowClick) return;
             try
             {
                 await _dialogGuard.WaitAsync();
-                SelectedItem = item;
                 await SelectedItemChanged.InvokeAsync(item);
+                SelectedItem = item;
             }
             finally
             {
@@ -485,6 +487,8 @@ namespace ScanApp.Components.Common.Table
 
                 if (EditOnRowClick)
                 {
+                    SelectedItem = args.Item;
+                    await SelectedItemChanged.InvokeAsync(args.Item);
                     await OpenEditItemDialog();
                     return;
                 }
