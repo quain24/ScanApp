@@ -12,10 +12,27 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
     public class ColumnConfiguration<T>
     {
         private readonly Expression<Func<T, object>> _columnNameSelector;
+        /// <summary>
+        /// Validator that will be plugged into editing and filtering fields in the table.
+        /// </summary>
         public IValidator Validator { get; }
+
+        /// <summary>
+        /// Short property name. Ignores hierarchy of nested objects, if exists.
+        /// </summary>
         public string PropertyName { get; }
+
+        /// <summary>
+        /// Full name of the property including hierarchy of objects if property is nested.
+        /// Used in sorting, filtering, grouping for property identification.
+        /// </summary>
         public string PropertyFullName { get;}
+
+        /// <summary>
+        /// String that will be displayed in the column header.
+        /// </summary>
         public string DisplayName { get; }
+
         public Type PropertyType { get; }
         public PropertyInfo PropInfo { get; set; }
         public bool IsNested { get; private set; }
@@ -25,7 +42,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         public bool IsGroupable { get; init; } = true;
         private object _default;
         private DateTimeFormat.Show _dateTimeFormat;
-
+        /// <summary>
+        /// Represents how <see cref="DateTime"/> properties will be displayed in the table.
+        /// </summary>
         public DateTimeFormat.Show DateTimeFormat
         {
             get => _dateTimeFormat;
@@ -38,7 +57,10 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                         nameof(ColumnConfiguration<T>.DateTimeFormat));
             }
         }
-
+        /// <summary>
+        /// Default value of the object that the user will be forced to use
+        /// while adding a new item in the table.
+        /// </summary>
         public object Default
         {
             get => _default;
@@ -122,7 +144,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             }
             return errors;
         }
-
+        /// <summary>
+        /// Transforms validator into a form that is accepted by <see cref="MudBlazor"/> text fields.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <returns></returns>
         public Func<TValue, IEnumerable<string>> ToMudFormFieldValidator<TValue>()
         {
             if (Validator is null)
@@ -143,7 +169,13 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
                 return ExtractErrorsFrom(res);
             };
         }
-
+        /// <summary>
+        /// Validates a property. Returns <see cref="IEnumerable{T}"/> that represents
+        /// any validation errors.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public IEnumerable<string> Validate<TValue>(TValue value)
         {
             if (Validator is null)

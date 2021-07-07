@@ -12,6 +12,11 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
         public string DescendingOrder { get; set; }
         public string CurrentlySorted { get; set; }
 
+        /// <summary>
+        /// Returns a string representing a direction in which sorting should occur.
+        /// </summary>
+        /// <param name="propFullName"></param>
+        /// <returns></returns>
         public string ResolveSortDirection(string propFullName)
         {
             if (propFullName == AscendingOrder)
@@ -25,6 +30,14 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
             return null;
         }
 
+        /// <summary>
+        /// Sorts an <see cref="IEnumerable{T}"/> of <paramref name="items"/> in a specified <paramref name="direction"/>.
+        /// Needs <paramref name="columnConfiguration"/> for property identification. 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="columnConfiguration"></param>
+        /// <param name="direction"></param>
+        /// <returns></returns>
         public List<TItem> OrderByPropertyName(IEnumerable<TItem> items, ColumnConfiguration<TItem> columnConfiguration, string direction)
         {
             if (direction == "descending")
@@ -41,6 +54,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
             }
         }
 
+        /// <summary>
+        /// Resets current sorting state to default.
+        /// </summary>
         public void ResetSortingStatus()
         {
             AscendingOrder = null;

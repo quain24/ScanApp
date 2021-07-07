@@ -1,6 +1,7 @@
 ﻿@using ScanApp.Components.Common.ScanAppTable.Options
 @using System.Reflection
 @using ScanApp.Components.Common.ScanAppTable.Extensions
+@using ScanApp.Components.Common.ScanAppTable.Utilities
 @typeparam TItem
 
 <MudDialog>
@@ -43,7 +44,7 @@
     private void ItemHasChanged(int index, object value)
     {
         if (ColumnConfigs[index].IsNested)
-            ColumnConfigs[index].PropInfo.SetPropertyValue(NewItem, ColumnConfigs[index].PropertyFullName, value);
+            NestedPropertyHandler.SetNestedPropertyValue(NewItem, ColumnConfigs[index].PropertyFullName, value);
         else
             ColumnConfigs[index].PropInfo.SetValue(NewItem, value);
     }

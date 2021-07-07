@@ -7,6 +7,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public static class DateTimeFormat
     {
+        /// <summary>
+        /// Sets how <see cref="DateTime"/> properties will be displayed.
+        /// </summary>
         public enum Show
         {
             DateAndTime,
