@@ -29,16 +29,15 @@ else
                 <MudTabPanel Text="@GetShorterString(group.Key)">
                     <MudTable Style="@TableStyle" Items="group.ItemGroup" Dense="true" FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None">
                         <HeaderContent>
-                            @for (int i = 0; i < ColumnConfigs.Count; i++)
+                            @foreach (var columnConfig in ColumnConfigs)
                             {
-                                int local = i;
-                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, ColumnConfigs[local])">
-                                    @ColumnConfigs[local].DisplayName
-                                    @if (SubScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyFullName)
+                                <MudTh @onclick="() => SubSortBy(group.ItemGroup, SubScanAppTableSorter, columnConfig)">
+                                    @columnConfig.DisplayName
+                                    @if (SubScanAppTableSorter.AscendingOrder == columnConfig.PropertyFullName)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
                                     }
-                                    else if (SubScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyFullName)
+                                    else if (SubScanAppTableSorter.DescendingOrder == columnConfig.PropertyFullName)
                                     {
                                         <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
                                     }
@@ -46,11 +45,10 @@ else
                             }
                         </HeaderContent>
                         <RowTemplate>
-                            @for (int i = 0; i < ColumnConfigs.Count; i++)
-                                        {
-                                            int local = i;
-                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@ColumnConfigs[local].PropInfo.GetValue(context, ColumnConfigs[local])</MudTd>
-                                        }
+                        @foreach (var columnConfig in ColumnConfigs)
+                        {
+                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@columnConfig.PropInfo.GetValue(context, columnConfig)</MudTd>
+                        }
                         </RowTemplate>
                     </MudTable>
                 </MudTabPanel>
@@ -63,30 +61,28 @@ else
             <MudTable Style="@TableStyle" MultiSelection="MultiSelectionEnabled" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
-                    @for (int i = 0; i < ColumnConfigs.Count; i++)
+                    @foreach (var columnConfig in ColumnConfigs)
+                    {
+                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, columnConfig)">
+                            @columnConfig.DisplayName
+                            @if (ScanAppTableSorter.AscendingOrder == columnConfig.PropertyFullName)
                             {
-                                int local = i;
-                        <MudTh @onclick="() => SortBy(ScanAppTableSorter, ColumnConfigs[local])">
-                            @ColumnConfigs[local].DisplayName
-                            @if (ScanAppTableSorter.AscendingOrder == ColumnConfigs[local].PropertyFullName)
-                                    {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
-                                    }
-                                    else if (ScanAppTableSorter.DescendingOrder == ColumnConfigs[local].PropertyFullName)
-                                    {
-                                <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
-                                    }
-                        </MudTh>
                             }
+                            else if (ScanAppTableSorter.DescendingOrder == columnConfig.PropertyFullName)
+                            {
+                                <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
+                            }
+                        </MudTh>
+                    }
                 </HeaderContent>
                 <RowTemplate>
-                    @for (int i = 0; i < ColumnConfigs.Count; i++)
-                            {
-                                int local = i;
+                    @foreach (var columnConfig in ColumnConfigs)
+                    {
                         <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">
-                            @ColumnConfigs[local].PropInfo.GetValue(context, ColumnConfigs[local])
+                            @columnConfig.PropInfo.GetValue(context, columnConfig)
                         </MudTd>
-                            }
+                    }
                 </RowTemplate>
             </MudTable>
         </MudPaper>
@@ -405,9 +401,7 @@ else
         ItemType = Items.FirstOrDefault()?.GetType();
         ItemProperties = ItemType?.GetProperties().ToList();
 
-
     }
-
 
     private void ToggleMenu()
     {
