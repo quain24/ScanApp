@@ -478,9 +478,9 @@ namespace ScanApp.Components.Common.Table
 
         private async Task OnRowClick(TableRowClickEventArgs<TTableType> args)
         {
+            if (_dialogGuard.CurrentCount == 0) return;
             try
             {
-                if (_dialogGuard.CurrentCount == 0) return;
                 await _dialogGuard.WaitAsync();
 
                 if (EditOnRowClick)
@@ -530,10 +530,10 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenAddItemDialog()
         {
+            if (_addingEnabled is false || ReadOnly) return;
+            if (_dialogGuard.CurrentCount == 0) return;
             try
             {
-                if (_addingEnabled is false || ReadOnly) return;
-                if (_dialogGuard.CurrentCount == 0) return;
                 await _dialogGuard.WaitAsync();
 
                 var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
@@ -559,9 +559,9 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenFilterItemDialog()
         {
+            if (_dialogGuard.CurrentCount == 0) return;
             try
             {
-                if (_dialogGuard.CurrentCount == 0) return;
                 await _dialogGuard.WaitAsync();
                 var result = await _dialogFacade.ShowFilterDialog(FilterDialogStartsExpanded, MaxDialogContentHeight);
                 if (result.Cancelled)
