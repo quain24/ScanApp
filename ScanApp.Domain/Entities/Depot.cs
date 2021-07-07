@@ -6,12 +6,18 @@ namespace ScanApp.Domain.Entities
 {
     public class Depot
     {
+        /// <summary>
+        /// Database Id of this entity, primary key.
+        /// </summary>
         public int Id { get; set; }
         public string Email { get; private set; }
         public string Name { get; private set; }
         public Address Address { get; private set; }
         public string PhoneNumber { get; private set; }
-        public Version Version { get; private set; }
+        public double DistanceFromHub { get; private set; }
+        public Trailer DefaultTrailer { get; set; }
+        public Gate DefaultGate { get; set; }
+        public Version Version { get; private set; } = Version.Empty();
 
         /// <summary>
         /// For compliance with EF Core.
@@ -52,6 +58,13 @@ namespace ScanApp.Domain.Entities
             if (email.Contains('@') is false && email.Contains('.') is false)
                 throw new ArgumentException($"Email address ({email}) is not a proper email.", nameof(email));
             Email = email;
+        }
+
+        public void ChangeDistanceToHub(double distanceInKm)
+        {
+            DistanceFromHub = distanceInKm >= 0
+                ? distanceInKm
+                : throw new ArgumentException("Distance must be 0 or more", nameof(distanceInKm));
         }
 
         public void ChangeVersion(Version version)
