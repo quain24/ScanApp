@@ -56,7 +56,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             using var context = ctxFactoryMock.Object.CreateDbContext();
             var result = context.Depots.ToList();
 
-            result.Should().BeEquivalentTo(seedData);
+            result.Should().BeEquivalentTo(seedData, o => o.Excluding(e => e.Version));
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
                 count = contextRead.Depots.Count();
             }
 
-            result.Should().BeEquivalentTo(subject);
+            result.Should().BeEquivalentTo(subject, o => o.Excluding(e => e.Version));
             count.Should().Be(101);
         }
     }
