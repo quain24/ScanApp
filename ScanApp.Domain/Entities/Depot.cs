@@ -128,7 +128,7 @@ namespace ScanApp.Domain.Entities
         public void ChangeEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email address must be provided", nameof(email));
-            if (email.Count(x => x.Equals('@')) != 1 || email.Contains('.') is false)
+            if (email.Count(x => x.Equals('@')) != 1 || email.Contains('.') is false || email.Contains(' '))
                 throw new ArgumentException($"Email address ({email}) is not a proper email.", nameof(email));
             Email = email;
         }

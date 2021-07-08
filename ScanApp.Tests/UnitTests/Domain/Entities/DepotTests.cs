@@ -9,28 +9,177 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {
     public class DepotTests : SqlLiteInMemoryDbFixture
     {
         public ITestOutputHelper Output { get; }
-        public Fixture Fixture { get; set; }
-        public Random Rand { get; set; } = new Random(DateTime.Now.Millisecond);
+        public DepotFixtures.DepotBuilder DepotBuilder { get; } = new();
+
+        public Address ValidAddress { get; } = Address.Create("streetName", "12345", "cityName", "countryName");
 
         public DepotTests(ITestOutputHelper output)
         {
             Output = output;
-            Fixture = new Fixture();
-            Fixture.Register<Depot>(() =>
-                new Depot(Fixture.Create<int>(),
-                "name" + DateTime.Now.TimeOfDay,
-                Rand.Next(100000, 9999999).ToString(),
-                "email@wp.pl",
-                Address.Create(Rand.Next(1, 900000).ToString(),
-                    Rand.Next(10000, 99999).ToString(),
-                    "aaa city",
-                    "bbb country")));
+        }
+
+        [Fact]
+        public void Creates_instance_using_proper_data()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.Should().NotBeNull().And.BeOfType<Depot>();
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        [InlineData(null)]
+        public void Throws_when_given_invalid_name(string name)
+        {
+            Action act = () => _ = DepotBuilder.CreateWithRandomValidData().WithName(name).Build();
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void ChangeName_accepts_valid_name()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangeName("new_name");
+
+            subject.Name.Should().Be("new_name");
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        [InlineData(null)]
+        public void ChangeName_accepts_throws_on_invalid_name(string name)
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangeName(name);
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void ChangeAddress_accepts_valid_address()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangeAddress(ValidAddress);
+
+            subject.Address.Should().Be(ValidAddress);
+        }
+
+        [Fact]
+        public void ChangeAddress_accepts_throws_on_null_address()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangeAddress(null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void ChangePhoneNumber_accepts_valid_data()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangePhoneNumber("123456");
+
+            subject.PhoneNumber.Should().Be("123456");
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        [InlineData(null)]
+        public void ChangePhoneNumber_accepts_throws_on_invalid_data(string number)
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangePhoneNumber(number);
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void ChangeEmail_accepts_valid_data()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangeEmail("wp@wp.pl");
+
+            subject.Email.Should().Be("wp@wp.pl");
+        }
+
+        /// <summary>
+        /// This checks only entity level validation - one @, no ' ' and one or more '.'
+        /// </summary>
+        /// <param name="email">Email being tested.</param>
+        [Theory]
+        [InlineData("")]
+        [InlineData("    ")]
+        [InlineData(null)]
+        [InlineData("wp@wp")]
+        [InlineData("wpwp")]
+        [InlineData("wpwp.")]
+        [InlineData("wp@@wp.pl")]
+        [InlineData("w p@wp.pl")]
+        public void ChangeEmail_accepts_throws_on_invalid_data(string email)
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangeEmail(email);
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void ChangeDistanceToHub_accepts_valid_data()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangeDistanceToHub(125.5);
+
+            subject.DistanceFromHub.Should().Be(125.5);
+        }
+
+        [Fact]
+        public void ChangeDistanceToHub_throws_when_new_distance_is_negative()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangeDistanceToHub(-1);
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void ChangeVersion_accepts_valid_data()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            subject.ChangeVersion(Version.Create("aa"));
+
+            subject.Version.Should().Be(Version.Create("aa"));
+        }
+
+        [Fact]
+        public void ChangeVersion_throws_when_new_version_is_null()
+        {
+            var subject = DepotBuilder.CreateWithRandomValidData().Build();
+
+            Action act = () => subject.ChangeVersion(null);
+
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -42,7 +191,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         [Fact]
         public void Can_be_read_from_db()
         {
-            var seedData = Fixture.CreateMany<Depot>(100);
+            var seedData = DepotBuilder.Fixture.CreateMany<Depot>(100);
 
             using (var ctx = NewDbContext)
             {
@@ -62,7 +211,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         [Fact]
         public void Can_be_written_to_db()
         {
-            var seedData = Fixture.CreateMany<Depot>(100);
+            var seedData = DepotBuilder.Fixture.CreateMany<Depot>(100);
 
             using (var ctx = NewDbContext)
             {
