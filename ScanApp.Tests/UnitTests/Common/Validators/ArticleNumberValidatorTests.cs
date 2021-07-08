@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentValidation;
 using ScanApp.Common.Validators;
 using Xunit;
 
@@ -11,11 +12,13 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         {
             var subject = new ArticleNumberValidator();
 
-            subject.Should().NotBeNull().And.BeOfType<ArticleNumberValidator>();
+            subject.Should().NotBeNull()
+                .And.BeOfType<ArticleNumberValidator>()
+                .Subject.Should().BeAssignableTo<AbstractValidator<string>>();
         }
 
         [Fact]
-        public void Result_cannot_be_null()
+        public void Number_cannot_be_null()
         {
             var subject = new ArticleNumberValidator();
 
