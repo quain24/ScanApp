@@ -58,7 +58,7 @@ else
     else
     {
         <MudPaper Elevation="3" Style="margin: 10px;">
-            <MudTable Style="@TableStyle" MultiSelection="MultiSelectionEnabled" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
+            <MudTable Style="@TableStyle" MultiSelection="_multiSelectionEnabled" @bind-SelectedItems="_selectedItems" Items="ShownItems" Dense="true"
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @foreach (var columnConfig in ColumnConfigs)
@@ -94,42 +94,42 @@ else
             {
                 @if (!Options.ToolBarAlwaysOpened)
                 {
-                    <MudIconButton OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" OnClick="ToggleMenu" Icon="@Icons.Material.Outlined.Close"></MudIconButton>
                 }
                 @if (Options.AllowAdding)
                 {
-                    <MudIconButton OnClick="() => OpenAddDialog()" Icon="@Icons.Material.Outlined.Add"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" OnClick="OpenAddDialog" Icon="@Icons.Material.Outlined.Add"></MudIconButton>
                 }
                 @if (Options.AllowGrouping)
                 {
                     @if (!GroupingEnabled && Options.AllowFiltering)
                     {
-                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                        <MudIconButton Disabled="_uiBlock" OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
                     }
-                    <MudIconButton OnClick="() => OpenGroupDialog()" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" OnClick="OpenGroupDialog" Icon="@Icons.Material.Outlined.Group"></MudIconButton>
                 }
                 else
                 {
                     if (Options.AllowFiltering)
                     {
-                        <MudIconButton OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
+                        <MudIconButton Disabled="_uiBlock" OnClick="() => OpenFilterDialog(ScanAppTableSorter)" Icon="@Icons.Material.Outlined.CleaningServices"></MudIconButton>
                     }
                 }
                 @if (DataIsFiltered && !GroupingEnabled)
                 {
-                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(ScanAppTableSorter)"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" Icon="@Icons.Material.Outlined.Refresh" OnClick="() => ResetFilter(ScanAppTableSorter)"></MudIconButton>
                 }
                 @if (GroupingEnabled)
                 {
-                    <MudIconButton OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" OnClick="ToggleGroupingMenu" Icon="@Icons.Material.Outlined.ArrowBack"></MudIconButton>
                 }
                 @if (Options.AllowDeleting && !GroupingEnabled)
                 {
-                    <MudIconButton OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.SelectAll"></MudIconButton>
+                    <MudIconButton Disabled="_uiBlock" OnClick="ToggleMultiSelection" Icon="@Icons.Material.Outlined.SelectAll"></MudIconButton>
                 }
-                @if (MultiSelectionEnabled && _selectedItems.Count > 0 && !GroupingEnabled)
+                @if (_multiSelectionEnabled && _selectedItems.Count > 0 && !GroupingEnabled)
                 {
-                    <MudFab Color="Color.Error" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" @onclick="@OpenDeleteConfirmationDialog" />
+                    <MudFab Disabled="_uiBlock" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" @onclick="@OpenDeleteConfirmationDialog" />
                 }
             }
             else
@@ -186,7 +186,7 @@ else
     /// validators and permissions for editing, filtering and grouping for each column.
     /// </summary>
     [Parameter]
-    public List<Options.ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
+    public List<ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
 
     /// <summary>
     /// Required: <paramref name="ScanAppTableOptions" /> object that defines basic and global
@@ -195,6 +195,9 @@ else
     [Parameter]
     public ScanAppTableOptions Options { get; set; }
 
+    /// <summary>
+    /// EventCallback called every time items have changed inside the table.
+    /// </summary>
     [Parameter]
     public EventCallback<List<TItem>> ItemsChanged { get; set; }
 
@@ -236,10 +239,17 @@ else
     public EventCallback ValuesChanged { get; set; }
 
     /// <summary>
-    /// Delegate that is invoked every time an item has been deleted from the table. Returns a list of deleted <paramref name="Items" />.
+    /// Delegate that is invoked every time an item has been successfully deleted from the table. Returns a list of deleted <paramref name="Items" />.
     /// </summary>
     [Parameter]
     public Action<List<TItem>> ItemsDeleted { get; set; }
+
+    /// <summary>
+    /// Delegate that is invoked every time an item deletion process has started. The process won't continue until user returns true -
+    /// if deletion was successful. This gives user an opportunity to call the database before item is actually deleted from the table.
+    /// </summary>
+    [Parameter]
+    public Func<List<TItem>, bool> ItemsDeletionRequested { get; set; }
 
     /// <summary>
     /// <paramref name="DialogOptions" /> object which defines how all dialogs look like in all dialog based features in the table.
@@ -261,7 +271,8 @@ else
     private bool MenuOpened { get; set; }
     private bool GroupingEnabled { get; set; }
     private bool Loading { get; set; } = true;
-    private bool MultiSelectionEnabled = false;
+    private bool _multiSelectionEnabled = false;
+    private bool _uiBlock = false;
 
     private List<Group<TItem>> _groupList { get; set; } = new();
     private HashSet<TItem> _selectedItems = new();
@@ -276,6 +287,9 @@ else
     /// <param name="items"></param>
     public void ReplaceWith(List<TItem> items)
     {
+        if (_uiBlock)
+            return;
+
         var newItems = items.Select(x => x.Copy()).ToList();
         ShownItems = newItems;
         Items = newItems;
@@ -289,6 +303,9 @@ else
     /// <param name="item"></param>
     public void AddItem(TItem item)
     {
+        if (_uiBlock)
+            return;
+
         Items.Add(item);
         ShownItems.Add(item);
         RecentlyAddedItem = item;
@@ -302,16 +319,30 @@ else
     /// <returns>True if deletion was successful, otherwise false</returns>
     public bool DeleteItem(TItem item)
     {
+        if (_uiBlock)
+            return false;
         try
         {
+            BlockUi();
+            if (ItemsDeletionRequested is not null)
+            {
+                var deletionResult = ItemsDeletionRequested.Invoke(new List<TItem>() {item});
+                if (!deletionResult)
+                {
+                    UnblockUi();
+                    return false;
+                }
+            }
             Items.RemoveAt(FindIndex(Items, item));
             ShownItems.RemoveAt(FindIndex(ShownItems, item));
             RecentlyDeletedItems = new List<TItem>() { item };
             InvokeItemsDeleted(new List<TItem>() { item });
+            UnblockUi();
             return true;
         }
         catch
         {
+            UnblockUi();
             return false;
         }
     }
@@ -323,17 +354,31 @@ else
     /// <returns>True if deletion was successful, otherwise false </returns>
     public bool DeleteItem(int index)
     {
+        if (_uiBlock)
+            return false;
         try
         {
+            BlockUi();
             var itemForDeletion = Items[index];
+            if (ItemsDeletionRequested is not null)
+            {
+                var deletionResult = ItemsDeletionRequested.Invoke(new List<TItem>() { itemForDeletion });
+                if (!deletionResult)
+                {
+                    UnblockUi();
+                    return false;
+                }
+            }
             Items.RemoveAt(index);
             ShownItems.RemoveAt(index);
             RecentlyDeletedItems = new List<TItem>() { itemForDeletion };
             InvokeItemsDeleted(new List<TItem>() { itemForDeletion });
+            UnblockUi();
             return true;
         }
         catch
         {
+            UnblockUi();
             return false;
         }
     }
@@ -410,7 +455,7 @@ else
 
     private async Task OpenEditDialog(TItem item)
     {
-        if (!IsAnyFieldEditable() || MultiSelectionEnabled)
+        if (!IsAnyFieldEditable() || _multiSelectionEnabled || _uiBlock)
         {
             return;
         }
@@ -495,8 +540,20 @@ else
         GroupingEnabled = !GroupingEnabled;
     }
 
+    private void ToggleUiBlock()
+    {
+        _uiBlock = !_uiBlock;
+    }
+
+    private void BlockUi() => _uiBlock = true;
+
+    private void UnblockUi() => _uiBlock = false;
+
     private async Task OpenFilterDialog(ScanAppTableSorter<TItem> sorter)
     {
+        if (_uiBlock)
+            return;
+
         var parameter = new DialogParameters
         {
             ["Items"] = ShownItems,
@@ -523,6 +580,9 @@ else
 
     private async Task OpenAddDialog()
     {
+        if (_uiBlock)
+            return;
+
         var constructor = GetPublicParameterlessConstructor(ItemType);
         if (constructor is null)
         {
@@ -553,6 +613,9 @@ else
 
     private async Task OpenDeleteConfirmationDialog()
     {
+        if (_uiBlock)
+            return;
+
         var result = await _confirmDeletionBox.Show();
         if (!result.HasValue) return;
 
@@ -573,15 +636,18 @@ else
             deletionList.Add(item);
         }
         _selectedItems.Clear();
-        MultiSelectionEnabled = false;
+        _multiSelectionEnabled = false;
         RecentlyDeletedItems = deletionList;
         await InvokeDeleteDataAsync(deletionList);
     }
 
-    private void ToggleMultiSelection() => MultiSelectionEnabled = !MultiSelectionEnabled;
+    private void ToggleMultiSelection() => _multiSelectionEnabled = !_multiSelectionEnabled;
 
-    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, Options.ColumnConfiguration<TItem> columnConfiguration)
+    private EventCallback SortBy(ScanAppTableSorter<TItem> sorter, ColumnConfiguration<TItem> columnConfiguration)
     {
+        if (_uiBlock)
+            return EventCallback.Empty;
+
         sorter.CurrentlySorted = columnConfiguration.PropertyFullName;
         var direction = sorter.ResolveSortDirection(columnConfiguration.PropertyFullName);
         ShownItems = sorter.OrderByPropertyName(ShownItems, columnConfiguration, direction);
@@ -591,6 +657,9 @@ else
 
     private EventCallback SubSortBy(IEnumerable<TItem> items, ScanAppTableSorter<TItem> sorter, Options.ColumnConfiguration<TItem> columnConfiguration)
     {
+        if (_uiBlock)
+            return EventCallback.Empty;
+
         // Recognise which item group it is
         for (int i = 0; i < _groupList.Count; i++)
         {
