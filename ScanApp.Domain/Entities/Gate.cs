@@ -19,11 +19,19 @@ namespace ScanApp.Domain.Entities
         /// <value>Gate name / number.</value>
         public int Number { get; set; }
 
+        private TrafficDirection _direction;
         /// <summary>
         /// Gets or sets gate traffic flow direction. Indicates whether this gate handles incoming, outgoing or both way traffic.
         /// </summary>
         /// <value>Gate's traffic direction. If not set by the user it will be <see cref="TrafficDirection.Incoming"/>.</value>
-        public TrafficDirection Direction { get; set; }
+        public TrafficDirection Direction
+        {
+            get => _direction;
+            set => _direction = Enum.IsDefined(typeof(TrafficDirection), value)
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(Direction), value,
+                    $"Given {nameof(Direction)} value is not defined in {nameof(TrafficDirection)} enum.");
+        }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="Gate"/> handles incoming traffic.
