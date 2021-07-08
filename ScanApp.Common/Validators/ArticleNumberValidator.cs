@@ -13,7 +13,7 @@ namespace ScanApp.Common.Validators
                 .MinimumLength(5)
                 .MaximumLength(20)
                 .Must(n => !(n[0].Equals(' ') || n[^1].Equals(' ') || n.Contains("  ")))
-                .When(n => string.IsNullOrEmpty(n) is false)
+                .When(n => string.IsNullOrEmpty(n) is false, ApplyConditionTo.CurrentValidator)
                 .WithMessage("\"{PropertyValue}\" is not a valid article number.");
         }
 
