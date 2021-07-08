@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using FluentValidation;
 using ScanApp.Common.Validators;
 using Xunit;
 
@@ -34,7 +33,7 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         public void Returns_false_if_email_is_invalid(string email)
         {
             var subject = new EmailValidator();
-            
+
             var result = subject.Validate(email);
 
             result.IsValid.Should().BeFalse();
@@ -44,7 +43,7 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
         public void Returns_false_if_email_is_null()
         {
             var subject = new EmailValidator();
-            
+
             var result = subject.Validate(null as string);
 
             result.IsValid.Should().BeFalse();
