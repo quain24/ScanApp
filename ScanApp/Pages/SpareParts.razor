@@ -79,7 +79,7 @@
         _lhmValidator = new(x => x
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)
-            .WithMessage("Only predefined repair workshops are allowed"), true,"Select one of the workshops");
+            .WithMessage("Only predefined repair workshops are allowed"));
     }
 
     private async Task RetrieveRepairWorkshops()

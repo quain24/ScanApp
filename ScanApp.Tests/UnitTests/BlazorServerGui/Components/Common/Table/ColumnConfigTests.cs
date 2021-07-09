@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using ScanApp.Common;
 using ScanApp.Components.Common.Table;
 using Xunit;
 using Xunit.Abstractions;
