@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Components.Common.Table
@@ -132,16 +133,6 @@ namespace ScanApp.Components.Common.Table
         /// <br />@bind-... notation is supported
         /// </summary>
         [Parameter] public EventCallback<TTableType> SelectedItemChanged { get; set; }
-
-        private TTableType SelectedItemBoundChild
-        {
-            get => SelectedItem;
-            set
-            {
-                SelectedItem = value;
-                SelectedItemChanged.InvokeAsync(value);
-            }
-        }
 
         /// <summary>
         /// Called when a new item is successfully created by 'Add item' table functionality and added to <see cref="Data"/> collection.
@@ -329,6 +320,12 @@ namespace ScanApp.Components.Common.Table
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
         private readonly List<SCColumn<TTableType>> _columns = new();
+
+        /// <summary>
+        /// Ensures that only one dialog can be displayed even when there are some serious network delays.
+        /// </summary>
+        private readonly SemaphoreSlim _dialogGuard = new(1);
+
         private DialogFacade<TTableType> _dialogFacade;
 
         /// <summary>
@@ -465,11 +462,44 @@ namespace ScanApp.Components.Common.Table
             _selectedGroupId = _selectedGroupId == args.Item.Key ? null : args.Item.Key;
         }
 
-        private Task OnRowClick(TableRowClickEventArgs<TTableType> args)
+        private async Task SelectedItemHasChangedHandler(TTableType item)
         {
-            return EditOnRowClick
-                ? OpenEditItemDialog()
-                : Task.CompletedTask;
+            // Do not handle if Edit on row click enabled - give control to 'OnRowClick'
+            if(EditOnRowClick) return;
+            try
+            {
+                await _dialogGuard.WaitAsync();
+                await SelectedItemChanged.InvokeAsync(item);
+                SelectedItem = item;
+            }
+            finally
+            {
+                _dialogGuard.Release();
+            }
+        }
+
+        private async Task OnRowClick(TableRowClickEventArgs<TTableType> args)
+        {
+            if (_dialogGuard.CurrentCount == 0) return;
+            try
+            {
+                await _dialogGuard.WaitAsync();
+
+                if (EditOnRowClick)
+                {
+                    SelectedItem = args.Item;
+                    await SelectedItemChanged.InvokeAsync(args.Item);
+                    await OpenEditItemDialog();
+                    return;
+                }
+
+                // If not editing by row click, then another click on the same row will deselect item.
+                SelectedItem = SelectedItem is null ? args.Item : default;
+            }
+            finally
+            {
+                _dialogGuard.Release();
+            }
         }
 
         /// <summary>
@@ -480,7 +510,8 @@ namespace ScanApp.Components.Common.Table
         {
             if (_editingEnabled is false || ReadOnly) return;
 
-            var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight, EditDialogInvalidFieldsStartExpanded, SelectedItem);
+            var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight,
+                EditDialogInvalidFieldsStartExpanded, SelectedItem);
             if (result.Cancelled)
                 return;
 
@@ -504,11 +535,20 @@ namespace ScanApp.Components.Common.Table
         public async Task OpenAddItemDialog()
         {
             if (_addingEnabled is false || ReadOnly) return;
+            if (_dialogGuard.CurrentCount == 0) return;
+            try
+            {
+                await _dialogGuard.WaitAsync();
 
-            var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
-            if (result.Cancelled)
-                return;
-            await OnAddNewItemHandler((TTableType)result.Data);
+                var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
+                if (result.Cancelled)
+                    return;
+                await OnAddNewItemHandler((TTableType)result.Data);
+            }
+            finally
+            {
+                _dialogGuard.Release();
+            }
         }
 
         private Task OnAddNewItemHandler(TTableType item)
@@ -523,14 +563,24 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenFilterItemDialog()
         {
-            var result = await _dialogFacade.ShowFilterDialog(FilterDialogStartsExpanded, MaxDialogContentHeight);
-            if (result.Cancelled)
-                return;
-            _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ?? Enumerable.Empty<IFilter<TTableType>>());
+            if (_dialogGuard.CurrentCount == 0) return;
+            try
+            {
+                await _dialogGuard.WaitAsync();
+                var result = await _dialogFacade.ShowFilterDialog(FilterDialogStartsExpanded, MaxDialogContentHeight);
+                if (result.Cancelled)
+                    return;
+                _filters.AddRange(result.Data as IEnumerable<IFilter<TTableType>> ??
+                                  Enumerable.Empty<IFilter<TTableType>>());
 
-            // This de-selects item after filters are applied and triggers regrouping
-            SelectedItem = default;
-            await SelectedItemChanged.InvokeAsync();
+                // This de-selects item after filters are applied and triggers regrouping
+                SelectedItem = default;
+                await SelectedItemChanged.InvokeAsync();
+            }
+            finally
+            {
+                _dialogGuard.Release();
+            }
         }
 
         /// <summary>

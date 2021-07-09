@@ -17,8 +17,8 @@
                 @if (Configs?.Count > 0)
                 {
                     <TableToolbar T="TTableType" Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
-                                  AddVisible="_addingEnabled" AddDisabled="false" OnAddClicked="OpenAddItemDialog"
-                                  EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty())" OnEditClicked="OpenEditItemDialog"
+                                  AddVisible="_addingEnabled" AddDisabled="@(ReadOnly || _dialogGuard.CurrentCount == 0)" OnAddClicked="OpenAddItemDialog"
+                                  EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || _dialogGuard.CurrentCount == 0)" OnEditClicked="@OpenEditItemDialog"
                                   FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)"/>
                 }
             </ToolBarContent>
@@ -36,7 +36,7 @@
             <ChildRowContent>
                 @if (_selectedGroupId == context.Key)
                 {
-                    <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild" OnRowClick="@(async args => await OnRowClick(args))"
+                    <MudTable Items="@FilterDataSource(context.Value)" T="TTableType" SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemHasChangedHandler" @bind-SelectedItems="@SelectedItemsBoundChild" OnRowClick="@(async args => await OnRowClick(args))"
                               RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="true" FixedFooter="true" Height="@CalculateHeight(context.Value?.Count ?? 0, true)" Loading="Loading"
                               RowsPerPage="RowsPerPage" Class="m-0 p-0" Elevation="0" Striped="false" Bordered="Bordered" Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" Virtualize="Virtualize" HorizontalScrollbar="HorizontalScrollbar">
 
@@ -100,7 +100,7 @@
     }
     else
     {
-        <MudTable Items="FilterDataSource(Data)" T="TTableType" @bind-SelectedItem="@SelectedItemBoundChild" @bind-SelectedItems="@SelectedItemsBoundChild"
+        <MudTable Items="FilterDataSource(Data)" T="TTableType" SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemHasChangedHandler" @bind-SelectedItems="@SelectedItemsBoundChild"
                   RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))" Loading="Loading"
                   RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Virtualize="Virtualize"
                   Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" HorizontalScrollbar="HorizontalScrollbar">
@@ -110,8 +110,8 @@
                 {
                     <TableToolbar T="TTableType"
                                   Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
-                                  AddVisible="_addingEnabled" AddDisabled="ReadOnly" OnAddClicked="OpenAddItemDialog"
-                                  EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || ReadOnly)" OnEditClicked="OpenEditItemDialog"
+                                  AddVisible="_addingEnabled" AddDisabled="@(ReadOnly || _dialogGuard.CurrentCount == 0)" OnAddClicked="OpenAddItemDialog"
+                                  EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || ReadOnly || _dialogGuard.CurrentCount == 0)" OnEditClicked="OpenEditItemDialog"
                                   FilterVisible="_filteringEnabled" FilterDisabled="Loading" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
                 }
             </ToolBarContent>

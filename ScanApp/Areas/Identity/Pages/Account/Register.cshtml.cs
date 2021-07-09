@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -65,7 +66,7 @@ namespace ScanApp.Areas.Identity.Pages.Account
             //[DataType(DataType.Text)]
             //[StringLength(45, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.")]
             [Display(Name = "Location")]
-            public int LocationId { get; set; }
+            public Guid LocationId { get; set; }
 
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.")]
