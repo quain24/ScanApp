@@ -8,8 +8,19 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
 {
     public class ScanAppTableSorter<TItem>
     {
+        /// <summary>
+        /// <see cref="string"/> representing full name of a property that is currently sorted in ascending order.
+        /// </summary>
         public string AscendingOrder { get; set; }
+
+        /// <summary>
+        /// <see cref="string"/> representing full name of a property that is currently sorted in descending order.
+        /// </summary>
         public string DescendingOrder { get; set; }
+
+        /// <summary>
+        /// <see cref="string"/> representing full name of a property that is currently sorted.
+        /// </summary>
         public string CurrentlySorted { get; set; }
 
         /// <summary>

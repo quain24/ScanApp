@@ -16,7 +16,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="columnConfiguration"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Filtered Enumerable of items.
+        /// </returns>
         public static IEnumerable<T> FilterBetween<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, int? from, int? to)
         {
             if (ArgumentsAreValid(from, to) is false)
@@ -60,7 +62,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="enumerable"></param>
         /// <param name="columnConfiguration"></param>
         /// <param name="containTerm"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Filtered Enumerable of items.
+        /// </returns>
         public static IEnumerable<T> FilterContains<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration,
             string containTerm)
         {
@@ -83,7 +87,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="columnConfiguration"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Filtered Enumerable of items.
+        /// </returns>
         public static IEnumerable<T> FilterBetweenDates<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, DateTime? from, DateTime? to)
         {
             if (ArgumentsAreValid(from, to) is false)
@@ -115,7 +121,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="columnConfiguration"></param>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Filtered Enumerable of items.
+        /// </returns>
         public static IEnumerable<T> FilterBetweenDecimals<T>(this IEnumerable<T> enumerable, ColumnConfiguration<T> columnConfiguration, decimal? from, decimal? to)
         {
             if (ArgumentsAreValid(from, to) is false)
@@ -146,7 +154,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="items"></param>
         /// <param name="columnConfiguration"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Filtered Enumerable of items.
+        /// </returns>
         public static IEnumerable<IGrouping<object, T>> GroupByReflected<T>(this IEnumerable<T> items, ColumnConfiguration<T> columnConfiguration)
         {
             return items.GroupBy(x => columnConfiguration.PropInfo.GetValue(x, columnConfiguration));

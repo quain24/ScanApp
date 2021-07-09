@@ -5,6 +5,9 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
 {
     public interface IFilteringOperation<TItem>
     {
+        /// <summary>
+        /// <see cref="ColumnConfiguration"/> object which represent column/property which will be filtered.
+        /// </summary>
         ColumnConfiguration<TItem> ColumnConfiguration { get; set; }
 
         /// <summary>

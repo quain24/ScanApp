@@ -11,6 +11,11 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
     {
         private string _contains;
 
+        /// <summary>
+        /// Creates an object representing filtering operation on strings.
+        /// </summary>
+        /// <param name="columnConfiguration"></param>
+        /// <param name="contains"></param>
         public FilterContainsOperation(ColumnConfiguration<TItem> columnConfiguration, string contains)
         {
             ColumnConfiguration = columnConfiguration;

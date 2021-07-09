@@ -10,6 +10,12 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
         private DateTime? _fromDate;
         private DateTime? _toDate;
 
+        /// <summary>
+        /// Creates an object representing filtering operation on dates.
+        /// </summary>
+        /// <param name="columnConfiguration"></param>
+        /// <param name="fromDate"></param>
+        /// <param name="toDate"></param>
         public FilteringBetweenDatesOperation(ColumnConfiguration<TItem> columnConfiguration, DateTime? fromDate, DateTime? toDate)
         {
             ColumnConfiguration = columnConfiguration;

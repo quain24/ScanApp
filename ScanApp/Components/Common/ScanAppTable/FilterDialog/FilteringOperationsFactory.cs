@@ -8,6 +8,19 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
 {
     public class FilteringOperationsFactory<TItem>
     {
+
+        /// <summary>
+        /// Creates a <see cref="FilteringOperationsFactory{TItem}"/> object with specific <paramref name="columnConfigs"/>
+        /// and necessary values for filtering.
+        /// </summary>
+        /// <param name="columnConfigs"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="contains"></param>
+        /// <param name="fromDate"></param>
+        /// <param name="toDate"></param>
+        /// <param name="fromDecimal"></param>
+        /// <param name="toDecimal"></param>
         public FilteringOperationsFactory(List<ColumnConfiguration<TItem>> columnConfigs, int?[] from, int?[] to, string[] contains, DateTime?[] fromDate, DateTime?[] toDate,
                 decimal?[] fromDecimal, decimal?[] toDecimal)
         {
@@ -34,6 +47,12 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
         private int Length { get; set; }
         private List<IFilteringOperation<TItem>> FilteringOperations { get; set; } = new List<IFilteringOperation<TItem>>();
 
+        /// <summary>
+        /// Creates filtering operations which are scheduled to run.
+        /// </summary>
+        /// <returns>
+        /// List of filtering operation objects that implement <see cref="IFilteringOperation{TItem}"/> interface.
+        /// </returns>
         public List<IFilteringOperation<TItem>> CreateOperations()
         {
             for (int i = 0; i < Length; i++)
