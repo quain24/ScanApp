@@ -40,4 +40,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UnitTests\BlazorServerGui\Components\Common\ScanAppTable\EditDialog\" />
+  </ItemGroup>
+
 </Project>

@@ -3,11 +3,10 @@ using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 using MudBlazor;
-using ScanApp.Common;
-using ScanApp.Components.Common.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using ScanApp.Components.Common.Table;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
@@ -234,7 +233,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         public void Validate_throws_invalid_operation_exc_on_invalid_type_given_to_validate()
         {
             var data = new TestObject { AString = "wowww" };
-            var validator = new FluentValidationWrapper<int>(x => x.LessThan(10));
+            var validator = new ScanApp.Common.FluentValidationWrapper<int>(x => x.LessThan(10));
             var subject = new ColumnConfig<TestObject>(c => c.AnInt, null, validator);
 
             Action act = () => _ = subject.Validate(data.AString);
