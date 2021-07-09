@@ -8,6 +8,16 @@ namespace ScanApp.Common.Helpers
     {
         public int Compare(string s1, string s2)
         {
+            if (s1 is null || s2 is null)
+            {
+                return s1 switch
+                {
+                    null when s2 is null => 0,
+                    null => -1,
+                    _ => 1
+                };
+            }
+
             var isS1Numeric = double.TryParse(s1, out var number1);
             var isS2Numeric = double.TryParse(s2, out var number2);
 
