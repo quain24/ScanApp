@@ -19,7 +19,14 @@ namespace ScanApp.Components.Common.ScanAppTable.GroupDialog
             ItemGroup = itemList.ToList();
         }
 
+        /// <summary>
+        /// <see cref="string"/> representing key of a group.
+        /// </summary>
         public string Key { get; set; }
+
+        /// <summary>
+        /// List of <see cref="TItem"/> representing items which are binded to a specific <see cref="Key"/>
+        /// </summary>
         public List<TItem> ItemGroup { get; set; } = new List<TItem>();
     }
 }

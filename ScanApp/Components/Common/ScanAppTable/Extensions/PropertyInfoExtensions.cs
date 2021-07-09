@@ -17,7 +17,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="propertyInfo"></param>
         /// <param name="obj"></param>
         /// <param name="columnConfiguration"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Value of an object.
+        /// </returns>
         public static object? GetValue<T>(this PropertyInfo propertyInfo, object? obj, ColumnConfiguration<T> columnConfiguration)
         {
             if (columnConfiguration.IsNested)
@@ -50,7 +52,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         /// <param name="propertyInfo"></param>
         /// <param name="obj"></param>
         /// <param name="columnConfiguration"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// An object representing a DateTime value.
+        /// </returns>
         public static object? GetDateTimeValue<T>(this PropertyInfo propertyInfo, object? obj,
             ColumnConfiguration<T> columnConfiguration)
         {

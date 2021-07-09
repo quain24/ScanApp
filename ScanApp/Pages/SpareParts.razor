@@ -75,7 +75,7 @@
 
     private void SetUpValidators()
     {
-        _articleValidator = ArticleNumberValidator.ToMudFormFieldValidator();
+        _articleValidator = ArticleNumberValidator.ToMudFormFieldValidator("Article number");
         _lhmValidator = new(x => x
             .Cascade(CascadeMode.Stop)
             .Must(r => _repairWorkshops?.Any(w => string.Equals(r, w, StringComparison.OrdinalIgnoreCase)) ?? false)

@@ -12,6 +12,12 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperation
         private int? _from;
         private int? _to;
 
+        /// <summary>
+        /// Creates an object representing filtering operation on integers.
+        /// </summary>
+        /// <param name="columnConfiguration"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
         public FilterBetweenOperation(ColumnConfiguration<TItem> columnConfiguration, int? from, int? to)
         {
             ColumnConfiguration = columnConfiguration;

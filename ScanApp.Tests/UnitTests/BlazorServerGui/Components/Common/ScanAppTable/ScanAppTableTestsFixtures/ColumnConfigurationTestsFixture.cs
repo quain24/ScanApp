@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentValidation;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.ScanAppTableTestsFixtures
 {
-    public class ColumnConfigTestsValidatorFixture : AbstractValidator<int>
+    public class ColumnConfigurationTestsFixture
     {
-        public ColumnConfigTestsValidatorFixture()
+        public string A { get; }
+        public int B { get; }
+
+        public ColumnConfigurationTestsFixture(string a, int b)
         {
-            RuleFor(x => x)
-                .GreaterThanOrEqualTo(0);
+            A = a;
+            B = b;
         }
     }
 }
