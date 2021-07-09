@@ -9,7 +9,7 @@ using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.ScanAppTable.Options
 {
-    public class ColumnConfigTests
+    public class ColumnConfigurationTests
     {
         public class MyClass
         {
