@@ -10,7 +10,7 @@
     {
         <MudTable Items="GroupedData" T="KeyValuePair<string, List<TTableType>>" OnRowClick="OnGroupRowClick" Loading="Loading"
                   FixedHeader="FixedHeader" FixedFooter="FixedFooter" Height="@CalculateHeight()" RowsPerPage="RowsPerPage"
-                  Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Hover="true" Outlined="Outlined" Dense="true"
+                  Class="@Class" Style="@Style" Elevation="0" Bordered="Bordered" Striped="true" Hover="true" Outlined="Outlined" Dense="true"
                   Breakpoint="Breakpoint.None">
 
             <ToolBarContent>
@@ -102,7 +102,7 @@
     {
         <MudTable Items="FilterDataSource(Data)" T="TTableType" SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemHasChangedHandler" @bind-SelectedItems="@SelectedItemsBoundChild"
                   RowStyleFunc="RowStyleFunc" MultiSelection="MultiSelection" FixedHeader="FixedHeader" Height="@CalculateHeight()" OnRowClick="@(async args => await OnRowClick(args))" Loading="Loading"
-                  RowsPerPage="@RowsPerPage" Class="m-0 p-0" Elevation="0" Bordered="Bordered" Striped="true" Virtualize="Virtualize"
+                  Class="@Class" Style="@Style" RowsPerPage="@RowsPerPage" Elevation="0" Bordered="Bordered" Striped="true" Virtualize="Virtualize"
                   Hover="true" Outlined="Outlined" Dense="true" Breakpoint="Breakpoint.None" HorizontalScrollbar="HorizontalScrollbar">
 
             <ToolBarContent>

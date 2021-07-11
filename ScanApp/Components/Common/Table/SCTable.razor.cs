@@ -18,6 +18,12 @@ namespace ScanApp.Components.Common.Table
 
         #region Outside parameters
 
+        /// <inheritdoc cref="MudComponentBase.Style"/>
+        [Parameter] public string Style { get; set; }
+
+        /// <inheritdoc cref="MudComponentBase.Class"/>
+        [Parameter] public string Class { get; set; }
+
         /// <inheritdoc cref="MudTableBase.Loading"/>
         [Parameter] public bool Loading { get; set; }
 
