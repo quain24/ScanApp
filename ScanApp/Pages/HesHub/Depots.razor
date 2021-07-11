@@ -23,7 +23,7 @@
     <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
-        <SCColumn T="DepotModel" BoundConfig="_configs[6]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs[6]"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
     </SCTable>
     
     <div class="d-flex justify-content-start mt-3">
