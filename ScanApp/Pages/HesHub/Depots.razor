@@ -18,18 +18,19 @@
 @inject ISnackbar _snackbar
 @inject IDialogService _dialogService
 
-<div class="mx-3">
-    <h3>Depots</h3>
-
-    <SCTable TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
+<div class="mx-auto d-flex flex-column py-2 px-1" style="max-width: 90%">
+    <MudText Typo="Typo.h2">Depots</MudText>
+    <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
         <SCColumn T="DepotModel" BoundConfig="_configs[6]"><a href="mailto:@context.Email">@context.Email</a></SCColumn>
     </SCTable>
-
-    <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
-               Class="mt-2" Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
-               Color="Color.Error" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
+    
+    <div class="d-flex justify-content-start mt-3">
+        <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
+                   Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
+                   Color="Color.Error" FullWidth="false" Disabled="@(_selectedDepot is null || _loading)">Delete</MudButton>
+    </div>
 </div>
 
 @code {
@@ -162,7 +163,7 @@
     protected override void OnInitialized()
     {
         _configs = new List<ColumnConfig<DepotModel>>
-        {
+    {
             ColumnBuilder<DepotModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
