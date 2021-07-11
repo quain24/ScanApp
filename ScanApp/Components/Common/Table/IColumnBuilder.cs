@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿﻿using FluentValidation;
 using MudBlazor;
 using System.Collections.Generic;
 
@@ -21,7 +21,7 @@ namespace ScanApp.Components.Common.Table
         /// Provided <see cref="IValidator"/> <b>must</b> be compatible with target item pointed to by this instance of <see cref="ColumnConfig{T}"/>.
         /// </summary>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
-        IColumnBuilder<T> ValidateUsing(IValidator validator);
+        IColumnBuilder<T> ValidateUsing<TType>(IValidator<TType> validator);
 
         /// <summary>
         /// Set field format that will be used when build <see cref="ColumnConfig{T}"/> will be displayed.

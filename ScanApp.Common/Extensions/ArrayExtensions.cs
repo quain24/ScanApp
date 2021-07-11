@@ -4,8 +4,14 @@ namespace ScanApp.Common.Extensions
 {
     public static class ArrayExtensions
     {
+        /// <summary>
+        /// Provides 'ForEach' functionality for arrays of unknown <see langword="Type"/>.
+        /// </summary>
+        /// <param name="array">Source array.</param>
+        /// <param name="action">Action to be taken for each of <paramref name="array"/> elements.</param>
         public static void ForEach(this Array array, Action<Array, int[]> action)
         {
+            _ = array ?? throw new ArgumentNullException();
             if (array.LongLength == 0) return;
             var walker = new ArrayTraverse(array);
             do
