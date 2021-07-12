@@ -6,7 +6,7 @@ namespace ScanApp.Domain.Entities
     /// <summary>
     /// Entity representing a single type of trailer (LKW) configuration.
     /// </summary>
-    public class Trailer
+    public class TrailerType
     {
         /// <summary>
         /// Database Id of this entity, primary key.
@@ -92,11 +92,11 @@ namespace ScanApp.Domain.Entities
         }
 
         /// <summary>
-        /// Creates new instance of <see cref="Trailer"/>.
+        /// Creates new instance of <see cref="TrailerType"/>.
         /// </summary>
         /// <param name="name">Name of type of the trailer type being created.</param>
         /// <exception cref="ArgumentException">Given <paramref name="name"/> was <see langword="null"/> or contained only whitespaces.</exception>
-        public Trailer(string name)
+        public TrailerType(string name)
         {
             Name = name;
         }

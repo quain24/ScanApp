@@ -8,9 +8,9 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class TrailerConfiguration : IEntityTypeConfiguration<Trailer>
+    public class TrailerTypeConfiguration : IEntityTypeConfiguration<TrailerType>
     {
-        public void Configure(EntityTypeBuilder<Trailer> builder)
+        public void Configure(EntityTypeBuilder<TrailerType> builder)
         {
             builder.ToTable("Trailers", "hub");
             builder.Property(e => e.Name)

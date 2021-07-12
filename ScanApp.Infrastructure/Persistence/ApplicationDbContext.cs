@@ -30,6 +30,8 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<SparePartStoragePlace> SparePartStoragePlaces { get; set; }
 
         public DbSet<Depot> Depots { get; set; }
+        public DbSet<Gate> Gates { get; set; }
+        public DbSet<TrailerType> TrailerTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

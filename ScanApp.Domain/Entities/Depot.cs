@@ -45,10 +45,10 @@ namespace ScanApp.Domain.Entities
         public double DistanceFromHub { get; private set; }
 
         /// <summary>
-        /// Gets default <see cref="Trailer"/> type assigned to this depot.
+        /// Gets default <see cref="TrailerType"/> type assigned to this depot.
         /// </summary>
-        /// <value><see cref="Trailer"/> entity representing a truck trailer type.</value>
-        public Trailer DefaultTrailer { get; set; }
+        /// <value><see cref="TrailerType"/> entity representing a truck trailer type.</value>
+        public TrailerType DefaultTrailer { get; set; }
 
         /// <summary>
         /// Gets default <see cref="Gate"/> assigned to this depot.
