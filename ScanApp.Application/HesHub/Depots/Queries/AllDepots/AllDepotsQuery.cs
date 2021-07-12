@@ -1,13 +1,13 @@
-﻿using System;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ScanApp.Application.Common.Helpers.Result;
+using ScanApp.Application.Common.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.Common.Interfaces;
 
 namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 {
@@ -27,18 +27,36 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
-                var result = ctx.Depots.AsNoTracking().Select(h => new DepotModel()
-                {
-                    City = h.Address.City,
-                    Country = h.Address.Country,
-                    Email = h.Email,
-                    Id = h.Id,
-                    StreetName = h.Address.StreetName,
-                    Version = h.Version,
-                    ZipCode = h.Address.ZipCode,
-                    Name = h.Name,
-                    PhoneNumber = h.PhoneNumber,
-                }).ToList();
+                var result = ctx
+                    .Depots
+                    .AsNoTracking()
+                    .Include(e => e.DefaultGate)
+                    .Include(e => e.DefaultTrailer)
+                    .Select(h => new DepotModel()
+                    {
+                        City = h.Address.City,
+                        Country = h.Address.Country,
+                        Email = h.Email,
+                        Id = h.Id,
+                        StreetName = h.Address.StreetName,
+                        Version = h.Version,
+                        ZipCode = h.Address.ZipCode,
+                        Name = h.Name,
+                        PhoneNumber = h.PhoneNumber,
+                        DistanceToDepot = h.DistanceFromHub,
+                        DefaultGate = h.DefaultGate != null ? new GateModel()
+                        {
+                            Id = h.DefaultGate.Id,
+                            Number = h.DefaultGate.Number,
+                            Version = h.DefaultGate.Version
+                        } : null,
+                        DefaultTrailer = h.DefaultTrailer != null ? new TrailerTypeModel()
+                        {
+                            Id = h.DefaultTrailer.Id,
+                            Name = h.DefaultTrailer.Name,
+                            Version = h.DefaultTrailer.Version
+                        } : null
+                    }).ToList();
 
                 return new Result<List<DepotModel>>(result);
             }
