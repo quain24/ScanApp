@@ -36,6 +36,14 @@ namespace ScanApp.Application.HesHub.Depots.Commands
                 .NotEmpty()
                 .MaximumLength(25)
                 .SetValidator(new PhoneNumberValidator());
+            RuleFor(x => x.DistanceToDepot)
+                .GreaterThanOrEqualTo(0);
+            RuleFor(x => x.DefaultGate)
+                .SetValidator(new GateModelValidator())
+                .When(x => x.DefaultGate is not null);
+            RuleFor(x => x.DefaultTrailer)
+                .SetValidator(new TrailerTypeModelValidator())
+                .When(x => x.DefaultTrailer is not null);
             RuleFor(x => x.Version)
                 .NotNull();
         }

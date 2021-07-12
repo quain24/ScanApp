@@ -12,6 +12,9 @@ namespace ScanApp.Application.HesHub.Depots
         public string City { get; set; }
         public string Country { get; set; }
         public string PhoneNumber { get; set; }
+        public double DistanceToDepot { get; set; }
+        public GateModel DefaultGate { get; set; }
+        public TrailerTypeModel DefaultTrailer { get; set; }
         public Version Version { get; set; }
     }
 }

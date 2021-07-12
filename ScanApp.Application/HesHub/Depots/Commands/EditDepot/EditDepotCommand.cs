@@ -1,13 +1,14 @@
-﻿using System;
-using System.Data.SqlClient;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
+using System;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
@@ -36,18 +37,30 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
                     await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
                     var (originalModel, editedModel) = request;
 
-                    var originalDepot = new Depot(originalModel.Id, originalModel.Name,originalModel.PhoneNumber, originalModel.Email,
-                        Address.Create(originalModel.StreetName, originalModel.ZipCode, originalModel.City, originalModel.Country));
-                    originalDepot.ChangeVersion(originalModel.Version);
-                    var editedDepot = new Depot(editedModel.Id, editedModel.Name, editedModel.PhoneNumber, editedModel.Email,
-                        Address.Create(editedModel.StreetName, editedModel.ZipCode, editedModel.City, editedModel.Country));
-                    editedDepot.ChangeVersion(editedModel.Version);
+                    // Grab original child Id's and check if original depot still exists in one go.
+                    var originalChildren = ctx
+                        .Depots
+                        .AsNoTracking()
+                        .Where(x => x.Id.Equals(originalModel.Id))
+                        .Select(x => new
+                        {
+                            GateId = EF.Property<int?>(x, "DefaultGateId"),
+                            TrailerId = EF.Property<int?>(x, "DefaultTrailerId")
+                        }).SingleOrDefault();
+
+                    if (originalChildren is null)
+                        return new Result<Version>(ErrorType.NotFound);
+
+                    var originalDepot = MapFrom(originalModel);
+                    var editedDepot = MapFrom(editedModel);
 
                     if (originalDepot.Id != editedDepot.Id)
                     {
                         ctx.Remove(originalDepot);
                         ctx.SaveChanges();
                         ctx.Add(editedDepot);
+                        ctx.Entry(editedDepot).Property("DefaultGateId").CurrentValue = editedModel.DefaultGate?.Id;
+                        ctx.Entry(editedDepot).Property("DefaultTrailerId").CurrentValue = editedModel.DefaultTrailer?.Id;
                     }
                     else
                     {
@@ -55,6 +68,14 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
                         ctx.Entry(originalDepot).CurrentValues.SetValues(editedDepot);
                         if (originalDepot.Address != editedDepot.Address)
                             originalDepot.ChangeAddress(editedDepot.Address);
+
+                        // Using shadow properties - do not need version data and if child was deleted
+                        // or out of range - SQL exception is thrown.
+                        if (editedModel.DefaultGate?.Id != originalChildren.GateId)
+                            ctx.Entry(originalDepot).Navigation("DefaultGate").IsModified = true;
+
+                        if (editedModel.DefaultTrailer?.Id != originalChildren.TrailerId)
+                            ctx.Entry(originalDepot).Navigation("DefaultTrailer").IsModified = true;
                     }
 
                     token.ThrowIfCancellationRequested();
@@ -80,6 +101,16 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
             {
                 return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
             }
+        }
+
+        private Depot MapFrom(DepotModel model)
+        {
+            var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
+                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country));
+            depot.ChangeVersion(model.Version);
+            depot.ChangeDistanceToHub(model.DistanceToDepot);
+
+            return depot;
         }
     }
 }
