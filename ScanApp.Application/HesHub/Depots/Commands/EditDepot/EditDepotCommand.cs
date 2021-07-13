@@ -30,62 +30,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
             {
                 await using var context = _factory.CreateDbContext();
                 var strategy = context.Database.CreateExecutionStrategy();
-
-                return await strategy.ExecuteAsync(async token =>
-                {
-                    await using var ctx = _factory.CreateDbContext();
-                    await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
-                    var (originalModel, editedModel) = request;
-
-                    // Grab original child Id's and check if original depot still exists in one go.
-                    var originalChildren = ctx
-                        .Depots
-                        .AsNoTracking()
-                        .Where(x => x.Id.Equals(originalModel.Id))
-                        .Select(x => new
-                        {
-                            GateId = EF.Property<int?>(x, "DefaultGateId"),
-                            TrailerId = EF.Property<int?>(x, "DefaultTrailerId")
-                        }).SingleOrDefault();
-
-                    if (originalChildren is null)
-                        return new Result<Version>(ErrorType.NotFound);
-
-                    var originalDepot = MapFrom(originalModel);
-                    var editedDepot = MapFrom(editedModel);
-
-                    if (originalDepot.Id != editedDepot.Id)
-                    {
-                        ctx.Remove(originalDepot);
-                        ctx.SaveChanges();
-                        ctx.Add(editedDepot);
-                        ctx.Entry(editedDepot).Property("DefaultGateId").CurrentValue = editedModel.DefaultGate?.Id;
-                        ctx.Entry(editedDepot).Property("DefaultTrailerId").CurrentValue = editedModel.DefaultTrailer?.Id;
-                    }
-                    else
-                    {
-                        ctx.Depots.Attach(originalDepot);
-                        ctx.Entry(originalDepot).CurrentValues.SetValues(editedDepot);
-                        if (originalDepot.Address != editedDepot.Address)
-                            originalDepot.ChangeAddress(editedDepot.Address);
-
-                        // Using shadow properties - do not need version data and if child was deleted
-                        // or out of range - SQL exception is thrown.
-                        if (editedModel.DefaultGate?.Id != originalChildren.GateId)
-                            ctx.Entry(originalDepot).Navigation("DefaultGate").IsModified = true;
-
-                        if (editedModel.DefaultTrailer?.Id != originalChildren.TrailerId)
-                            ctx.Entry(originalDepot).Navigation("DefaultTrailer").IsModified = true;
-                    }
-
-                    token.ThrowIfCancellationRequested();
-                    var saved = await ctx.SaveChangesAsync(token).ConfigureAwait(false);
-                    await dbContextTransaction.CommitAsync(token).ConfigureAwait(false);
-
-                    return saved == 1
-                        ? new Result<Version>(ResultType.Updated, editedDepot.Id != originalDepot.Id ? editedDepot.Version : originalDepot.Version)
-                        : new Result<Version>(ResultType.NotChanged, originalDepot.Version);
-                }, cancellationToken);
+                return await strategy.ExecuteAsync(async token => await EditingStrategy(token, request), cancellationToken);
             }
             catch (OperationCanceledException ex)
             {
@@ -103,7 +48,88 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
             }
         }
 
-        private Depot MapFrom(DepotModel model)
+        private async Task<Result<Version>> EditingStrategy(CancellationToken token, EditDepotCommand request)
+        {
+            await using var ctx = _factory.CreateDbContext();
+            await using var dbContextTransaction = await ctx.Database.BeginTransactionAsync(token).ConfigureAwait(false);
+            var (originalModel, editedModel) = request;
+
+            var orgChildren = CreateChildren(originalModel);
+            var newChildren = CreateChildren(editedModel);
+
+            var originalDepot = MapFrom(originalModel);
+            originalDepot.DefaultGate = orgChildren.Gate;
+            originalDepot.DefaultTrailer = orgChildren.Trailer;
+            var editedDepot = MapFrom(editedModel);
+            editedDepot.DefaultGate = newChildren.Gate;
+            editedDepot.DefaultTrailer = newChildren.Trailer;
+
+            if (originalDepot.Id != editedDepot.Id)
+            {
+                ctx.Remove(originalDepot);
+                await ctx.SaveChangesAsync(token).ConfigureAwait(false);
+                // Must detach or 'Add' will throw
+                if (originalDepot.DefaultGate is not null)
+                    ctx.Entry(originalDepot.DefaultGate).State = EntityState.Detached;
+                if (originalDepot.DefaultTrailer is not null)
+                    ctx.Entry(originalDepot.DefaultTrailer).State = EntityState.Detached;
+                ctx.Add(editedDepot);
+                // Do not want to re-save existing entities, just update navigation in parent.
+                if (editedDepot.DefaultGate is not null)
+                    ctx.Entry(editedDepot.DefaultGate).State = EntityState.Unchanged;
+                if (editedDepot.DefaultTrailer is not null)
+                    ctx.Entry(editedDepot.DefaultTrailer).State = EntityState.Unchanged;
+            }
+            else
+            {
+                ctx.Depots.Attach(originalDepot);
+                ctx.Entry(originalDepot).CurrentValues.SetValues(editedDepot);
+                if (originalDepot.Address != editedDepot.Address)
+                    originalDepot.ChangeAddress(editedDepot.Address);
+                if (originalDepot.DefaultGate?.Id != editedDepot.DefaultGate?.Id)
+                {
+                    originalDepot.DefaultGate = editedDepot.DefaultGate;
+                    if (originalDepot.DefaultGate is not null)
+                        ctx.Entry(originalDepot.DefaultGate).State = EntityState.Unchanged;
+                }
+                if (originalDepot.DefaultTrailer?.Id != editedDepot.DefaultTrailer?.Id)
+                {
+                    originalDepot.DefaultTrailer = editedDepot.DefaultTrailer;
+                    if (originalDepot.DefaultTrailer is not null)
+                        ctx.Entry(originalDepot.DefaultTrailer).State = EntityState.Unchanged;
+                }
+            }
+
+            token.ThrowIfCancellationRequested();
+            var saved = await ctx.SaveChangesAsync(token).ConfigureAwait(false);
+            await dbContextTransaction.CommitAsync(token).ConfigureAwait(false);
+
+            return saved >= 1
+                ? new Result<Version>(ResultType.Updated, editedDepot.Id != originalDepot.Id ? editedDepot.Version : originalDepot.Version)
+                : new Result<Version>(ResultType.NotChanged, originalDepot.Version);
+        }
+
+        private static (Gate Gate, TrailerType Trailer) CreateChildren(DepotModel model)
+        {
+            var gate = model.DefaultGate is null
+                ? null
+                : new Gate(-100, 0)
+                {
+                    Version = model.DefaultGate.Version,
+                    Id = model.DefaultGate.Id
+                };
+            var trailer = model.DefaultTrailer is null
+                ? null
+                : new TrailerType("valid")
+                {
+                    Version = model.DefaultTrailer.Version,
+                    Id = model.DefaultTrailer.Id
+                };
+
+            return (gate, trailer);
+        }
+
+        private static Depot MapFrom(DepotModel model)
         {
             var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
                 Address.Create(model.StreetName, model.ZipCode, model.City, model.Country));
