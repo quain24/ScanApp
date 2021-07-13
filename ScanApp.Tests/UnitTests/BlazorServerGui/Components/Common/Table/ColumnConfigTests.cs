@@ -1,14 +1,15 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Execution;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 using MudBlazor;
+using ScanApp.Common;
+using ScanApp.Components.Common.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ScanApp.Common;
-using ScanApp.Components.Common.Table;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table.ColumnConfigFixtures;
@@ -442,6 +443,34 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 
             act.Should().NotThrow();
             subject.AllowedValues.Should().BeEquivalentTo(new[] { "b", "a" });
+        }
+
+        [Theory] [ClassData(typeof(ComparableEquatableValueFixture))]
+        public void LimitAcceptedValues_takes_objects_implementing_IComparable_or_IEquatable_or_derive_from_ValueObject_or_default_types_that_are_comparable(Expression<Func<TestObject, object>> target, dynamic value, Type collectionType)
+        {
+            var subject = new ColumnConfig<TestObject>(target);
+            dynamic list = Activator.CreateInstance(typeof(List<>).MakeGenericType(collectionType));
+            list?.Add(value);
+
+            Action act = () => subject.LimitAcceptedValuesTo(list);
+
+            using var scope = new AssertionScope();
+            act.Should().NotThrow();
+            subject.AllowedValues.Should().Contain(value);
+            subject.AllowedValues.First().Should().BeOfType(value.GetType());
+            Output.WriteLine(subject.AllowedValues.First().GetType().ToString());
+            Output.WriteLine(value.GetType().ToString());
+        }
+
+        [Fact]
+        public void LimitAcceptedValues_throws_arg_exc_if_values_are_not_implementing_IComparable_or_IEquatable_or_do_not_derive_from_ValueObject()
+        {
+            var subject = new ColumnConfig<TestObject>(x => x.SubClassField);
+            var data = new List<SubClass>() { new SubClass() };
+
+            Action act = () => subject.LimitAcceptedValuesTo(data);
+
+            act.Should().Throw<ArgumentException>($"values must implement {typeof(IComparable<>).Name}, {typeof(IEquatable<>).Name} or derive from {typeof(ValueType).FullName}.");
         }
 
         [Fact]

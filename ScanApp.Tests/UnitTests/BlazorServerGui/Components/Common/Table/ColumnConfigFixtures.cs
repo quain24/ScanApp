@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Xunit;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
 {
@@ -17,6 +19,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             public int AnIntField;
             public int? AnNullableInt { get; set; }
 
+            public decimal Decimal { get; set; }
+            public float Float { get; set; }
+            public bool Bool { get; set; }
+
             public int TestMethod()
             {
                 return 1;
@@ -26,6 +32,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             public SubClass SubClassField;
             public SubClassPar SubClassParamField;
             public TestStruct TestStructProp { get; set; }
+
+            public Version Version { get; set; }
+            public EquatableClass EquatableClass { get; set; }
+            public ComparableClass ComparableClass { get; set; }
+            public Enumeration Enumeration { get; set; }
 
             private int _prvIntField;
             public readonly int Readonlyint;
@@ -64,6 +75,13 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             public SubClass SubClassFieldInSubParamClass;
         }
 
+        public enum Enumeration
+        {
+            One,
+            Two,
+            Three
+        }
+
         public struct TestStruct
         {
             public int IntVal;
@@ -83,6 +101,92 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             public string StrVal;
 
             public DateTime? DateTimeNullableVal;
+        }
+
+        public class ComparableClass : IComparable<ComparableClass>
+        {
+            public int a = 1;
+            public int b = 2;
+
+            public int CompareTo(ComparableClass other)
+            {
+                if (ReferenceEquals(this, other)) return 0;
+                if (ReferenceEquals(null, other)) return 1;
+                var aComparison = a.CompareTo(other.a);
+                if (aComparison != 0) return aComparison;
+                return b.CompareTo(other.b);
+            }
+
+            public static bool operator <(ComparableClass left, ComparableClass right)
+            {
+                return Comparer<ComparableClass>.Default.Compare(left, right) < 0;
+            }
+
+            public static bool operator >(ComparableClass left, ComparableClass right)
+            {
+                return Comparer<ComparableClass>.Default.Compare(left, right) > 0;
+            }
+
+            public static bool operator <=(ComparableClass left, ComparableClass right)
+            {
+                return Comparer<ComparableClass>.Default.Compare(left, right) <= 0;
+            }
+
+            public static bool operator >=(ComparableClass left, ComparableClass right)
+            {
+                return Comparer<ComparableClass>.Default.Compare(left, right) >= 0;
+            }
+        }
+
+        public class EquatableClass : IEquatable<EquatableClass>
+        {
+            public int a = 1;
+            public int b = 2;
+
+            public bool Equals(EquatableClass other)
+            {
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                return a == other.a && b == other.b;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((EquatableClass)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(a, b);
+            }
+
+            public static bool operator ==(EquatableClass left, EquatableClass right)
+            {
+                return Equals(left, right);
+            }
+
+            public static bool operator !=(EquatableClass left, EquatableClass right)
+            {
+                return !Equals(left, right);
+            }
+        }
+
+        public class ComparableEquatableValueFixture : TheoryData<Expression<Func<TestObject, object>>, dynamic, Type>
+        {
+            public ComparableEquatableValueFixture()
+            {
+                Add(c => c.Decimal, 10m, typeof(decimal));
+                Add(c => c.Bool, true, typeof(bool));
+                Add(c => c.Float, 10F, typeof(float));
+                Add(c => c.Enumeration, Enumeration.One, typeof(Enumeration));
+                Add(c => c.Version, Version.Create("a"), typeof(Version));
+                Add(c => c.AnInt, 1, typeof(int));
+                Add(c => c.ComparableClass, new ComparableClass(), typeof(ComparableClass));
+                Add(c => c.EquatableClass, new EquatableClass(), typeof(EquatableClass));
+            }
         }
 
         public class AutoDisplayNameFixture : TheoryData<Expression<Func<TestObject, object>>, string>

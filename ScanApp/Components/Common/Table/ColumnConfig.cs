@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MudBlazor;
 using ScanApp.Common.Extensions;
+using ScanApp.Domain.Common;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;
@@ -103,7 +104,7 @@ namespace ScanApp.Components.Common.Table
         /// <value>if <see langword="true"/>, then this instance of <see cref="ColumnConfig{T}"/> is only a 'presenter' and will not display anything on its own.</value>
         public bool IsPresenter { get; }
 
-        public IEnumerable<dynamic> AllowedValues { get; private set; } = Enumerable.Empty<dynamic>();
+        public IEnumerable<object> AllowedValues { get; private set; } = Enumerable.Empty<object>();
         private IValidator Validator { get; set; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> Target { get; }
@@ -146,7 +147,6 @@ namespace ScanApp.Components.Common.Table
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
-        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format)
         {
             Target = target ?? throw new ArgumentNullException(nameof(target));
@@ -371,6 +371,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="values"/> were <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Type of items in <paramref name="values"/> is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        /// <exception cref="ArgumentException">Items in <paramref name="values"/> does not neither implement <see cref="IComparable{T}"/> or <see cref="IEquatable{T}"/> nor derive from <see cref="ValueObject"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="values"/> collection is empty.</exception>
         public ColumnConfig<T> LimitAcceptedValuesTo<TType>(IEnumerable<TType> values)
         {
@@ -381,8 +382,18 @@ namespace ScanApp.Components.Common.Table
                                             $" {nameof(ColumnConfig<T>)}: (property - {PropertyType.FullName}), value collection - {typeof(TType).FullName})");
             }
 
+            if (typeof(IEquatable<TType>).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(IComparable<TType>).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(ValueObject).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(TType).IsEnum is false)
+            {
+                throw new ArgumentException($"{typeof(TType).FullName} must implement {typeof(IEquatable<TType>).FullName}" +
+                                            $" ,{typeof(IEquatable<TType>).FullName}, be derived from {typeof(ValueObject).FullName}" +
+                                            " or be an enum for limiting values to work properly.");
+            }
+
             AllowedValues = values.Any()
-                ? (IEnumerable<dynamic>)values
+                ? values.Cast<object>()
                 : throw new ArgumentException("Cannot limit values when given collection is empty", nameof(values));
             return this;
         }
