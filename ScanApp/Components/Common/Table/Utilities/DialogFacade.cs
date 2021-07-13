@@ -11,16 +11,18 @@ namespace ScanApp.Components.Common.Table.Utilities
 {
     public class DialogFacade<T>
     {
-        private readonly IReadOnlyList<ColumnConfig<T>> _configs;
+        private List<ColumnConfig<T>> _configs;
         private IDialogService DialogService { get; }
         private CultureInfo CultureInfo { get; }
 
-        public DialogFacade(IDialogService dialogService, IReadOnlyList<ColumnConfig<T>> configs, CultureInfo cultureInfo)
+        public DialogFacade(IDialogService dialogService, IEnumerable<ColumnConfig<T>> configs, CultureInfo cultureInfo)
         {
-            _configs = configs?.Where(c => c.IsPresenter is false).ToList();
+            GetNewConfigs(configs);
             DialogService = dialogService;
             CultureInfo = cultureInfo;
         }
+
+        public void GetNewConfigs(IEnumerable<ColumnConfig<T>> configs) => _configs = configs?.Where(c => c.IsPresenter is false).ToList();
 
         public Task<DialogResult> ShowFilterDialog(bool startExpanded, int maxContentHeight)
         {
