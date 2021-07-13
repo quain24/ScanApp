@@ -9,7 +9,7 @@ namespace ScanApp.Common.Extensions
         private static readonly MethodInfo CloneMethod =
             typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        public static bool IsPrimitive(this Type type)
+        private static bool IsPrimitive(this Type type)
         {
             if (type == typeof(string)) return true;
             return type.IsValueType & type.IsPrimitive;
@@ -83,7 +83,7 @@ namespace ScanApp.Common.Extensions
         }
     }
 
-    public class ReferenceEqualityComparer : EqualityComparer<object>
+    internal class ReferenceEqualityComparer : EqualityComparer<object>
     {
         public override bool Equals(object x, object y)
         {
