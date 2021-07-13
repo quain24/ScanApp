@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Moq;
 using ScanApp.Components.Common.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
 using System;
 using System.Collections.Generic;
-using MudBlazor;
+using System.Linq;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
@@ -22,7 +23,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             subject.DisplayName.Should().Be("name");
         }
 
-        [Fact] public void Builds_with_name_and_column_style_as_col_conf_set_as_presenter()
+        [Fact]
+        public void Builds_with_name_and_column_style_as_col_conf_set_as_presenter()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .ForPresentation("name")
@@ -55,7 +57,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
             subject.DisplayName.Should().Be("test name");
         }
 
-        [Fact] public void Builds_as_editable()
+        [Fact]
+        public void Builds_as_editable()
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x)
@@ -101,11 +104,12 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         [Fact]
         public void Builds_with_validation()
         {
-            var val = Mock.Of<IValidator>(x => x.CanValidateInstancesOfType(It.IsAny<Type>()));
+            var val = Mock.Of<IValidator<PropertyPathTestsFixtures.TestObject>>(x =>
+                x.CanValidateInstancesOfType(It.IsAny<Type>()) && x.CreateDescriptor() == new ValidatorDescriptor<TestObject>(Enumerable.Empty<IValidationRule>()));
 
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x)
-                .ValidateUsing(val)
+                .ValidateUsing<PropertyPathTestsFixtures.TestObject>(val)
                 .Build();
 
             subject.IsValidatable().Should().BeTrue();
@@ -140,10 +144,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Common.Table
         {
             var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
                 .For(x => x.AString)
-                .LimitValuesTo(new List<string>{ "a", "B"})
+                .LimitValuesTo(new List<string> { "a", "B" })
                 .Build();
 
-            subject.AllowedValues.Should().BeEquivalentTo(new List<string> {"a", "B"});
+            subject.AllowedValues.Should().BeEquivalentTo(new List<string> { "a", "B" });
         }
     }
 }

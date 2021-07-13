@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using FluentValidation.Internal;
 using MudBlazor;
 using ScanApp.Common.Extensions;
+using ScanApp.Domain.Common;
 using ScanApp.Services;
 using System;
 using System.Collections.Generic;
@@ -104,8 +104,8 @@ namespace ScanApp.Components.Common.Table
         /// <value>if <see langword="true"/>, then this instance of <see cref="ColumnConfig{T}"/> is only a 'presenter' and will not display anything on its own.</value>
         public bool IsPresenter { get; }
 
-        public IEnumerable<dynamic> AllowedValues { get; private set; } = Enumerable.Empty<dynamic>();
-        private IValidator Validator { get; }
+        public IEnumerable<object> AllowedValues { get; private set; } = Enumerable.Empty<object>();
+        private IValidator Validator { get; set; }
         private IReadOnlyList<MemberInfo> PathToItem { get; }
         private Expression<Func<T, dynamic>> Target { get; }
         private Func<T, dynamic> _getter;
@@ -131,7 +131,7 @@ namespace ScanApp.Components.Common.Table
         /// </summary>
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target)
-            : this(target, null, FieldType.AutoDetect, null)
+            : this(target, null, FieldType.AutoDetect)
         {
         }
 
@@ -139,16 +139,7 @@ namespace ScanApp.Components.Common.Table
         /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
         /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName)
-            : this(target, displayName, FieldType.AutoDetect, null)
-        {
-        }
-
-        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
-        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
-        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
-        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
-        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, IValidator validator)
-            : this(target, displayName, FieldType.AutoDetect, validator)
+            : this(target, displayName, FieldType.AutoDetect)
         {
         }
 
@@ -157,16 +148,6 @@ namespace ScanApp.Components.Common.Table
         /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
         /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
         public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format)
-            : this(target, displayName, format, null)
-        {
-        }
-
-        /// <inheritdoc cref="ColumnConfig{T}(Expression{Func{T, dynamic}})"/>
-        /// <param name="target">Parameter / field / method that this <see cref="ColumnConfig{T}"/> will configure.</param>
-        /// <param name="displayName">Name under which <paramref name="target"/> will be displayed (name of column).</param>
-        /// <param name="format">Set display mode of object pointed to by <paramref name="target"/> (if possible).</param>
-        /// <param name="validator">Validates elements pointed to by <paramref name="target"/>.</param>
-        public ColumnConfig(Expression<Func<T, dynamic>> target, string displayName, FieldType format, IValidator validator)
         {
             Target = target ?? throw new ArgumentNullException(nameof(target));
             PathToItem = PropertyPath<T>.GetFrom(Target);
@@ -179,7 +160,6 @@ namespace ScanApp.Components.Common.Table
             CreatePrecompiledSetterForItem();
             CreatePrecompiledGetterForItem();
             FieldType = format;
-            Validator = SetUpValidator(validator);
         }
 
         /// <summary>
@@ -282,25 +262,6 @@ namespace ScanApp.Components.Common.Table
             _setter = assign.Compile();
         }
 
-        private IValidator SetUpValidator(IValidator validator)
-        {
-            if (validator is null)
-                return null;
-
-            if (validator.CanValidateInstancesOfType(PropertyType) is false)
-            {
-                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
-                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
-            }
-
-            foreach (var validationRule in validator.CreateDescriptor()?.Rules ?? Enumerable.Empty<IValidationRule>())
-            {
-                validationRule.PropertyName = DisplayName;
-            }
-
-            return validator;
-        }
-
         /// <summary>
         /// Informs if this instance of <see cref="ColumnConfig{T}"/> contains validator for it's target if no <paramref name="type"/> is provided.<br/>
         /// Otherwise checks if this instance contains validator capable of validating given <param name="type">.</param>
@@ -339,8 +300,12 @@ namespace ScanApp.Components.Common.Table
                 throw new ArgumentException("Cannot validate when there is no validator set - " +
                                             "perhaps editing field tried to use this config as one with validation?");
             }
-            var context = new ValidationContext<TValueType>(value, new PropertyChain(new[] { PropertyName }), new DefaultValidatorSelector());
-            var result = Validator.Validate(context);
+
+            var validator = Validator as IValidator<TValueType> ?? throw new InvalidCastException(
+                                $"Given {nameof(value)} cannot be validated by validator in this ColumnConfig " +
+                                $"- cannot cast validator to type {typeof(IValidator<TValueType>).FullName}.");
+
+            var result = validator.Validate(value);
             return result.IsValid
                 ? Array.Empty<string>()
                 : ExtractErrorsFrom(result);
@@ -375,6 +340,29 @@ namespace ScanApp.Components.Common.Table
         }
 
         /// <summary>
+        /// Assigns validator used to check values pointed to by this <see cref="ColumnConfig{T}"/> using set of rules provided within.
+        /// </summary>
+        /// /// <typeparam name="TType">Type of value to be validated - must be the same as the type of target set in this <see cref="ColumnConfig{T}"/>.</typeparam>
+        /// <param name="validator">Validates given value.</param>
+        /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="validator"/> was <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException">Type of validator is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        public ColumnConfig<T> AssignValidator<TType>(IValidator<TType> validator)
+        {
+            if (validator is null) throw new ArgumentNullException(nameof(validator));
+
+            if (validator.CanValidateInstancesOfType(PropertyType) is false || PropertyType.IsAssignableFrom(typeof(TType)) is false)
+            {
+                throw new ArgumentException($"Given validator cannot validate field/property of type '{PropertyType.FullName}'" +
+                                            $" pointed to by this {nameof(ColumnConfig<T>)} - GUID - {Identifier} | Property name - {PropertyName}.");
+            }
+
+            validator.SetCommonName(PropertyName);
+            Validator = validator;
+            return this;
+        }
+
+        /// <summary>
         /// Enforces usage of one of given <paramref name="values"/> when editing or adding <typeparamref name="T"/> item.<br/>
         /// This constraint is valid only for target set by <see cref="ColumnConfig{T}"/> currently being configured.
         /// </summary>
@@ -383,6 +371,7 @@ namespace ScanApp.Components.Common.Table
         /// <returns>This instance of <see cref="ColumnConfig{T}"/>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="values"/> were <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Type of items in <paramref name="values"/> is incompatible with type of target pointed by this instance of <see cref="ColumnConfig{T}"/>.</exception>
+        /// <exception cref="ArgumentException">Items in <paramref name="values"/> does not neither implement <see cref="IComparable{T}"/> or <see cref="IEquatable{T}"/> nor derive from <see cref="ValueObject"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="values"/> collection is empty.</exception>
         public ColumnConfig<T> LimitAcceptedValuesTo<TType>(IEnumerable<TType> values)
         {
@@ -393,8 +382,18 @@ namespace ScanApp.Components.Common.Table
                                             $" {nameof(ColumnConfig<T>)}: (property - {PropertyType.FullName}), value collection - {typeof(TType).FullName})");
             }
 
+            if (typeof(IEquatable<TType>).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(IComparable<TType>).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(ValueObject).IsAssignableFrom(typeof(TType)) is false &&
+                typeof(TType).IsEnum is false)
+            {
+                throw new ArgumentException($"{typeof(TType).FullName} must implement {typeof(IEquatable<TType>).FullName}" +
+                                            $" ,{typeof(IEquatable<TType>).FullName}, be derived from {typeof(ValueObject).FullName}" +
+                                            " or be an enum for limiting values to work properly.");
+            }
+
             AllowedValues = values.Any()
-                ? (IEnumerable<dynamic>)values
+                ? values.Cast<object>()
                 : throw new ArgumentException("Cannot limit values when given collection is empty", nameof(values));
             return this;
         }
