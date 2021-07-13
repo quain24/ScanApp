@@ -136,6 +136,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             {
                 // Value from edited item is outside of constraints set in 'AllowedValues'
                 // so mark it as invalid for first value set.
+                // IMPORTANT - For it to work, value object must implement IComparable.
                 var value = config.GetValueFrom(TargetItem);
                 if (Enumerable.Contains(config.AllowedValues, value) is false)
                 {
