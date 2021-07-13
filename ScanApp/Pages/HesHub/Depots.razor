@@ -9,6 +9,8 @@
 @using ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
 @using ScanApp.Application.HesHub.Depots.Commands.EditDepot
 @using ScanApp.Application.HesHub.Depots.Queries.AllDepots
+@using ScanApp.Application.HesHub.Depots.Queries.AllGates
+@using ScanApp.Application.HesHub.Depots.Queries.AllTrailerTypes
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using Version = ScanApp.Domain.ValueObjects.Version
@@ -23,9 +25,9 @@
     <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
-        <SCColumn T="DepotModel" BoundConfig="_configs[6]"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(6)"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
     </SCTable>
-    
+
     <div class="d-flex justify-content-start mt-3">
         <MudButton OnClick="@(async () => await OnDelete(_selectedDepot))"
                    Size="Size.Small" Variant="Variant.Filled" StartIcon="@Icons.Filled.DeleteForever"
@@ -37,6 +39,8 @@
     private volatile bool _loading;
     private readonly CancellationTokenSource _exitCancellationSource = new();
     private List<DepotModel> _depots = new();
+    private List<GateModel> _gates = new();
+    private List<TrailerTypeModel> _trailerTypes = new();
     private DepotModel _selectedDepot;
 
     private List<ColumnConfig<DepotModel>> _configs = new();
@@ -46,15 +50,37 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new AllDepotsQuery(), _exitCancellationSource.Token);
+            var depots = _mediator.Send(new AllDepotsQuery(), _exitCancellationSource.Token);
+            var gates = _mediator.Send(new AllGatesQuery(), _exitCancellationSource.Token);
+            var trailerTypes = _mediator.Send(new AllTrailerTypesQuery(), _exitCancellationSource.Token);
 
-            if (result is null || result.Conclusion is false)
+            await Task.WhenAll(
+                _mediator.Send(new AllDepotsQuery(), _exitCancellationSource.Token),
+                _mediator.Send(new AllGatesQuery(), _exitCancellationSource.Token),
+                _mediator.Send(new AllTrailerTypesQuery(), _exitCancellationSource.Token));
+
+            var results = new List<Result>
             {
-                _snackbar.Add(result?.ErrorDescription?.ToString(), Severity.Error);
-                return;
+                        depots.Result,
+                        gates.Result,
+                        trailerTypes.Result
+                    };
+
+            foreach (var result in results)
+            {
+                if (result is null || result.Conclusion is false)
+                {
+                    _snackbar.Add(result?.ErrorDescription?.ToString(), Severity.Error);
+                    return;
+                }
             }
 
-            _depots = result.Output;
+            _depots = depots.Result.Output;
+            _gates = gates.Result.Output;
+            _gates.Add(null);
+            _trailerTypes = trailerTypes.Result.Output;
+
+            CreateConfigs();
         }
         finally
         {
@@ -160,10 +186,10 @@
         }
     }
 
-    protected override void OnInitialized()
+    private void CreateConfigs()
     {
         _configs = new List<ColumnConfig<DepotModel>>
-    {
+{
             ColumnBuilder<DepotModel>.For(x => x.Id)
                 .ColumnStyle("width: 50px;")
                 .Editable()
@@ -241,6 +267,14 @@
                         .SetValidator(new PhoneNumberValidator());
                 }))
                 .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.DefaultGate).Editable()
+                .UnderName("Default gate")
+                .ConvertUsing(new Converter<GateModel>()
+                {
+                    SetFunc = x => x?.Number.ToString() ?? "None"
+                })
+                .LimitValuesTo(_gates)
+                .Build()
         };
     }
 
