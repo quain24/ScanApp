@@ -79,6 +79,7 @@
             _gates = gates.Result.Output;
             _gates.Add(null);
             _trailerTypes = trailerTypes.Result.Output;
+            _trailerTypes.Add(null);
 
             CreateConfigs();
         }
@@ -274,8 +275,16 @@
                     SetFunc = x => x?.Number.ToString() ?? "None"
                 })
                 .LimitValuesTo(_gates)
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.DefaultTrailer).Editable()
+                .UnderName("Default trailer type")
+                .ConvertUsing(new Converter<TrailerTypeModel>()
+                {
+                    SetFunc = x => x?.Name ?? "None"
+                })
+                .LimitValuesTo(_trailerTypes)
                 .Build()
-        };
+                };
     }
 
     public void Dispose()
