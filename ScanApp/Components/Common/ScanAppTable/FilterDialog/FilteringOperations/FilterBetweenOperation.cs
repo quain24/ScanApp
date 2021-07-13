@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ScanApp.Components.Common.ScanAppTable.Extensions;
+﻿using ScanApp.Components.Common.ScanAppTable.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {

@@ -17,7 +17,7 @@
                 <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
                     <AddFieldGenerator ColumnConfigs="@ColumnConfigs" KeyPressed="KeyPressed"
                                        ItemChanged="@((args) => ItemHasChanged(args.Item1, args.Item2))"
-                                       NewItem="@NewItem"/>
+                                       NewItem="@NewItem" />
                 </MudForm>
             </MudGrid>
         </MudContainer>

@@ -64,76 +64,76 @@
 
     private readonly List<ColumnConfig<WeatherForecast>> _configs = new()
     {
-        ColumnBuilder<WeatherForecast>.For(c => c.Summary)
-            .UnderName("Simple summary")
-            .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
-            .ColumnStyle("width: 30%;")
-            .Groupable()
-            .Editable()
-            //.LimitValuesTo(new List<string>()
-            //{
-            //    null,
-            //    "yes",
-            //    "no",
-            //    "maybe"
-            //})
-            //.ConvertUsing(new Converter<string>()
-            //{
-            //    SetFunc = x => x + " conv."
-            //})
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
-            .UnderName("Temperature in C")
-            .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
-            .Groupable()
-            .Editable()
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.Date)
-            .FormatAs(FieldType.Date)
-            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
-            .Groupable()
-            .Editable()
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.Date)
-            .UnderName("Separate time column")
-            .FormatAs(FieldType.Time)
-            .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
-            .Groupable()
-            .Editable()
-            .Build(),
-        ColumnBuilder<WeatherForecast>.ForPresentation("test")
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.Version)
-            .UnderName("A version")
-            .ConvertUsing(new Converter<Version>
-            {
-                SetFunc = value => value?.Value,
-                GetFunc = Version.Create
-            })
-            .Groupable()
-            .Editable()
-            .LimitValuesTo(new List<Version>
+            ColumnBuilder<WeatherForecast>.For(c => c.Summary)
+                .UnderName("Simple summary")
+                .ValidateUsing(new FluentValidationWrapper<string>(x => x.NotEmpty().MinimumLength(5).MaximumLength(20)))
+                .ColumnStyle("width: 30%;")
+                .Groupable()
+                .Editable()
+                //.LimitValuesTo(new List<string>()
+                //{
+                //    null,
+                //    "yes",
+                //    "no",
+                //    "maybe"
+                //})
+                //.ConvertUsing(new Converter<string>()
+                //{
+                //    SetFunc = x => x + " conv."
+                //})
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.TemperatureC)
+                .UnderName("Temperature in C")
+                .ValidateUsing(new FluentValidationWrapper<int>(x => x.NotEmpty().GreaterThan(10)))
+                .Groupable()
+                .Editable()
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.Date)
+                .FormatAs(FieldType.Date)
+                .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+                .Groupable()
+                .Editable()
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.Date)
+                .UnderName("Separate time column")
+                .FormatAs(FieldType.Time)
+                .ValidateUsing(new FluentValidationWrapper<DateTime?>(x => x.GreaterThan(System.DateTime.Today + TimeSpan.FromDays(-10))))
+                .Groupable()
+                .Editable()
+                .Build(),
+            ColumnBuilder<WeatherForecast>.ForPresentation("test")
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.Version)
+                .UnderName("A version")
+                .ConvertUsing(new Converter<Version>
+                {
+                    SetFunc = value => value?.Value,
+                    GetFunc = Version.Create
+                })
+                .Groupable()
+                .Editable()
+                .LimitValuesTo(new List<Version>
             {
                 Version.Empty(),
                 Version.Create("v one"),
                 Version.Create("v two")
-            })
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.Number)
-            .UnderName("Const number")
-            .Groupable()
-            .Editable()
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.Model.Name)
-            .UnderName("Model name")
-            .Groupable()
-            .Editable()
-            .Build(),
-        ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
-            .UnderName("Null Date")
-            .DisableFiltering()
-            .Build()
-    };
+                })
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.Number)
+                .UnderName("Const number")
+                .Groupable()
+                .Editable()
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.Model.Name)
+                .UnderName("Model name")
+                .Groupable()
+                .Editable()
+                .Build(),
+            ColumnBuilder<WeatherForecast>.For(c => c.nulldate)
+                .UnderName("Null Date")
+                .DisableFiltering()
+                .Build()
+        };
 
     private void Remove()
     {

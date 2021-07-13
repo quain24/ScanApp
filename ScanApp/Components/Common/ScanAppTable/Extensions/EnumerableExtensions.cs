@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ScanApp.Components.Common.ScanAppTable.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
@@ -133,8 +133,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
 
             if (from is null)
             {
-                
-                return enumerable.Where(x =>  Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
+                return enumerable.Where(x => Convert.ToDecimal(columnConfiguration.PropInfo.GetValue(x, columnConfiguration)) <= to).ToList();
             }
 
             if (to is null)

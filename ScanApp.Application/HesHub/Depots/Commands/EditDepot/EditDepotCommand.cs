@@ -6,7 +6,6 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;

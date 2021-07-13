@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using ScanApp.Components.Common.ScanAppTable.Extensions;
+﻿using ScanApp.Components.Common.ScanAppTable.Extensions;
 using ScanApp.Components.Common.ScanAppTable.Options;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScanApp.Components.Common.ScanAppTable.Sorter
 {
@@ -43,7 +42,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Sorter
 
         /// <summary>
         /// Sorts an <see cref="IEnumerable{T}"/> of <paramref name="items"/> in a specified <paramref name="direction"/>.
-        /// Needs <paramref name="columnConfiguration"/> for property identification. 
+        /// Needs <paramref name="columnConfiguration"/> for property identification.
         /// </summary>
         /// <param name="items"></param>
         /// <param name="columnConfiguration"></param>

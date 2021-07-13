@@ -19,7 +19,7 @@
                     <TableToolbar T="TTableType" Groupables="_groupables" GroupingVisible="_groupingEnabled" SelectedGroupable="SelectedGroupable" SelectedGroupableChanged="@(x => CreateGroupsBasedOn(x))"
                                   AddVisible="_addingEnabled" AddDisabled="@(ReadOnly || _dialogGuard.CurrentCount == 0)" OnAddClicked="OpenAddItemDialog"
                                   EditVisible="_editingEnabled" EditDisabled="@(SelectedItem is null && SelectedItems.IsNullOrEmpty() || _dialogGuard.CurrentCount == 0)" OnEditClicked="@OpenEditItemDialog"
-                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)"/>
+                                  FilterVisible="_filteringEnabled" OnFilterClicked="OpenFilterItemDialog" OnRemoveFilterClicked="RemoveFilters" FiltersApplied="@(_filters?.Any() ?? false)" />
                 }
             </ToolBarContent>
 
@@ -82,10 +82,9 @@
                         <PagerContent>
                             @if (context.Value.Count > RowsPerPage)
                             {
-                                <MudTablePager PageSizeOptions="PageSizeOptions"/>
+                                <MudTablePager PageSizeOptions="PageSizeOptions" />
                             }
                         </PagerContent>
-
                     </MudTable>
                 }
             </ChildRowContent>
@@ -93,7 +92,7 @@
             <PagerContent>
                 @if (GroupedData.Count > RowsPerPage)
                 {
-                    <MudTablePager PageSizeOptions="PageSizeOptions"/>
+                    <MudTablePager PageSizeOptions="PageSizeOptions" />
                 }
             </PagerContent>
         </MudTable>

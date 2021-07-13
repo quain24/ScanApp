@@ -1,9 +1,7 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ScanApp.Common.Extensions;
 
 namespace ScanApp.Common
 {
@@ -14,7 +12,6 @@ namespace ScanApp.Common
     /// <typeparam name="T">Type of property that will be validated</typeparam>
     public class FluentValidationWrapper<T> : AbstractValidator<T>
     {
-
         /// <summary>
         /// Creates simple wrapper to use <see cref="FluentValidation"/> inside of Razor files with <see cref="MudBlazor"/> components that support validation.
         /// </summary>

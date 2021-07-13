@@ -20,6 +20,7 @@ namespace ScanApp.Domain.Entities
         public int Number { get; set; }
 
         private TrafficDirection _direction;
+
         /// <summary>
         /// Gets or sets gate traffic flow direction. Indicates whether this gate handles incoming, outgoing or both way traffic.
         /// </summary>
@@ -66,6 +67,7 @@ namespace ScanApp.Domain.Entities
         }
 
         private Version _version = Version.Empty();
+
         /// <summary>
         /// Gets or sets entity Version (representation of RowVersion).
         /// </summary>

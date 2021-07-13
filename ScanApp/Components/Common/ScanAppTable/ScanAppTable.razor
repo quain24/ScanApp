@@ -45,10 +45,10 @@ else
                             }
                         </HeaderContent>
                         <RowTemplate>
-                        @foreach (var columnConfig in ColumnConfigs)
-                        {
-                            <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@columnConfig.PropInfo.GetValue(context, columnConfig)</MudTd>
-                        }
+                            @foreach (var columnConfig in ColumnConfigs)
+                                        {
+                                <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">@columnConfig.PropInfo.GetValue(context, columnConfig)</MudTd>
+                                        }
                         </RowTemplate>
                     </MudTable>
                 </MudTabPanel>
@@ -62,27 +62,27 @@ else
                       FixedHeader="true" Height="@Height" Breakpoint="Breakpoint.None" SortLabel="Sort By">
                 <HeaderContent>
                     @foreach (var columnConfig in ColumnConfigs)
-                    {
+                            {
                         <MudTh @onclick="() => SortBy(ScanAppTableSorter, columnConfig)">
                             @columnConfig.DisplayName
                             @if (ScanAppTableSorter.AscendingOrder == columnConfig.PropertyFullName)
-                            {
+                                    {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowUpward" />
-                            }
-                            else if (ScanAppTableSorter.DescendingOrder == columnConfig.PropertyFullName)
-                            {
+                                    }
+                                    else if (ScanAppTableSorter.DescendingOrder == columnConfig.PropertyFullName)
+                                    {
                                 <MudIcon Icon="@Icons.Material.Outlined.ArrowDownward" />
-                            }
+                                    }
                         </MudTh>
-                    }
+                            }
                 </HeaderContent>
                 <RowTemplate>
                     @foreach (var columnConfig in ColumnConfigs)
-                    {
+                            {
                         <MudTd @onclick="() => OpenEditDialog(context)" Style="font-size: small">
                             @columnConfig.PropInfo.GetValue(context, columnConfig)
                         </MudTd>
-                    }
+                            }
                 </RowTemplate>
             </MudTable>
         </MudPaper>
@@ -326,7 +326,7 @@ else
             BlockUi();
             if (ItemsDeletionRequested is not null)
             {
-                var deletionResult = ItemsDeletionRequested.Invoke(new List<TItem>() {item});
+                var deletionResult = ItemsDeletionRequested.Invoke(new List<TItem>() { item });
                 if (!deletionResult)
                 {
                     UnblockUi();

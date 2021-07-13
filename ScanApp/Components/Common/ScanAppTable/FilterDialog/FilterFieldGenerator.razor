@@ -47,7 +47,7 @@
         {
             if (!ColumnConfigs[i].IsFilterable)
                 continue;
-            
+
             if (ColumnConfigs[i].PropertyType.IsDateTime())
             {
                 GenerateBetweenDateTimeFilterFields(builder, i);
@@ -62,7 +62,6 @@
             }
         }
     };
-
 
     private void GenerateBetweenDateTimeFilterFields(RenderTreeBuilder builder, int index)
     {
@@ -120,27 +119,27 @@
         builder.OpenComponent(0, typeof(MudExpansionPanel));
         builder.AddAttribute(1, nameof(MudExpansionPanel.Text), ColumnConfigs[index].DisplayName);
         builder.AddAttribute(2, nameof(MudExpansionPanel.Style), "margin-left: 5px; margin-right: 5px;");
-        builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment) (builder2 =>
-        {
-            builder2.OpenComponent(4, typeof(MudTextField<>).MakeGenericType(ColumnConfigs[index].PropertyType));
-            builder2.AddAttribute(5, nameof(MudTextField<string>.Variant), Variant.Outlined);
-            builder2.AddAttribute(6, nameof(MudTextField<string>.Label), "Contains");
-            builder2.AddAttribute(7, nameof(MudTextField<string>.Immediate), true);
-            builder2.AddAttribute(8, nameof(MudTextField<string>.Validation), GetValidator(index));
-            builder2.AddAttribute(9, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
+        builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment)(builder2 =>
+       {
+           builder2.OpenComponent(4, typeof(MudTextField<>).MakeGenericType(ColumnConfigs[index].PropertyType));
+           builder2.AddAttribute(5, nameof(MudTextField<string>.Variant), Variant.Outlined);
+           builder2.AddAttribute(6, nameof(MudTextField<string>.Label), "Contains");
+           builder2.AddAttribute(7, nameof(MudTextField<string>.Immediate), true);
+           builder2.AddAttribute(8, nameof(MudTextField<string>.Validation), GetValidator(index));
+           builder2.AddAttribute(9, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
 
-            var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType);
+           var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType);
 
-            async Task EditContainsDelegate(dynamic obj)
-            {
-                Contains[index] = Convert.ToString(obj);
-            }
+           async Task EditContainsDelegate(dynamic obj)
+           {
+               Contains[index] = Convert.ToString(obj);
+           }
 
-            dynamic editContainsDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditContainsDelegate);
+           dynamic editContainsDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditContainsDelegate);
 
-            builder2.AddAttribute(10, nameof(MudTextField<string>.ValueChanged), editContainsDelegate);
-            builder2.CloseComponent();
-        }));
+           builder2.AddAttribute(10, nameof(MudTextField<string>.ValueChanged), editContainsDelegate);
+           builder2.CloseComponent();
+       }));
         builder.CloseComponent();
         builder.CloseRegion();
     }
@@ -177,7 +176,6 @@
             builder2.AddAttribute(13, nameof(MudNumericField<string>.Variant), Variant.Outlined);
             builder2.AddAttribute(14, nameof(MudNumericField<string>.Immediate), true);
             builder2.AddAttribute(15, nameof(MudNumericField<string>.Validation), GetValidator(index));
-
 
             async Task EditToDelegate(dynamic obj)
             {

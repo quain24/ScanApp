@@ -1,14 +1,12 @@
 ﻿using ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations;
+using ScanApp.Components.Common.ScanAppTable.Options;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using ScanApp.Components.Common.ScanAppTable.Options;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
 {
     public class FilteringOperationsFactory<TItem>
     {
-
         /// <summary>
         /// Creates a <see cref="FilteringOperationsFactory{TItem}"/> object with specific <paramref name="columnConfigs"/>
         /// and necessary values for filtering.
@@ -31,7 +29,7 @@ namespace ScanApp.Components.Common.ScanAppTable.FilterDialog
             ToDate = toDate;
             FromDecimal = fromDecimal;
             ToDecimal = toDecimal;
-            ColumnConfigs = columnConfigs ?? throw new ArgumentNullException(nameof(ColumnConfigs), 
+            ColumnConfigs = columnConfigs ?? throw new ArgumentNullException(nameof(ColumnConfigs),
                 "ColumnConfigs argument is null. Cannot run filtering without ColumnConfigs.");
             Length = ColumnConfigs.Count;
         }

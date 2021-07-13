@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using ScanApp.Components.Common.ScanAppTable.Options;
+﻿using ScanApp.Components.Common.ScanAppTable.Options;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.Common.ScanAppTable.FilterDialog.FilteringOperations
 {

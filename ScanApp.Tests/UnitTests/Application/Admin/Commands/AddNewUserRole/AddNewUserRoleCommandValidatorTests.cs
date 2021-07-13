@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
+using FluentValidation;
 using FluentValidation.Results;
+using FluentValidation.Validators;
 using Moq;
 using ScanApp.Application.Admin.Commands.AddNewUserRole;
 using ScanApp.Common.Validators;
 using ScanApp.Tests.TestExtensions;
 using System.Linq;
-using FluentValidation;
-using FluentValidation.Validators;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddNewUserRole

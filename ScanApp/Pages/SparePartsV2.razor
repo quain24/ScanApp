@@ -27,11 +27,10 @@
     </MudSelect>
 
     <MudTextField @ref="_articleIdField" @bind-Value="_articleId" Class="mb-10" Style="max-width: 300px; font-size: smaller" Immediate="true" Placeholder="Article ID" FullWidth="false" Validation="_articleNrValidator" />
-    
 
     <SCTable ReadOnly="@(_busyOutgoing || _busyIncoming)" Loading="_busyIncoming" TTableType="SparePartGUIModel" Configs="_configs" Data="_spareParts" Height="500"
              EditOnRowClick="true" FixedFooter="true" FixedHeader="true" SelectedItemChanged="RefreshStateOnSelectionChange" />
-    
+
     <div class="mt-5">
         <MudButton OnClick="ResetForm" Disabled="_busyOutgoing" Variant="Variant.Filled" Style="font-size: smaller" Class="ml-auto">Clear</MudButton>
         @if (_busyOutgoing)
@@ -49,15 +48,15 @@
     private readonly List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-                                .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
-                                .ColumnStyle("width: 75px;")
-                                .Groupable()
-                                .Editable()
-                                .Build(),
+                                    .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+                                    .ColumnStyle("width: 75px;")
+                                    .Groupable()
+                                    .Editable()
+                                    .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-                                .UnderName("Part name")
-                                .Groupable()
-                                .Build()
+                                    .UnderName("Part name")
+                                    .Groupable()
+                                    .Build()
         };
 
     private volatile bool _busyIncoming;

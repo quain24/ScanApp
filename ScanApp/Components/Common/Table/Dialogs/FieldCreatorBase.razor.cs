@@ -69,6 +69,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
         protected abstract RenderFragment CreateField(ColumnConfig<T> config);
 
         private bool _shouldRender = true;
+
         protected override bool ShouldRender() => _shouldRender;
 
         protected override void OnInitialized()

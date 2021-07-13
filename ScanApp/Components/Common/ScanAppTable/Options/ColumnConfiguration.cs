@@ -1,17 +1,18 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using ScanApp.Components.Common.ScanAppTable.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ColumnConfiguration<T>
     {
         private readonly Expression<Func<T, object>> _columnNameSelector;
+
         /// <summary>
         /// Validator that will be plugged into editing and filtering fields in the table.
         /// </summary>
@@ -26,7 +27,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         /// Full name of the property including hierarchy of objects if property is nested.
         /// Used in sorting, filtering, grouping for property identification.
         /// </summary>
-        public string PropertyFullName { get;}
+        public string PropertyFullName { get; }
 
         /// <summary>
         /// String that will be displayed in the column header.
@@ -65,8 +66,8 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         /// </summary>
         public bool IsGroupable { get; init; } = true;
 
-
         private DateTimeFormat.Show _dateTimeFormat;
+
         /// <summary>
         /// Represents how <see cref="DateTime"/> properties will be displayed in the table.
         /// </summary>
@@ -84,11 +85,12 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         }
 
         private object _default;
+
         /// <summary>
         /// Default value of the object that the user will be forced to use
         /// while adding a new item in the table.
         /// </summary>
-        /// 
+        ///
         public object Default
         {
             get => _default;
@@ -139,7 +141,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private PropertyInfo ExtractPropertyInfo()
         {
             try
-            { 
+            {
                 return _columnNameSelector.GetPropertyAccess();
             }
             catch
@@ -162,7 +164,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private string ExtractFullPropertyName()
         {
             var str = _columnNameSelector.Body.Print();
-            return str.Substring(str.IndexOf('.')+1);
+            return str.Substring(str.IndexOf('.') + 1);
         }
 
         private string SetDisplayName(string name)
@@ -194,6 +196,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
             }
             return errors;
         }
+
         /// <summary>
         /// Transforms validator into a form that is accepted by <see cref="MudBlazor"/> text fields.
         /// </summary>

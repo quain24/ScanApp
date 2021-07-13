@@ -1,6 +1,4 @@
-﻿using System.Transactions;
-
-namespace ScanApp.Components.Common.ScanAppTable.Options
+﻿namespace ScanApp.Components.Common.ScanAppTable.Options
 {
     public class ScanAppTableOptions
     {
@@ -9,7 +7,9 @@ namespace ScanApp.Components.Common.ScanAppTable.Options
         private readonly bool _allowAdding;
         private readonly bool _allowDeleting;
 
-        public ScanAppTableOptions() { }
+        public ScanAppTableOptions()
+        {
+        }
 
         public bool ShowToolBar { get; private set; }
         public bool ToolBarAlwaysOpened { get; set; }

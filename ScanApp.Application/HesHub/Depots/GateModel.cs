@@ -21,7 +21,7 @@ namespace ScanApp.Application.HesHub.Depots
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((GateModel) obj);
+            return Equals((GateModel)obj);
         }
 
         public override int GetHashCode()

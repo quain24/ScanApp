@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ScanApp.Components.Common.ScanAppTable.Utilities
 {
@@ -24,7 +22,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Utilities
 
             if (propName.Contains(".")) //complex type nested
             {
-                var temp = propName.Split(new char[] {'.'}, 2);
+                var temp = propName.Split(new char[] { '.' }, 2);
                 return GetNestedPropertyValue(GetNestedPropertyValue(src, temp[0]), temp[1]);
             }
             else
@@ -46,10 +44,10 @@ namespace ScanApp.Components.Common.ScanAppTable.Utilities
             if (targetObj is null) throw new ArgumentNullException("targetObj", "Target object cannot be null.");
             if (string.IsNullOrEmpty(propName))
                 throw new ArgumentNullException("propName", "Property name cannot be null or empty.");
-            
+
             var properties = propName.Split('.');
 
-            for (int i=0; i < (properties.Length - 1); i++)
+            for (int i = 0; i < (properties.Length - 1); i++)
             {
                 var propertyToGet = targetObj.GetType().GetProperty(properties[i]);
                 var propertyValue = propertyToGet?.GetValue(targetObj, null);

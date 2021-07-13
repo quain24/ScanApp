@@ -31,7 +31,7 @@
     <MudAutocomplete T="string" Label="Repair Workshop (LHM)" @bind-Value="_selectedRepairWorkshop" Validation="@_lhmValidator.Validation"
                      SearchFunc="@SearchRepairWorkshop" Required="true" CoerceText="true" ResetValueOnEmptyText="true"
                      Immediate="true" Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
-    <MudTextField @bind-Value="_article" @ref="@_articleTextField"Validation="@_articleValidator" Label="Article" Immediate="true"
+    <MudTextField @bind-Value="_article" @ref="@_articleTextField" Validation="@_articleValidator" Label="Article" Immediate="true"
                   Style="margin-left: 15px; margin-right: 15px; max-width: 490px;" Variant="Variant.Outlined" />
     &nbsp;
 </MudPaper>

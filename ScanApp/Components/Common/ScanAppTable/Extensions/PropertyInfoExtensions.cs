@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using ScanApp.Components.Common.ScanAppTable.Options;
+﻿using ScanApp.Components.Common.ScanAppTable.Options;
 using ScanApp.Components.Common.ScanAppTable.Utilities;
+using System;
+using System.Reflection;
 
 namespace ScanApp.Components.Common.ScanAppTable.Extensions
 {
@@ -39,7 +37,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
                     return propertyInfo.GetValue(obj);
                 }
             }
-            
+
             return propertyInfo.GetValue(obj);
         }
 
@@ -60,7 +58,7 @@ namespace ScanApp.Components.Common.ScanAppTable.Extensions
         {
             if (!columnConfiguration.PropertyType.IsDateTime())
             {
-                throw new ArgumentException( nameof(GetDateTimeValue) + " method should only be used with DateTime types!",
+                throw new ArgumentException(nameof(GetDateTimeValue) + " method should only be used with DateTime types!",
                     nameof(columnConfiguration.PropertyType));
             }
             if (columnConfiguration.IsNested)

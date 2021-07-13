@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -58,9 +58,11 @@ namespace ScanApp.Components.Common.Table.Dialogs
         }
 
         private bool _shouldRender = true;
+
         protected override bool ShouldRender() => _shouldRender || !_disposing;
 
         private bool _disposing;
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

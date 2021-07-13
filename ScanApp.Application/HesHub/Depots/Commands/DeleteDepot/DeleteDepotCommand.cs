@@ -1,13 +1,13 @@
-﻿using System;
-using System.Data.SqlClient;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
+using System;
+using System.Data.SqlClient;
+using System.Threading;
+using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Depots.Commands.DeleteDepot

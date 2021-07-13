@@ -54,7 +54,7 @@ namespace ScanApp.Components.Common.Table.Dialogs
             base.OnParametersSet();
             Configs = Configs.Where(c => c.IsFilterable);
         }
-        
+
         /// <summary>
         /// Create and retrieve <see cref="IFilter{T}"/> collection based on data provided by user.
         /// </summary>
