@@ -326,6 +326,7 @@ namespace ScanApp.Components.Common.Table
         private readonly HashSet<ColumnConfig<TTableType>> _groupables = new();
         private readonly List<IFilter<TTableType>> _filters = new();
         private readonly List<SCColumn<TTableType>> _columns = new();
+        private readonly ColumnStyleBuilder<TTableType> _columnStyleBuilder = new();
 
         /// <summary>
         /// Ensures that only one dialog can be displayed even when there are some serious network delays.
@@ -350,11 +351,17 @@ namespace ScanApp.Components.Common.Table
 
         protected override void OnInitialized()
         {
+            _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs, CultureInfo);
+        }
+
+        protected override void OnParametersSet()
+        {
             AssignColumnsByProperties();
             EnableAvailableFunctionality();
-            ColumnStyles = new ColumnStyleBuilder<TTableType>().BuildUsing(Configs);
+            ColumnStyles = _columnStyleBuilder.BuildUsing(Configs);
             RowStyleFunc ??= DefaultRowStyleFunc;
-            _dialogFacade = new DialogFacade<TTableType>(DialogService, Configs, CultureInfo);
+            _dialogFacade?.GetNewConfigs(Configs);
+            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         private void AssignColumnsByProperties()
@@ -395,11 +402,6 @@ namespace ScanApp.Components.Common.Table
             _editingEnabled = (Configs?.Any(c => c.IsEditable) ?? false) &&
                               (ShowEditButton is Show.Auto) || ShowEditButton is Show.Yes;
             _addingEnabled = (ItemFactory is not null && ShowAddButton is Show.Auto) || ShowAddButton is Show.Yes;
-        }
-
-        protected override void OnParametersSet()
-        {
-            CreateGroupsBasedOn(SelectedGroupable);
         }
 
         private void CreateGroupsBasedOn(ColumnConfig<TTableType> selectedColumn)
@@ -471,7 +473,7 @@ namespace ScanApp.Components.Common.Table
         private async Task SelectedItemHasChangedHandler(TTableType item)
         {
             // Do not handle if Edit on row click enabled - give control to 'OnRowClick'
-            if(EditOnRowClick) return;
+            if (EditOnRowClick) return;
             try
             {
                 await _dialogGuard.WaitAsync();
