@@ -150,7 +150,7 @@ namespace ScanApp.Components.Common.Table
         /// Called when a new item is successfully edited by integrated 'edit' table functionality and added to <see cref="Data"/> collection.
         /// </summary>
         /// <value>Callback providing original and edited <typeparamref name="TTableType" /> items.</value>
-        [Parameter] public EventCallback<(TTableType Original, TTableType Edited)> ItemHasBeenEdited { get; set; }
+        [Parameter] public EventCallback<(TTableType, TTableType)> ItemHasBeenEdited { get; set; }
 
         ///<inheritdoc cref="MudTableBase.MultiSelection" />
         [Parameter] public bool MultiSelection { get; set; }
@@ -445,23 +445,23 @@ namespace ScanApp.Components.Common.Table
             return _filters.Count == 0 ? data : data.Filter(_filters);
         }
 
-        private string FormatOutput(ColumnConfig<TTableType> config, TTableType context)
+        private MarkupString FormatOutput(ColumnConfig<TTableType> config, TTableType context)
         {
             return config.GetValueFrom(context) switch
             {
-                var v when config.Converter is not null => config.Converter.SetFunc(v) as string,
-                null => string.Empty,
+                var v when config.Converter is not null => new MarkupString(config.Converter.SetFunc(v)),
+                null => new MarkupString(),
                 var v and (DateTime or DateTimeOffset) => config.FieldType switch
                 {
-                    FieldType.AutoDetect => v.ToString("f", CultureInfo),
-                    FieldType.Date => v.ToString(CultureInfo.DateTimeFormat.ShortDatePattern),
-                    FieldType.Time => v.ToString("t", CultureInfo),
-                    FieldType.DateAndTime => v.ToString("g", CultureInfo),
-                    FieldType.PlainText => v.ToString(),
+                    FieldType.AutoDetect => new MarkupString(v.ToString("f", CultureInfo)),
+                    FieldType.Date => new MarkupString(v.ToString(CultureInfo.DateTimeFormat.ShortDatePattern)),
+                    FieldType.Time => new MarkupString(v.ToString("t", CultureInfo)),
+                    FieldType.DateAndTime => new MarkupString(v.ToString("g", CultureInfo)),
+                    FieldType.PlainText => new MarkupString(v.ToString()),
                     _ => throw new ArgumentOutOfRangeException(nameof(FieldType), $"Unknown value of {nameof(FieldType)} was used.")
                 },
-                var v and TimeSpan when config.FieldType is FieldType.Time or FieldType.AutoDetect => v.ToString("t", CultureInfo),
-                var v => v.ToString()
+                var v and TimeSpan when config.FieldType is FieldType.Time or FieldType.AutoDetect => new MarkupString(v.ToString("t", CultureInfo)),
+                var v => new MarkupString(v.ToString())
             };
         }
 

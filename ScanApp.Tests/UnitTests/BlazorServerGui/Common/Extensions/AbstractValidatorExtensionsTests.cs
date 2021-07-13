@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ScanApp.Common;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
@@ -32,19 +33,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
         [Fact]
         public void ToMudFormFieldValidator_creates_proper_delegate()
         {
-            var validatorMock = new Mock<AbstractValidator<string>>();
-            validatorMock.Setup(v => v.Validate(It.Is<ValidationContext<string>>(x =>
-                x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase))))
-                .Returns(new ValidationResult());
-            validatorMock.Setup(v => v.Validate(It.Is<ValidationContext<string>>(x =>
-                !x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase))))
-                .Returns(new ValidationResult(new[] { new ValidationFailure("property_name", "error") }));
-
-            var subject = validatorMock.Object.ToMudFormFieldValidator();
+            var t = new FluentValidationWrapper<string>(x => x.Equal("ok"));
+            var subject = t.ToMudFormFieldValidator();
 
             subject("ok").Should().BeEmpty();
-            subject("invalid").Should().HaveCount(1)
-                .And.Subject.First().Should().Be("error");
+            subject("invalid").Should().HaveCount(1);
         }
 
         [Fact]
@@ -102,19 +95,11 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions
         [Fact]
         public async Task ToAsyncMudFormFieldValidator_creates_proper_delegate()
         {
-            var validatorMock = new Mock<AbstractValidator<string>>();
-            validatorMock.Setup(v => v.ValidateAsync(It.Is<ValidationContext<string>>(x =>
-                    x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult());
-            validatorMock.Setup(v => v.ValidateAsync(It.Is<ValidationContext<string>>(x =>
-                    !x.InstanceToValidate.Equals("ok", StringComparison.OrdinalIgnoreCase)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("property_name", "error") }));
-
-            var subject = validatorMock.Object.ToAsyncMudFormFieldValidator();
+            var t = new FluentValidationWrapper<string>(x => x.Equal("ok"));
+            var subject = t.ToAsyncMudFormFieldValidator();
 
             (await subject("ok")).Should().BeEmpty();
-            (await subject("invalid")).Should().HaveCount(1)
-                .And.Subject.First().Should().Be("error");
+            (await subject("invalid")).Should().HaveCount(1);
         }
     }
 }

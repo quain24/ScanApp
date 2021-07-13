@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ScanApp.Common.Extensions;
 
 namespace ScanApp.Common
 {
@@ -13,23 +14,15 @@ namespace ScanApp.Common
     /// <typeparam name="T">Type of property that will be validated</typeparam>
     public class FluentValidationWrapper<T> : AbstractValidator<T>
     {
-        private readonly bool _allowNull;
-        private readonly string _nullMessage;
 
         /// <summary>
-        /// Creates simple wrapper to use <see cref="FluentValidation"/> inside of Razor files with <see cref="MudBlazor"/> components that support validation<para/>
-        /// Mind that <see langword="null"/> validation must be set using <paramref name="allowNull"/> - due to constraint of FluentValidation itself - it does not allow
-        /// context of validation when using <see cref="IValidator"/> to be <see langword="null"/>.
+        /// Creates simple wrapper to use <see cref="FluentValidation"/> inside of Razor files with <see cref="MudBlazor"/> components that support validation.
         /// </summary>
         /// <param name="rule">One rule / set of rules for created validator to use</param>
-        /// <param name="allowNull">If <see langword="true"/>, validation will treat <see langword="null"/> as valid.</param>
-        /// <param name="nullMessage">Error message used when validated property is <see langword="null"/>.</param>
-        public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule, bool allowNull = true, string nullMessage = null)
+        public FluentValidationWrapper(Action<IRuleBuilderInitial<T, T>> rule)
         {
-            _allowNull = allowNull;
             _ = rule ?? throw new ArgumentNullException(nameof(rule), "Validator wrapper should be given at least one rule to validate");
             rule(RuleFor(x => x));
-            _nullMessage = nullMessage ?? string.Empty;
         }
 
         private IEnumerable<string> ValidateValue(T arg)
@@ -40,14 +33,22 @@ namespace ScanApp.Common
                 : result.Errors.Select(e => e.ErrorMessage);
         }
 
-        protected override bool PreValidate(ValidationContext<T> context, ValidationResult result)
+        protected override void EnsureInstanceNotNull(object instanceToValidate)
         {
-            if (context.InstanceToValidate is null && _allowNull) return false;
-            if (context.InstanceToValidate is not null) return true;
-
-            result.Errors.Add(new ValidationFailure(context.PropertyName, _nullMessage?.Replace("{PropertyName}", context.PropertyName)));
-            return false;
+            // todo Testing replacement of prevalidate and usage of notempy / notnull in validators
         }
+
+        //protected override bool PreValidate(ValidationContext<T> context, ValidationResult result)
+        //{
+        //    if (context.InstanceToValidate is null && _allowNull) return false;
+        //    if (context.InstanceToValidate is not null) return true;
+
+        //    var name = CreateDescriptor()
+        //        .Rules
+        //        .FirstOrDefault(r => r.PropertyName is not null)?.PropertyName ?? "Value";
+        //    result.Errors.Add(new ValidationFailure(context.PropertyName, _nullMessage?.Replace("{PropertyName}", name)));
+        //    return false;
+        //}
 
         /// <summary>
         /// Gets delegate that can be used with <see cref="MudBlazor"/> components that support validation,<br/>

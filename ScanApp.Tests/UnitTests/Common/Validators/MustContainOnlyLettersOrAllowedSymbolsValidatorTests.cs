@@ -42,15 +42,5 @@ namespace ScanApp.Tests.UnitTests.Common.Validators
 
             result.IsValid.Should().BeFalse();
         }
-
-        [Fact]
-        public void Null_is_invalid()
-        {
-            var subject = new MustContainOnlyLettersOrAllowedSymbolsValidator();
-
-            var result = subject.Validate(null as string);
-
-            result.IsValid.Should().BeFalse();
-        }
     }
 }

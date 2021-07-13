@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Common.Validators;
 
 namespace ScanApp.Common.Installers
 {
     public static class FluentValidationCommonPropertyValidatorsInstaller
     {
+
         public static IServiceCollection AddCommonFluentValidationPropertyValidators(this IServiceCollection services)
         {
             //services.AddScoped(typeof(EmailValidator<,>), typeof(EmailValidator<,>));

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using System.Linq;
+using SharedExtensions;
 
 namespace ScanApp.Common.Validators
 {

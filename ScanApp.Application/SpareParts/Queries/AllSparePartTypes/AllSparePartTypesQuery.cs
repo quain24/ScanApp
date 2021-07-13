@@ -4,6 +4,7 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,10 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
             catch (OperationCanceledException ex)
             {
                 return new Result<List<SparePartTypeModel>>(ErrorType.Cancelled, ex);
+            }
+            catch (SqlException ex)
+            {
+                return new Result<List<SparePartTypeModel>>(ErrorType.DatabaseError, ex?.InnerException?.Message, ex);
             }
         }
     }

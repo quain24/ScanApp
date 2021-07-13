@@ -16,7 +16,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.5")
+                .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -243,6 +243,77 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.ToTable("ClaimsSource", "sca");
                 });
 
+            modelBuilder.Entity("ScanApp.Domain.Entities.Depot", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DefaultGateId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DefaultTrailerId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("DistanceFromHub")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasComment("This Row version is converted to 'Version' object in ScanApp");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefaultGateId");
+
+                    b.HasIndex("DefaultTrailerId");
+
+                    b.ToTable("Depots", "hub");
+                });
+
+            modelBuilder.Entity("ScanApp.Domain.Entities.Gate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasComment("This Row version is converted to 'Version' object in ScanApp");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.ToTable("Gates", "hub");
+                });
+
             modelBuilder.Entity("ScanApp.Domain.Entities.Location", b =>
                 {
                     b.Property<string>("Id")
@@ -267,6 +338,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ScanApp.Domain.Entities.SparePart", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Amount")
@@ -324,6 +396,43 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("SparePartTypes", "sca");
+                });
+
+            modelBuilder.Entity("ScanApp.Domain.Entities.Trailer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("LoadingTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(48)");
+
+                    b.Property<float>("MaxVolume")
+                        .HasColumnType("real");
+
+                    b.Property<float>("MaxWeight")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UnloadingTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(48)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion")
+                        .HasComment("This Row version is converted to 'Version' object in ScanApp");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Trailers", "hub");
                 });
 
             modelBuilder.Entity("ScanApp.Domain.Entities.UserLocation", b =>
@@ -404,6 +513,61 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ScanApp.Domain.Entities.Depot", b =>
+                {
+                    b.HasOne("ScanApp.Domain.Entities.Gate", "DefaultGate")
+                        .WithMany()
+                        .HasForeignKey("DefaultGateId");
+
+                    b.HasOne("ScanApp.Domain.Entities.Trailer", "DefaultTrailer")
+                        .WithMany()
+                        .HasForeignKey("DefaultTrailerId");
+
+                    b.OwnsOne("ScanApp.Domain.ValueObjects.Address", "Address", b1 =>
+                        {
+                            b1.Property<int>("DepotId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)")
+                                .HasColumnName("City");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)")
+                                .HasColumnName("Country");
+
+                            b1.Property<string>("StreetName")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)")
+                                .HasColumnName("StreetName");
+
+                            b1.Property<string>("ZipCode")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)")
+                                .HasColumnName("ZipCode");
+
+                            b1.HasKey("DepotId");
+
+                            b1.ToTable("Depots");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DepotId");
+                        });
+
+                    b.Navigation("Address")
+                        .IsRequired();
+
+                    b.Navigation("DefaultGate");
+
+                    b.Navigation("DefaultTrailer");
                 });
 
             modelBuilder.Entity("ScanApp.Domain.Entities.SparePart", b =>
