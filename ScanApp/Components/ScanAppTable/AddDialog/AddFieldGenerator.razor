@@ -1,0 +1,160 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using System.Linq.Expressions
+@using System.Reflection
+@using ScanApp.Components.ScanAppTable.Extensions
+@typeparam TItem
+
+@AddFields
+
+@code {
+    [Parameter]
+    public List<Options.ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
+
+    [Parameter]
+    public EventCallback<(int, object)> ItemChanged { get; set; }
+
+    [Parameter]
+    public TItem NewItem { get; set; }
+
+    private RenderFragment AddFields;
+
+    protected override void OnInitialized()
+    {
+        AddFields = GenerateAddFields();
+    }
+
+    private RenderFragment GenerateAddFields() => builder =>
+    {
+        for (int i = 0; i < ColumnConfigs.Count; i++)
+        {
+            if (ColumnConfigs[i].Default is not null)
+            {
+                GenerateNonEditableFieldWithDefaultValue(builder, i);
+            }
+            else if (ColumnConfigs[i].PropertyType.IsString())
+            {
+                GenerateTextFields(builder, i);
+            }
+            else if (ColumnConfigs[i].PropertyType.IsDateTime())
+            {
+                GenerateDatePickers(builder, i);
+            }
+            else if (ColumnConfigs[i].PropertyType.IsIntegerOrDecimal())
+            {
+                GenerateNumericFields(builder, i);
+            }
+        }
+    };
+
+    private void GenerateNonEditableFieldWithDefaultValue(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(0);
+        builder.OpenComponent(0, typeof(MudField));
+        builder.AddAttribute(1, nameof(MudField.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(2, nameof(MudField.Variant), Variant.Filled);
+        builder.AddAttribute(3, nameof(MudField.ChildContent), (RenderFragment)(builder2 =>
+        {
+            builder2.AddContent(4, ColumnConfigs[index].Default.ToString());
+        }));
+        builder.CloseComponent();
+        builder.CloseRegion();
+        ColumnConfigs[index].PropInfo.SetValue(NewItem, ColumnConfigs[index].Default);
+    }
+
+    private void GenerateTextFields(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(1);
+        Type nullableType = ColumnConfigs[index].PropertyType.GetNullableType();
+        builder.OpenComponent(0, typeof(MudTextField<>).MakeGenericType(nullableType));
+        builder.AddAttribute(1, nameof(MudTextField<string>.Variant), Variant.Outlined);
+        builder.AddAttribute(2, nameof(MudTextField<string>.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(3, nameof(MudTextField<string>.Immediate), true);
+        builder.AddAttribute(4, nameof(MudTextField<string>.Validation), GetNullableValidator(index));
+        builder.AddAttribute(5, nameof(MudTextField<string>.ValueChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(6, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
+
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateDatePickers(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(2);
+        builder.OpenComponent(0, typeof(MudDatePicker));
+        builder.AddAttribute(1, nameof(MudDatePicker.Elevation), 7);
+        builder.AddAttribute(2, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
+        builder.AddAttribute(3, nameof(MudDatePicker.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(4, nameof(MudDatePicker.Editable), true);
+        builder.AddAttribute(5, nameof(MudDatePicker.ShowWeekNumbers), true);
+        builder.AddAttribute(6, nameof(MudDatePicker.DateChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(7, nameof(MudDatePicker.Validation), GetNullableValidator(index));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateNumericFields(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(3);
+        Type nullableType = ColumnConfigs[index].PropertyType.GetNullableType();
+        builder.OpenComponent(0, typeof(MudNumericField<>).MakeGenericType(nullableType));
+        builder.AddAttribute(1, nameof(MudNumericField<string>.Variant), Variant.Outlined);
+        builder.AddAttribute(2, nameof(MudNumericField<string>.Label), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(3, nameof(MudNumericField<string>.Immediate), true);
+        builder.AddAttribute(4, nameof(MudNumericField<string>.Validation), GetNullableValidator(index));
+        builder.AddAttribute(5, nameof(MudNumericField<string>.ValueChanged), CreateNullableEditDelegate(index));
+        builder.AddAttribute(6, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
+
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private dynamic CreateEditDelegate(int iterator)
+    {
+        var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[iterator].PropertyType);
+
+        async Task EditDelegate(dynamic obj)
+        {
+            await ItemChanged.InvokeAsync((iterator, obj));
+        }
+
+        return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
+    }
+
+    private dynamic CreateNullableEditDelegate(int iterator)
+    {
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
+        var callbackType = typeof(EventCallback<>).MakeGenericType(nullableType);
+
+        async Task EditDelegate(dynamic obj)
+        {
+            await ItemChanged.InvokeAsync((iterator, obj));
+        }
+
+        return Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditDelegate);
+    }
+
+    private Delegate GetValidator(int iterator)
+    {
+        var methodInfo = ColumnConfigs[iterator]
+            .GetType()
+            .GetMethod("Validate")
+            ?.MakeGenericMethod(ColumnConfigs[iterator].PropertyType);
+        var validatorFuncType = Expression.GetDelegateType(ColumnConfigs[iterator].PropertyType, typeof(IEnumerable<string>));
+        return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
+    }
+
+    private Delegate GetNullableValidator(int iterator)
+    {
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
+
+        var methodInfo = ColumnConfigs[iterator]
+            .GetType()
+            .GetMethod("Validate")
+            ?.MakeGenericMethod(nullableType);
+        var validatorFuncType = Expression.GetDelegateType(nullableType, typeof(IEnumerable<string>));
+        return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
+    }
+}

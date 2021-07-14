@@ -1,0 +1,106 @@
+﻿@typeparam TItem
+@using System.Reflection;
+@using ScanApp.Components.ScanAppTable.Options
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.CleaningServices" />
+            Filter
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
+                    <MudExpansionPanels MultiExpansion="true">
+                        <FilterFieldGenerator ColumnConfigs="ColumnConfigs" KeyPressed="KeyPressed" From="From" To="To" Contains="Contains" FromDate="FromDate" ToDate="ToDate"
+                                              FromDecimal="FromDecimal" ToDecimal="ToDecimal" />
+                    </MudExpansionPanels>
+                </MudForm>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Disabled="_okDisabled" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; }
+
+    [Parameter]
+    public List<Options.ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
+
+    [Parameter]
+    public ScanAppTableOptions Options { get; set; }
+
+    private int?[] From { get; set; }
+    private int?[] To { get; set; }
+    private string[] Contains { get; set; }
+    private DateTime?[] FromDate { get; set; }
+    private DateTime?[] ToDate { get; set; }
+    private decimal?[] FromDecimal { get; set; }
+    private decimal?[] ToDecimal { get; set; }
+    private MudForm _form;
+    private bool _okDisabled;
+
+    protected override void OnInitialized()
+    {
+        int length = ColumnConfigs.Count;
+        From = new int?[length];
+        To = new int?[length];
+        Contains = new string[length];
+        FromDate = new DateTime?[length];
+        ToDate = new DateTime?[length];
+        FromDecimal = new decimal?[length];
+        ToDecimal = new decimal?[length];
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Submit()
+    {
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        var properties = new PropertyInfo[ColumnConfigs.Count];
+        for (int i = 0; i < ColumnConfigs.Count; i++)
+        {
+            properties[i] = ColumnConfigs[i].PropInfo;
+        }
+        var filteringOperationFactory = new FilteringOperationsFactory<TItem>(ColumnConfigs, From, To, Contains, FromDate, ToDate, FromDecimal, ToDecimal);
+        var filteringOperations = filteringOperationFactory.CreateOperations();
+
+        foreach (var operation in filteringOperations)
+        {
+            Items = operation.Run(Items);
+        }
+
+        MudDialog.Close(DialogResult.Ok(Items));
+    }
+
+    private void KeyPressed(KeyboardEventArgs keyboardEventArg)
+    {
+        if (keyboardEventArg.Key != "Enter" && !_okDisabled)
+        {
+            return;
+        }
+        Submit();
+    }
+
+    private void OnValidationChanged(bool isFormValid)
+    {
+        _okDisabled = !isFormValid;
+    }
+}

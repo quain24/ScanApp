@@ -1,0 +1,301 @@
+﻿@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin.Queries.GetAllUserData
+@using ScanApp.Application.Admin.Commands.EditUserData
+@using Severity = MudBlazor.Severity
+@using ScanApp.Application.Admin.Commands.DeleteUser
+@using ScanApp.Common.Extensions
+@using Version = ScanApp.Domain.ValueObjects.Version
+@using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Commands.ChangeUserSecurityStamp
+@using ScanApp.Domain.Entities
+
+@inject IDialogService DialogService
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    <MudItem xs="12" lg="5" Class="mx-auto">
+        <MudTable Class="px-2" RowStyleFunc="RowStyleFunc" Outlined="false" Bordered="true" Striped="true" Elevation="0" Breakpoint="Breakpoint.None" T="BasicUserModel" Items="@Users"
+                  SelectedItem="SelectedUser" SelectedItemChanged="@OnSelectedUserChange" RowsPerPage="5"
+                  Filter="new Func<BasicUserModel, bool>(FilterUsers)" OnRowClick="@(async args => await FillUserData(args))" Hover="true" Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudToolBarSpacer />
+                <MudTextField @bind-Value="_searchStringName" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd Style="height: 51px; padding-left: 5px">@context.Name</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new[] {5, 10, 20}" />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xs="12" lg="7" Class="mx-auto">
+        <MudCard Elevation="0" Outlined="false">
+            <MudCardContent Class="px-0">
+                <UserDataForm @bind-Success="_success" @bind-User="_userData" Locations="Locations" DisablePassword="true" EditingDisabled="@_editDisabled" />
+                <MudButton OnClick="@OpenPasswordChangeDialog" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Change password</MudButton>
+                <MudButton OnClick="@OnLogOffUser" Class="mt-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(string.IsNullOrWhiteSpace(_userData.Name) || !_editDisabled)">Log-off selected user</MudButton>
+            </MudCardContent>
+            <MudCardActions Class="mt-n1 pl-0 pt-0">
+                @if (_editVisible)
+                {
+                    <MudButton OnClick="@EnterEditMode" Class="ml-0" Variant="Variant.Filled" Color="Color.Warning" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Edit user</MudButton>
+                    <MudButton OnClick="@OpenAddUserDialog" Class="ml-2" Variant="Variant.Filled" Color="Color.Success" Disabled="!_editDisabled">Add user</MudButton>
+                    <MudButton OnClick="@DeleteHandler" Class="ml-2" Variant="Variant.Filled" Color="Color.Error" Disabled="!CanEnableDelete()">Remove user</MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="@ExitEditMode" Class="ml-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="string.IsNullOrWhiteSpace(_userData.Name)">Cancel edit</MudButton>
+                }
+                <MudButton OnClick="@SaveHandler" Class="ml-2 mr-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanEnableSave()">Save changes</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    [Parameter]
+    public List<Location> Locations { get; set; }
+
+    [Parameter]
+    public List<BasicUserModel> Users { get; set; }
+    [Parameter]
+    public EventCallback<List<BasicUserModel>> UsersChanged { get; set; }
+
+    [Parameter]
+    public BasicUserModel SelectedUser { get; set; }
+    [Parameter]
+    public EventCallback<BasicUserModel> SelectedUserChanged { get; set; }
+
+    [Parameter]
+    public string SelectedRowStyle { get; set; }
+
+    private bool _success = true;
+
+    private UserInfoModel _userData = new();
+    private UserInfoModel _originalUserData = new();
+    private bool _editDisabled = true;
+    private bool _editVisible = true;
+    private string _searchStringName;
+    private string _lastCheckedUserName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (SelectedUser is not null)
+            await FillUserData(null);
+    }
+
+    async Task OnSelectedUserChange(BasicUserModel user)
+    {
+
+        SelectedUser = user;
+        await SelectedUserChanged.InvokeAsync(user);
+    }
+
+    private async Task OpenAddUserDialog()
+    {
+        var dialog = DialogService.Show<AddUserDialog>("Add new user",
+            new DialogParameters { ["Locations"] = Locations },
+            Globals.Gui.DefaultDialogOptions);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var newUser = result.Data as BasicUserModel;
+            Users.Add(newUser);
+            Users.Sort();
+            await UsersChanged.InvokeAsync(Users);
+        }
+    }
+
+    private async Task OpenPasswordChangeDialog()
+    {
+        var dialog = DialogService.Show<ChangePasswordDialog>($"Password change - {SelectedUser.Name}",
+            new DialogParameters { ["User"] = SelectedUser },
+            Globals.Gui.DefaultDialogOptions);
+
+        var res = await dialog.Result;
+
+        if (res.Cancelled)
+            return;
+
+        var stamp = res.Data as Version;
+        SelectedUser.Version = stamp;
+        await SelectedUserChanged.InvokeAsync(SelectedUser);
+        _originalUserData.Version = stamp;
+        _userData.Version = stamp;
+    }
+
+    private async Task OnLogOffUser()
+    {
+        var answer = await DialogService.ShowMessageBox(
+            $"Log-off user {SelectedUser.Name}?",
+            $"Are you sure you want to Log-off user {SelectedUser.Name}?",
+            "Yes", null, "Cancel", Globals.Gui.DefaultDialogOptions);
+
+        if (!answer ?? true)
+            return;
+
+        var result = await Mediator.SendScoped(new ChangeUserSecurityStampCommand(SelectedUser.Name, SelectedUser.Version));
+
+        if (!result.Conclusion)
+        {
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        SelectedUser.Version = result.Output;
+        await SelectedUserChanged.InvokeAsync(SelectedUser);
+        await UsersChanged.InvokeAsync(Users);
+    }
+
+    private bool CanEnableSave()
+    {
+        if (_userData is null || _originalUserData is null)
+            return false;
+        return !_userData.EqualWithoutDate(_originalUserData) && _success && !_editDisabled;
+    }
+
+    private bool CanEnableDelete()
+    {
+        if (SelectedUser is null || _userData is null)
+            return false;
+        return _editDisabled;
+    }
+
+    private async Task DeleteHandler()
+    {
+        if ((await AuthenticationStateTask).IsItMe(SelectedUser.Name))
+        {
+            Snackbar.Add("Cannot delete your own user account", Severity.Warning);
+            return;
+        }
+
+        var answer = await DialogService.ShowMessageBox(
+            "Confirm deletion",
+            $"Are you sure you want to delete user {SelectedUser.Name}?",
+            "Delete", null, "Cancel", Globals.Gui.DefaultDialogOptions);
+
+        if (!answer ?? true)
+            return;
+
+        var result = await Mediator.SendScoped(new DeleteUserCommand(SelectedUser.Name));
+
+        if (!result.Conclusion)
+        {
+            Snackbar.Add(result.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        Users.Remove(SelectedUser);
+        await UsersChanged.InvokeAsync(Users);
+        Snackbar.Add($"{SelectedUser.Name} has been deleted.", Severity.Success);
+        _userData = new();
+        _originalUserData = new();
+        _lastCheckedUserName = string.Empty;
+        await SelectedUserChanged.InvokeAsync(null);
+    }
+
+    private async Task SaveHandler()
+    {
+        var res = await Mediator.SendScoped(new EditUserDataCommand(SelectedUser.Name, SelectedUser.Version)
+        {
+            Phone = _userData.Phone,
+            Email = _userData.Email,
+            NewName = _userData.Name,
+            Location = _userData.Location
+        });
+
+        if (!res.Conclusion)
+        {
+            Snackbar.Add(res.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        var newUserData = new BasicUserModel(_userData.Name, res.Output);
+        Users[Users.FindIndex(ind => ind.Name.Equals(_originalUserData.Name))] = newUserData;
+        _originalUserData = _userData;
+        _originalUserData.Version = res.Output;
+
+        Users.Sort();
+        await Task.WhenAll(UsersChanged.InvokeAsync(Users), SelectedUserChanged.InvokeAsync(newUserData));
+        Snackbar.Add("User data has been updated.", Severity.Success);
+        ExitEditMode();
+
+    }
+
+    private async Task FillUserData(TableRowClickEventArgs<BasicUserModel> args)
+    {
+        ExitEditMode();
+
+        if (SelectedUser?.Name.Equals(_lastCheckedUserName) ?? false)
+            return;
+
+        var result = await Mediator.SendScoped(new GetAllUserDataQuery(SelectedUser?.Name));
+
+        if (!result.Conclusion)
+        {
+            Snackbar.Add(result.ErrorDescription?.ErrorMessage, Severity.Error);
+            return;
+        }
+
+        _userData = result.Output;
+        _originalUserData = new UserInfoModel(result.Output);
+        _lastCheckedUserName = SelectedUser?.Name;
+
+        var basicUser = new BasicUserModel(_userData.Name, _userData.Version);
+
+        if (Users.Contains(basicUser) is false)
+        {
+            var staleUser = Users.FirstOrDefault(u => u.Name.Equals(basicUser.Name, StringComparison.OrdinalIgnoreCase));
+            if (staleUser is null) return;
+            staleUser.Version = basicUser.Version;
+            await UsersChanged.InvokeAsync(Users);
+        }
+
+        StateHasChanged();
+    }
+
+    private void EnterEditMode()
+    {
+        if (_editDisabled)
+        {
+            _editVisible = false;
+            _editDisabled = false;
+            _originalUserData = new UserInfoModel(_userData);
+        }
+    }
+
+    private void ExitEditMode()
+    {
+        if (!_editDisabled)
+        {
+            _editDisabled = true;
+            _editVisible = true;
+            _userData = _originalUserData;
+        }
+    }
+
+    private bool FilterUsers(BasicUserModel user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchStringName))
+            return true;
+        return user?.Name.Contains(_searchStringName, StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+
+    private string RowStyleFunc(BasicUserModel rowValue, int rowNumber)
+    {
+        return rowValue?.Name?.Equals(SelectedUser?.Name) ?? false
+            ? SelectedRowStyle ?? string.Empty
+            : string.Empty;
+    }
+}
