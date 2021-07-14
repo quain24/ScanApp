@@ -27,11 +27,13 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
 
             builder.HasOne(e => e.DefaultTrailer)
                 .WithMany()
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(e => e.DefaultGate)
                 .WithMany()
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Property(e => e.Version)
                 .HasComment("This Row version is converted to 'Version' object in ScanApp")
