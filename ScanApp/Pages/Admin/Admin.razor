@@ -1,0 +1,118 @@
+﻿@attribute [Authorize(Roles = "Administrator")]
+@page "/admin"
+@using ScanApp.Application.Common.Interfaces
+@using ScanApp.Application.Admin.Queries.GetAllUserRoles
+@using ScanApp.Application.Admin.Queries.GetAllUsersBasicData
+@using ScanApp.Application.Admin
+@using ScanApp.Application.Admin.Queries.GetLocationList
+@using ScanApp.Domain.Entities
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IScopedMediator Mediator
+@inject ISnackbar Snackbar
+
+@inherits OwningComponentBase
+<MudContainer MaxWidth="MaxWidth.False">
+
+    <MudText Typo="Typo.h4" GutterBottom="true">Admin page</MudText>
+    <MudDivider DividerType="DividerType.Middle" Class="mb-3"></MudDivider>
+    <MudSwipeArea OnSwipe="@OnSwipe">
+        <MudTabs @ref="_tabPanel" Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Border="false" Outlined="false" TabPanelClass="mb-1" KeepPanelsAlive="false">
+            <MudTabPanel Text="User Management">
+                <UserEditor @bind-SelectedUser="_selectedUser" @bind-Users="@_users" Locations="@_locations" SelectedRowStyle="@_selectedRowStyle" />
+            </MudTabPanel>
+            <MudTabPanel Text="Role Management">
+                <UserRolesManager @bind-SelectedUser="_selectedUser" Roles="@_roles" Users="@_users" SelectedRowStyle="@_selectedRowStyle" />
+            </MudTabPanel>
+            <MudTabPanel Text="Claim management">
+                <RoleClaimManager Roles="@_roles" RolesChanged="@RetrieveAllRoleNames" SelectedRowStyle="@_selectedRowStyle" />
+            </MudTabPanel>
+        </MudTabs>
+    </MudSwipeArea>
+</MudContainer>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>
+    AuthenticationStateTask
+    { get; set; }
+
+    private MudTabs _tabPanel;
+
+    private List<BasicUserModel> _users = new();
+    private List<BasicRoleModel> _roles = new();
+    private List<Location> _locations = new();
+    private BasicUserModel _selectedUser;
+    private bool _shouldRender = true;
+    private string _selectedRowStyle = "background-color: lightgrey";
+
+    protected override bool ShouldRender() => _shouldRender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await Task.WhenAll(RetrieveAllUserNames(), RetrieveAllRoleNames(), RetrieveAllLocations());
+    }
+
+    private void OnSwipe(SwipeDirection direction)
+    {
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+        switch (direction)
+        {
+            case SwipeDirection.RightToLeft when _tabPanel.ActivePanelIndex < 2:
+                _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex + 1);
+                break;
+            case SwipeDirection.LeftToRight when _tabPanel.ActivePanelIndex > 0:
+                _tabPanel.ActivatePanel(_tabPanel.ActivePanelIndex - 1);
+                break;
+        }
+        StateHasChanged();
+    }
+
+    private async Task RetrieveAllUserNames()
+    {
+        var usersResult = await Mediator.SendScoped(new GetAllUsersBasicDataQuery());
+        if (usersResult.Conclusion is false)
+        {
+            Snackbar.Add(usersResult.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        usersResult.Output.Sort();
+        _users = usersResult.Output;
+    }
+
+    private async Task RetrieveAllRoleNames()
+    {
+        var roleResult = await Mediator.SendScoped(new GetAllUserRolesQuery());
+
+        if (roleResult.Conclusion is false)
+        {
+            Snackbar.Add(roleResult.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        roleResult.Output.Sort();
+        _roles = roleResult.Output;
+    }
+
+    private async Task RetrieveAllLocations()
+    {
+        var locations = await Mediator.Send(new GetLocationListQuery());
+
+        if (locations.Conclusion is false)
+        {
+            Snackbar.Add(locations.ErrorDescription?.ToString(), Severity.Error);
+            return;
+        }
+
+        locations.Output.Sort((location, other) => string.CompareOrdinal(location.Name, other.Name));
+        _locations = locations.Output;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _shouldRender = false;
+        base.Dispose(disposing);
+    }
+
+}

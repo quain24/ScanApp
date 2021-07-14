@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UnitTests\BlazorServerGui\Components\Common\ScanAppTable\EditDialog\" />
+    <Folder Include="UnitTests\BlazorServerGui\Components\ScanAppTable\EditDialog\" />
   </ItemGroup>
 
 </Project>

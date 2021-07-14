@@ -1,0 +1,218 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using System.Linq.Expressions
+@using ScanApp.Components.ScanAppTable.Extensions
+@typeparam TItem
+
+@FilterFields
+
+@code {
+    [Parameter]
+    public List<Options.ColumnConfiguration<TItem>> ColumnConfigs { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEventArgs> KeyPressed { get; set; }
+
+    [Parameter]
+    public int?[] From { get; set; }
+
+    [Parameter]
+    public int?[] To { get; set; }
+
+    [Parameter]
+    public string[] Contains { get; set; }
+
+    [Parameter]
+    public DateTime?[] FromDate { get; set; }
+
+    [Parameter]
+    public DateTime?[] ToDate { get; set; }
+
+    [Parameter]
+    public decimal?[] FromDecimal { get; set; }
+
+    [Parameter]
+    public decimal?[] ToDecimal { get; set; }
+
+    private RenderFragment FilterFields { get; set; }
+
+    protected override void OnInitialized()
+    {
+        FilterFields = GenerateFilterFields();
+    }
+
+    private RenderFragment GenerateFilterFields() => builder =>
+    {
+        for (int i = 0; i < ColumnConfigs.Count; i++)
+        {
+            if (!ColumnConfigs[i].IsFilterable)
+                continue;
+
+            if (ColumnConfigs[i].PropertyType.IsDateTime())
+            {
+                GenerateBetweenDateTimeFilterFields(builder, i);
+            }
+            else if (ColumnConfigs[i].PropertyType.IsString())
+            {
+                GenerateContainsFilterFields(builder, i);
+            }
+            else if (ColumnConfigs[i].PropertyType.IsIntegerOrDecimal())
+            {
+                GenerateBetweenFilterFields(builder, i);
+            }
+        }
+    };
+
+    private void GenerateBetweenDateTimeFilterFields(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(0);
+        builder.OpenComponent(0, typeof(MudExpansionPanel));
+        builder.AddAttribute(1, nameof(MudExpansionPanel.Text), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(2, nameof(MudExpansionPanel.Style), "margin-left: 5px; margin-right: 5px;");
+        builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment)(builder2 =>
+        {
+            builder2.OpenComponent(4, typeof(MudDatePicker));
+            builder2.AddAttribute(5, nameof(MudDatePicker.Label), "Between this date");
+            builder2.AddAttribute(6, nameof(MudDatePicker.Elevation), 7);
+            builder2.AddAttribute(7, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
+            builder2.AddAttribute(8, nameof(MudDatePicker.Editable), true);
+            builder2.AddAttribute(9, nameof(MudDatePicker.ShowWeekNumbers), true);
+            builder2.AddAttribute(10, nameof(MudDatePicker.Validation), GetValidator(index));
+
+            var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType.GetNullableType());
+
+            async Task EditFromDateDelegate(dynamic obj)
+            {
+                FromDate[index] = Convert.ToDateTime(obj);
+            }
+
+            dynamic editFromDateDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditFromDateDelegate);
+
+            builder2.AddAttribute(11, nameof(MudDatePicker.DateChanged), editFromDateDelegate);
+            builder2.CloseComponent();
+
+            builder2.OpenComponent(12, typeof(MudDatePicker));
+            builder2.AddAttribute(13, nameof(MudDatePicker.Label), "and this date");
+            builder2.AddAttribute(14, nameof(MudDatePicker.Elevation), 7);
+            builder2.AddAttribute(15, nameof(MudDatePicker.PickerVariant), PickerVariant.Dialog);
+            builder2.AddAttribute(16, nameof(MudDatePicker.Editable), true);
+            builder2.AddAttribute(17, nameof(MudDatePicker.ShowWeekNumbers), true);
+            builder2.AddAttribute(18, nameof(MudDatePicker.Validation), GetValidator(index));
+
+            async Task EditToDateDelegate(dynamic obj)
+            {
+                ToDate[index] = Convert.ToDateTime(obj);
+            }
+
+            dynamic editToDateDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditToDateDelegate);
+
+            builder2.AddAttribute(19, nameof(MudDatePicker.DateChanged), editToDateDelegate);
+            builder2.CloseComponent();
+        }));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateContainsFilterFields(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(1);
+        builder.OpenComponent(0, typeof(MudExpansionPanel));
+        builder.AddAttribute(1, nameof(MudExpansionPanel.Text), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(2, nameof(MudExpansionPanel.Style), "margin-left: 5px; margin-right: 5px;");
+        builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment)(builder2 =>
+       {
+           builder2.OpenComponent(4, typeof(MudTextField<>).MakeGenericType(ColumnConfigs[index].PropertyType));
+           builder2.AddAttribute(5, nameof(MudTextField<string>.Variant), Variant.Outlined);
+           builder2.AddAttribute(6, nameof(MudTextField<string>.Label), "Contains");
+           builder2.AddAttribute(7, nameof(MudTextField<string>.Immediate), true);
+           builder2.AddAttribute(8, nameof(MudTextField<string>.Validation), GetValidator(index));
+           builder2.AddAttribute(9, nameof(MudTextField<string>.OnKeyPress), KeyPressed);
+
+           var callbackType = typeof(EventCallback<>).MakeGenericType(ColumnConfigs[index].PropertyType);
+
+           async Task EditContainsDelegate(dynamic obj)
+           {
+               Contains[index] = Convert.ToString(obj);
+           }
+
+           dynamic editContainsDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditContainsDelegate);
+
+           builder2.AddAttribute(10, nameof(MudTextField<string>.ValueChanged), editContainsDelegate);
+           builder2.CloseComponent();
+       }));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private void GenerateBetweenFilterFields(RenderTreeBuilder builder, int index)
+    {
+        builder.OpenRegion(2);
+        builder.OpenComponent(0, typeof(MudExpansionPanel));
+        builder.AddAttribute(1, nameof(MudExpansionPanel.Text), ColumnConfigs[index].DisplayName);
+        builder.AddAttribute(2, nameof(MudExpansionPanel.Style), "margin-left: 5px; margin-right: 5px;");
+        builder.AddAttribute(3, nameof(MudExpansionPanel.ChildContent), (RenderFragment)(builder2 =>
+        {
+            Type type = ColumnConfigs[index].PropertyType.GetNullableType();
+            builder2.OpenComponent(4, typeof(MudNumericField<>).MakeGenericType(type));
+            builder2.AddAttribute(5, nameof(MudNumericField<string>.Label), "Between this value");
+            builder2.AddAttribute(6, nameof(MudNumericField<string>.Variant), Variant.Outlined);
+            builder2.AddAttribute(7, nameof(MudNumericField<string>.Immediate), true);
+            builder2.AddAttribute(8, nameof(MudNumericField<string>.Validation), GetValidator(index));
+
+            var callbackType = typeof(EventCallback<>).MakeGenericType(type);
+
+            async Task EditFromDelegate(dynamic obj)
+            {
+                FromDecimal[index] = Convert.ToDecimal(obj);
+            }
+
+            dynamic editFromDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditFromDelegate);
+
+            builder2.AddAttribute(9, nameof(MudNumericField<string>.ValueChanged), editFromDelegate);
+            builder2.AddAttribute(10, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
+            builder2.CloseComponent();
+            builder2.OpenComponent(11, typeof(MudNumericField<>).MakeGenericType(type));
+            builder2.AddAttribute(12, nameof(MudNumericField<string>.Label), "and this value");
+            builder2.AddAttribute(13, nameof(MudNumericField<string>.Variant), Variant.Outlined);
+            builder2.AddAttribute(14, nameof(MudNumericField<string>.Immediate), true);
+            builder2.AddAttribute(15, nameof(MudNumericField<string>.Validation), GetValidator(index));
+
+            async Task EditToDelegate(dynamic obj)
+            {
+                ToDecimal[index] = Convert.ToDecimal(obj);
+            }
+
+            dynamic editToDelegate = Activator.CreateInstance(callbackType, this, (Func<dynamic, Task>)EditToDelegate);
+
+            builder2.AddAttribute(17, nameof(MudNumericField<string>.ValueChanged), editToDelegate);
+            builder2.AddAttribute(18, nameof(MudNumericField<string>.OnKeyPress), KeyPressed);
+            builder2.CloseComponent();
+        }));
+        builder.CloseComponent();
+        builder.CloseRegion();
+    }
+
+    private Delegate GetValidator(int iterator)
+    {
+        var methodInfo =
+            ColumnConfigs[iterator]
+                .GetType()
+                .GetMethod("Validate")
+                ?.MakeGenericMethod(ColumnConfigs[iterator].PropertyType);
+        var validatorFuncType = Expression.GetDelegateType(ColumnConfigs[iterator].PropertyType, typeof(IEnumerable<string>));
+        return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
+    }
+
+    private Delegate GetValidatorWithNullableType(int iterator)
+    {
+        Type nullableType = ColumnConfigs[iterator].PropertyType.GetNullableType();
+
+        var methodInfo =
+            ColumnConfigs[iterator]
+                .GetType()
+                .GetMethod("Validate")
+                ?.MakeGenericMethod(nullableType);
+        var validatorFuncType = Expression.GetDelegateType(nullableType, typeof(IEnumerable<string>));
+        return Delegate.CreateDelegate(validatorFuncType, ColumnConfigs[iterator], methodInfo);
+    }
+
+}

@@ -1,17 +1,17 @@
 ﻿@page "/spareparts"
-@using ScanApp.Components.Common.ScanAppTable
+@using ScanApp.Components.ScanAppTable
 @using ScanApp.Application.Common.Interfaces
 @using ScanApp.Application.SpareParts
 @using ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 @using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser
 @using ScanApp.Application.SpareParts.Commands.CreateSpareParts
 @using ScanApp.Common
-@using ScanApp.Components.Common.ScanAppTable.Options
 @using ScanApp.Models.SpareParts
 @using ScanApp.Common.Extensions
 @using ScanApp.Common.Validators
 @using Severity = MudBlazor.Severity
 @using FluentValidation
+@using ScanApp.Components.ScanAppTable.Options
 @inject IScopedMediator mediator
 @inject ISnackbar Snackbar
 @inject ArticleNumberValidator ArticleNumberValidator
