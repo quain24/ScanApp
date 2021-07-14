@@ -666,7 +666,7 @@ namespace ScanApp.Components.Table
                 return Height < 1 ? null : Height + "px";
 
             // rows in group * row height + header height and some
-            var theoreticalSize = (rows * 38) + 120;
+            var theoreticalSize = (rows * 38) + 160;
 
             // 70% for nested table, so user can grab below nested table and drag to other groupings
             return (theoreticalSize > Height * 0.7 ? Height * 0.7 : theoreticalSize) + "px";
