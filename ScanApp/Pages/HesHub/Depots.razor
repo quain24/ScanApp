@@ -24,7 +24,7 @@
     <MudText Typo="Typo.h2">Depots</MudText>
     <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
-             ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit">
+             ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit" EditDialogOpened="@(() => _editDialogOpen = true)" EditDialogClosed="@(() => _editDialogOpen = false)">
         <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(6)"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
     </SCTable>
 
@@ -42,6 +42,7 @@
     private List<GateModel> _gates = new();
     private List<TrailerTypeModel> _trailerTypes = new();
     private DepotModel _selectedDepot;
+    private bool _editDialogOpen;
 
     private List<ColumnConfig<DepotModel>> _configs = new();
 
@@ -199,7 +200,7 @@
                 {
                     x.GreaterThanOrEqualTo(0)
                     .Must(id => _depots.Any(d => d.Id == id) is false)
-                    .When(id => _selectedDepot is null || id != _selectedDepot.Id, ApplyConditionTo.CurrentValidator)
+                    .When(id => _selectedDepot is null || id != _selectedDepot.Id || _editDialogOpen is false, ApplyConditionTo.CurrentValidator)
                     .WithMessage("{PropertyName} must be unique.");
                 }))
                 .Build(),
@@ -241,6 +242,7 @@
                 }))
                 .Build(),
             ColumnBuilder<DepotModel>.For(x => x.ZipCode).Editable()
+                .UnderName("Zip code")
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotEmpty()

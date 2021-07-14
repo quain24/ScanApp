@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
+using ScanApp.Components.Common.Table.Dialogs;
 using ScanApp.Components.Common.Table.Enums;
 using ScanApp.Components.Common.Table.Utilities;
 using System;
@@ -9,7 +10,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Components.Common.Table.Dialogs;
 
 namespace ScanApp.Components.Common.Table
 {
@@ -177,6 +177,36 @@ namespace ScanApp.Components.Common.Table
                 SelectedItemsChanged.InvokeAsync(value);
             }
         }
+
+        /// <summary>
+        /// Called when Edit dialog has been opened.
+        /// </summary>
+        [Parameter] public EventCallback EditDialogOpened { get; set; }
+
+        /// <summary>
+        /// Called when Edit dialog has been closed.
+        /// </summary>
+        [Parameter] public EventCallback EditDialogClosed { get; set; }
+
+        /// <summary>
+        /// Called when Add dialog has been opened.
+        /// </summary>
+        [Parameter] public EventCallback AddDialogOpened { get; set; }
+
+        /// <summary>
+        /// Called when Add dialog has been closed.
+        /// </summary>
+        [Parameter] public EventCallback AddDialogClosed { get; set; }
+
+        /// <summary>
+        /// Called when Filter dialog has been opened.
+        /// </summary>
+        [Parameter] public EventCallback FilterDialogOpened { get; set; }
+
+        /// <summary>
+        /// Called when Filter dialog has been closed.
+        /// </summary>
+        [Parameter] public EventCallback FilterDialogClosed { get; set; }
 
         /// <summary>
         /// Gets or sets collection of configuration objects used to set all properties and behaviors of corresponding columns in table.
@@ -367,6 +397,8 @@ namespace ScanApp.Components.Common.Table
 
         private void AssignColumnsByProperties()
         {
+            _comparables.Clear();
+            _groupables.Clear();
             foreach (var config in Configs)
             {
                 if (CanBeComparedDirectly(config))
@@ -520,14 +552,24 @@ namespace ScanApp.Components.Common.Table
         /// <returns>Awaitable task.</returns>
         public async Task OpenEditItemDialog()
         {
-            if (_editingEnabled is false || ReadOnly) return;
+            try
+            {
+                if (_editingEnabled is false || ReadOnly) return;
+                if (EditDialogOpened.HasDelegate)
+                    await EditDialogOpened.InvokeAsync();
 
-            var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight,
-                EditDialogInvalidFieldsStartExpanded, SelectedItem);
-            if (result.Cancelled)
-                return;
+                var result = await _dialogFacade.ShowEditDialog(EditDialogStartsExpanded, MaxDialogContentHeight,
+                    EditDialogInvalidFieldsStartExpanded, SelectedItem);
+                if (result.Cancelled)
+                    return;
 
-            await OnEditItemHandler((TTableType)result.Data);
+                await OnEditItemHandler((TTableType)result.Data);
+            }
+            finally
+            {
+                if (EditDialogClosed.HasDelegate)
+                    await EditDialogClosed.InvokeAsync();
+            }
         }
 
         private async Task OnEditItemHandler(TTableType editedItem)
@@ -551,6 +593,8 @@ namespace ScanApp.Components.Common.Table
             try
             {
                 await _dialogGuard.WaitAsync();
+                if (AddDialogOpened.HasDelegate)
+                    await AddDialogOpened.InvokeAsync();
 
                 var result = await _dialogFacade.ShowAddDialog(MaxDialogContentHeight, ItemFactory);
                 if (result.Cancelled)
@@ -559,6 +603,8 @@ namespace ScanApp.Components.Common.Table
             }
             finally
             {
+                if (AddDialogClosed.HasDelegate)
+                    await AddDialogClosed.InvokeAsync();
                 _dialogGuard.Release();
             }
         }
@@ -579,6 +625,8 @@ namespace ScanApp.Components.Common.Table
             try
             {
                 await _dialogGuard.WaitAsync();
+                if (FilterDialogOpened.HasDelegate)
+                    await FilterDialogOpened.InvokeAsync();
                 var result = await _dialogFacade.ShowFilterDialog(FilterDialogStartsExpanded, MaxDialogContentHeight);
                 if (result.Cancelled)
                     return;
@@ -591,6 +639,8 @@ namespace ScanApp.Components.Common.Table
             }
             finally
             {
+                if (FilterDialogClosed.HasDelegate)
+                    await FilterDialogClosed.InvokeAsync();
                 _dialogGuard.Release();
             }
         }
