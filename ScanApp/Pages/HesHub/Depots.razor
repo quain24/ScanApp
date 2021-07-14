@@ -199,7 +199,7 @@
                 {
                     x.GreaterThanOrEqualTo(0)
                     .Must(id => _depots.Any(d => d.Id == id) is false)
-                    .When(id => _selectedDepot is null || id != _selectedDepot.Id)
+                    .When(id => _selectedDepot is null || id != _selectedDepot.Id, ApplyConditionTo.CurrentValidator)
                     .WithMessage("{PropertyName} must be unique.");
                 }))
                 .Build(),
