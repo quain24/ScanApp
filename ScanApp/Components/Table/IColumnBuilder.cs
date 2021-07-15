@@ -32,8 +32,17 @@ namespace ScanApp.Components.Table
         /// <summary>
         /// Set converter that will be used to translate from and to a <see cref="SCTable{TTableType}"/> display-friendly format.
         /// </summary>
+        /// <typeparam name="TType">Type being converted.</typeparam>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
         IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter);
+        
+        /// <summary>
+        /// Set converter that will be used to translate from and to a <see cref="SCTable{TTableType}"/> display-friendly format.
+        /// </summary>
+        /// <typeparam name="TIn">Type being converted.</typeparam>
+        /// <typeparam name="TOut">Type to which values will be converted.</typeparam>
+        /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
+        IColumnBuilder<T> ConvertUsing<TIn, TOut>(Converter<TIn, TOut> converter);
 
         /// <summary>
         /// Parent <see cref="SCTable{TTableType}"/> will be allowed to edit item pointed to by this instance of <see cref="ColumnConfig{T}"/>.

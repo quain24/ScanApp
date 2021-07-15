@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using FluentValidation;
+﻿using FluentValidation;
 using MudBlazor;
 using ScanApp.Common.Extensions;
 using ScanApp.Domain.Common;
 using ScanApp.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using TypeExtensions = ScanApp.Common.Extensions.TypeExtensions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -334,6 +334,20 @@ namespace ScanApp.Components.Table
             if (typeof(TType) != PropertyType)
             {
                 throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TType).FullName})");
+            }
+            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            return this;
+        }
+
+        /// <inheritdoc cref="AssignConverter{TType}"/>
+        /// <typeparam name="TIn">Type being converted.</typeparam>
+        /// <typeparam name="TOut">Type to which values will be converted</typeparam>
+        /// <param name="converter">Object performing conversion.</param>
+        public ColumnConfig<T> AssignConverter<TIn, TOut>(MudBlazor.Converter<TIn, TOut> converter)
+        {
+            if (typeof(TIn) != PropertyType)
+            {
+                throw new ArgumentException($"Given converter does not output compatible type (property - {PropertyType.FullName}), converter - {typeof(TIn).FullName})");
             }
             Converter = converter ?? throw new ArgumentNullException(nameof(converter));
             return this;
