@@ -1,8 +1,8 @@
-﻿using System;
+﻿using FluentValidation;
+using MudBlazor;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using FluentValidation;
-using MudBlazor;
 
 namespace ScanApp.Components.Table
 {
@@ -87,6 +87,12 @@ namespace ScanApp.Components.Table
         }
 
         public IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter)
+        {
+            _converter = converter;
+            return this;
+        }
+
+        public IColumnBuilder<T> ConvertUsing<TIn, TOut>(MudBlazor.Converter<TIn, TOut> converter)
         {
             _converter = converter;
             return this;

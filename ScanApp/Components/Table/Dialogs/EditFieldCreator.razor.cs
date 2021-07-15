@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Helpers;
 using SharedExtensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ScanApp.Components.Table.Dialogs
 {
@@ -175,7 +175,13 @@ namespace ScanApp.Components.Table.Dialogs
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
             {
-                TargetItem = config.SetValue(TargetItem, obj);
+                TargetItem = config.Converter switch
+                {
+                    var c when c is null || ConverterReturnsString(config) => config.SetValue(TargetItem, obj),
+                    var c when c.GetFunc is not null => config.SetValue(TargetItem, config.Converter.GetFunc(obj)),
+                    _ => config.SetValue(TargetItem, obj)
+                };
+
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
 
@@ -187,7 +193,8 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Validation), validatorDelegate);
 
             // Apply custom converter for get / set value if there is one (from text/int/etc to object and vice-versa)
-            if (config.Converter is not null)
+            // Only for 'to-string' converters (MudBlazor limitation). Conversions for other types are handled in edit delegate.
+            if (config.Converter is not null && ConverterReturnsString(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Converter), config.Converter);
 
             // Set common options
@@ -202,6 +209,11 @@ namespace ScanApp.Components.Table.Dialogs
 
             // Finish component
             builder.CloseComponent();
+        }
+
+        private static bool ConverterReturnsString(ColumnConfig<T> config)
+        {
+            return config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(config.PropertyType, typeof(string)));
         }
 
         private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)
@@ -220,7 +232,8 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateFormat), CultureInfo.DateTimeFormat.ShortDatePattern);
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Culture), CultureInfo);
             }
-            if (config.Converter is not null)
+
+            if (ShouldConvertDateTime(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), validatorDelegate);
@@ -253,6 +266,12 @@ namespace ScanApp.Components.Table.Dialogs
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
+        private static bool ShouldConvertDateTime(ColumnConfig<T> config) => config.Converter switch
+        {
+            null => false,
+            _ when config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(typeof(DateTime?), typeof(string))) => true,
+            _ => throw new ArgumentException("Date field can only use converters that take nullable DateTime as input and output string.")
+        };
 
         private void CreateFieldReference(object o, ColumnConfig<T> config)
         {
@@ -267,6 +286,7 @@ namespace ScanApp.Components.Table.Dialogs
                 _fieldReferences.Add(config, o);
             }
         }
+
 
         private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
@@ -305,7 +325,7 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeFormat), CultureInfo.DateTimeFormat.ShortTimePattern);
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Culture), CultureInfo);
             }
-            if (config.Converter is not null)
+            if (ShouldConvertTimeSpan(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validatorDelegate);
@@ -337,6 +357,13 @@ namespace ScanApp.Components.Table.Dialogs
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReferenceForTimeInDateTime(o as MudTimePicker, config));
             builder.CloseComponent();
         }
+
+        private static bool ShouldConvertTimeSpan(ColumnConfig<T> config) => config.Converter switch
+        {
+            null => false,
+            _ when config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(typeof(TimeSpan?), typeof(string))) => true,
+            _ => throw new ArgumentException("Time field can only use converters that take nullable TimeSpan as input and output string.")
+        };
 
         private void CreateFieldReferenceForTimeInDateTime(MudTimePicker o, ColumnConfig<T> config)
         {

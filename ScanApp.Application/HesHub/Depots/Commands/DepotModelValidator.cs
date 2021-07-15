@@ -46,6 +46,8 @@ namespace ScanApp.Application.HesHub.Depots.Commands
                 .When(x => x.DefaultTrailer is not null);
             RuleFor(x => x.Version)
                 .NotNull();
+            RuleFor(x => x.DistanceToDepot)
+                .GreaterThanOrEqualTo(0);
         }
 
         protected override bool PreValidate(ValidationContext<DepotModel> context, ValidationResult result)

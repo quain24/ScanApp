@@ -25,8 +25,10 @@
     <MudText Typo="Typo.h2">Depots</MudText>
     <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
-             ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit" EditDialogOpened="@(() => _editDialogOpen = true)" EditDialogClosed="@(() => _editDialogOpen = false)">
+             ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit" EditDialogOpened="@(() => _editDialogOpen = true)" EditDialogClosed="@(() => _editDialogOpen = false)"
+             FixedHeader="true" Height="650">
         <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(6)"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(8)">@($"{context.DistanceToDepot} km")</SCColumn>
     </SCTable>
 
     <div class="d-flex justify-content-start mt-3">
@@ -270,6 +272,15 @@
                         .MaximumLength(30)
                         .SetValidator(new PhoneNumberValidator());
                 }))
+                .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.DistanceToDepot).Editable()
+                .UnderName("Distance to depot")
+                .ValidateUsing(new FluentValidationWrapper<double>(x => x.GreaterThanOrEqualTo(0)))
+                .ConvertUsing(new MudBlazor.Converter<double, double>()
+                {
+                    SetFunc = x => Math.Round(x, 2, MidpointRounding.AwayFromZero),
+                    GetFunc = x => Math.Round(x, 2, MidpointRounding.AwayFromZero)
+                })
                 .Build(),
             ColumnBuilder<DepotModel>.For(x => x.DefaultGate).Editable()
                 .UnderName("Default gate")

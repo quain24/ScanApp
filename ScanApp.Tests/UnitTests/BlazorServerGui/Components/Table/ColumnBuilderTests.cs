@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Moq;
 using ScanApp.Components.Table;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table
@@ -137,6 +137,19 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table
 
             ((object)subject.Converter).Should().NotBeNull()
                 .And.BeAssignableTo<MudBlazor.Converter<string>>();
+        }
+
+        [Fact]
+        public void Builds_with_converter_dual_generic()
+        {
+            var converter = Mock.Of<MudBlazor.Converter<string, string>>();
+            var subject = ColumnBuilder<PropertyPathTestsFixtures.TestObject>
+                .For(x => x.AString)
+                .ConvertUsing(converter)
+                .Build();
+
+            ((object)subject.Converter).Should().NotBeNull()
+                .And.BeAssignableTo<MudBlazor.Converter<string, string>>();
         }
 
         [Fact]

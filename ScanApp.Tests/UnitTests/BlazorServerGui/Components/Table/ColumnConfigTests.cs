@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentValidation;
 using FluentValidation.Results;
@@ -10,6 +6,10 @@ using Moq;
 using MudBlazor;
 using ScanApp.Common;
 using ScanApp.Components.Table;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using Xunit;
 using Xunit.Abstractions;
 using static ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table.ColumnConfigFixtures;
@@ -436,6 +436,46 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table
         }
 
         [Fact]
+        public void AssignConverter_dual_generic_accepts_and_sets_valid_converter()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(new MudBlazor.Converter<string, string>());
+
+            act.Should().NotThrow();
+            ((object)subject.Converter).Should().BeOfType<MudBlazor.Converter<string, string>>()
+                .And.NotBeNull();
+        }
+
+        [Fact]
+        public void AssignConverter_dual_generic_accepts_and_sets_converter_with_different_out_type_then_converted_object()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(new MudBlazor.Converter<string, double>());
+
+            act.Should().NotThrow();
+            ((object)subject.Converter).Should().BeOfType<MudBlazor.Converter<string, double>>()
+                .And.NotBeNull();
+        }
+
+        [Fact]
+        public void AssignConverter_dual_generic_throws_arg_null_exc_when_given_converter_is_null()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(null as MudBlazor.Converter<string, string>);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void AssignConverter_dual_generic_throws_arg_exc_when_given_converter_does_not_match_targets_type()
+        {
+            var subject = new ColumnConfig<TestObject>(c => c.AString);
+            Action act = () => subject.AssignConverter(new MudBlazor.Converter<int, string>());
+
+            act.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
         public void LimitAcceptedValues_accepts_valid_collection()
         {
             var subject = new ColumnConfig<TestObject>(c => c.AString);
@@ -445,7 +485,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table
             subject.AllowedValues.Should().BeEquivalentTo(new[] { "b", "a" });
         }
 
-        [Theory] [ClassData(typeof(ComparableEquatableValueFixture))]
+        [Theory]
+        [ClassData(typeof(ComparableEquatableValueFixture))]
         public void LimitAcceptedValues_takes_objects_implementing_IComparable_or_IEquatable_or_derive_from_ValueObject_or_default_types_that_are_comparable(Expression<Func<TestObject, object>> target, dynamic value, Type collectionType)
         {
             var subject = new ColumnConfig<TestObject>(target);
