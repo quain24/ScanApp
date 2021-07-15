@@ -232,7 +232,8 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.DateFormat), CultureInfo.DateTimeFormat.ShortDatePattern);
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Culture), CultureInfo);
             }
-            if (config.Converter is not null)
+
+            if (ShouldConvertDateTime(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudDatePicker.Validation), validatorDelegate);
@@ -265,6 +266,12 @@ namespace ScanApp.Components.Table.Dialogs
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
+        private static bool ShouldConvertDateTime(ColumnConfig<T> config) => config.Converter switch
+        {
+            null => false,
+            _ when config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(typeof(DateTime?), typeof(string))) => true,
+            _ => throw new ArgumentException("Date field can only use converters that take nullable DateTime as input and output string.")
+        };
 
         private void CreateFieldReference(object o, ColumnConfig<T> config)
         {
@@ -279,6 +286,7 @@ namespace ScanApp.Components.Table.Dialogs
                 _fieldReferences.Add(config, o);
             }
         }
+
 
         private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {
@@ -317,7 +325,7 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.TimeFormat), CultureInfo.DateTimeFormat.ShortTimePattern);
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Culture), CultureInfo);
             }
-            if (config.Converter is not null)
+            if (ShouldConvertTimeSpan(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Converter), config.Converter);
             if (Validators.TryGetValue(config, out var validatorDelegate))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTimePicker.Validation), validatorDelegate);
@@ -349,6 +357,13 @@ namespace ScanApp.Components.Table.Dialogs
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReferenceForTimeInDateTime(o as MudTimePicker, config));
             builder.CloseComponent();
         }
+
+        private static bool ShouldConvertTimeSpan(ColumnConfig<T> config) => config.Converter switch
+        {
+            null => false,
+            _ when config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(typeof(TimeSpan?), typeof(string))) => true,
+            _ => throw new ArgumentException("Time field can only use converters that take nullable TimeSpan as input and output string.")
+        };
 
         private void CreateFieldReferenceForTimeInDateTime(MudTimePicker o, ColumnConfig<T> config)
         {
