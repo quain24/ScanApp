@@ -486,7 +486,8 @@ namespace ScanApp.Components.Table
         {
             return config.GetValueFrom(context) switch
             {
-                var v when config.Converter is not null => new MarkupString(config.Converter.SetFunc(v)),
+                // Additional 'ToString()' because of support for non-string returning converters.
+                var v when config.Converter is not null => new MarkupString(config.Converter.SetFunc(v).ToString()),
                 null => new MarkupString(),
                 var v and (DateTime or DateTimeOffset) => config.FieldType switch
                 {
