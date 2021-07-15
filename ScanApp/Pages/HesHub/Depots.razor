@@ -271,6 +271,10 @@
                         .SetValidator(new PhoneNumberValidator());
                 }))
                 .Build(),
+            ColumnBuilder<DepotModel>.For(x => x.DistanceToDepot).Editable()
+                .UnderName("Distance to depot")
+                .ValidateUsing(new FluentValidationWrapper<double>(x => x.GreaterThanOrEqualTo(0)))
+                .Build(),
             ColumnBuilder<DepotModel>.For(x => x.DefaultGate).Editable()
                 .UnderName("Default gate")
                 .ConvertUsing(new Converter<GateModel>()
