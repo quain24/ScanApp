@@ -35,7 +35,10 @@ namespace ScanApp.Components.Table
         /// <inheritdoc cref="MudTableBase.FixedFooter" />
         [Parameter] public bool FixedFooter { get; set; }
 
-        /// <inheritdoc cref="MudTableBase.Height" />
+        /// <summary>
+        /// Gets or sets height of the table.
+        /// </summary>
+        /// <value>Table height in pixels.</value>
         [Parameter] public int Height { get; set; }
 
         /// <inheritdoc cref="MudTableBase.Outlined" />
