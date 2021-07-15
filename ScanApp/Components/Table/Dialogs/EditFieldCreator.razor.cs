@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using ScanApp.Common.Helpers;
 using SharedExtensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ScanApp.Components.Table.Dialogs
 {
@@ -175,7 +175,13 @@ namespace ScanApp.Components.Table.Dialogs
             var callbackType = typeof(EventCallback<>).MakeGenericType(config.PropertyType);
             async Task EditDelegate(dynamic obj)
             {
-                TargetItem = config.SetValue(TargetItem, obj);
+                TargetItem = config.Converter switch
+                {
+                    var c when c is null || ConverterReturnsString(config) => config.SetValue(TargetItem, obj),
+                    var c when c.GetFunc is not null => config.SetValue(TargetItem, config.Converter.GetFunc(obj)),
+                    _ => config.SetValue(TargetItem, obj)
+                };
+
                 await TargetItemChanged.InvokeAsync(TargetItem);
             }
 
@@ -187,7 +193,8 @@ namespace ScanApp.Components.Table.Dialogs
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Validation), validatorDelegate);
 
             // Apply custom converter for get / set value if there is one (from text/int/etc to object and vice-versa)
-            if (config.Converter is not null)
+            // Only for 'to-string' converters (MudBlazor limitation). Conversions for other types are handled in edit delegate.
+            if (config.Converter is not null && ConverterReturnsString(config))
                 builder.AddAttribute(LineNumber.Get(), nameof(MudTextField<string>.Converter), config.Converter);
 
             // Set common options
@@ -202,6 +209,11 @@ namespace ScanApp.Components.Table.Dialogs
 
             // Finish component
             builder.CloseComponent();
+        }
+
+        private static bool ConverterReturnsString(ColumnConfig<T> config)
+        {
+            return config.Converter.GetType().IsAssignableTo(typeof(MudBlazor.Converter<,>).MakeGenericType(config.PropertyType, typeof(string)));
         }
 
         private void CreateDateFields(RenderTreeBuilder builder, ColumnConfig<T> config)

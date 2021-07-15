@@ -274,6 +274,11 @@
             ColumnBuilder<DepotModel>.For(x => x.DistanceToDepot).Editable()
                 .UnderName("Distance to depot")
                 .ValidateUsing(new FluentValidationWrapper<double>(x => x.GreaterThanOrEqualTo(0)))
+                .ConvertUsing(new MudBlazor.Converter<double, double>()
+                {
+                    SetFunc = x => Math.Round(x, 2, MidpointRounding.AwayFromZero),
+                    GetFunc = x => Math.Round(x, 2, MidpointRounding.AwayFromZero)
+                })
                 .Build(),
             ColumnBuilder<DepotModel>.For(x => x.DefaultGate).Editable()
                 .UnderName("Default gate")
