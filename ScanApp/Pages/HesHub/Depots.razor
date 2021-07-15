@@ -27,6 +27,7 @@
              MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit" EditDialogOpened="@(() => _editDialogOpen = true)" EditDialogClosed="@(() => _editDialogOpen = false)">
         <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(6)"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
+        <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(8)">@($"{context.DistanceToDepot} km")</SCColumn>
     </SCTable>
 
     <div class="d-flex justify-content-start mt-3">
