@@ -60,7 +60,7 @@ namespace ScanApp.Components.Table
         [Parameter]
         public CultureInfo CultureInfo
         {
-            get => _cultureInfo ?? CultureInfo.CurrentCulture;
+            get => _cultureInfo ?? CultureInfo.CurrentUICulture;
             set => _cultureInfo = value;
         }
 
