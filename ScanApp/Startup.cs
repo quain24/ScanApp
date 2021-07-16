@@ -35,6 +35,7 @@ namespace ScanApp
             services.AddRazorPages();
             services.AddServerSideBlazor().AddCircuitOptions(o => o.DetailedErrors = _env.IsDevelopment());
 
+            services.AddLocalization();
             services.AddSecurityConfiguration();
             services.AddMediatR();
             services.AddInfrastructureServices(Configuration);
@@ -70,6 +71,10 @@ namespace ScanApp
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseRequestLocalization(new RequestLocalizationOptions()
+                .AddSupportedCultures("pl-PL", "de-DE", "en-GB", "en-US")
+                .AddSupportedUICultures("pl-PL", "de-DE", "en-GB", "en-US"));
 
             app.UseAuthentication();
             app.UseAuthorization();
