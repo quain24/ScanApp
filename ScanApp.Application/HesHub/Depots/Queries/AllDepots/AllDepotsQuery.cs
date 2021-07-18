@@ -27,7 +27,7 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
-                var result = ctx
+                var result = await ctx
                     .Depots
                     .AsNoTracking()
                     .Include(e => e.DefaultGate)
@@ -56,7 +56,9 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
                             Name = h.DefaultTrailer.Name,
                             Version = h.DefaultTrailer.Version
                         } : null
-                    }).ToList();
+                    })
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
 
                 return new Result<List<DepotModel>>(result);
             }
