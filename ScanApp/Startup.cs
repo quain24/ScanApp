@@ -9,7 +9,6 @@ using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Installers;
 using ScanApp.Common.Installers;
 using ScanApp.Common.Services;
-using ScanApp.Data;
 using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
 
@@ -47,7 +46,6 @@ namespace ScanApp
             services.AddHttpContextAccessor();
             services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeService).Assembly });
             services.AddCommonFluentValidationPropertyValidators();
-            services.AddSingleton<WeatherForecastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
