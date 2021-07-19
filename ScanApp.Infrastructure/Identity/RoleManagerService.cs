@@ -6,6 +6,7 @@ using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
@@ -14,10 +15,12 @@ namespace ScanApp.Infrastructure.Identity
     public class RoleManagerService : IRoleManager
     {
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IContextFactory _factory;
 
-        public RoleManagerService(RoleManager<IdentityRole> roleManager)
+        public RoleManagerService(RoleManager<IdentityRole> roleManager, IContextFactory factory)
         {
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager), $"Could not inject {nameof(RoleManager<IdentityRole>)}.");
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
         public async Task<Result<List<BasicRoleModel>>> GetAllRoles()
@@ -41,6 +44,17 @@ namespace ScanApp.Infrastructure.Identity
             return role is null
                 ? new Result(ErrorType.NotFound)
                 : (await _roleManager.DeleteAsync(role).ConfigureAwait(false)).AsResult();
+        }
+
+        public async Task<List<string>> UsersInRole(string roleName, CancellationToken token = default)
+        {
+            await using var ctx = _factory.CreateDbContext();
+
+            return await _roleManager.Roles.AsNoTracking().Where(x => x.Name.Equals(roleName))
+                .Join(ctx.UserRoles, role => role.Id, userRole => userRole.RoleId, (_, userRole) => userRole.UserId)
+                .Join(ctx.Users, id => id, user => user.Id, (_, user) => user.UserName)
+                .ToListAsync(token)
+                .ConfigureAwait(false);
         }
 
         public async Task<Result> EditRoleName(string name, string newName)
