@@ -20,15 +20,28 @@ namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
     internal class RemoveUserFromRoleCommandHandler : IRequestHandler<RemoveUserFromRoleCommand, Result<Version>>
     {
         private readonly IUserManager _userManager;
+        private readonly IRoleManager _roleManager;
 
-        public RemoveUserFromRoleCommandHandler(IUserManager userManager)
+        public RemoveUserFromRoleCommandHandler(IUserManager userManager, IRoleManager roleManager)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
-        public Task<Result<Version>> Handle(RemoveUserFromRoleCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(RemoveUserFromRoleCommand request, CancellationToken cancellationToken)
         {
-            return _userManager.RemoveUserFromRole(request.UserName, request.Version, request.RoleName);
+            if (request.RoleName.Equals(Globals.RoleNames.Administrator))
+            {
+                var adminUsers = await _roleManager.UsersInRole(Globals.RoleNames.Administrator, cancellationToken).ConfigureAwait(false);
+                if (adminUsers.Count == 1 && adminUsers[0].Equals(request.UserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Result<Version>(ErrorType.IllegalAccountOperation,
+                        $"Cannot remove user from {Globals.RoleNames.Administrator} role - no more users with " +
+                        $"{Globals.RoleNames.Administrator} role would be left.");
+                }
+            }
+
+            return await _userManager.RemoveUserFromRole(request.UserName, request.Version, request.RoleName);
         }
     }
 }
