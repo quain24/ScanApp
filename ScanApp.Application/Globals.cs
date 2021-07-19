@@ -21,5 +21,6 @@ namespace Globals
     {
         public const string AdminModule = "Admin";
         public const string SparePartsModule = "SpareParts";
+        public const string Depots = "Depots";
     }
 }
