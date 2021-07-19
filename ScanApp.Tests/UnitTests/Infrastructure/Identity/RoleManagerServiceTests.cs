@@ -21,7 +21,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             sut.Should().NotBeNull()
                 .And.Subject
@@ -33,7 +33,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         [Fact]
         public void Will_throw_if_no_RoleManager_was_given()
         {
-            Action act = () => new RoleManagerService(null);
+            Action act = () => new RoleManagerService(null, Mock.Of<IContextFactory>());
 
             act.Should().Throw<ArgumentNullException>();
         }
@@ -44,7 +44,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roles = RoleGeneratorFixture.CreateRoleCollection();
             var roleManagerMock = RoleManagerFixture.MockRoleManager(roles);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.GetAllRoles();
 
@@ -60,7 +60,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var comparedRoles = RoleGeneratorFixture.CreateRoleCollection();
             var roleManagerMock = RoleManagerFixture.MockRoleManager(roles);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.AddNewRole("new_role");
 
@@ -82,7 +82,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleToDelete = RoleGeneratorFixture.CreateRoleCollection()[0];
             var roleManagerMock = RoleManagerFixture.MockRoleManager(findByNameResult: roleToDelete);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.RemoveRole(roleToDelete.Name);
 
@@ -96,7 +96,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleToDelete = new IdentityRole("role_to_delete");
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.RemoveRole(roleToDelete.Name);
 
@@ -121,7 +121,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .ReturnsAsync(IdentityResult.Success)
                 .Callback<IdentityRole, string>((i, n) => i.Name = n);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.EditRoleName(roleToUpdate.Name, newName);
 
@@ -145,7 +145,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.EditRoleName("role_name", "updated_name");
 
@@ -165,7 +165,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             };
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.GetAllClaimsFromRole(role.Name);
 
@@ -180,7 +180,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var role = RoleGeneratorFixture.CreateRoleCollection()[0];
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.GetAllClaimsFromRole(role.Name);
 
@@ -204,7 +204,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .Callback<IdentityRole, Claim>((_, c) => claims.Add(c));
             var claimToAdd = new ClaimModel("new_type", "new_value");
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.AddClaimToRole(role.Name, claimToAdd);
 
@@ -230,7 +230,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
             var claimToAdd = new ClaimModel(claims[0].Type, claims[0].Value);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.AddClaimToRole(role.Name, claimToAdd);
 
@@ -244,7 +244,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         {
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.AddClaimToRole("not_found_role", new ClaimModel("any_type", "any_value"));
 
@@ -262,7 +262,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
                 .ReturnsAsync(IdentityResult.Success);
             var claimToDelete = new ClaimModel("type", "value");
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.RemoveClaimFromRole(role.Name, claimToDelete.Type, claimToDelete.Value);
 
@@ -282,7 +282,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
             var claimToDelete = new ClaimModel("type", "value");
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.RemoveClaimFromRole(role.Name, claimToDelete.Type, claimToDelete.Value);
 
@@ -303,7 +303,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
             var claimToFind = claims[0];
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.HasClaim(role.Name, claimToFind.Type, claimToFind.Value);
 
@@ -324,7 +324,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
             var claimToFind = claims[0];
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.HasClaim(role.Name, claimToFind.Type);
 
@@ -344,7 +344,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             };
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.HasClaim(role.Name, "some_type", "some_value");
 
@@ -364,7 +364,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             };
             var roleManagerMock = RoleManagerFixture.MockRoleManager(getClaimsAsync: claims, findByNameResult: role);
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.HasClaim(role.Name, "some_type");
 
@@ -379,13 +379,105 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var roleManagerMock = RoleManagerFixture.MockRoleManager();
             var claimToCheck = new ClaimModel("type", "value");
 
-            var sut = new RoleManagerService(roleManagerMock.Object);
+            var sut = new RoleManagerService(roleManagerMock.Object, Mock.Of<IContextFactory>());
 
             var result = await sut.HasClaim("not_existing_role", claimToCheck.Type, claimToCheck.Value);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
             roleManagerMock.Verify(x => x.GetClaimsAsync(It.IsAny<IdentityRole>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UsersInRole_returns_list_of_users_in_given_role()
+        {
+            var id = Guid.NewGuid().ToString();
+            var ctxFactory = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock(id).Object;
+            var roles = RoleGeneratorFixture.CreateRoleCollection();
+            var users = UserGeneratorFixture.CreateValidListOfUsers();
+            var roleManagerMock = RoleManagerFixture.MockRoleManager(roles);
+
+            await using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock(id).Object.CreateDbContext())
+            {
+                ctx.Roles.AddRange(roles);
+                ctx.Users.AddRange(users);
+                ctx.UserRoles.Add(new IdentityUserRole<string>()
+                {
+                    RoleId = roles[0].Id,
+                    UserId = users[0].Id
+                });
+                ctx.UserRoles.Add(new IdentityUserRole<string>()
+                {
+                    RoleId = roles[1].Id,
+                    UserId = users[1].Id
+                });
+                await ctx.SaveChangesAsync();
+            }
+
+            var sut = new RoleManagerService(roleManagerMock.Object, ctxFactory);
+
+            var result = await sut.UsersInRole(roles[0].Name);
+
+            result.Should().HaveCount(1).And.Contain(users[0].UserName);
+        }
+
+        [Fact]
+        public async Task UsersInRole_returns_empty_list_if_no_user_is_in_role()
+        {
+            var ctxFactory = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock("a").Object;
+            var roles = RoleGeneratorFixture.CreateRoleCollection();
+            var users = UserGeneratorFixture.CreateValidListOfUsers();
+            var roleManagerMock = RoleManagerFixture.MockRoleManager(roles);
+
+            await using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock("a").Object.CreateDbContext())
+            {
+                ctx.Roles.AddRange(roles);
+                ctx.Users.AddRange(users);
+
+                ctx.UserRoles.Add(new IdentityUserRole<string>()
+                {
+                    RoleId = roles[1].Id,
+                    UserId = users[1].Id
+                });
+                await ctx.SaveChangesAsync();
+            }
+
+            var sut = new RoleManagerService(roleManagerMock.Object, ctxFactory);
+
+            var result = await sut.UsersInRole(roles[0].Name);
+
+            result.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public async Task UsersInRole_returns_empty_list_if_role_name_was_empty_or_null(string name)
+        {
+            var id = Guid.NewGuid().ToString();
+            var ctxFactory = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock(id).Object;
+            var roles = RoleGeneratorFixture.CreateRoleCollection();
+            var users = UserGeneratorFixture.CreateValidListOfUsers();
+            var roleManagerMock = RoleManagerFixture.MockRoleManager(roles);
+
+            await using (var ctx = AppDbContextFactoryMockFixture.CreateSimpleIContextFactoryMock(id).Object.CreateDbContext())
+            {
+                ctx.Roles.AddRange(roles);
+                ctx.Users.AddRange(users);
+
+                ctx.UserRoles.Add(new IdentityUserRole<string>()
+                {
+                    RoleId = roles[1].Id,
+                    UserId = users[1].Id
+                });
+                await ctx.SaveChangesAsync();
+            }
+
+            var sut = new RoleManagerService(roleManagerMock.Object, ctxFactory);
+
+            var result = await sut.UsersInRole(name);
+
+            result.Should().BeEmpty();
         }
     }
 }

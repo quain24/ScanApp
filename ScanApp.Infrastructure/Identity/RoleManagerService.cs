@@ -50,9 +50,9 @@ namespace ScanApp.Infrastructure.Identity
         {
             await using var ctx = _factory.CreateDbContext();
 
-            return await _roleManager.Roles.AsNoTracking().Where(x => x.Name.Equals(roleName))
-                .Join(ctx.UserRoles, role => role.Id, userRole => userRole.RoleId, (_, userRole) => userRole.UserId)
-                .Join(ctx.Users, id => id, user => user.Id, (_, user) => user.UserName)
+            return await ctx.Roles.AsNoTracking().Where(x => x.Name.Equals(roleName))
+                .Join(ctx.UserRoles, x => x.Id, x => x.RoleId, (role, userRole) => userRole.UserId)
+                .Join(ctx.Users, x => x, x => x.Id, (s, user) => user.UserName)
                 .ToListAsync(token)
                 .ConfigureAwait(false);
         }
