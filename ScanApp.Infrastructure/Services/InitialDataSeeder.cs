@@ -15,7 +15,7 @@ namespace ScanApp.Infrastructure.Services
     public class InitialDataSeeder : IInitialDataSeeder
     {
         private const string ServiceName = "Seeder";
-        private const string Administrator = "Administrator";
+        private const string Administrator = Globals.AccountNames.Administrator;
         private const string AdministratorPwd = "initial";
 
         private readonly Action<string, string> _logInformation;
@@ -36,7 +36,7 @@ namespace ScanApp.Infrastructure.Services
 
         private readonly string[] _defaultRoles =
         {
-            "Administrator",
+            Globals.RoleNames.Administrator,
             "User"
         };
 

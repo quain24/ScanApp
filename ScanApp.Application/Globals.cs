@@ -23,4 +23,20 @@ namespace Globals
         public const string SparePartsModule = "SpareParts";
         public const string Depots = "Depots";
     }
+
+    /// <summary>
+    /// Provides hard-coded names of special accounts.
+    /// </summary>
+    public static class AccountNames
+    {
+        public const string Administrator = "Administrator";
+    }
+
+    /// <summary>
+    /// Provides hard-coded names of special user roles.
+    /// </summary>
+    public static class RoleNames
+    {
+        public const string Administrator = "Administrator";
+    }
 }
