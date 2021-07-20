@@ -1,38 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <UserSecretsId>aspnet-ScanApp-CFBAF25E-ABF7-4224-93D6-A545F574BF6C</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<UserSecretsId>aspnet-ScanApp-CFBAF25E-ABF7-4224-93D6-A545F574BF6C</UserSecretsId>
+		<AllowUntrustedCertificate>true</AllowUntrustedCertificate>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
-    <PackageReference Include="Fluxor.Blazor.Web" Version="4.1.0" />
-    <PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="4.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
-    <PackageReference Include="MudBlazor" Version="5.0.15" />
-    <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="System.Security.AccessControl" Version="5.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CommandLineArgumentsParser" Version="3.0.22" />
+		<PackageReference Include="Fluxor.Blazor.Web" Version="4.1.0" />
+		<PackageReference Include="Fluxor.Blazor.Web.ReduxDevTools" Version="4.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.8">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+		<PackageReference Include="MudBlazor" Version="5.0.15" />
+		<PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+		<PackageReference Include="System.Security.AccessControl" Version="5.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
-    <ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
-    <ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ScanApp.Application\ScanApp.Application.csproj" />
+		<ProjectReference Include="..\ScanApp.Common\ScanApp.Common.csproj" />
+		<ProjectReference Include="..\ScanApp.Infrastructure\ScanApp.Infrastructure.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Logs\" />
-  </ItemGroup>
-
+	<ItemGroup>
+		<Folder Include="Logs\" />
+	</ItemGroup>
 </Project>
