@@ -1,6 +1,7 @@
 ﻿using ScanApp.Application.Admin;
 using ScanApp.Application.Common.Helpers.Result;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.Interfaces
@@ -64,5 +65,13 @@ namespace ScanApp.Application.Common.Interfaces
         /// <param name="claimType">Type of claim to be checked.</param>
         /// <param name="claimValue">Value of claim to be checked.</param>
         Task<Result<bool>> HasClaim(string roleName, string claimType, string claimValue = null);
+
+        /// <summary>
+        /// Returns list of user names that are currently in given <paramref name="roleName"/>.
+        /// </summary>
+        /// <param name="roleName">Name of role to be checked for currently assigned users.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>List of user names currently assigned to role.</returns>
+        Task<List<string>> UsersInRole(string roleName, CancellationToken token = default);
     }
 }

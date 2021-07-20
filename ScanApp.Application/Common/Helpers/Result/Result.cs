@@ -117,6 +117,13 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         Cancelled,
 
+        // Business related
+
+        /// <summary>
+        /// Operation on user account was prevented by one or more business related account rules.
+        /// </summary>
+        IllegalAccountOperation,
+
         // Database common
 
         /// <summary>
