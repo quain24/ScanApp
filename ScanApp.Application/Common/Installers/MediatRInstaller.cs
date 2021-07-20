@@ -1,6 +1,9 @@
-﻿using MediatR;
+﻿using System;
+using MediatR;
+using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Behaviors;
+using ScanApp.Application.Common.ExceptionHandlers;
 
 namespace ScanApp.Application.Common.Installers
 {
@@ -17,7 +20,10 @@ namespace ScanApp.Application.Common.Installers
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TimingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlers.RequestExceptionProcessorBehavior<,>));
 
+
+            services.AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(OperationCancelledHandler<,,>));
             return services;
         }
     }

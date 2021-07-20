@@ -24,6 +24,8 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 
         public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
+            // todo - throw for test
+            throw new OperationCanceledException();
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
