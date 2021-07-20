@@ -21,7 +21,9 @@ namespace ScanApp.Application.Common.Installers
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestExceptionProcessorBehavior<,>));
 
-            services.AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(OperationCancelledHandler<,,>));
+            services.AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(OperationCancelledExceptionHandler<,,>));
+            services.AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(DBUpdateConcurrencyExceptionHandler<,,>));
+            services.AddTransient(typeof(IRequestExceptionHandler<,,>), typeof(DbUpdateExceptionHandler<,,>));
             return services;
         }
     }

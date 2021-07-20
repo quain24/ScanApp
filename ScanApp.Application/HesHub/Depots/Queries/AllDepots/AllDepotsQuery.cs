@@ -4,6 +4,7 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
         public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
             // todo - throw for test
-            throw new OperationCanceledException();
+            throw new DbUpdateException();
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
