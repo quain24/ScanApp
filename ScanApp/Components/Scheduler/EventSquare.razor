@@ -1,0 +1,95 @@
+﻿@using ScanApp.Models.Scheduler
+<style>
+    .square {
+        height: 70px;
+        background-color: #479cc8;
+    }
+
+    .control-camera {
+        float: left;
+        height: 60%;
+        width: 100%;
+        background-color: #479cc8;
+        padding-top: 9%;
+    }
+
+    .click-event {
+        float: left;
+        height: 40%;
+        width: 50%;
+        background-color: #52b1e3;
+        padding-top: 3%;
+    }
+</style>
+
+@if (_showEventControls)
+{
+    <div class="square">
+        <div class="control-camera" @onclick="@SquareClicked">
+            <MudIcon Icon="@Icons.Material.Outlined.ControlCamera"></MudIcon>
+        </div>
+        <div class="click-event" @onclick="@DeleteEvent">
+            <MudIcon Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIcon>
+        </div>
+        <div class="click-event" @onclick="@EditEvent">
+            <MudIcon Icon="@Icons.Material.Outlined.Edit" Size="Size.Small"></MudIcon>
+        </div>
+    </div>
+}
+else
+{
+    @if (Appointment is not null)
+    {
+        <div class="square" @onclick="@SquareClicked" style="text-align: left;">
+            <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
+                @Appointment.Spedition
+            </div>
+            <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
+                @Appointment.Company
+            </div>
+            <div style="width: 100%; height: 30%; padding-left: 5px; background-color: #52b1e3; font-size: smaller; color: white;">
+                @Appointment.FromDate.Hour:00 - @Appointment.ToDate.Hour:00
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="square" style="background-color: #ededed" @onclick="@SquareClicked"> </div>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public HesAppointmentModel Appointment { get; set; }
+
+    private bool _showEventControls;
+
+
+    private void SquareClicked()
+    {
+        if (Appointment is null)
+        {
+            //OpenAddAppointmentDialog();
+            Console.WriteLine("Opening add dialog..");
+            return;
+        }
+        ToggleEventControls();
+    }
+
+    private void ToggleEventControls()
+    {
+        _showEventControls = !_showEventControls;
+    }
+
+    private void EditEvent()
+    {
+        Console.WriteLine("Opening edit dialog..");
+    }
+
+    private void DeleteEvent()
+    {
+        Console.WriteLine("Opening delete dialog..");
+    }
+}

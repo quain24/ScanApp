@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ScanApp.Models.Scheduler
+{
+    public class HesAppointmentModel
+    {
+        public int DepotID { get; set; }
+        public string Spedition { get; set; }
+        public string Company { get; set; }
+        public string IdentificationNumber { get; set; }
+        public string Note { get; set; }
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public bool Loading { get; set; }
+        public bool Unloading { get; set; }
+        public int GridLocation { get; set; }
+    }
+}

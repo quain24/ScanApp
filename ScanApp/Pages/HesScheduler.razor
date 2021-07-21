@@ -1,0 +1,152 @@
+﻿@page "/hesscheduler"
+@using ScanApp.Components.Scheduler
+@using ScanApp.Models.Scheduler
+<style>
+    table {
+        font-family: arial, sans-serif;
+        width: 100%;
+        border-spacing: 0 7px;
+        table-layout: fixed;
+    }
+
+    td, th {
+        border: 1px solid lightgray;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .header {
+        padding: 20px;
+        background: #479cc8;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+    }
+
+    .wrapper {
+        display: flex;
+    }
+
+    .wrapper-content {
+        flex: 0 0 100%;
+        padding-left: -14px;
+    }
+
+    @@media screen and (max-width: 1550px) {
+        div#depot-header {
+            content: none;
+        }
+    }
+</style>
+
+<div class="header">
+    <h1>HES Scheduler</h1>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <div class="wrapper">
+                <div id="depot-header" class="wrapper-content" style="font-size: large; padding-left: 15px;">Depot</div>
+                <div class="wrapper-content" style="margin-left: -12px;">5:00</div>
+                <div class="wrapper-content">6:00</div>
+                <div class="wrapper-content">7:00</div>
+                <div class="wrapper-content">8:00</div>
+                <div class="wrapper-content">9:00</div>
+                <div class="wrapper-content" style="margin-left: -5px;">10:00</div>
+                <div class="wrapper-content">11:00</div>
+                <div class="wrapper-content">12:00</div>
+                <div class="wrapper-content">13:00</div>
+                <div class="wrapper-content">14:00</div>
+                <div class="wrapper-content">15:00</div>
+                <div class="wrapper-content">16:00</div>
+                <div class="wrapper-content">17:00</div>
+                <div class="wrapper-content">18:00</div>
+                <div class="wrapper-content">19:00</div>
+                <div class="wrapper-content">20:00</div>
+            </div>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var depotID in _depotIDs)
+        {
+            <tr>
+                <th style="width: 3%; font-size: x-large;">
+                    @depotID.ToString()
+                </th>
+                @foreach (var hour in _hours)
+                {
+                    <th>
+                        <EventSquare Appointment="@GetHesAppointment(depotID, GetDate(hour).Hour)" />
+                    </th>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    static string[] _hoursArray =
+    {
+        "5:00", "6:00", "7:00", "8:00", "9:00", "10:00",
+        "11:00", "12:00", "13:00", "14:00", "15:00",
+        "16:00", "17:00", "18:00", "19:00", "20:00"
+    };
+    private List<string> _hours = new List<string>(_hoursArray);
+    int[] _depotIDs = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+    public List<HesAppointmentModel> AppointmentList = new List<HesAppointmentModel>();
+
+    protected override void OnInitialized()
+    {
+        AppointmentList.Add(new HesAppointmentModel()
+        {
+            DepotID = 2,
+            Company = "HSF",
+            FromDate = new DateTime(2021, 7, 20, 10, 0, 0),
+            GridLocation = 10,
+            IdentificationNumber = "123456",
+            Loading = true,
+            Note = "Something",
+            Spedition = "DHL",
+            ToDate = new DateTime(2021, 7, 20, 11, 0, 0),
+            Unloading = false
+        });
+
+        AppointmentList.Add(new HesAppointmentModel()
+        {
+            DepotID = 4,
+            Company = "HSFFFFFFFFFFFFFFFFFF",
+            FromDate = new DateTime(2021, 7, 20, 5, 0, 0),
+            GridLocation = 5,
+            IdentificationNumber = "123456",
+            Loading = true,
+            Note = "Something",
+            Spedition = "DHL",
+            ToDate = new DateTime(2021, 7, 20, 6, 0, 0),
+            Unloading = false
+        });
+    }
+
+    private DateTime GetDate(string hour)
+    {
+        var hourSplit = hour.Split(':');
+        var hourInt = Convert.ToInt32(hourSplit[0]);
+        int year = DateTime.Now.Year;
+        int month = DateTime.Now.Month;
+        int day = DateTime.Now.Day;
+        return new DateTime(year, month, day, hourInt, 0, 0);
+    }
+
+    private HesAppointmentModel GetHesAppointment(int depotID, int hour)
+    {
+        foreach (var hesAppointment in AppointmentList)
+        {
+            if (hesAppointment.DepotID == depotID && hesAppointment.FromDate.Hour == hour)
+            {
+                return hesAppointment;
+            }
+        }
+        return null;
+    }
+}
