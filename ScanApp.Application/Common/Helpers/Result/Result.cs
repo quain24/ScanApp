@@ -130,7 +130,20 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// Generic Database error to be used when no other can describe problem better.
         /// <remarks>To be used when caller is sure, that error is caused by database - otherwise use <see cref="NotValid"/></remarks>
         /// </summary>
-        DatabaseError
+        DatabaseError,
+
+        /// <summary>
+        /// Tried to insert a non-unique value into a database table field that require uniqueness, like primary key or unique index.
+        /// </summary>
+        UniqueConstraintViolation,
+
+        CannotInsertNull,
+
+        MaxLengthExceeded,
+
+        NumericOverflow,
+
+        ReferenceConstraint
 
         ///// <summary>
         ///// Specific error code
