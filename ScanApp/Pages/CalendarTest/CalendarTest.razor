@@ -1,0 +1,122 @@
+﻿@page "/calendartest"
+@using ScanApp.Models.Calendar
+@using ScanApp.Pages.CalendarTest.Dialogs
+@using DialogOptions = MudBlazor.DialogOptions
+@inject IDialogService DialogService
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    .header {
+        padding: 20px;
+        background: #479cc8;
+        color: white;
+        font-size: 30px;
+    }
+
+    .selector {
+        float: left;
+    }
+
+    .subheader {
+        top: 50%;
+        padding-inline: inherit;
+        float: right;
+        position: sticky;
+    }
+
+    .clearfix {
+        clear: both
+    }
+
+    div#mudselect .mud-icon-root {
+        color: white;
+    }
+
+    div#mudselect .mud-input > input.mud-input-root, div.mud-input-slot.mud-input-root {
+        color: white;
+    }
+
+    div#mudselect .mud-input-label {
+        color: white;
+    }
+
+    @@media screen and (max-width: 500px) {
+        .selector {
+            width: 100%;
+        }
+
+        .subheader {
+            display: none;
+        }
+
+        .header {
+            padding: 10px;
+        }
+    }
+</style>
+<div class="header">
+    <div id="mudselect" class="selector">
+        <MudSelect T="string" Label="Depot">
+            <MudSelectItem Value="@("Depot 1")" />
+            <MudSelectItem Value="@("Depot 2")" />
+            <MudSelectItem Value="@("Depot 3")" />
+            <MudSelectItem Value="@("Depot 4")" />
+        </MudSelect>
+    </div>
+    <div class="subheader">
+        <h3>HES Depot Schedule</h3>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+
+<RadzenScheduler @ref="calendar" style="height: 768px;" TItem="Appointment" Data="@appointments" StartProperty="Start" EndProperty="End"
+                 TextProperty="Text" SlotSelect="@OnSlotSelect" AppointmentSelect="@OnAppointmentSelect" AppointmentRender="@OnAppointmentRender">
+    <RadzenWeekView />
+</RadzenScheduler>
+
+@code { RadzenScheduler<Appointment> calendar;
+            IList<Appointment> appointments = new List<Appointment>();
+
+            private async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+            {
+                var parameter = new DialogParameters()
+                {
+                    ["Start"] = args.Start,
+                    ["End"] = args.End
+                };
+                var dialog = DialogService.Show<AddAppointmentDialog>("Add Appointment", parameter, new DialogOptions { MaxWidth = MaxWidth.Large });
+                var result = await dialog.Result;
+                if (result.Cancelled)
+                {
+                    return;
+                }
+                Appointment newAppointment = (Appointment)result.Data;
+                appointments.Add(newAppointment);
+
+                await calendar.Reload();
+            }
+
+            private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<Appointment> args)
+            {
+                var parameter = new DialogParameters()
+                {
+                    ["Appointment"] = args.Data
+                };
+                var dialog = DialogService.Show<EditAppointmentDialog>("Edit Appointment", parameter, new DialogOptions { MaxWidth = MaxWidth.Large });
+                var result = await dialog.Result;
+                if (result.Cancelled)
+                {
+                    return;
+                }
+
+                await calendar.Reload();
+            }
+
+            private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<Appointment> args)
+            {
+                if (args.Data.Important)
+                {
+                    args.Attributes["style"] = "background: red";
+                }
+            } }

@@ -1,0 +1,110 @@
+﻿@using ScanApp.Models.Calendar
+@using DialogOptions = MudBlazor.DialogOptions
+@using FluentValidation
+@using ScanApp.Common
+@using ScanApp.Common.Extensions
+@using ScanApp.Common.Validators
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.Add" />
+            Add new appointment
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudForm @ref="_form" IsValidChanged="@FormValidationChanged">
+                    <MudTextField Validation="@_titleValidator" Immediate="true" Variant="Variant.Outlined" Label="Title" @bind-Value="_title" />
+                    <MudDatePicker PickerVariant="PickerVariant.Dialog" ShowWeekNumbers="true" Label="Start" @bind-Date="Start" />
+                    <MudTimePicker @ref="_startTimePicker" PickerVariant="PickerVariant.Dialog" Label="Start Time" @bind-Time="_startTime">
+                        <PickerActions>
+                            <MudButton Color="Color.Error" OnClick="() => _startTimePicker.Close(false)">Cancel</MudButton>
+                            <MudButton Color="Color.Primary" OnClick="() => _startTimePicker.Close()">Ok</MudButton>
+                        </PickerActions>
+                    </MudTimePicker>
+                    <MudDatePicker PickerVariant="PickerVariant.Dialog" ShowWeekNumbers="true" Label="End" @bind-Date="End" />
+                    <MudTimePicker @ref="_endTimePicker" PickerVariant="PickerVariant.Dialog" Label="End Time" @bind-Time="_endTime">
+                        <PickerActions>
+                            <MudButton Color="Color.Error" OnClick="() => _endTimePicker.Close(false)">Cancel</MudButton>
+                            <MudButton Color="Color.Primary" OnClick="() => _endTimePicker.Close()">Ok</MudButton>
+                        </PickerActions>
+                    </MudTimePicker>
+                    <MudSwitch @bind-Checked="_important" Label="Important" Color="Color.Error" />
+                </MudForm>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Disabled="@IsSubmitDisabled()" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code { [CascadingParameter]
+            MudDialogInstance MudDialog { get; set; }
+
+            [Parameter]
+            public DateTime? Start { get; set; }
+
+            [Parameter]
+            public DateTime? End { get; set; }
+
+            private TimeSpan? _startTime;
+            private TimeSpan? _endTime;
+            private string _title;
+            private bool _important;
+            private bool _okDisabled;
+
+            private MudTimePicker _startTimePicker;
+            private MudTimePicker _endTimePicker;
+            private MudForm _form;
+
+            private Func<string, IEnumerable<string>> _titleValidator;
+
+            protected override void OnInitialized()
+            {
+                _titleValidator = new AppointmentTitleValidator().ToMudFormFieldValidator();
+            }
+
+            protected override void OnParametersSet()
+            {
+                _startTime = Convert.ToDateTime(Start).TimeOfDay;
+                _endTime = Convert.ToDateTime(End).TimeOfDay;
+            }
+
+            private void FormValidationChanged() => IsSubmitDisabled();
+
+            private bool IsSubmitDisabled()
+            {
+                if (string.IsNullOrWhiteSpace(_title) || _form?.IsValid is false)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            private void Submit()
+            {
+                if (!_form.IsValid)
+                {
+                    return;
+                }
+                Appointment appointment = new Appointment();
+                var start = (DateTime)Start;
+                var startTime = (TimeSpan)_startTime;
+                appointment.Start = new DateTime(start.Year, start.Month, start.Day, startTime.Hours, startTime.Minutes, startTime.Seconds);
+
+                var end = (DateTime)End;
+                var endTime = (TimeSpan)_endTime;
+                appointment.End = new DateTime(end.Year, end.Month, end.Day, endTime.Hours, endTime.Minutes, endTime.Seconds);
+                appointment.Text = _title;
+                appointment.Important = _important;
+                MudDialog.Close(DialogResult.Ok(appointment));
+            }
+
+            private void Cancel()
+            {
+                MudDialog.Cancel();
+            } }
