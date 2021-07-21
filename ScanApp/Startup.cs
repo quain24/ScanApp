@@ -42,6 +42,7 @@ namespace ScanApp
             services.AddDatabases(Configuration, _env.IsDevelopment());
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddMudBlazor();
+            services.AddRadzenBlazor();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
             services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeService).Assembly });
