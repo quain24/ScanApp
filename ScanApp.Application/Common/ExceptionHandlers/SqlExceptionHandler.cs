@@ -21,7 +21,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers
 
             var response = new TResponse();
             var name = request.GetType().Name;
-            response.Set(ErrorType.DatabaseError, $"{name} - {exc.InnerException?.Message ?? exc.Message}.", exc);
+            response.Set(ErrorType.DatabaseError, $"{name} - {exc.Number} - {exc.Message}.", exc);
             state.SetHandled(response);
             return Task.CompletedTask;
         }
