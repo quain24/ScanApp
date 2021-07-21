@@ -2,10 +2,6 @@
 using MediatR.Pipeline;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +15,11 @@ namespace ScanApp.Application.Common.ExceptionHandlers
         public Task Handle(TRequest request, TException exception, RequestExceptionHandlerState<TResponse> state,
             CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var response = new TResponse();
+            var name = request.GetType().Name;
+            response.Set(ErrorType.DatabaseError, $"{name} - {exception.InnerException?.Message ?? exception.Message}.", exception);
+            state.SetHandled(response);
+            return Task.CompletedTask;
         }
     }
 }

@@ -18,7 +18,6 @@ namespace ScanApp.Application.Common.ExceptionHandlers
             var response = new TResponse();
             var name = request.GetType().Name;
             response.Set(ErrorType.Cancelled, $"{name} - Request has been canceled.", exception);
-
             state.SetHandled(response);
             return Task.CompletedTask;
         }

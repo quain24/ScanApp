@@ -26,7 +26,9 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
         public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
             // todo - throw for test
-            throw new DbUpdateException();
+            var gg = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
+            
+            throw new TaskCanceledException();
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
