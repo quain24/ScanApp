@@ -212,7 +212,7 @@
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotNull()
-                        .MaximumLength(20)
+                        .MaximumLength(200)
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
                 }))
                 .Build(),
