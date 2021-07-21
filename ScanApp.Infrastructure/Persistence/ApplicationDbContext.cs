@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using EntityFramework.Exceptions.SqlServer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Entities;
@@ -33,11 +34,17 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<Gate> Gates { get; set; }
         public DbSet<TrailerType> TrailerTypes { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // replace standard EF Core exception with more detailed ones. (EntityFramework.Exceptions package)
+            optionsBuilder.UseExceptionProcessor();
+        }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // small configurations here - no point in extracting one liners to separate files
+            // small configurations here - no point in extracting one liners to separate files.
             builder.Entity<IdentityRole>().ToTable("Roles", "sca");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "sca");
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "sca");
