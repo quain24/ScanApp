@@ -137,12 +137,26 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         UniqueConstraintViolation,
 
+        /// <summary>
+        /// Tried to insert <see langword="null"/> value into a non-nullable field in database.
+        /// </summary>
         CannotInsertNull,
 
+        /// <summary>
+        /// Tried to insert too many characters to database field.
+        /// </summary>
         MaxLengthExceeded,
 
+        /// <summary>
+        /// Tried to insert a number that is too big for targeted database field (for example a decimal which is greater then allowed db server precision.)
+        /// </summary>
         NumericOverflow,
 
+        /// <summary>
+        /// Typically set when tried to delete entity that is referenced by other entity and delete behavior is set to restrict.<br/>
+        /// or tried to set child entity foreign key in a parent entity that is missing from child's table or in other FK constraint problems.<br/>
+        /// SQL errors for such behavior are: 1216, 1217, 1451, 1452.
+        /// </summary>
         ReferenceConstraint
 
         ///// <summary>
