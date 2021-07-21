@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EntityFramework.Exceptions.Common;
 
 namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 {
@@ -25,10 +26,6 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 
         public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
-            // todo - throw for test
-            var gg = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SqlException)) as SqlException;
-            
-            throw new TaskCanceledException();
             try
             {
                 await using var ctx = _contextFactory.CreateDbContext();
