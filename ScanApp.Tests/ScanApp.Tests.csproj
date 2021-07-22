@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
     <PackageReference Include="Divergic.Logging.Xunit" Version="3.6.0" />
+    <PackageReference Include="EntityFrameworkCore.Exceptions.Sqlite" Version="3.1.4" />
     <PackageReference Include="EntityFrameworkCoreMock.Moq" Version="2.2.0" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="JustEat.HttpClientInterception" Version="3.1.0" />

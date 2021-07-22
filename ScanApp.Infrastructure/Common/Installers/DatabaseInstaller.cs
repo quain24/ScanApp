@@ -5,6 +5,7 @@ using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
 using ScanApp.Infrastructure.Services;
 using System;
+using EntityFramework.Exceptions.SqlServer;
 
 namespace ScanApp.Infrastructure.Common.Installers
 {
@@ -38,7 +39,9 @@ namespace ScanApp.Infrastructure.Common.Installers
                             maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null);
-                    });
+                    })
+                    // Replace standard EF Core exception with more detailed ones. (EntityFramework.Exceptions package for SQL Server)
+                    .UseExceptionProcessor();
             });
 
             services.AddDbContextFactory<ApplicationDbContext>(options => sqlConfiguration(options));

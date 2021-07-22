@@ -1,5 +1,4 @@
-﻿using EntityFramework.Exceptions.SqlServer;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Entities;
@@ -33,12 +32,6 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<Depot> Depots { get; set; }
         public DbSet<Gate> Gates { get; set; }
         public DbSet<TrailerType> TrailerTypes { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            // replace standard EF Core exception with more detailed ones. (EntityFramework.Exceptions package)
-            optionsBuilder.UseExceptionProcessor();
-        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
