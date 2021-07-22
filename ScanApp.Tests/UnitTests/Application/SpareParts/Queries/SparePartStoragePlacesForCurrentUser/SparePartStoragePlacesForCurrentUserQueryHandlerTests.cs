@@ -3,7 +3,6 @@ using MediatR;
 using MockQueryable.Moq;
 using Moq;
 using ScanApp.Application.Admin;
-using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurrentUser;
 using ScanApp.Domain.Entities;
@@ -140,23 +139,6 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.SparePartStorag
             Func<Task> act = async () => await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
 
             await act.Should().ThrowAsync<Exception>();
-        }
-
-        [Theory]
-        [InlineData(typeof(OperationCanceledException))]
-        [InlineData(typeof(TaskCanceledException))]
-        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
-        {
-            dynamic exc = Activator.CreateInstance(type);
-            var userServiceMock = new Mock<ICurrentUserService>();
-            ContextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
-
-            var subject = new SparePartStoragePlacesForCurrentUserQueryHandler(userServiceMock.Object, ContextFactoryMock.Object);
-            var result = await subject.Handle(new SparePartStoragePlacesForCurrentUserQuery(), CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }
 }
