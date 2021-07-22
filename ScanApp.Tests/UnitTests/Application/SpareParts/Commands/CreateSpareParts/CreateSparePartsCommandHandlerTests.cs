@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EntityFramework.Exceptions.Common;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -91,7 +92,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.DatabaseError);
             using var context = NewDbContext;
-            result.ErrorDescription.Exception.Should().BeOfType<DbUpdateException>();
+            result.ErrorDescription.Exception.Should().BeOfType<ReferenceConstraintException>();
             context.SpareParts.Should().BeEmpty();
         }
 
@@ -123,7 +124,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.DatabaseError);
-            result.ErrorDescription.Exception.Should().BeOfType<DbUpdateException>();
+            result.ErrorDescription.Exception.Should().BeOfType<ReferenceConstraintException>();
             using var context = NewDbContext;
             context.SpareParts.Should().BeEmpty();
         }
