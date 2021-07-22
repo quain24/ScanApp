@@ -5,12 +5,32 @@
         background-color: #479cc8;
     }
 
+    #empty.square {
+        background-color: #ededed;
+    }
+
+    #empty.square:hover > #fading-background {
+        background-color: #ffffff;
+        opacity: 1.0;
+    }
+
+    #fading-background {
+        opacity: 0;
+        height: 100%;
+        transition: all 500ms ease-in-out;
+    }
+
     .control-camera {
         float: left;
         height: 60%;
         width: 100%;
-        background-color: #479cc8;
+        background-color: #52b1e3;
         padding-top: 9%;
+    }
+
+    .control-camera:hover {
+        background-color: #4ca5d4;
+        cursor: grab;
     }
 
     .click-event {
@@ -20,6 +40,13 @@
         background-color: #52b1e3;
         padding-top: 3%;
     }
+
+    .click-event:hover {
+        background-color: #4ca5d4;
+        cursor: pointer;
+    }
+
+    
 </style>
 
 @if (_showEventControls)
@@ -54,7 +81,10 @@ else
     }
     else
     {
-        <div class="square" style="background-color: #ededed" @onclick="@SquareClicked"> </div>
+        <div class="square" id="empty" @onclick="@SquareClicked">
+            <div id="fading-background">
+            </div>
+        </div>
     }
 }
 
