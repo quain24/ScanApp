@@ -29,27 +29,20 @@ namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurren
 
         public async Task<Result<List<RepairWorkshopModel>>> Handle(SparePartStoragePlacesForCurrentUserQuery request, CancellationToken cancellationToken)
         {
-            try
+            await using var ctx = _contextFactory.CreateDbContext();
+            var places = ctx.SparePartStoragePlaces.AsNoTracking();
+            if (!await UserIgnoresLocationConstraint().ConfigureAwait(false))
             {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var places = ctx.SparePartStoragePlaces.AsNoTracking();
-                if (!await UserIgnoresLocationConstraint().ConfigureAwait(false))
-                {
-                    var userLocationIds = await GetUserLocationsIds().ConfigureAwait(false);
-                    places = places.Where(s => userLocationIds.Contains(s.LocationId));
-                }
-
-                var selectedPlaces = await places
-                    .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                return new Result<List<RepairWorkshopModel>>(selectedPlaces);
+                var userLocationIds = await GetUserLocationsIds().ConfigureAwait(false);
+                places = places.Where(s => userLocationIds.Contains(s.LocationId));
             }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
-            }
+
+            var selectedPlaces = await places
+                .Select(s => new RepairWorkshopModel { Id = s.Id, Number = s.Name })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            return new Result<List<RepairWorkshopModel>>(selectedPlaces);
         }
 
         private Task<bool> UserIgnoresLocationConstraint()

@@ -5,11 +5,9 @@ using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EntityFramework.Exceptions.Common;
 
 namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 {
@@ -26,52 +24,41 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
 
         public async Task<Result<List<DepotModel>>> Handle(AllDepotsQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var result = await ctx
-                    .Depots
-                    .AsNoTracking()
-                    .Include(e => e.DefaultGate)
-                    .Include(e => e.DefaultTrailer)
-                    .Select(h => new DepotModel()
+            await using var ctx = _contextFactory.CreateDbContext();
+            var result = await ctx
+                .Depots
+                .AsNoTracking()
+                .Include(e => e.DefaultGate)
+                .Include(e => e.DefaultTrailer)
+                .Select(h => new DepotModel()
+                {
+                    City = h.Address.City,
+                    Country = h.Address.Country,
+                    Email = h.Email,
+                    Id = h.Id,
+                    StreetName = h.Address.StreetName,
+                    Version = h.Version,
+                    ZipCode = h.Address.ZipCode,
+                    Name = h.Name,
+                    PhoneNumber = h.PhoneNumber,
+                    DistanceToDepot = h.DistanceFromHub,
+                    DefaultGate = h.DefaultGate != null ? new GateModel()
                     {
-                        City = h.Address.City,
-                        Country = h.Address.Country,
-                        Email = h.Email,
-                        Id = h.Id,
-                        StreetName = h.Address.StreetName,
-                        Version = h.Version,
-                        ZipCode = h.Address.ZipCode,
-                        Name = h.Name,
-                        PhoneNumber = h.PhoneNumber,
-                        DistanceToDepot = h.DistanceFromHub,
-                        DefaultGate = h.DefaultGate != null ? new GateModel()
-                        {
-                            Id = h.DefaultGate.Id,
-                            Number = h.DefaultGate.Number,
-                            Version = h.DefaultGate.Version
-                        } : null,
-                        DefaultTrailer = h.DefaultTrailer != null ? new TrailerTypeModel()
-                        {
-                            Id = h.DefaultTrailer.Id,
-                            Name = h.DefaultTrailer.Name,
-                            Version = h.DefaultTrailer.Version
-                        } : null
-                    })
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                        Id = h.DefaultGate.Id,
+                        Number = h.DefaultGate.Number,
+                        Version = h.DefaultGate.Version
+                    } : null,
+                    DefaultTrailer = h.DefaultTrailer != null ? new TrailerTypeModel()
+                    {
+                        Id = h.DefaultTrailer.Id,
+                        Name = h.DefaultTrailer.Name,
+                        Version = h.DefaultTrailer.Version
+                    } : null
+                })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                return new Result<List<DepotModel>>(result);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<DepotModel>>(ErrorType.Cancelled, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<List<DepotModel>>(ErrorType.DatabaseError, ex?.InnerException?.Message, ex);
-            }
+            return new Result<List<DepotModel>>(result);
         }
     }
 }

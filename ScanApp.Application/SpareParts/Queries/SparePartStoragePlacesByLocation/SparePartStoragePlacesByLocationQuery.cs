@@ -28,22 +28,15 @@ namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocatio
 
         public async Task<Result<List<RepairWorkshopModel>>> Handle(SparePartStoragePlacesByLocationQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var locations = await ctx.SparePartStoragePlaces
-                    .AsNoTracking()
-                    .Where(e => e.LocationId.Equals(request.LocationId))
-                    .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            await using var ctx = _contextFactory.CreateDbContext();
+            var locations = await ctx.SparePartStoragePlaces
+                .AsNoTracking()
+                .Where(e => e.LocationId.Equals(request.LocationId))
+                .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                return new Result<List<RepairWorkshopModel>>(locations);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
-            }
+            return new Result<List<RepairWorkshopModel>>(locations);
         }
     }
 }

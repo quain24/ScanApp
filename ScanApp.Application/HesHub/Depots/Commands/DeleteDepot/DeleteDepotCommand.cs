@@ -1,11 +1,9 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
@@ -25,30 +23,13 @@ namespace ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
 
         public async Task<Result> Handle(DeleteDepotCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _factory.CreateDbContext();
-                var depot = new Depot(request.Id, "name", "0", "e@m.c", Address.Create("name", "name", "name", "name"));
-                depot.ChangeVersion(request.Version);
+            await using var ctx = _factory.CreateDbContext();
+            var depot = new Depot(request.Id, "name", "0", "e@m.c", Address.Create("name", "name", "name", "name"));
+            depot.ChangeVersion(request.Version);
 
-                ctx.Remove(depot);
-                var removed = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                return removed > 0 ? new Result(ResultType.Deleted) : new Result(ErrorType.NotFound);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<Version>(ErrorType.Cancelled, ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<Version>(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
-                    : new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
+            ctx.Remove(depot);
+            var removed = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return removed > 0 ? new Result(ResultType.Deleted) : new Result(ErrorType.NotFound);
         }
     }
 }

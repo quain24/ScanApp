@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
@@ -28,26 +27,13 @@ namespace ScanApp.Application.SpareParts.Commands.CreateSpareParts
 
         public async Task<Result> Handle(CreateSparePartsCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var spareParts = request.SpareParts.Select(s =>
-                    new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
+            await using var ctx = _contextFactory.CreateDbContext();
+            var spareParts = request.SpareParts.Select(s =>
+                new SparePart(s.Name, s.Amount, s.SourceArticleId, s.SparePartStoragePlaceId));
 
-                await ctx.SpareParts.AddRangeAsync(spareParts, cancellationToken).ConfigureAwait(false);
-                await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                return new Result(ResultType.Created);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result(ErrorType.ConcurrencyFailure, ex)
-                    : new Result(ErrorType.DatabaseError, ex);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result(ErrorType.Cancelled, ex);
-            }
+            await ctx.SpareParts.AddRangeAsync(spareParts, cancellationToken).ConfigureAwait(false);
+            await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return new Result(ResultType.Created);
         }
     }
 }

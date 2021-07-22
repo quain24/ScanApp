@@ -27,21 +27,14 @@ namespace ScanApp.Application.SpareParts.Queries.GetAllSparePartStoragePlaces
 
         public async Task<Result<List<RepairWorkshopModel>>> Handle(GetAllSparePartStoragePlacesQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var places = await ctx.SparePartStoragePlaces
-                    .AsNoTracking()
-                    .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            await using var ctx = _contextFactory.CreateDbContext();
+            var places = await ctx.SparePartStoragePlaces
+                .AsNoTracking()
+                .Select(e => new RepairWorkshopModel { Number = e.Name, Id = e.Id })
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                return new Result<List<RepairWorkshopModel>>(places);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
-            }
+            return new Result<List<RepairWorkshopModel>>(places);
         }
     }
 }
