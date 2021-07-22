@@ -11,6 +11,7 @@ using ScanApp.Common.Installers;
 using ScanApp.Common.Services;
 using ScanApp.Infrastructure.Common.Installers;
 using Serilog;
+using Syncfusion.Blazor;
 
 namespace ScanApp
 {
@@ -42,6 +43,7 @@ namespace ScanApp
             services.AddDatabases(Configuration, _env.IsDevelopment());
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddMudBlazor();
+            services.AddSyncfusionBlazor();
             services.AddFluxorStateManagement();
             services.AddHttpContextAccessor();
             services.AddValidatorsFromAssemblies(new[] { typeof(ApplicationUser).Assembly, typeof(DateTimeService).Assembly });
