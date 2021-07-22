@@ -20,7 +20,10 @@ namespace ScanApp.Tests.UnitTests
         {
             // UseExceptionProcessor() - replace standard EF Core exception with more detailed ones. (EntityFramework.Exceptions package for SqlLite)
             _provider = new ServiceCollection()
-                .AddDbContext<ApplicationDbContext>(o => o.UseSqlite(_connection).UseExceptionProcessor(), ServiceLifetime.Transient)
+                .AddDbContext<ApplicationDbContext>(o =>
+                    o.UseSqlite(_connection).UseExceptionProcessor(),
+                    contextLifetime: ServiceLifetime.Transient,
+                    optionsLifetime: ServiceLifetime.Singleton)
                 .BuildServiceProvider();
 
             _connection = new SqliteConnection(InMemoryConnectionString);
