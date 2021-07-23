@@ -33,7 +33,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Queries.AllSpare
             var result = await Provider.GetService<IMediator>().Send(new AllSparePartTypesQuery());
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }

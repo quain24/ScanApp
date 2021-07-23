@@ -22,7 +22,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var subject = new ErrorDescription
             {
-                ErrorType = ErrorType.Cancelled,
+                ErrorType = ErrorType.Canceled,
                 ErrorMessage = "message"
             };
 
@@ -34,7 +34,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var subject = new ErrorDescription
             {
-                ErrorType = ErrorType.Cancelled
+                ErrorType = ErrorType.Canceled
             };
 
             subject.ToString().Should().Be(subject.ErrorType.ToString());

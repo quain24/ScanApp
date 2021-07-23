@@ -139,7 +139,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Commands.CreateS
 
             using var scope = new AssertionScope();
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }

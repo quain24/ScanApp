@@ -34,7 +34,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Queries.GetAllSp
             var result = await Provider.GetService<IMediator>().Send(new GetAllSparePartStoragePlacesQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }
