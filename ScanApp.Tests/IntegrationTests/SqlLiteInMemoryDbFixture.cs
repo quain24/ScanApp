@@ -1,13 +1,13 @@
-﻿using EntityFramework.Exceptions.Sqlite;
+﻿using System;
+using EntityFramework.Exceptions.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
 using ScanApp.Infrastructure.Services;
-using System;
 
-namespace ScanApp.Tests
+namespace ScanApp.Tests.IntegrationTests
 {
     public abstract class SqlLiteInMemoryDbFixture : IDisposable
     {
