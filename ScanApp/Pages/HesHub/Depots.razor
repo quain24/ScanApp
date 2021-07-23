@@ -98,7 +98,7 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new CreateNewDepot(model), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new CreateNewDepotCommand(model), _exitCancellationSource.Token);
 
             if (result is null)
                 return;
