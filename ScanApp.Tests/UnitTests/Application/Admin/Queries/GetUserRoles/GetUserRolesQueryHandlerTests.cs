@@ -131,21 +131,5 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserRoles
 
             await act.Should().ThrowAsync<ArgumentNullException>();
         }
-
-        [Theory]
-        [InlineData(typeof(OperationCanceledException))]
-        [InlineData(typeof(TaskCanceledException))]
-        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
-        {
-            dynamic exc = Activator.CreateInstance(type);
-            ContextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
-
-            var subject = new GetUserRolesQueryHandler(ContextFactoryMock.Object);
-            var result = await subject.Handle(new GetUserRolesQuery("user_name", Version.Create("version")), CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType(type);
-        }
     }
 }
