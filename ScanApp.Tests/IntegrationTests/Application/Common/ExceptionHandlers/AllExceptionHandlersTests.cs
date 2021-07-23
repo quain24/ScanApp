@@ -27,11 +27,12 @@ namespace ScanApp.Tests.IntegrationTests.Application.Common.ExceptionHandlers
             var result = await Provider.GetRequiredService<IMediator>().Send(command);
 
             using var scope = new AssertionScope();
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.Exception.Should().BeOfType(exceptionType);
-
             Output.WriteLine("Command type: " + command?.GetType()?.FullName);
             Output.WriteLine("Expected Exception type: " + exceptionType?.FullName);
+
+            result.Conclusion.Should().BeFalse("handled exception should be translated to a error result");
+            result.ErrorDescription.Exception.Should().BeOfType(exceptionType, "exception handler should provide caught exception in result");
+
             Output.WriteLine("Result Exception type: " + result?.ErrorDescription?.Exception?.GetType()?.FullName);
             Output.WriteLine("Result Error type: " + result?.ErrorDescription?.ErrorType);
         }
@@ -52,7 +53,8 @@ namespace ScanApp.Tests.IntegrationTests.Application.Common.ExceptionHandlers
                 .OrderBy(x => x.Name);
             var detectedHandlers = ExceptionHandlerFixtures.DetectedHandledTypes().OrderBy(x => x.Name);
 
-            manuallyProvidedTypes.Should().BeEquivalentTo(detectedHandlers);
+            manuallyProvidedTypes.Should()
+                .BeEquivalentTo(detectedHandlers, "ManuallyProvidedHandledExceptionTypes collection should contain all of exception handlers");
         }
     }
 }
