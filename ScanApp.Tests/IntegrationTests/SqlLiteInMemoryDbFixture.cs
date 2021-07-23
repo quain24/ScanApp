@@ -16,7 +16,7 @@ namespace ScanApp.Tests.IntegrationTests
         /// <summary>
         /// Service collection of this instance. It can be modified until first actual call for <see cref="Provider"/> or <see cref="NewDbContext"/> was made.
         /// </summary>
-        public ServiceCollection ServiceCollection
+        protected ServiceCollection ServiceCollection
         {
             get
             {
@@ -35,26 +35,17 @@ namespace ScanApp.Tests.IntegrationTests
         /// Gets the configured service provider.<para/>
         /// You <b>cannot</b> reconfigure services by using <see cref="ServiceCollection"/> after call for provider has been made.
         /// </summary>
-        public ServiceProvider Provider
-        {
-            get
-            {
-                if (_provider is null)
-                    InitializeDatabase();
-                return _provider;
-            }
-            private set => _provider = value;
-        }
+        protected ServiceProvider Provider => _provider ??= ServiceCollection.BuildServiceProvider();
 
         /// <summary>
         /// Gets new instance of configured DbContext.
         /// You <b>cannot</b> reconfigure services by using <see cref="ServiceCollection"/> after call for NewDbContext has been made.
         /// </summary>
-        public ApplicationDbContext NewDbContext
+        protected ApplicationDbContext NewDbContext
         {
             get
             {
-                if (Provider is null)
+                if (_dbContext is null)
                     InitializeDatabase();
                 return Provider.GetService<ApplicationDbContext>();
             }
@@ -66,10 +57,9 @@ namespace ScanApp.Tests.IntegrationTests
 
         private void InitializeDatabase()
         {
-            Provider = ServiceCollection.BuildServiceProvider();
             _connection = new SqliteConnection(InMemoryConnectionString);
             _connection.Open();
-            _dbContext = NewDbContext;
+            _dbContext = Provider.GetRequiredService<ApplicationDbContext>();
             _dbContext.Database.EnsureCreated();
         }
 

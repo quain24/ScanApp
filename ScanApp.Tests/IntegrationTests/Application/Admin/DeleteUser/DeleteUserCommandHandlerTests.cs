@@ -4,7 +4,6 @@ using Moq;
 using ScanApp.Application.Admin.Commands.DeleteUser;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Tests.UnitTests;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;

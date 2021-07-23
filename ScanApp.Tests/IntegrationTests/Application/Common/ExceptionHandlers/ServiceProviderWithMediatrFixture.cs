@@ -9,24 +9,23 @@ namespace ScanApp.Tests.IntegrationTests.Application.Common.ExceptionHandlers
     public class ServiceProviderWithMediatrFixture
     {
         private ServiceProvider _provider;
+        public ServiceProvider Provider => _provider ??= ServiceCollection.BuildServiceProvider();
 
-        public ServiceProvider Provider
+        private ServiceCollection _serviceCollection;
+        public ServiceCollection ServiceCollection
         {
             get
             {
-                if (_provider is null)
+                if (_serviceCollection is null)
                 {
-                    ConfigureServices(ServiceCollection);
-                    _provider = ServiceCollection.BuildServiceProvider();
+                    _serviceCollection = new ServiceCollection();
+                    ConfigureServices(_serviceCollection);
                 }
-
-                return _provider;
+                return _serviceCollection;
             }
         }
 
-        public ServiceCollection ServiceCollection { get; set; } = new ServiceCollection();
-
-        private void ConfigureServices(ServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services)
         {
             services.AddMediatR(typeof(MediatRInstaller));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestExceptionProcessorBehavior<,>));

@@ -13,7 +13,7 @@ namespace ScanApp.Tests.IntegrationTests.Application
 {
     public abstract class DbFixtureWithExtensionHandlers : SqlLiteInMemoryDbFixture
     {
-        public ITestOutputHelper Output { get; set; }
+        protected ITestOutputHelper Output { get; init; }
 
         protected override void ConfigureServices(ServiceCollection services)
         {
