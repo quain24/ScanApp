@@ -28,21 +28,14 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
 
         public async Task<Result<List<ClaimModel>>> Handle(GetAllClaimsQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var context = _contextFactory.CreateDbContext();
-                var roles = await context.ClaimsSource
-                    .AsNoTracking()
-                    .Select(rc => new ClaimModel(rc.Type, rc.Value))
-                    .Distinct()
-                    .ToListAsync(cancellationToken).ConfigureAwait(false);
+            await using var context = _contextFactory.CreateDbContext();
+            var roles = await context.ClaimsSource
+                .AsNoTracking()
+                .Select(rc => new ClaimModel(rc.Type, rc.Value))
+                .Distinct()
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-                return new Result<List<ClaimModel>>(roles);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<ClaimModel>>(ErrorType.Cancelled, ex);
-            }
+            return new Result<List<ClaimModel>>(roles);
         }
     }
 }

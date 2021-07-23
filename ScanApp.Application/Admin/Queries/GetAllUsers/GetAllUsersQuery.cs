@@ -28,21 +28,14 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsers
 
         public async Task<Result<List<ApplicationUser>>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var users = await ctx
-                    .Users
-                    .AsNoTracking()
-                    .OrderBy(u => u.UserName)
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<ApplicationUser>>(ErrorType.Cancelled, ex);
-            }
+            await using var ctx = _contextFactory.CreateDbContext();
+            var users = await ctx
+                .Users
+                .AsNoTracking()
+                .OrderBy(u => u.UserName)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+            return new Result<List<ApplicationUser>>(ResultType.Ok).SetOutput(users);
         }
     }
 }
