@@ -77,8 +77,8 @@
                 @foreach (var hour in _hoursArrayInts)
                 {
                     <th>
-                        <EventSquare AppointmentDeleted="DeleteAppointment" DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" DateTo="@GetTimeSlotDate(hour + 1)"
-                                     Appointment="@GetHesAppointment(depotID, hour)" />
+                        <EventSquare AppointmentAdded="AddAppointment" AppointmentDeleted="DeleteAppointment" DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" 
+                                     DepotID="@depotID" DateTo="@GetTimeSlotDate(hour + 1)" Appointment="@GetHesAppointment(depotID, hour)" />
                     </th>
                 }
             </tr>
@@ -103,7 +103,7 @@
 
     private List<string> _hours = new List<string>(_hoursArray);
     private List<int> _hoursInt = new List<int>(_hoursArrayInts);
-    private DateTime _currentDate = new DateTime(2020, 1, 1);
+    private DateTime _currentDate = new DateTime(2021, 7, 20);
     int[] _depotIDs = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     public List<HesAppointmentModel> AppointmentList = new List<HesAppointmentModel>();
@@ -155,7 +155,7 @@
         return null;
     }
 
-    public void UpdateAppointment(HesAppointmentModel appointment)
+    private void UpdateAppointment(HesAppointmentModel appointment)
     {
         for (int i = 0; i < AppointmentList.Count; i++)
         {
@@ -171,6 +171,12 @@
     private void DeleteAppointment(HesAppointmentModel appointment)
     {
         AppointmentList.Remove(appointment);
+        StateHasChanged();
+    }
+
+    private void AddAppointment(HesAppointmentModel appointment)
+    {
+        AppointmentList.Add(appointment);
         StateHasChanged();
     }
 }

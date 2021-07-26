@@ -51,7 +51,7 @@
 
 @if (Appointment is null)
 {
-    <div class="square" id="empty" @onclick="@SquareClicked">
+    <div class="square" id="empty" @onclick="@AddAppointment">
         <div id="fading-background">
         </div>
     </div>
@@ -101,10 +101,16 @@ else
     public DateTime DateTo { get; set; }
 
     [Parameter]
+    public int DepotID { get; set; }
+
+    [Parameter]
     public EventCallback<HesAppointmentModel> DataHasChanged { get; set; }
 
     [Parameter]
     public EventCallback<HesAppointmentModel> AppointmentDeleted { get; set; }
+
+    [Parameter]
+    public EventCallback<HesAppointmentModel> AppointmentAdded { get; set; }
 
     private bool _showEventControls;
 
@@ -112,8 +118,6 @@ else
     {
         if (Appointment is null)
         {
-            //OpenAddAppointmentDialog();
-            Console.WriteLine("Opening add dialog..");
             return;
         }
         ToggleEventControls();
@@ -141,6 +145,7 @@ else
         }
         Appointment = appointmentCopy.Copy();
         await DataHasChanged.InvokeAsync(Appointment);
+        ToggleEventControls();
     }
 
     private async Task DeleteEvent()
@@ -158,5 +163,24 @@ else
             return;
         }
         await AppointmentDeleted.InvokeAsync(Appointment);
+    }
+
+    private async Task AddAppointment()
+    {
+        var parameter = new DialogParameters()
+        {
+            ["DateFrom"] = DateFrom,
+            ["DepotID"] = DepotID
+        };
+
+        var dialog = DialogService.Show<AddAppointmentDialog>("Add", parameter, new DialogOptions {MaxWidth = MaxWidth.Large});
+        var result = await dialog.Result;
+
+        if (result.Cancelled)
+        {
+            return;
+        }
+        Appointment = (HesAppointmentModel) result.Data;
+        await AppointmentAdded.InvokeAsync(Appointment);
     }
 }

@@ -1,0 +1,71 @@
+﻿@using ScanApp.Models.Scheduler
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Outlined.Add" />
+            Add
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudForm @ref="_form">
+                    <MudTextField Variant="Variant.Outlined" Immediate="true" Label="Identification Number" @bind-Value="_appointment.IdentificationNumber" />
+                    <MudTextField Variant="Variant.Outlined" Immediate="true" Label="Spedition" @bind-Value="_appointment.Spedition" />
+                    <MudTextField Variant="Variant.Outlined" Immediate="true" Label="Company" @bind-Value="_appointment.Company" />
+                    <MudDatePicker PickerVariant="PickerVariant.Dialog" ShowWeekNumbers="true" Label="Day" @bind-Date="_appointment.Date" />
+                    <MudSelect Label="Select Timeslot" @bind-Value="_appointment.TimeSlot" OffsetY="true"
+                               OpenIcon="@Icons.Material.Filled.Timelapse" AdornmentColor="Color.Secondary">
+                        @foreach (TimeSlot timeSlot in GenerateTimeSlots())
+                        {
+                            <MudSelectItem Value="@timeSlot">@timeSlot.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudForm>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Disabled="_okDisabled" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public DateTime DateFrom { get; set; }
+
+    [Parameter]
+    public int DepotID { get; set; }
+
+    private MudForm _form;
+    private HesAppointmentModel _appointment;
+    private bool _okDisabled;
+
+    protected override void OnInitialized()
+    {
+        var date = new DateTime(DateFrom.Year, DateFrom.Month, DateFrom.Day);
+        _appointment = new HesAppointmentModel(date, DateFrom.Hour, DateFrom.Hour + 1);
+        _appointment.DepotID = DepotID;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(_appointment));
+    }
+
+    private List<TimeSlot> GenerateTimeSlots()
+    {
+        var timeSlotList = new List<TimeSlot>();
+        for (int i = 5; i <= 20; i++)
+        {
+            timeSlotList.Add(new TimeSlot(i, i + 1));
+        }
+        return timeSlotList;
+    }
+}
