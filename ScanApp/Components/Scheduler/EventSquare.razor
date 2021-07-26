@@ -1,4 +1,6 @@
 ﻿@using ScanApp.Models.Scheduler
+@using ScanApp.Common.Extensions
+@inject IDialogService DialogService 
 <style>
     .square {
         height: 70px;
@@ -17,7 +19,7 @@
     #fading-background {
         opacity: 0;
         height: 100%;
-        transition: all 500ms ease-in-out;
+        transition: all 300ms ease-in-out;
     }
 
     .control-camera {
@@ -45,46 +47,44 @@
         background-color: #4ca5d4;
         cursor: pointer;
     }
-
-    
 </style>
 
-@if (_showEventControls)
+@if (Appointment is null)
 {
-    <div class="square">
-        <div class="control-camera" @onclick="@SquareClicked">
-            <MudIcon Icon="@Icons.Material.Outlined.ControlCamera"></MudIcon>
-        </div>
-        <div class="click-event" @onclick="@DeleteEvent">
-            <MudIcon Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIcon>
-        </div>
-        <div class="click-event" @onclick="@EditEvent">
-            <MudIcon Icon="@Icons.Material.Outlined.Edit" Size="Size.Small"></MudIcon>
+    <div class="square" id="empty" @onclick="@SquareClicked">
+        <div id="fading-background">
         </div>
     </div>
 }
 else
 {
-    @if (Appointment is not null)
+    if (_showEventControls)
     {
-        <div class="square" @onclick="@SquareClicked" style="text-align: left;">
-            <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
-                @Appointment.Spedition
+        <div class="square">
+            <div class="control-camera" @onclick="@SquareClicked">
+                <MudIcon Icon="@Icons.Material.Outlined.ControlCamera"></MudIcon>
             </div>
-            <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
-                @Appointment.Company
+            <div class="click-event" @onclick="@DeleteEvent">
+                <MudIcon Icon="@Icons.Material.Outlined.Delete" Size="Size.Small"></MudIcon>
             </div>
-            <div style="width: 100%; height: 30%; padding-left: 5px; background-color: #52b1e3; font-size: smaller; color: white;">
-                @Appointment.FromDate.Hour:00 - @Appointment.ToDate.Hour:00
+            <div class="click-event" @onclick="@EditEvent">
+                <MudIcon Icon="@Icons.Material.Outlined.Edit" Size="Size.Small"></MudIcon>
             </div>
         </div>
     }
     else
     {
-        <div class="square" id="empty" @onclick="@SquareClicked">
-            <div id="fading-background">
-            </div>
+    <div class="square" @onclick="@SquareClicked" style="text-align: left;">
+        <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
+            @Appointment.Spedition
         </div>
+        <div style="width: 100%; height: 35%; padding-left: 5px; font-size: smaller; color: white;">
+            @Appointment.Company
+        </div>
+        <div style="width: 100%; height: 30%; padding-left: 5px; background-color: #52b1e3; font-size: smaller; color: white;">
+            @Appointment.TimeSlot.ToString()
+        </div>
+    </div>
     }
 }
 
@@ -94,8 +94,16 @@ else
     [Parameter]
     public HesAppointmentModel Appointment { get; set; }
 
-    private bool _showEventControls;
+    [Parameter]
+    public DateTime DateFrom { get; set; }
 
+    [Parameter]
+    public DateTime DateTo { get; set; }
+
+    [Parameter]
+    public EventCallback<HesAppointmentModel> DataHasChanged { get; set; }
+
+    private bool _showEventControls;
 
     private void SquareClicked()
     {
@@ -113,9 +121,25 @@ else
         _showEventControls = !_showEventControls;
     }
 
-    private void EditEvent()
+    private async Task EditEvent()
     {
-        Console.WriteLine("Opening edit dialog..");
+        var appointmentCopy = Appointment.Copy();
+        var parameter = new DialogParameters()
+        {
+            ["Appointment"] = appointmentCopy
+        };
+
+        var dialog = DialogService.Show<EditAppointmentDialog>("Edit", parameter, new DialogOptions { MaxWidth = MaxWidth.Large });
+        var result = await dialog.Result;
+
+        if (result.Cancelled)
+        {
+            Console.WriteLine(Appointment.TimeSlot.ToString());
+            return;
+        }
+        Appointment = appointmentCopy.Copy();
+        Console.WriteLine(Appointment.TimeSlot.ToString());
+        await DataHasChanged.InvokeAsync(Appointment);
     }
 
     private void DeleteEvent()
