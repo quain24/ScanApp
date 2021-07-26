@@ -22,12 +22,6 @@ namespace ScanApp.Tests.IntegrationTests.Application
             services.AddSingleton<IHttpContextAccessor>(Mock.Of<IHttpContextAccessor>());
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestExceptionProcessorBehavior<,>));
-            services.AddLogging(c => c.AddSerilog(new LoggerConfiguration()
-                .WriteTo.TestOutput(Output)
-                .Enrich.FromLogContext()
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
-                .CreateLogger()));
         }
     }
 }

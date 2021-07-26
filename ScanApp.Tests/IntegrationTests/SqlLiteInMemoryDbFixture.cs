@@ -1,16 +1,29 @@
-﻿using System;
-using EntityFramework.Exceptions.Sqlite;
+﻿using EntityFramework.Exceptions.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
 using ScanApp.Infrastructure.Services;
+using Serilog;
+using Serilog.Events;
+using System;
+using System.Linq;
+using Xunit.Abstractions;
+using Xunit.Sdk;
+using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.IntegrationTests
 {
     public abstract class SqlLiteInMemoryDbFixture : IDisposable
     {
+        /// <summary>
+        /// Plays role of a logger sink if provided.
+        /// </summary>
+        protected ITestOutputHelper Output { get; init; }
+
         private ServiceCollection _serviceCollection;
 
         /// <summary>
@@ -47,7 +60,7 @@ namespace ScanApp.Tests.IntegrationTests
             {
                 if (_dbContext is null)
                     InitializeDatabase();
-                return Provider.GetService<ApplicationDbContext>();
+                return Provider.GetService<AppDbContextStub>();
             }
         }
 
@@ -59,7 +72,7 @@ namespace ScanApp.Tests.IntegrationTests
         {
             _connection = new SqliteConnection(InMemoryConnectionString);
             _connection.Open();
-            _dbContext = Provider.GetRequiredService<ApplicationDbContext>();
+            _dbContext = Provider.GetRequiredService<AppDbContextStub>();
             _dbContext.Database.EnsureCreated();
         }
 
@@ -72,18 +85,30 @@ namespace ScanApp.Tests.IntegrationTests
         protected virtual void ConfigureServices(ServiceCollection services)
         {
             // UseExceptionProcessor() - replace standard EF Core exception with more detailed ones. (EntityFramework.Exceptions package for SqlLite)
-            services
-                .AddDbContext<ApplicationDbContext>(o =>
-                        o.UseSqlite(_connection).UseExceptionProcessor(),
-                    contextLifetime: ServiceLifetime.Transient,
-                    optionsLifetime: ServiceLifetime.Singleton);
+            var sqlConfiguration = new Action<DbContextOptionsBuilder>(o =>
+            {
+                o.UseSqlite(_connection);
+                o.UseExceptionProcessor();
+                o.EnableDetailedErrors();
+                o.EnableSensitiveDataLogging();
+            });
 
-            services.AddDbContextFactory<ApplicationDbContext>(o =>
-                    o.UseSqlite(_connection).UseExceptionProcessor(),
-                ServiceLifetime.Transient);
+            services.AddDbContext<AppDbContextStub>(sqlConfiguration,
+                contextLifetime: ServiceLifetime.Transient,
+                optionsLifetime: ServiceLifetime.Singleton);
+
+            services.AddDbContextFactory<AppDbContextStub>(sqlConfiguration,
+            ServiceLifetime.Transient);
 
             services.AddSingleton<IContextFactory, AppDbContextFactory>(srv =>
-                new AppDbContextFactory(srv.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()));
+                new AppDbContextFactory(srv.GetRequiredService<IDbContextFactory<AppDbContextStub>>()));
+
+            services.AddLogging(c => c.AddSerilog(new LoggerConfiguration()
+                .WriteTo.TestOutput(Output ?? new TestOutputHelper())
+                .Enrich.FromLogContext()
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+                .CreateLogger()));
         }
 
         public void Dispose()
@@ -91,5 +116,39 @@ namespace ScanApp.Tests.IntegrationTests
             _dbContext?.Database.EnsureDeleted();
             _connection?.Close();
         }
+    }
+
+    public class AppDbContextStub : ApplicationDbContext
+    {
+        public AppDbContextStub(DbContextOptions<AppDbContextStub> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            if (Database.IsSqlite())
+            {
+                var timestampProperties = builder.Model
+                    .GetEntityTypes()
+                    .SelectMany(t => t.GetProperties())
+                    .Where(p => p.ClrType == typeof(Version)
+                                && p.ValueGenerated == ValueGenerated.OnAddOrUpdate);
+
+                foreach (var property in timestampProperties)
+                {
+                    property.SetValueConverter(new SqliteTimestampConverter());
+                    property.SetDefaultValueSql("CURRENT_TIMESTAMP");
+                }
+            }
+        }
+    }
+
+    internal class SqliteTimestampConverter : ValueConverter<Version, string>
+    {
+        public SqliteTimestampConverter() : base(
+            v => (v == null || v == Version.Empty) ? null : v.Value,
+            v => v == null ? Version.Empty : Version.Create(v))
+        { }
     }
 }

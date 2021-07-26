@@ -20,17 +20,20 @@ namespace ScanApp.Tests.IntegrationTests.Application.Depots.CreateNewDepot
         [Fact]
         public async Task Will_add_depot_with_proper_relation_data()
         {
+            var gate = new Gate(0, Gate.TrafficDirection.Incoming);
+            var trailer = new TrailerType("trailer");
+
             using (var ctx = NewDbContext)
             {
-                ctx.Gates.Add(new Gate(0, Gate.TrafficDirection.Incoming));
-                ctx.TrailerTypes.Add(new TrailerType("trailer"));
+                ctx.Gates.Add(gate);
+                ctx.TrailerTypes.Add(trailer);
                 await ctx.SaveChangesAsync();
             }
 
             var model = new DepotDataFixtures
                 .DepotBuilder()
-                .WithGate(new Gate(0, Gate.TrafficDirection.Incoming) { Id = 1, Version = Version.Empty })
-                .WithTrailerType(new TrailerType("trailer") { Id = 1 })
+                .WithGate(gate)
+                .WithTrailerType(trailer)
                 .BuildAsModel();
 
             var subject = new CreateNewDepotCommandHandler(Provider.GetRequiredService<IContextFactory>());
@@ -46,14 +49,8 @@ namespace ScanApp.Tests.IntegrationTests.Application.Depots.CreateNewDepot
                 .FirstOrDefault();
 
             depot.Should().BeEquivalentTo(new DepotDataFixtures.DepotBuilder()
-                .WithGate(new Gate(0, Gate.TrafficDirection.Incoming) { Id = 1 })
-                .WithTrailerType(new TrailerType("trailer") { Id = 1 }).Build(), o =>
-            {
-                o.Excluding(x => x.Version);
-                o.Excluding(x => x.DefaultGate.Version);
-                o.Excluding(x => x.DefaultTrailer.Version);
-                return o;
-            });
+                .WithGate(gate)
+                .WithTrailerType(trailer).Build(), o => o.Excluding(x => x.Version));
         }
 
         [Fact]
