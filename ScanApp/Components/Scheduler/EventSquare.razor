@@ -103,6 +103,9 @@ else
     [Parameter]
     public EventCallback<HesAppointmentModel> DataHasChanged { get; set; }
 
+    [Parameter]
+    public EventCallback<HesAppointmentModel> AppointmentDeleted { get; set; }
+
     private bool _showEventControls;
 
     private void SquareClicked()
@@ -134,16 +137,26 @@ else
 
         if (result.Cancelled)
         {
-            Console.WriteLine(Appointment.TimeSlot.ToString());
             return;
         }
         Appointment = appointmentCopy.Copy();
-        Console.WriteLine(Appointment.TimeSlot.ToString());
         await DataHasChanged.InvokeAsync(Appointment);
     }
 
-    private void DeleteEvent()
+    private async Task DeleteEvent()
     {
-        Console.WriteLine("Opening delete dialog..");
+        var parameter = new DialogParameters()
+        {
+            ["Appointment"] = Appointment
+        };
+
+        var dialog = DialogService.Show<DeleteAppointmentDialog>("Delete", parameter, new DialogOptions {MaxWidth = MaxWidth.Large});
+        var result = await dialog.Result;
+
+        if (result.Cancelled)
+        {
+            return;
+        }
+        await AppointmentDeleted.InvokeAsync(Appointment);
     }
 }

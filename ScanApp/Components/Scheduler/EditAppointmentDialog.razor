@@ -10,10 +10,11 @@
         <MudContainer>
             <MudGrid>
                 <MudForm @ref="_form" IsValidChanged="@OnValidationChanged">
+                    <MudTextField Variant="Variant.Filled" Disabled="true" Label="Identification Number" @bind-Value="Appointment.IdentificationNumber" />
                     <MudTextField Variant="Variant.Outlined" Immediate="true" Label="Spedition" @bind-Value="Appointment.Spedition" />
                     <MudTextField Variant="Variant.Outlined" Immediate="true" Label="Company" @bind-Value="Appointment.Company" />
                     <MudDatePicker PickerVariant="PickerVariant.Dialog" ShowWeekNumbers="true" Label="Day" @bind-Date="@_day" />
-                    <MudSelect Label="Select timeslot" @bind-Value="Appointment.TimeSlot" OffsetY="true" 
+                    <MudSelect Label="Select Timeslot" @bind-Value="Appointment.TimeSlot" OffsetY="true"
                                OpenIcon="@Icons.Material.Filled.Timelapse" AdornmentColor="Color.Secondary">
                         @foreach (TimeSlot timeSlot in GenerateTimeSlots())
                         {

@@ -77,7 +77,7 @@
                 @foreach (var hour in _hoursArrayInts)
                 {
                     <th>
-                        <EventSquare DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" DateTo="@GetTimeSlotDate(hour + 1)"
+                        <EventSquare AppointmentDeleted="DeleteAppointment" DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" DateTo="@GetTimeSlotDate(hour + 1)"
                                      Appointment="@GetHesAppointment(depotID, hour)" />
                     </th>
                 }
@@ -165,6 +165,12 @@
                 break;
             }
         }
+        StateHasChanged();
+    }
+
+    private void DeleteAppointment(HesAppointmentModel appointment)
+    {
+        AppointmentList.Remove(appointment);
         StateHasChanged();
     }
 }
