@@ -48,8 +48,7 @@
     protected override void OnInitialized()
     {
         var date = new DateTime(DateFrom.Year, DateFrom.Month, DateFrom.Day);
-        _appointment = new HesAppointmentModel(date, DateFrom.Hour, DateFrom.Hour + 1);
-        _appointment.DepotID = DepotID;
+        _appointment = new HesAppointmentModel(date, DateFrom.Hour, DateFrom.Hour + 1, DepotID);
     }
 
     private void Cancel() => MudDialog.Cancel();

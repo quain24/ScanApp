@@ -111,29 +111,19 @@
     protected override void OnInitialized()
     {
         AppointmentList.Add(
-            new HesAppointmentModel(new DateTime(2021, 7, 20), 10, 11)
+            new HesAppointmentModel(new DateTime(2021, 7, 20), 10, 11, 2)
             {
-                DepotID = 2,
                 Company = "HSF",
-                GridLocation = 10,
                 IdentificationNumber = "666",
-                Loading = true,
-                Note = "Something",
-                Spedition = "DHL",
-                Unloading = false
+                Spedition = "DHL"
             });
 
         AppointmentList.Add(
-            new HesAppointmentModel(new DateTime(2021, 7, 20), 5, 6)
+            new HesAppointmentModel(new DateTime(2021, 7, 20), 5, 6, 4)
             {
-                DepotID = 4,
                 Company = "HSFFFFFFFFFFFFFFFFFF",
-                GridLocation = 5,
                 IdentificationNumber = "777",
-                Loading = true,
-                Note = "Something",
-                Spedition = "DHL",
-                Unloading = false
+                Spedition = "DHL"
             });
     }
 
