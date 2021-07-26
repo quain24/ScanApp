@@ -134,5 +134,14 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Queries.AllDepots
             result.Conclusion.Should().BeTrue();
             result.Output.Should().BeEmpty();
         }
+
+        [Fact]
+        public async Task Will_dispose_context_from_factory()
+        {
+            var subject = new AllDepotsQueryHandler(ContextFactoryMock.Object);
+            _ = await subject.Handle(new AllDepotsQuery(), CancellationToken.None);
+
+            AllContextsDisposed.Should().BeTrue();
+        }
     }
 }

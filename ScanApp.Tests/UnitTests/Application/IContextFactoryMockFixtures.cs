@@ -38,8 +38,12 @@ namespace ScanApp.Tests.UnitTests.Application
             }
             ContextMock.DefaultValueProvider = new DefaultDbContextValueProvider();
 
-            ContextFactoryMock.Setup(m => m.CreateDbContext()).Returns(ContextMock.Object);
+            ContextFactoryMock.Setup(m => m.CreateDbContext()).Returns(ContextMock.Object).Callback(() => _disposeCount += 1);
+            ContextMock.Setup(x => x.DisposeAsync()).Callback(() => _disposeCount -= 1);
+            ContextMock.Setup(x => x.Dispose()).Callback(() => _disposeCount -= 1);
         }
+    private int _disposeCount;
+    public bool AllContextsDisposed => _disposeCount <= 0;
     }
 
     internal class DefaultDbContextValueProvider : DefaultValueProvider
