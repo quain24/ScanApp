@@ -57,7 +57,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
-            result.Output.Should().Be(Version.Empty());
+            result.Output.Should().Be(Version.Empty);
         }
 
         [Fact]

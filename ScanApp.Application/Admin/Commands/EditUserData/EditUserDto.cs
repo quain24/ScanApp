@@ -15,6 +15,6 @@ namespace ScanApp.Application.Admin.Commands.EditUserData
         public string Phone { get; set; }
         public string Email { get; set; }
         public Location Location { get; set; }
-        public Version Version { get; set; } = Version.Empty();
+        public Version Version { get; set; } = Version.Empty;
     }
 }

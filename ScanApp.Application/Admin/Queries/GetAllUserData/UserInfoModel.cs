@@ -14,7 +14,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUserData
         /// </summary>
         public UserInfoModel()
         {
-            Version = Version.Empty();
+            Version = Version.Empty;
         }
 
         /// <summary>

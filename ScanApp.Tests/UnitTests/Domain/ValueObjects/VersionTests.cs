@@ -59,7 +59,7 @@ namespace ScanApp.Tests.UnitTests.Domain.ValueObjects
         [Fact]
         public void Will_create_empty_version()
         {
-            var subject = Version.Empty();
+            var subject = Version.Empty;
 
             subject.IsEmpty.Should().BeTrue();
             subject.Value.Should().BeNull();

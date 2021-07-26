@@ -29,7 +29,7 @@ namespace ScanApp.Application.Admin
         public BasicRoleModel(string roleName, Version version)
         {
             Name = roleName;
-            Version = version ?? Version.Empty();
+            Version = version ?? Version.Empty;
         }
 
         public int CompareTo(BasicRoleModel other)

@@ -61,7 +61,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserSecurityS
 
         public static TheoryData<Version> InvalidVersion => new()
         {
-            Version.Empty(),
+            Version.Empty,
             null
         };
 

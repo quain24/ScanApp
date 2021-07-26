@@ -45,13 +45,8 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
         [Fact]
         public async Task Returns_result_created_when_successful()
         {
-            var sparePartSourceMock = Array.Empty<SparePart>()
-                .AsQueryable()
-                .BuildMockDbSet();
-            ContextMock.Setup(c => c.SpareParts).Returns(sparePartSourceMock.Object);
-            var factoryMock = ContextFactoryMock;
             var command = new CreateSparePartsCommand();
-            var subject = new CreateSparePartsCommandHandler(factoryMock.Object);
+            var subject = new CreateSparePartsCommandHandler(ContextFactoryMock.Object);
 
             var result = await subject.Handle(command, CancellationToken.None);
 
@@ -62,13 +57,8 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
         [Fact]
         public async Task Context_is_disposed()
         {
-            var sparePartSourceMock = Array.Empty<SparePart>()
-                .AsQueryable()
-                .BuildMockDbSet();
-            ContextMock.Setup(c => c.SpareParts).Returns(sparePartSourceMock.Object);
-            var factoryMock = ContextFactoryMock;
             var command = new CreateSparePartsCommand();
-            var subject = new CreateSparePartsCommandHandler(factoryMock.Object);
+            var subject = new CreateSparePartsCommandHandler(ContextFactoryMock.Object);
 
             await subject.Handle(command, CancellationToken.None);
 

@@ -59,7 +59,7 @@ namespace ScanApp.Domain.Entities
         /// <summary>
         /// Gets a <see cref="ValueObjects.Version"/> representing 'RowVersion' property of this entity.
         /// </summary>
-        public Version Version { get; private set; } = Version.Empty();
+        public Version Version { get; private set; } = Version.Empty;
 
         /// <summary>
         /// For compliance with EF Core.

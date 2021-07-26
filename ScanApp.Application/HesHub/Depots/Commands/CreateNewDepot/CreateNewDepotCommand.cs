@@ -27,12 +27,12 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
             await using var ctx = _factory.CreateDbContext();
 
             var model = request.Model;
-            var children = CreateChildren(model);
+            var (gate, trailer) = CreateChildren(model);
             var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
                 Address.Create(model.StreetName, model.ZipCode, model.City, model.Country))
             {
-                DefaultGate = children.Gate,
-                DefaultTrailer = children.Trailer
+                DefaultGate = gate,
+                DefaultTrailer = trailer
             };
 
             await ctx.Depots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
@@ -43,7 +43,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
 
             var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
+            return saved >= 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
         }
 
         private static (Gate Gate, TrailerType Trailer) CreateChildren(DepotModel model)
