@@ -21,6 +21,11 @@ namespace ScanApp.Infrastructure.Persistence
         {
         }
 
+        protected ApplicationDbContext(DbContextOptions options)
+            : base(options)
+        {
+        }
+
         public DbSet<Location> Locations { get; set; }
         public DbSet<UserLocation> UserLocations { get; set; }
         public DbSet<Claim> ClaimsSource { get; set; }
