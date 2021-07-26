@@ -49,7 +49,7 @@ namespace ScanApp.Tests.UnitTests.Application
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(DbSet<>))
             {
                 var t = type.GetGenericArguments().First();
-                dynamic dbSet = Activator.CreateInstance(typeof(List<>).MakeGenericType(t));
+                dynamic dbSet = Activator.CreateInstance(typeof(List<>).MakeGenericType(t), args: 0);
                 var queryable = Queryable.AsQueryable(dbSet);
                 return MoqExtensions.BuildMockDbSet(queryable).Object;
             }

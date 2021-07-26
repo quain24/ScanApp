@@ -38,10 +38,9 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands.CreateNewDe
         }
 
         [Fact]
-        public async Task Returns_result_of_added_when_operation_was_successful()
+        public async Task Returns_result_of_created_when_operation_was_successful()
         {
             ContextMock.Setup(x => x.AddAsync(It.IsAny<It.IsAnyType>(), It.IsAny<CancellationToken>())).Returns(new ValueTask<EntityEntry<It.IsAnyType>>());
-            ContextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             var command = new CreateNewDepotCommand(new DepotModel()
             {
                 Name = "aa",
@@ -58,6 +57,31 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands.CreateNewDe
             var result = await new CreateNewDepotCommandHandler(ContextFactoryMock.Object).Handle(command, CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
+            result.ResultType.Should().Be(ResultType.Created);
+        }
+
+        [Fact]
+        public async Task Returns_result_of_unknown_when_operation_failed_but_dod_not_throw()
+        {
+            ContextMock.Setup(x => x.AddAsync(It.IsAny<It.IsAnyType>(), It.IsAny<CancellationToken>())).Returns(new ValueTask<EntityEntry<It.IsAnyType>>());
+            ContextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
+            var command = new CreateNewDepotCommand(new DepotModel()
+            {
+                Name = "aa",
+                City = "aa",
+                Country = "aa",
+                DistanceToDepot = 0,
+                Email = "aa@aa.aa",
+                PhoneNumber = "123456489",
+                StreetName = "aa",
+                Version = Version.Empty,
+                ZipCode = "aaa"
+            });
+
+            var result = await new CreateNewDepotCommandHandler(ContextFactoryMock.Object).Handle(command, CancellationToken.None);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Unknown);
         }
     }
 }
