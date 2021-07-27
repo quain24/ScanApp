@@ -64,7 +64,7 @@ namespace ScanApp.Application.HesHub.Depots.Queries.AllDepots
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<DepotModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<DepotModel>>(ErrorType.Canceled, ex);
             }
             catch (SqlException ex)
             {

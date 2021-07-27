@@ -56,7 +56,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetAllUsersBasicData
             var result = await subject.Handle(new GetAllUsersBasicDataQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
 

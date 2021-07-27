@@ -40,7 +40,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<BasicUserModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<BasicUserModel>>(ErrorType.Canceled, ex);
             }
         }
     }

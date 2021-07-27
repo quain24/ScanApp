@@ -63,7 +63,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<BasicRoleModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<BasicRoleModel>>(ErrorType.Canceled, ex);
             }
         }
     }

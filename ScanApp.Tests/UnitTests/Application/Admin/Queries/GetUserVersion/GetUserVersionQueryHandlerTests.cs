@@ -73,7 +73,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
             var result = await subject.Handle(new GetUserVersionQuery("name"), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
 

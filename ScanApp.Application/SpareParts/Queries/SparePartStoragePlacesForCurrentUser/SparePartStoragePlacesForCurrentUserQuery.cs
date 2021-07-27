@@ -48,7 +48,7 @@ namespace ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesForCurren
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<RepairWorkshopModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<RepairWorkshopModel>>(ErrorType.Canceled, ex);
             }
         }
 

@@ -36,7 +36,7 @@ namespace ScanApp.Application.Admin.Queries.GetUserVersion
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<Version>(ErrorType.Cancelled, ex).SetOutput(Version.Empty);
+                return new Result<Version>(ErrorType.Canceled, ex).SetOutput(Version.Empty);
             }
         }
     }

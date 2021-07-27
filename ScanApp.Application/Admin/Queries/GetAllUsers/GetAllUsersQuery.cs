@@ -41,7 +41,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsers
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<ApplicationUser>>(ErrorType.Cancelled, ex);
+                return new Result<List<ApplicationUser>>(ErrorType.Canceled, ex);
             }
         }
     }

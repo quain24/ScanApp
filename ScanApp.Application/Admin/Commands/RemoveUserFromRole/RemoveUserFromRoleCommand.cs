@@ -64,7 +64,7 @@ namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<Version>(ErrorType.Cancelled, ex).SetOutput(request.Version);
+                return new Result<Version>(ErrorType.Canceled, ex).SetOutput(request.Version);
             }
             catch (DbUpdateException ex)
             {

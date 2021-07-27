@@ -144,7 +144,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserRoles
             var result = await subject.Handle(new GetUserRolesQuery("user_name", Version.Create("version")), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }

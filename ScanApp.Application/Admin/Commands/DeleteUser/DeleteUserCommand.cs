@@ -58,7 +58,7 @@ namespace ScanApp.Application.Admin.Commands.DeleteUser
             }
             catch (OperationCanceledException ex)
             {
-                return new Result(ErrorType.Cancelled, ex);
+                return new Result(ErrorType.Canceled, ex);
             }
             catch (DbUpdateException ex)
             {

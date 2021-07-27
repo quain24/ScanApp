@@ -74,7 +74,7 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Queries.GetAllSparePart
             var result = await subject.Handle(new GetAllSparePartStoragePlacesQuery(), CancellationToken.None);
 
             result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
             result.ErrorDescription.Exception.Should().BeOfType(type);
         }
     }

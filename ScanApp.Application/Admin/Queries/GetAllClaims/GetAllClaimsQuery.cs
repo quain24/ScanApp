@@ -41,7 +41,7 @@ namespace ScanApp.Application.Admin.Queries.GetAllClaims
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<ClaimModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<ClaimModel>>(ErrorType.Canceled, ex);
             }
         }
     }

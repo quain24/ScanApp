@@ -33,7 +33,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<Version>(ErrorType.Cancelled, ex);
+                return new Result<Version>(ErrorType.Canceled, ex);
             }
             catch (DbUpdateException ex)
             {

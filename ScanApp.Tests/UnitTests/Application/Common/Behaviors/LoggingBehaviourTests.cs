@@ -176,7 +176,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Behaviors
             var requestDelegateMock = new Mock<RequestHandlerDelegate<Result<string>>>();
             var logger = Output.BuildLoggerFor<LoggingBehaviour<BehaviourTestFixtures.NonSerializableRequest, Result<string>>>();
 
-            requestDelegateMock.Setup(m => m.Invoke()).ReturnsAsync(new Result<string>(ErrorType.Cancelled).SetOutput("invalid"));
+            requestDelegateMock.Setup(m => m.Invoke()).ReturnsAsync(new Result<string>(ErrorType.Canceled).SetOutput("invalid"));
             var subject = new LoggingBehaviour<BehaviourTestFixtures.NonSerializableRequest, Result<string>>(logger, null);
 
             var result = await subject.Handle(request, CancellationToken.None, requestDelegateMock.Object);

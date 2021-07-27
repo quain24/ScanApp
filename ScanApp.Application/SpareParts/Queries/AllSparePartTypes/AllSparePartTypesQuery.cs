@@ -41,7 +41,7 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<List<SparePartTypeModel>>(ErrorType.Cancelled, ex);
+                return new Result<List<SparePartTypeModel>>(ErrorType.Canceled, ex);
             }
             catch (SqlException ex)
             {
