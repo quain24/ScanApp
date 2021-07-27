@@ -7,7 +7,6 @@
         width: 100%;
         border-spacing: 0 7px;
         table-layout: fixed;
-        position: absolute;
     }
 
     td, th {
@@ -20,18 +19,36 @@
         padding: 20px;
         background: #479cc8;
         color: white;
-        font-size: 30px;
-        text-align: center;
+        font-size: 20px;
+        text-align: left;
     }
 
     .wrapper {
         display: flex;
+        justify-content: space-between;
     }
 
     .wrapper-content {
         flex: 0 0 100%;
         padding-left: -14px;
     }
+
+    .wrapper-header-content {
+        flex: 0 0 auto;
+    }
+
+    div#current-date-picker .mud-icon-root.mud-svg-icon {
+        fill: white;
+    }
+
+    div#current-date-picker .mud-input, input.mud-input-root, div.mud-input-slot.mud-input-root input{
+        color: white;
+    }
+
+    div#current-date-picker .mud-shrink ~ label.mud-input-label.mud-input-label-inputcontrol {
+        color: white;
+    }
+
 
     @@media screen and (max-width: 1550px) {
         div#depot-header {
@@ -40,49 +57,55 @@
     }
 </style>
 
-<div class="header">
-    <h1>HES Scheduler</h1>
+<div class="header wrapper" style="justify-content: space-around">
+    <h1 class="wrapper-header-content">HES Scheduler</h1>
+    <div id="current-date-picker" class="wrapper-header-content">
+        <MudDatePicker PickerVariant="PickerVariant.Dialog"
+                       ShowWeekNumbers="true" Label="Day" @bind-Date="_currentDate"></MudDatePicker>
+    </div>
+    <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color: #4ba7d6; color: white;" OnClick="() => ChangeDate(DateTime.Today)"
+               StartIcon="@Icons.Rounded.CalendarToday" Class="wrapper-header-content">Today</MudButton>
 </div>
 <table class="table">
     <thead>
-        <tr>
-            <div class="wrapper">
-                <div id="depot-header" class="wrapper-content" style="font-size: large; padding-left: 15px;">Depot</div>
-                <div class="wrapper-content" style="margin-left: -12px;">5:00</div>
-                <div class="wrapper-content">6:00</div>
-                <div class="wrapper-content">7:00</div>
-                <div class="wrapper-content">8:00</div>
-                <div class="wrapper-content">9:00</div>
-                <div class="wrapper-content" style="margin-left: -5px;">10:00</div>
-                <div class="wrapper-content">11:00</div>
-                <div class="wrapper-content">12:00</div>
-                <div class="wrapper-content">13:00</div>
-                <div class="wrapper-content">14:00</div>
-                <div class="wrapper-content">15:00</div>
-                <div class="wrapper-content">16:00</div>
-                <div class="wrapper-content">17:00</div>
-                <div class="wrapper-content">18:00</div>
-                <div class="wrapper-content">19:00</div>
-                <div class="wrapper-content">20:00</div>
-            </div>
-        </tr>
+    <tr>
+        <div class="wrapper">
+            <div id="depot-header" class="wrapper-content" style="font-size: large; padding-left: 15px;">Depot</div>
+            <div class="wrapper-content" style="margin-left: -12px;">5:00</div>
+            <div class="wrapper-content">6:00</div>
+            <div class="wrapper-content">7:00</div>
+            <div class="wrapper-content">8:00</div>
+            <div class="wrapper-content">9:00</div>
+            <div class="wrapper-content" style="margin-left: -5px;">10:00</div>
+            <div class="wrapper-content">11:00</div>
+            <div class="wrapper-content">12:00</div>
+            <div class="wrapper-content">13:00</div>
+            <div class="wrapper-content">14:00</div>
+            <div class="wrapper-content">15:00</div>
+            <div class="wrapper-content">16:00</div>
+            <div class="wrapper-content">17:00</div>
+            <div class="wrapper-content">18:00</div>
+            <div class="wrapper-content">19:00</div>
+            <div class="wrapper-content">20:00</div>
+        </div>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var depotID in _depotIDs)
-        {
-            <tr>
-                <th style="width: 3%; font-size: x-large;">
-                    @depotID.ToString()
+    @foreach (var depotID in _depotIDs)
+    {
+        <tr>
+            <th style="width: 3%; font-size: x-large;">
+                @depotID.ToString()
+            </th>
+            @foreach (var hour in _hoursArrayInts)
+            {
+                <th>
+                    <EventSquare AppointmentAdded="AddAppointment" AppointmentDeleted="DeleteAppointment" DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" 
+                                 DepotID="@depotID" DateTo="@GetTimeSlotDate(hour + 1)" Appointment="@GetHesAppointment(depotID, hour)" />
                 </th>
-                @foreach (var hour in _hoursArrayInts)
-                {
-                    <th>
-                        <EventSquare AppointmentAdded="AddAppointment" AppointmentDeleted="DeleteAppointment" DataHasChanged="UpdateAppointment" DateFrom="@GetTimeSlotDate(hour)" 
-                                     DepotID="@depotID" DateTo="@GetTimeSlotDate(hour + 1)" Appointment="@GetHesAppointment(depotID, hour)" />
-                    </th>
-                }
-            </tr>
-        }
+            }
+        </tr>
+    }
     </tbody>
 </table>
 
@@ -103,7 +126,7 @@
 
     private List<string> _hours = new List<string>(_hoursArray);
     private List<int> _hoursInt = new List<int>(_hoursArrayInts);
-    private DateTime _currentDate = new DateTime(2021, 7, 20);
+    private DateTime? _currentDate = new DateTime(2021, 7, 20);
     int[] _depotIDs = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     public List<HesAppointmentModel> AppointmentList = new List<HesAppointmentModel>();
@@ -129,7 +152,7 @@
 
     private DateTime GetTimeSlotDate(int hour)
     {
-        var dateFrom = _currentDate.Date;
+        var dateFrom = _currentDate.Value.Date;
         return dateFrom.AddHours(hour);
     }
 
@@ -137,10 +160,11 @@
     {
         foreach (var hesAppointment in AppointmentList)
         {
+            if (hesAppointment.Date != _currentDate)
+                continue;
+
             if (hesAppointment.DepotID == depotID && hesAppointment.TimeSlot.StartHour == hour)
-            {
                 return hesAppointment;
-            }
         }
         return null;
     }
@@ -167,6 +191,12 @@
     private void AddAppointment(HesAppointmentModel appointment)
     {
         AppointmentList.Add(appointment);
+        StateHasChanged();
+    }
+
+    private void ChangeDate(DateTime newDate)
+    {
+        _currentDate = newDate;
         StateHasChanged();
     }
 }
