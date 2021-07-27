@@ -1,5 +1,7 @@
 ﻿<MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="/counter" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Add">Counter</MudNavLink>
+    <MudNavLink Href="/fetchdata" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Fetch data</MudNavLink>
     <AuthorizeView Roles="Administrator">
         <Authorized>
             <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Admin</MudNavLink>
@@ -8,6 +10,8 @@
     <MudNavGroup Icon="@Icons.Material.Filled.List" Title="HES Hub" Expanded="true">
         <MudNavLink Href="/depots" Match="NavLinkMatch.Prefix">Depot list</MudNavLink>
     </MudNavGroup>
+    <MudNavLink Href="/test" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Test</MudNavLink>
+    <MudNavLink Href="/testtable" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Test table</MudNavLink>
     <MudNavLink Href="/spareparts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Article">Spare Parts</MudNavLink>
     <MudNavLink Href="/sparepartsv2" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Article">Spare Parts V2</MudNavLink>
 </MudNavMenu>
