@@ -1,7 +1,17 @@
 ﻿@page "/"
+@using ScanApp.Application.Common.Interfaces
+@inject ICurrentUserService _currentUserService
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-16">
-    <MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
-    <MudText Class="mb-8">Welcome to ScanApp!</MudText>
-    <MudAlert Severity="Severity.Normal">You can find documentation and examples on our website here: <MudLink Href="https://mudblazor.com" Typo="Typo.body2" Color="Color.Inherit"><b>www.mudblazor.com</b></MudLink></MudAlert>
+    <MudText Typo="Typo.h3" GutterBottom="true">Hello, @_name, welcome back.</MudText>
 </MudContainer>
+
+@code
+{
+    private string _name;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _name = await _currentUserService.Name();
+    }
+}

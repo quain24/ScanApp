@@ -65,10 +65,10 @@
 
             var results = new List<Result>
             {
-                        depots.Result,
-                        gates.Result,
-                        trailerTypes.Result
-                    };
+                depots.Result,
+                gates.Result,
+                trailerTypes.Result
+            };
 
             foreach (var result in results)
             {
@@ -212,7 +212,7 @@
                 .ValidateUsing(new FluentValidationWrapper<string>(x =>
                 {
                     x.NotNull()
-                        .MaximumLength(20)
+                        .MaximumLength(200)
                         .SetValidator(new MustContainOnlyLettersOrAllowedSymbolsValidator("Name"));
                 }))
                 .Build(),

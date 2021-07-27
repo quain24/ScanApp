@@ -30,41 +30,34 @@ namespace ScanApp.Application.Admin.Queries.GetUserRoles
 
         public async Task<Result<List<BasicRoleModel>>> Handle(GetUserRolesQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var user = await ctx.Users
-                    .AsNoTracking()
-                    .Where(u => u.UserName.Equals(request.UserName))
-                    .Select(u => new
-                    {
-                        u.Id,
-                        Name = u.UserName,
-                        Version = Version.Create(u.ConcurrencyStamp)
-                    })
-                    .FirstOrDefaultAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            await using var ctx = _contextFactory.CreateDbContext();
+            var user = await ctx.Users
+                .AsNoTracking()
+                .Where(u => u.UserName.Equals(request.UserName))
+                .Select(u => new
+                {
+                    u.Id,
+                    Name = u.UserName,
+                    Version = Version.Create(u.ConcurrencyStamp)
+                })
+                .FirstOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                if (user is null)
-                    return new Result<List<BasicRoleModel>>(ErrorType.NotFound, $"No user with name \"{request.UserName}\" exists.");
-                if (user.Version != request.Version)
-                    return new Result<List<BasicRoleModel>>(ErrorType.ConcurrencyFailure);
+            if (user is null)
+                return new Result<List<BasicRoleModel>>(ErrorType.NotFound, $"No user with name \"{request.UserName}\" exists.");
+            if (user.Version != request.Version)
+                return new Result<List<BasicRoleModel>>(ErrorType.ConcurrencyFailure);
 
-                var roles = await ctx.UserRoles
-                    .AsNoTracking()
-                    .Where(u => u.UserId.Equals(user.Id))
-                    .Join(ctx.Roles, role => role.RoleId, identityRole => identityRole.Id,
-                        (_, identityRole) => new BasicRoleModel(identityRole.Name, Version.Create(identityRole.ConcurrencyStamp)))
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            var roles = await ctx.UserRoles
+                .AsNoTracking()
+                .Where(u => u.UserId.Equals(user.Id))
+                .Join(ctx.Roles, role => role.RoleId, identityRole => identityRole.Id,
+                    (_, identityRole) => new BasicRoleModel(identityRole.Name, Version.Create(identityRole.ConcurrencyStamp)))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                roles.Sort();
-                return new Result<List<BasicRoleModel>>(ResultType.Ok).SetOutput(roles);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<BasicRoleModel>>(ErrorType.Canceled, ex);
-            }
+            roles.Sort();
+            return new Result<List<BasicRoleModel>>(ResultType.Ok).SetOutput(roles);
         }
     }
 }

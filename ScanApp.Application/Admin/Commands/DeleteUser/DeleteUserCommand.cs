@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -32,44 +31,27 @@ namespace ScanApp.Application.Admin.Commands.DeleteUser
 
         public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var context = _factory.CreateDbContext();
-                var strategy = context.Database.CreateExecutionStrategy();
+            await using var context = _factory.CreateDbContext();
+            var strategy = context.Database.CreateExecutionStrategy();
 
-                return await strategy.ExecuteAsync(async token =>
+            return await strategy.ExecuteAsync(async token =>
+            {
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                await using var ctx = _factory.CreateDbContext();
+                token.ThrowIfCancellationRequested();
+                var result = await _userManager.DeleteUser(request.UserName).ConfigureAwait(false);
+
+                var adminUsers = await _roleManager.UsersInRole(Globals.RoleNames.Administrator, cancellationToken).ConfigureAwait(false);
+                if (adminUsers.Count == 0)
                 {
-                    using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-                    await using var ctx = _factory.CreateDbContext();
-                    token.ThrowIfCancellationRequested();
-                    var result = await _userManager.DeleteUser(request.UserName).ConfigureAwait(false);
+                    return new Result<Version>(ErrorType.IllegalAccountOperation,
+                        $"Cannot delete user {request.UserName} " +
+                        $"there would be no {Globals.RoleNames.Administrator} users left.").SetOutput(result.Output);
+                }
 
-                    var adminUsers = await _roleManager.UsersInRole(Globals.RoleNames.Administrator, cancellationToken).ConfigureAwait(false);
-                    if (adminUsers.Count == 0)
-                    {
-                        return new Result<Version>(ErrorType.IllegalAccountOperation,
-                            $"Cannot delete user {request.UserName} " +
-                            $"there would be no {Globals.RoleNames.Administrator} users left.").SetOutput(result.Output);
-                    }
-
-                    scope.Complete();
-                    return result;
-                }, cancellationToken);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result(ErrorType.Canceled, ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
-                    : new Result(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
+                scope.Complete();
+                return result;
+            }, cancellationToken);
         }
     }
 }

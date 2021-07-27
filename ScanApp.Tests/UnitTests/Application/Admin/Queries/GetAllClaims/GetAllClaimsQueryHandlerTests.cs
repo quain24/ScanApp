@@ -44,22 +44,6 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetAllClaims
             await act.Should().ThrowAsync<Exception>();
         }
 
-        [Theory]
-        [InlineData(typeof(OperationCanceledException))]
-        [InlineData(typeof(TaskCanceledException))]
-        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
-        {
-            dynamic exc = Activator.CreateInstance(type);
-            ContextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
-
-            var subject = new GetAllClaimsQueryHandler(ContextFactoryMock.Object);
-            var result = await subject.Handle(new GetAllClaimsQuery(), CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Canceled);
-            result.ErrorDescription.Exception.Should().BeOfType(type);
-        }
-
         [Fact]
         public async Task Context_from_factory_is_disposed()
         {

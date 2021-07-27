@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -35,47 +34,30 @@ namespace ScanApp.Application.Admin.Commands.RemoveUserFromRole
 
         public async Task<Result<Version>> Handle(RemoveUserFromRoleCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var context = _factory.CreateDbContext();
-                var strategy = context.Database.CreateExecutionStrategy();
+            await using var context = _factory.CreateDbContext();
+            var strategy = context.Database.CreateExecutionStrategy();
 
-                return await strategy.ExecuteAsync(async token =>
+            return await strategy.ExecuteAsync(async token =>
+            {
+                using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                await using var ctx = _factory.CreateDbContext();
+                token.ThrowIfCancellationRequested();
+                var result = await _userManager.RemoveUserFromRole(request.UserName, request.Version, request.RoleName).ConfigureAwait(false);
+
+                if (request.RoleName.Equals(Globals.RoleNames.Administrator))
                 {
-                    using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-                    await using var ctx = _factory.CreateDbContext();
-                    token.ThrowIfCancellationRequested();
-                    var result = await _userManager.RemoveUserFromRole(request.UserName, request.Version, request.RoleName).ConfigureAwait(false);
-
-                    if (request.RoleName.Equals(Globals.RoleNames.Administrator))
+                    var adminUsers = await _roleManager.UsersInRole(Globals.RoleNames.Administrator, cancellationToken).ConfigureAwait(false);
+                    if (adminUsers.Count == 0)
                     {
-                        var adminUsers = await _roleManager.UsersInRole(Globals.RoleNames.Administrator, cancellationToken).ConfigureAwait(false);
-                        if (adminUsers.Count == 0)
-                        {
-                            return new Result<Version>(ErrorType.IllegalAccountOperation,
-                                $"Cannot remove user from {Globals.RoleNames.Administrator} role - no more users with " +
-                                $"{Globals.RoleNames.Administrator} role would be left.").SetOutput(result.Output);
-                        }
+                        return new Result<Version>(ErrorType.IllegalAccountOperation,
+                            $"Cannot remove user from {Globals.RoleNames.Administrator} role - no more users with " +
+                            $"{Globals.RoleNames.Administrator} role would be left.").SetOutput(result.Output);
                     }
+                }
 
-                    scope.Complete();
-                    return result;
-                }, cancellationToken);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<Version>(ErrorType.Canceled, ex).SetOutput(request.Version);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<Version>(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex).SetOutput(request.Version)
-                    : new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex).SetOutput(request.Version);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex).SetOutput(request.Version);
-            }
+                scope.Complete();
+                return result;
+            }, cancellationToken);
         }
     }
 }

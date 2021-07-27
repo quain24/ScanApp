@@ -16,7 +16,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
             if (context?.InstanceToValidate is not null)
                 return base.PreValidate(context, result);
 
-            result.Errors.Add(new ValidationFailure(context?.PropertyName, $"Given {nameof(Commands.CreateNewDepot)} was null."));
+            result.Errors.Add(new ValidationFailure(context?.PropertyName, $"Given {nameof(CreateNewDepotCommand)} was null."));
             return false;
         }
     }

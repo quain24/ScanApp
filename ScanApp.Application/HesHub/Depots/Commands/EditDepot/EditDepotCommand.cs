@@ -5,7 +5,6 @@ using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
@@ -25,26 +24,9 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
 
         public async Task<Result<Version>> Handle(EditDepotCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var context = _factory.CreateDbContext();
-                var strategy = context.Database.CreateExecutionStrategy();
-                return await strategy.ExecuteAsync(async token => await EditingStrategy(token, request), cancellationToken);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<Version>(ErrorType.Canceled, ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<Version>(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
-                    : new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
+            await using var context = _factory.CreateDbContext();
+            var strategy = context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async token => await EditingStrategy(token, request), cancellationToken);
         }
 
         private async Task<Result<Version>> EditingStrategy(CancellationToken token, EditDepotCommand request)
