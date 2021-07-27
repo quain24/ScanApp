@@ -31,12 +31,12 @@ namespace ScanApp.Application.Admin.Queries.GetUserVersion
                 var result = await _userInfo.GetUserConcurrencyStamp(request.UserName, cancellationToken).ConfigureAwait(false);
 
                 return string.IsNullOrEmpty(result)
-                    ? new Result<Version>(ErrorType.NotFound).SetOutput(Version.Empty())
+                    ? new Result<Version>(ErrorType.NotFound).SetOutput(Version.Empty)
                     : new Result<Version>().SetOutput(Version.Create(result));
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<Version>(ErrorType.Cancelled, ex).SetOutput(Version.Empty());
+                return new Result<Version>(ErrorType.Cancelled, ex).SetOutput(Version.Empty);
             }
         }
     }

@@ -78,7 +78,7 @@ namespace ScanApp.Domain.Entities
             set => _unloadingTime = value >= TimeSpan.Zero ? value : throw new ArgumentException("Unloading time has to be >= 0.", nameof(UnloadingTime));
         }
 
-        private Version _version = Version.Empty();
+        private Version _version = Version.Empty;
 
         /// <summary>
         /// Gets or sets entity Version (representation of RowVersion).

@@ -24,7 +24,7 @@
 <div class="mx-auto d-flex flex-column py-2 px-1" style="max-width: 90%">
     <MudText Typo="Typo.h2">Depots</MudText>
     <SCTable Class="align-content-center flex-grow-1 flex-shrink-0 mt-3" TTableType="DepotModel" Data="_depots" Configs="_configs" @bind-SelectedItem="_selectedDepot" HorizontalScrollbar="true"
-             MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty()})"
+             MaxDialogContentHeight="650" ItemFactory="new Func<DepotModel>(() => new DepotModel() {Version = Version.Empty})"
              ItemCreated="OnAdd" Loading="_loading" ItemHasBeenEdited="OnEdit" EditDialogOpened="@(() => _editDialogOpen = true)" EditDialogClosed="@(() => _editDialogOpen = false)"
              FixedHeader="true" Height="650">
         <SCColumn T="DepotModel" BoundConfig="_configs.ElementAtOrDefault(6)"><MudLink Href="@($"mailto:{context.Email}")" Typo="Typo.body2">@context.Email</MudLink></SCColumn>
@@ -98,7 +98,7 @@
         try
         {
             _loading = true;
-            var result = await _mediator.Send(new CreateNewDepot(model), _exitCancellationSource.Token);
+            var result = await _mediator.Send(new CreateNewDepotCommand(model), _exitCancellationSource.Token);
 
             if (result is null)
                 return;

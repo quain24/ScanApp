@@ -115,7 +115,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// <summary>
         /// Operation has been canceled.
         /// </summary>
-        Cancelled,
+        Canceled,
 
         // Business related
 

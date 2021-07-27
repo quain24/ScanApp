@@ -112,7 +112,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
 
         public static TheoryData<Version> InvalidVersion => new()
         {
-            Version.Empty(),
+            Version.Empty,
             null
         };
 

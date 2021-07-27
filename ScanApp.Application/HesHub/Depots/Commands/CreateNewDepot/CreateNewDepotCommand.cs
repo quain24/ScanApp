@@ -12,9 +12,9 @@ using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
 {
-    public record CreateNewDepot(DepotModel Model) : IRequest<Result<Version>>;
+    public record CreateNewDepotCommand(DepotModel Model) : IRequest<Result<Version>>;
 
-    internal class CreateNewDepotCommandHandler : IRequestHandler<CreateNewDepot, Result<Version>>
+    internal class CreateNewDepotCommandHandler : IRequestHandler<CreateNewDepotCommand, Result<Version>>
     {
         private readonly IContextFactory _factory;
 
@@ -23,7 +23,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result<Version>> Handle(CreateNewDepot request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(CreateNewDepotCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
             }
             catch (OperationCanceledException ex)
             {
-                return new Result<Version>(ErrorType.Cancelled, ex);
+                return new Result<Version>(ErrorType.Canceled, ex);
             }
             catch (DbUpdateException ex)
             {
