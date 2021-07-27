@@ -57,14 +57,20 @@
     }
 </style>
 
-<div class="header wrapper" style="justify-content: space-around">
+<div class="header wrapper" style="justify-content: space-evenly">
     <h1 class="wrapper-header-content">HES Scheduler</h1>
     <div id="current-date-picker" class="wrapper-header-content">
         <MudDatePicker PickerVariant="PickerVariant.Dialog"
                        ShowWeekNumbers="true" Label="Day" @bind-Date="_currentDate"></MudDatePicker>
     </div>
-    <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color: #4ba7d6; color: white;" OnClick="() => ChangeDate(DateTime.Today)"
-               StartIcon="@Icons.Rounded.CalendarToday" Class="wrapper-header-content">Today</MudButton>
+    <div class="wrapper-header-content">
+        <MudFab Size="Size.Small" Style="background-color: #4ba7d6; color: white;" OnClick="() => ChangeDate(_currentDate.Value.AddDays(-1))"
+                   Icon="@Icons.Rounded.ArrowLeft"></MudFab>
+        <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color: #4ba7d6; color: white;" OnClick="() => ChangeDate(DateTime.Today)"
+                   StartIcon="@Icons.Rounded.CalendarToday">Today</MudButton>
+        <MudFab Size="Size.Small" Style="background-color: #4ba7d6; color: white;" OnClick="() => ChangeDate(_currentDate.Value.AddDays(1))"
+                   Icon="@Icons.Rounded.ArrowRight"></MudFab>
+    </div>
 </div>
 <table class="table">
     <thead>
@@ -144,9 +150,9 @@
         AppointmentList.Add(
             new HesAppointmentModel(new DateTime(2021, 7, 20), 5, 6, 4)
             {
-                Company = "HSFFFFFFFFFFFFFFFFFF",
+                Company = "Raumschmiede",
                 IdentificationNumber = "777",
-                Spedition = "DHL"
+                Spedition = "Dachser"
             });
     }
 
