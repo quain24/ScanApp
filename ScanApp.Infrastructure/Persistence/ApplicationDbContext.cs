@@ -42,7 +42,7 @@ namespace ScanApp.Infrastructure.Persistence
         {
             base.OnModelCreating(builder);
 
-            // small configurations here - no point in extracting one liners to separate files.
+            // small configurations here - no point in extracting one liners to separate files
             builder.Entity<IdentityRole>().ToTable("Roles", "sca");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "sca");
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "sca");
