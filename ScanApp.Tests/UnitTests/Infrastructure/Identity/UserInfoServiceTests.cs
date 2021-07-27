@@ -225,7 +225,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             var result = await sut.GetUserVersion("unknown_name");
 
-            result.Should().Be(Version.Empty());
+            result.Should().Be(Version.Empty);
         }
 
         [Fact]

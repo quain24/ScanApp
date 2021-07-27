@@ -29,7 +29,7 @@ namespace ScanApp.Application.Admin
         public BasicUserModel(string name, Version version)
         {
             Name = name;
-            Version = version ?? Version.Empty();
+            Version = version ?? Version.Empty;
         }
 
         public int CompareTo(BasicUserModel other)

@@ -34,12 +34,12 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserPassword
         public async Task Calls_ChangePassword_IUserManager_function()
         {
             var userManagerMock = new Mock<IUserManager>();
-            var command = new ChangeUserPasswordCommand("name", "new_password", ScanApp.Domain.ValueObjects.Version.Empty());
+            var command = new ChangeUserPasswordCommand("name", "new_password", ScanApp.Domain.ValueObjects.Version.Empty);
             var subject = new ChangeUserPasswordCommandHandler(userManagerMock.Object);
 
             var _ = await subject.Handle(command, CancellationToken.None);
 
-            userManagerMock.Verify(m => m.ChangePassword("name", "new_password", ScanApp.Domain.ValueObjects.Version.Empty()), Times.Once);
+            userManagerMock.Verify(m => m.ChangePassword("name", "new_password", ScanApp.Domain.ValueObjects.Version.Empty), Times.Once);
             userManagerMock.VerifyNoOtherCalls();
         }
     }

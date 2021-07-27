@@ -61,7 +61,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             result.Should().BeOfType<Result<Version>>();
             result.Conclusion.Should().BeFalse();
-            result.Output.Should().Be(Version.Empty());
+            result.Output.Should().Be(Version.Empty);
             result.ErrorDescription.ErrorMessage.Should().BeEquivalentTo(string.Empty);
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.ConcurrencyFailure);
         }

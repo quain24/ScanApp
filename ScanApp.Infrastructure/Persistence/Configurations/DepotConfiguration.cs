@@ -39,7 +39,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .HasComment("This Row version is converted to 'Version' object in ScanApp")
                 .IsRowVersion()
                 .HasConversion(c => c.IsEmpty ? null : Convert.FromBase64String(c.Value),
-                    x => x.IsNullOrEmpty() ? Version.Empty() : Version.Create(Convert.ToBase64String(x)));
+                    x => x.IsNullOrEmpty() ? Version.Empty : Version.Create(Convert.ToBase64String(x)));
         }
     }
 }

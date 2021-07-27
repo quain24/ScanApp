@@ -53,7 +53,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Invalid_result_does_not_have_ResultType()
         {
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled);
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled);
 
             result.ResultType.Should().BeNull();
         }
@@ -61,7 +61,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Invalid_result_of_T_does_not_have_ResultType()
         {
-            var result = new Result<string>(ErrorType.Cancelled);
+            var result = new Result<string>(ErrorType.Canceled);
 
             result.ResultType.Should().BeNull();
         }
@@ -93,7 +93,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         }
 
         [Theory]
-        [InlineData(ErrorType.Cancelled)]
+        [InlineData(ErrorType.Canceled)]
         [InlineData(ErrorType.ConfigurationError)]
         [InlineData(ErrorType.Duplicated)]
         [InlineData(ErrorType.NotFound)]
@@ -107,7 +107,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         }
 
         [Theory]
-        [InlineData(ErrorType.Cancelled)]
+        [InlineData(ErrorType.Canceled)]
         [InlineData(ErrorType.ConfigurationError)]
         [InlineData(ErrorType.Duplicated)]
         [InlineData(ErrorType.NotFound)]
@@ -125,7 +125,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled, exception);
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be(exception.Message);
@@ -138,7 +138,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new Result<string>(ErrorType.Cancelled, exception);
+            var result = new Result<string>(ErrorType.Canceled, exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be(exception.Message);
@@ -149,7 +149,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Given_error_type_and_message_will_store_and_provide_message()
         {
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled, "message");
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "message");
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("message");
@@ -158,7 +158,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Given_error_type_and_message_to_generic_version_will_store_and_provide_message()
         {
-            var result = new Result<TheoryData>(ErrorType.Cancelled, "message");
+            var result = new Result<TheoryData>(ErrorType.Canceled, "message");
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("message");
@@ -169,7 +169,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled, "error_message", exception);
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "error_message", exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("error_message");
@@ -182,7 +182,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new Result<string>(ErrorType.Cancelled, "error_message", exception);
+            var result = new Result<string>(ErrorType.Canceled, "error_message", exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("error_message");
@@ -200,7 +200,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
                 "msg_c"
             };
             var expectedMessageOutput = string.Join("\n", messages);
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled, messages);
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, messages);
 
             Output.WriteLine(result.ErrorDescription.ErrorMessage);
             result.Conclusion.Should().BeFalse();
@@ -236,7 +236,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Set_will_replace_existing_ErrorDescription()
         {
-            var subject = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Cancelled, "err_message", new Exception());
+            var subject = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "err_message", new Exception());
 
             subject.Set(ErrorType.Duplicated, "new_err_message");
 
@@ -248,7 +248,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Set_will_replace_existing_ErrorDescription_in_generic_result()
         {
-            var subject = new Result<int>(ErrorType.Cancelled, "err_message", new Exception());
+            var subject = new Result<int>(ErrorType.Canceled, "err_message", new Exception());
 
             subject.Set(ErrorType.Duplicated, "new_err_message");
 

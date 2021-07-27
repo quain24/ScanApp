@@ -21,6 +21,11 @@ namespace ScanApp.Infrastructure.Persistence
         {
         }
 
+        protected ApplicationDbContext(DbContextOptions options)
+            : base(options)
+        {
+        }
+
         public DbSet<Location> Locations { get; set; }
         public DbSet<UserLocation> UserLocations { get; set; }
         public DbSet<Claim> ClaimsSource { get; set; }
@@ -37,7 +42,7 @@ namespace ScanApp.Infrastructure.Persistence
         {
             base.OnModelCreating(builder);
 
-            // small configurations here - no point in extracting one liners to separate files
+            // small configurations here - no point in extracting one liners to separate files.
             builder.Entity<IdentityRole>().ToTable("Roles", "sca");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "sca");
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "sca");

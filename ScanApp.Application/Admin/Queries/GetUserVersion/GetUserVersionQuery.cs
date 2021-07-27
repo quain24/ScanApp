@@ -26,18 +26,11 @@ namespace ScanApp.Application.Admin.Queries.GetUserVersion
 
         public async Task<Result<Version>> Handle(GetUserVersionQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var result = await _userInfo.GetUserConcurrencyStamp(request.UserName, cancellationToken).ConfigureAwait(false);
+            var result = await _userInfo.GetUserConcurrencyStamp(request.UserName, cancellationToken).ConfigureAwait(false);
 
-                return string.IsNullOrEmpty(result)
-                    ? new Result<Version>(ErrorType.NotFound).SetOutput(Version.Empty())
-                    : new Result<Version>().SetOutput(Version.Create(result));
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<Version>(ErrorType.Cancelled, ex).SetOutput(Version.Empty());
-            }
+            return string.IsNullOrEmpty(result)
+                ? new Result<Version>(ErrorType.NotFound).SetOutput(Version.Empty)
+                : new Result<Version>().SetOutput(Version.Create(result));
         }
     }
 }

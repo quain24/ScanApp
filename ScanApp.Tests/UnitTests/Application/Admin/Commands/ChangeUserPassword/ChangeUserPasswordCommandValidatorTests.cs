@@ -96,7 +96,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserPassword
         [Fact]
         public void New_password_is_validated()
         {
-            var command = new ChangeUserPasswordCommand("user", "password", Version.Empty());
+            var command = new ChangeUserPasswordCommand("user", "password", Version.Empty);
             var userManagerMock = new Mock<IUserManager>();
             var passwordValidatorMock = new Mock<PasswordValidator>(userManagerMock.Object);
             var subject = new ChangeUserPasswordCommandValidator(passwordValidatorMock.Object);

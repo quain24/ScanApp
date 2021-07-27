@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
+using MockQueryable.Moq;
 using Moq;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
@@ -14,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSpareParts
 {
-    public class CreateSparePartsCommandHandlerTests : SqlLiteInMemoryDbFixture
+    public class CreateSparePartsCommandHandlerTests : IContextFactoryMockFixtures
     {
         public ITestOutputHelper Output { get; }
 
@@ -24,125 +25,44 @@ namespace ScanApp.Tests.UnitTests.Application.SpareParts.Commands.CreateSparePar
         }
 
         [Fact]
-        public async Task DatabaseIsAvailableAndCanBeConnectedTo()
+        public void Creates_instance()
         {
-            Assert.True(await NewDbContext.Database.CanConnectAsync());
+            var subject = new CreateSparePartsCommandHandler(Mock.Of<IContextFactory>());
+
+            subject.Should().NotBeNull()
+                .And.BeOfType<CreateSparePartsCommandHandler>()
+                .And.BeAssignableTo<IRequestHandler<CreateSparePartsCommand, Result>>();
         }
 
         [Fact]
-        public async Task Will_add_new_spare_part_to_database()
+        public void Throws_ArgNull_exc_if_missing_ContextFactory()
         {
-            var sparePartType = new SparePartType("part_type");
-            var location = new Location("location_name");
-            var sparePartStoragePlace = new SparePartStoragePlace { Name = "storage_place_name" };
-            using (var ctx = NewDbContext)
-            {
-                ctx.SparePartTypes.Add(sparePartType);
-                ctx.Locations.Add(location);
-                // saving to auto generate id's to be used below
-                ctx.SaveChanges();
-                sparePartStoragePlace.LocationId = location.Id;
-                ctx.SparePartStoragePlaces.Add(sparePartStoragePlace);
-                ctx.SaveChanges();
-            }
-            var ctxFactoryMock = new Mock<IContextFactory>();
-            ctxFactoryMock.Setup(c => c.CreateDbContext()).Returns(NewDbContext);
+            Action act = () => _ = new CreateSparePartsCommandHandler(null);
 
-            var sparePart = new SparePartModel(sparePartType.Name, 1, "article_id", sparePartStoragePlace.Id);
-            var request = new CreateSparePartsCommand(sparePart);
+            act.Should().Throw<ArgumentNullException>();
+        }
 
-            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
+        [Fact]
+        public async Task Returns_result_created_when_successful()
+        {
+            var command = new CreateSparePartsCommand();
+            var subject = new CreateSparePartsCommandHandler(ContextFactoryMock.Object);
 
-            var result = await sut.Handle(request, CancellationToken.None);
+            var result = await subject.Handle(command, CancellationToken.None);
 
             result.Conclusion.Should().BeTrue();
             result.ResultType.Should().Be(ResultType.Created);
-            using var context = NewDbContext;
-            context.SpareParts.Should().HaveCount(1)
-                .And.Subject.First().Should().BeEquivalentTo(sparePart, opt => opt.ExcludingMissingMembers());
         }
 
         [Fact]
-        public async Task Wont_add_new_spare_part_given_storage_place_id_does_not_exist_in_db()
+        public async Task Context_is_disposed()
         {
-            var sparePartType = new SparePartType("part_type");
-            var location = new Location("location_name");
-            var sparePartStoragePlace = new SparePartStoragePlace { Name = "storage_place_name" };
-            using (var ctx = NewDbContext)
-            {
-                ctx.SparePartTypes.Add(sparePartType);
-                ctx.Locations.Add(location);
-                // saving to auto generate id's to be used below
-                ctx.SaveChanges();
-                sparePartStoragePlace.LocationId = location.Id;
-                ctx.SparePartStoragePlaces.Add(sparePartStoragePlace);
-                ctx.SaveChanges();
-            }
-            var ctxFactoryMock = new Mock<IContextFactory>();
-            ctxFactoryMock.Setup(c => c.CreateDbContext()).Returns(NewDbContext);
+            var command = new CreateSparePartsCommand();
+            var subject = new CreateSparePartsCommandHandler(ContextFactoryMock.Object);
 
-            var sparePart = new SparePartModel(sparePartType.Name, 1, "article_id", "unknown_id");
-            var request = new CreateSparePartsCommand(sparePart);
+            await subject.Handle(command, CancellationToken.None);
 
-            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
-
-            var result = await sut.Handle(request, CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.DatabaseError);
-            using var context = NewDbContext;
-            result.ErrorDescription.Exception.Should().BeOfType<DbUpdateException>();
-            context.SpareParts.Should().BeEmpty();
-        }
-
-        [Fact]
-        public async Task Wont_add_new_spare_part_given_name_does_not_exist_in_database()
-        {
-            var sparePartType = new SparePartType("part_type");
-            var location = new Location("location_name");
-            var sparePartStoragePlace = new SparePartStoragePlace { Name = "storage_place_name" };
-            using (var ctx = NewDbContext)
-            {
-                ctx.SparePartTypes.Add(sparePartType);
-                ctx.Locations.Add(location);
-                // saving to auto generate id's to be used below
-                ctx.SaveChanges();
-                sparePartStoragePlace.LocationId = location.Id;
-                ctx.SparePartStoragePlaces.Add(sparePartStoragePlace);
-                ctx.SaveChanges();
-            }
-            var ctxFactoryMock = new Mock<IContextFactory>();
-            ctxFactoryMock.Setup(c => c.CreateDbContext()).Returns(NewDbContext);
-
-            var sparePart = new SparePartModel("unknown_part_type_name", 1, "article_id", sparePartStoragePlace.Id);
-            var request = new CreateSparePartsCommand(sparePart);
-
-            var sut = new CreateSparePartsCommandHandler(ctxFactoryMock.Object);
-
-            var result = await sut.Handle(request, CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.DatabaseError);
-            result.ErrorDescription.Exception.Should().BeOfType<DbUpdateException>();
-            using var context = NewDbContext;
-            context.SpareParts.Should().BeEmpty();
-        }
-
-        [Theory]
-        [InlineData(typeof(OperationCanceledException))]
-        [InlineData(typeof(TaskCanceledException))]
-        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
-        {
-            dynamic exc = Activator.CreateInstance(type);
-            var contextFactoryMock = new IContextFactoryMockFixtures().ContextFactoryMock;
-            contextFactoryMock.Setup(m => m.CreateDbContext()).Throws(exc);
-
-            var subject = new CreateSparePartsCommandHandler(contextFactoryMock.Object);
-            var result = await subject.Handle(new CreateSparePartsCommand(), CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType(type);
+            ContextMock.Verify(x => x.DisposeAsync(), Times.AtLeastOnce);
         }
     }
 }

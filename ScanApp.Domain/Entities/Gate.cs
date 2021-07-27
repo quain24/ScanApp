@@ -66,7 +66,7 @@ namespace ScanApp.Domain.Entities
             Direction = direction;
         }
 
-        private Version _version = Version.Empty();
+        private Version _version = Version.Empty;
 
         /// <summary>
         /// Gets or sets entity Version (representation of RowVersion).

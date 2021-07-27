@@ -25,7 +25,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin
         [InlineData(null, null)]
         public void Creates_instance_if_not_given_data(string name, string versionString)
         {
-            var version = versionString is null ? Version.Empty() : Version.Create(versionString);
+            var version = versionString is null ? Version.Empty : Version.Create(versionString);
             var subject = new BasicUserModel(name, version);
 
             subject.Should().NotBeNull()
@@ -41,7 +41,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin
 
             subject.Should().NotBeNull()
                 .And.BeOfType<BasicUserModel>()
-                .Which.Version.Should().Be(Version.Empty());
+                .Which.Version.Should().Be(Version.Empty);
         }
 
         public static TheoryData<string, string, string, string> Data => new()

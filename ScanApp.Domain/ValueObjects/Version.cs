@@ -18,12 +18,14 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="FormatException">Tried to create <see cref="Version"/> instance using only white-spaces as <paramref name="stamp"/>.</exception>
         public static Version Create(string stamp) => new(stamp);
 
+        private static readonly Lazy<Version> EmptyVersion = new(new Version());
+
         /// <summary>
         /// Creates new <strong>empty</strong> instance of <see cref="Version"/>.<br/>
         /// Such instance does not have a <see cref="Value"/> set and it's <see cref="IsEmpty"/> returns <see langword="True"/>.
         /// </summary>
-        /// <returns>Instance of empty <see cref="Version"/>.</returns>
-        public static Version Empty() => new();
+        /// <value>Instance of empty <see cref="Version"/>.</value>
+        public static Version Empty => EmptyVersion.Value;
 
         private Version(string value)
         {
