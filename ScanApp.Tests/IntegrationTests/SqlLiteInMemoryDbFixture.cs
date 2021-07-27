@@ -60,7 +60,7 @@ namespace ScanApp.Tests.IntegrationTests
             {
                 if (_dbContext is null)
                     InitializeDatabase();
-                return Provider.GetService<AppDbContextStub>();
+                return Provider.GetService<ApplicationDbContext>();
             }
         }
 
@@ -72,7 +72,7 @@ namespace ScanApp.Tests.IntegrationTests
         {
             _connection = new SqliteConnection(InMemoryConnectionString);
             _connection.Open();
-            _dbContext = Provider.GetRequiredService<AppDbContextStub>();
+            _dbContext = Provider.GetRequiredService<ApplicationDbContext>();
             _dbContext.Database.EnsureCreated();
         }
 
@@ -93,15 +93,15 @@ namespace ScanApp.Tests.IntegrationTests
                 o.EnableSensitiveDataLogging();
             });
 
-            services.AddDbContext<AppDbContextStub>(sqlConfiguration,
+            services.AddDbContext<ApplicationDbContext, AppDbContextStub>(sqlConfiguration,
                 contextLifetime: ServiceLifetime.Transient,
                 optionsLifetime: ServiceLifetime.Singleton);
 
-            services.AddDbContextFactory<AppDbContextStub>(sqlConfiguration,
+            services.AddDbContextFactory<ApplicationDbContext, DbContextFactoryStub>(sqlConfiguration,
             ServiceLifetime.Transient);
 
             services.AddSingleton<IContextFactory, AppDbContextFactory>(srv =>
-                new AppDbContextFactory(srv.GetRequiredService<IDbContextFactory<AppDbContextStub>>()));
+                new AppDbContextFactory(srv.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()));
 
             services.AddLogging(c => c.AddSerilog(new LoggerConfiguration()
                 .WriteTo.TestOutput(Output ?? new TestOutputHelper())
@@ -150,5 +150,20 @@ namespace ScanApp.Tests.IntegrationTests
             v => (v == null || v == Version.Empty) ? null : v.Value,
             v => v == null ? Version.Empty : Version.Create(v))
         { }
+    }
+
+    internal class DbContextFactoryStub : IDbContextFactory<ApplicationDbContext>
+    {
+        private readonly DbContextOptions<AppDbContextStub> _options;
+
+        public DbContextFactoryStub(DbContextOptions<AppDbContextStub> options)
+        {
+            _options = options;
+        }
+
+        public ApplicationDbContext CreateDbContext()
+        {
+            return new AppDbContextStub(_options);
+        }
     }
 }
