@@ -1,0 +1,80 @@
+﻿@page "/timeline-grouping"
+@using Syncfusion.Blazor.Schedule
+
+<SfSchedule TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate">
+    <ScheduleGroup Resources="@Resources"></ScheduleGroup>
+    <ScheduleResources>
+        <ScheduleResource TItem="ResourceData" TValue="int" DataSource="@GroupData" Field="GroupId" Title="Room" Name="Rooms" TextField="GroupText" IdField="Id" ColorField="RoomColor" AllowMultiple="false"></ScheduleResource>
+        <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@DepotsData" Field="DepotId" Title="Owner" Name="Owners" TextField="DepotText" IdField="Id" GroupIDField="OwnerGroupId" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
+    </ScheduleResources>
+    <ScheduleEventSettings DataSource="@DataSource"></ScheduleEventSettings>
+    <ScheduleViews>
+        <ScheduleView Option="View.TimelineDay" MaxEventsPerRow="2"></ScheduleView>
+        <ScheduleView Option="View.TimelineWeek" MaxEventsPerRow="2"></ScheduleView>
+        <ScheduleView Option="View.TimelineMonth" MaxEventsPerRow="2"></ScheduleView>
+        <ScheduleView Option="View.Agenda"></ScheduleView>
+    </ScheduleViews>
+</SfSchedule>
+@code{
+    DateTime CurrentDate = new DateTime(2020, 1, 31);
+    public string[] Resources { get; set; } = { "Rooms", "Owners" };
+    public List<ResourceData> GroupData { get; set; } = new List<ResourceData>
+    {
+        new ResourceData{ GroupText = "Depots 1-10", Id = 1, RoomColor = "#cb6bb2" },
+        new ResourceData{ GroupText = "Depots 11-20", Id = 2, RoomColor = "#56ca85" }
+    };
+    public List<ResourceData> DepotsData { get; set; } = new List<ResourceData>
+    {
+        new ResourceData{ DepotText = "Depot 1", Id = 1, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 2", Id = 2, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 3", Id = 3, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 4", Id = 4, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 5", Id = 5, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 6", Id = 6, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 7", Id = 7, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 8", Id = 8, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 9", Id = 9, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 10", Id = 10, OwnerGroupId = 1, OwnerColor = "#f8a398" },
+        new ResourceData{ DepotText = "Depot 11", Id = 11, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 12", Id = 12, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 13", Id = 13, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 14", Id = 14, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 15", Id = 15, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 16", Id = 16, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 17", Id = 17, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 18", Id = 18, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 19", Id = 19, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+        new ResourceData{ DepotText = "Depot 20", Id = 20, OwnerGroupId = 2, OwnerColor = "#7499e1" },
+    };
+    List<AppointmentData> DataSource = new List<AppointmentData>
+    {
+        new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
+        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
+    };
+    public class AppointmentData
+    {
+        public int Id { get; set; }
+        public string Subject { get; set; }
+        public string Location { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string Description { get; set; }
+        public bool IsAllDay { get; set; }
+        public string RecurrenceRule { get; set; }
+        public string RecurrenceException { get; set; }
+        public Nullable<int> RecurrenceID { get; set; }
+        public int DepotId { get; set; }
+        public int GroupId { get; set; }
+    }
+    public class ResourceData
+    {
+        public int Id { get; set; }
+        public string GroupText { get; set; }
+        public string RoomColor { get; set; }
+        public string DepotText { get; set; }
+        public string OwnerColor { get; set; }
+        public int OwnerGroupId { get; set; }
+    }
+}
