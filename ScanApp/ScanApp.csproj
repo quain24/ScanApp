@@ -24,6 +24,7 @@
 		<PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
 		<PackageReference Include="System.Security.AccessControl" Version="5.0.0" />
+		<PackageReference Include="Telerik.UI.for.Blazor.Trial" Version="2.25.0" />
 	</ItemGroup>
 
 	<ItemGroup>
