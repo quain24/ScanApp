@@ -1,0 +1,77 @@
+﻿@page "/telerik-scheduler-test"
+@using Telerik.Blazor.Components
+@inject SchedulerAppointmentService appointmentService
+@inject SchedulerResourceService resourceService
+
+
+<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="600px" @bind-View="@CurrView"
+                  OnUpdate="@UpdateAppointment" OnCreate="@AddAppointment" OnDelete="@DeleteAppointment"
+                  AllowCreate="true" AllowDelete="true" AllowUpdate="true">
+    <SchedulerViews>
+        <SchedulerDayView StartTime="@DayStart" />
+        <SchedulerWeekView StartTime="@DayStart" />
+        <SchedulerMultiDayView StartTime="@DayStart" />
+        <SchedulerMonthView></SchedulerMonthView>
+    </SchedulerViews>
+    <SchedulerResources>
+        <SchedulerResource Field="Room" Data="@SchedulerRooms"></SchedulerResource>
+    </SchedulerResources>
+    <SchedulerSettings>
+        <SchedulerGroupSettings Resources="@GroupingResources" Orientation="@GroupingOrientation"></SchedulerGroupSettings>
+    </SchedulerSettings>
+</TelerikScheduler>
+
+
+@code {
+    List<SchedulerAppointment> Appointments = new List<SchedulerAppointment>();
+    List<Resource> SchedulerRooms = new List<Resource>();
+    List<Resource> SchedulerManagers = new List<Resource>();
+
+    List<string> GroupingResources = new List<string> { "Room" };
+    SchedulerGroupOrientation GroupingOrientation = SchedulerGroupOrientation.Vertical;
+    List<SchedulerGroupOrientation> GroupingOrientationOptions = new List<SchedulerGroupOrientation> { SchedulerGroupOrientation.Horizontal, SchedulerGroupOrientation.Vertical };
+
+    public DateTime StartDate { get; set; }
+    public SchedulerView CurrView { get; set; } = SchedulerView.Week;
+    public DateTime DayStart { get; set; } = new DateTime(2000, 1, 1, 7, 0, 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        StartDate = appointmentService.GetStartTime();
+
+        SchedulerRooms = await resourceService.GetRoomsAsync();
+        SchedulerManagers = await resourceService.GetManagersAsync();
+
+        Appointments = await appointmentService.GetAppointmentsAsync();
+    }
+
+    void UpdateAppointment(SchedulerUpdateEventArgs args)
+    {
+        SchedulerAppointment item = (SchedulerAppointment)args.Item;
+        var matchingItem = Appointments.FirstOrDefault(a => a.Id == item.Id);
+        if (matchingItem != null)
+        {
+            matchingItem.Title = item.Title;
+            matchingItem.Description = item.Description;
+            matchingItem.Start = item.Start;
+            matchingItem.End = item.End;
+            matchingItem.IsAllDay = item.IsAllDay;
+            matchingItem.Manager = item.Manager;
+            matchingItem.Room = item.Room;
+            matchingItem.RecurrenceExceptions = item.RecurrenceExceptions;
+            matchingItem.RecurrenceRule = item.RecurrenceRule;
+        }
+    }
+
+    void AddAppointment(SchedulerCreateEventArgs args)
+    {
+        SchedulerAppointment item = args.Item as SchedulerAppointment;
+        Appointments.Add(item);
+    }
+
+    void DeleteAppointment(SchedulerDeleteEventArgs args)
+    {
+        SchedulerAppointment item = (SchedulerAppointment)args.Item;
+        Appointments.Remove(item);
+    }
+}
