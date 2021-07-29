@@ -9,7 +9,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
     {
         public override void Configure(EntityTypeBuilder<DeparturePlan> builder)
         {
-            builder.OwnsOne(e => e.LoadingBeginning, lb =>
+            builder.OwnsOne(e => e.LoadingStart, lb =>
             {
                 lb.Property(x => x.Day)
                     .HasColumnName("LoadingBeginningDay")
@@ -18,21 +18,20 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                     .HasColumnName("LoadingBeginningTime")
                     .HasConversion(new TimeSpanToStringConverter())
                     .IsRequired();
-            }).Navigation(e => e.LoadingBeginning).IsRequired();
+            }).Navigation(e => e.LoadingStart).IsRequired();
 
-            builder.OwnsOne(e => e.LoadingFinish, lf =>
+            builder.OwnsOne(e => e.ArrivalTimeAtDepot, at =>
             {
-                lf.Property(x => x.Day)
-                    .HasColumnName("LoadingFinishDay")
+                at.Property(x => x.Day)
+                    .HasColumnName("ArrivalTimeAtDepotDay")
                     .IsRequired();
-                lf.Property(x => x.Time)
-                    .HasColumnName("LoadingFinishTime")
+                at.Property(x => x.Time)
+                    .HasColumnName("ArrivalTimeAtDepotTime")
                     .HasConversion(new TimeSpanToStringConverter())
                     .IsRequired();
-            }).Navigation(e => e.LoadingFinish).IsRequired();
+            }).Navigation(e => e.ArrivalTimeAtDepot).IsRequired();
 
             base.Configure(builder);
-            // todo - dummy for now
         }
     }
 }

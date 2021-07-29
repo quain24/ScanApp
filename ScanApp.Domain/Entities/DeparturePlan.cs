@@ -1,21 +1,25 @@
 ﻿using ScanApp.Domain.ValueObjects;
 using System;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {
     public class DeparturePlan : VersionedEntity
     {
         public int Id { get; set; }
+
+        public Depot Depot { get; set; }
+
         public TrailerType TrailerType { get; set; }
 
         public Gate Gate { get; set; }
 
-        public DayAndTime LoadingBeginning { get; set; }
-
-        public DayAndTime LoadingFinish { get; set; }
-
+        public DayAndTime LoadingStart { get; set; }
         public TimeSpan LoadingDuration { get; set; }
+
+        public DayAndTime ArrivalTimeAtDepot { get; set; }
+
+        //todo Temporary - placeholder for mode entity
+        public string Mode { get; set; }
     }
 }
 
