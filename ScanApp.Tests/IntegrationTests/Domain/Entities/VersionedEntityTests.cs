@@ -13,15 +13,20 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
         [Fact]
         public void All_entities_derived_from_VersionedEntity_have_proper_configurations()
         {
-            var implementors = AppDomain.CurrentDomain
+            var assemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
-                // Ignore temporary XUnit assembly.
-                .Where(a => a.GetName().Name?.Contains("DynamicProxyGenAssembly2", StringComparison.OrdinalIgnoreCase) is false)
+                // Exclude XUnit temporary assembly - causes exception.
+                .Where(a => a.FullName?.Contains("DynamicProxyGenAssembly2", StringComparison.InvariantCultureIgnoreCase) is false)
+                .ToArray();
+
+            var implementors = assemblies
                 .SelectMany(a => a.GetTypes())
                 .Where(t => t.IsAssignableTo(typeof(VersionedEntity)) && t != typeof(VersionedEntity))
                 .ToList();
-            var configurations = typeof(VersionedEntityConfiguration<>).GetDerivingTypes()
-                .SelectMany(t => t.BaseType?.GenericTypeArguments);
+            var configurations = typeof(VersionedEntityConfiguration<>)
+                .GetDerivingTypes(assemblies)
+                .SelectMany(t => t.BaseType?.GenericTypeArguments)
+                .ToList();
 
             implementors.Should().BeEquivalentTo(configurations);
         }
