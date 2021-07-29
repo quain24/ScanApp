@@ -7,57 +7,38 @@ namespace ScanApp.Pages.TelerikScheduler
 {
     public class SchedulerResourceService
     {
-        public async Task<List<Resource>> GetRoomsAsync()
+        public async Task<List<Resource>> GetDepotsAsync()
         {
-            return await Task.FromResult(GetRooms());
+            return await Task.FromResult(GetDepots());
         }
 
-        public List<Resource> GetRooms()
+        public List<Resource> GetDepots()
         {
             List<Resource> result = new List<Resource>();
 
             result.Add(new Resource()
             {
-                Text = "Small meeting room",
+                Text = "Depot 1",
                 Value = "1",
                 Color = "#6eb3fa"
             });
             result.Add(new Resource()
             {
-                Text = "Big meeting room",
+                Text = "Depot 2",
                 Value = "2",
                 Color = "#f58a8a"
             });
-
-            return result;
-        }
-
-        public async Task<List<Resource>> GetManagersAsync()
-        {
-            return await Task.FromResult(GetManagers());
-        }
-
-        public List<Resource> GetManagers()
-        {
-            List<Resource> result = new List<Resource>();
-
             result.Add(new Resource()
             {
-                Text = "Alex",
-                Value = "1",
-                Color = "#f8a398"
-            });
-            result.Add(new Resource()
-            {
-                Text = "Bob",
-                Value = "2",
-                Color = "#51a0ed"
-            });
-            result.Add(new Resource()
-            {
-                Text = "Charlie",
+                Text = "Depot 3",
                 Value = "3",
-                Color = "#56ca85"
+                Color = "#f58a8a"
+            });
+            result.Add(new Resource()
+            {
+                Text = "Depot 4",
+                Value = "5",
+                Color = "#f58a8a"
             });
 
             return result;

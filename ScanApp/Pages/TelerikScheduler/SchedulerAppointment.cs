@@ -19,11 +19,7 @@ namespace ScanApp.Pages.TelerikScheduler
 
         public bool IsAllDay { get; set; }
 
-        public string Room { get; set; }
-
-        public string Manager { get; set; }
-
-        public string Department { get; set; }
+        public string Depot { get; set; }
 
         public string RecurrenceRule { get; set; }
 

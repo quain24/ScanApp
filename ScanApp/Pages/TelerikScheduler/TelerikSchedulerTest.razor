@@ -4,7 +4,7 @@
 @inject SchedulerResourceService resourceService
 
 
-<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="600px" @bind-View="@CurrView"
+<TelerikScheduler Data="@Appointments" @bind-Date="@StartDate" Height="850px" @bind-View="@CurrView"
                   OnUpdate="@UpdateAppointment" OnCreate="@AddAppointment" OnDelete="@DeleteAppointment"
                   AllowCreate="true" AllowDelete="true" AllowUpdate="true">
     <SchedulerViews>
@@ -14,22 +14,20 @@
         <SchedulerMonthView></SchedulerMonthView>
     </SchedulerViews>
     <SchedulerResources>
-        <SchedulerResource Field="Room" Data="@SchedulerRooms"></SchedulerResource>
+        <SchedulerResource Field="Depot" Data="@SchedulerDepots"></SchedulerResource>
     </SchedulerResources>
     <SchedulerSettings>
-        <SchedulerGroupSettings Resources="@GroupingResources" Orientation="@GroupingOrientation"></SchedulerGroupSettings>
+        <SchedulerGroupSettings Resources="@GroupingResource" Orientation="@GroupingOrientation"></SchedulerGroupSettings>
     </SchedulerSettings>
 </TelerikScheduler>
 
 
 @code {
     List<SchedulerAppointment> Appointments = new List<SchedulerAppointment>();
-    List<Resource> SchedulerRooms = new List<Resource>();
-    List<Resource> SchedulerManagers = new List<Resource>();
+    List<Resource> SchedulerDepots = new List<Resource>();
 
-    List<string> GroupingResources = new List<string> { "Room" };
+    List<string> GroupingResource = new List<string> { "Depot" };
     SchedulerGroupOrientation GroupingOrientation = SchedulerGroupOrientation.Vertical;
-    List<SchedulerGroupOrientation> GroupingOrientationOptions = new List<SchedulerGroupOrientation> { SchedulerGroupOrientation.Horizontal, SchedulerGroupOrientation.Vertical };
 
     public DateTime StartDate { get; set; }
     public SchedulerView CurrView { get; set; } = SchedulerView.Week;
@@ -39,8 +37,7 @@
     {
         StartDate = appointmentService.GetStartTime();
 
-        SchedulerRooms = await resourceService.GetRoomsAsync();
-        SchedulerManagers = await resourceService.GetManagersAsync();
+        SchedulerDepots = await resourceService.GetDepotsAsync();
 
         Appointments = await appointmentService.GetAppointmentsAsync();
     }
@@ -56,8 +53,7 @@
             matchingItem.Start = item.Start;
             matchingItem.End = item.End;
             matchingItem.IsAllDay = item.IsAllDay;
-            matchingItem.Manager = item.Manager;
-            matchingItem.Room = item.Room;
+            matchingItem.Depot = item.Depot;
             matchingItem.RecurrenceExceptions = item.RecurrenceExceptions;
             matchingItem.RecurrenceRule = item.RecurrenceRule;
         }
