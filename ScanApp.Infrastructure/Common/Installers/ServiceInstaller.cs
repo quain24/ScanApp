@@ -19,6 +19,7 @@ namespace ScanApp.Infrastructure.Common.Installers
             services.AddTransient<IUserInfo, UserInfoService>();
             services.AddTransient<ILocationManager, LocationManagerService>();
             services.AddSingleton<IDateTime, DateTimeService>();
+            services.AddSingleton<IDateTimeOffset, DateTimeOffsetService>();
             services.AddScoped<IInitialDataSeeder, InitialDataSeeder>();
             services.SetupKeePassServices(configuration);
             return services;
