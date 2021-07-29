@@ -4,9 +4,9 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class GateConfiguration : IEntityTypeConfiguration<Gate>
+    public class GateConfiguration : VersionedEntityTypeConfiguration<Gate>
     {
-        public void Configure(EntityTypeBuilder<Gate> builder)
+        public override void Configure(EntityTypeBuilder<Gate> builder)
         {
             builder.ToTable("Gates", "hub");
             builder.HasKey(e => e.Id);
@@ -16,6 +16,8 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .HasComment("This Row version is converted to 'Version' object in ScanApp")
                 .IsRowVersion()
                 .HasConversion(new VersionConverter());
+
+            base.Configure(builder);
         }
     }
 }

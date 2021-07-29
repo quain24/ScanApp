@@ -113,8 +113,10 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
         private static Depot MapFrom(DepotModel model)
         {
             var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
-                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country));
-            depot.ChangeVersion(model.Version);
+                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country))
+            {
+                Version = model.Version
+            };
             depot.ChangeDistanceToHub(model.DistanceToDepot);
 
             return depot;

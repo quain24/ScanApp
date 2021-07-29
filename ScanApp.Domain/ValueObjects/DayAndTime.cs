@@ -33,6 +33,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <summary>
         /// Creates new instance of <see cref="DayAndTime"/> from given day of the week and time.
         /// </summary>
+        /// <param name="day">Day of the week.</param>
+        /// <param name="time">Time span from 00:00:00 to 23:59:59:xx</param>
         /// <returns>New instance of <see cref="DayAndTime"/>.</returns>
         public static DayAndTime From(DayOfWeek day, TimeSpan time) => new(day, time);
 

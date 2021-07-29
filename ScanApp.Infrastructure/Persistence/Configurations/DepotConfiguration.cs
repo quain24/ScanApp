@@ -4,9 +4,9 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    internal class DepotConfiguration : IEntityTypeConfiguration<Depot>
+    internal class DepotConfiguration : VersionedEntityTypeConfiguration<Depot>
     {
-        public void Configure(EntityTypeBuilder<Depot> builder)
+        public override void Configure(EntityTypeBuilder<Depot> builder)
         {
             builder.ToTable("Depots", "hub");
             builder.HasKey(e => e.Id);
@@ -32,10 +32,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(new VersionConverter());
+            base.Configure(builder);
         }
     }
 }
