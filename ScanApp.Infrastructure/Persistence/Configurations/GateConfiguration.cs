@@ -4,7 +4,7 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class GateConfiguration : VersionedEntityTypeConfiguration<Gate>
+    public class GateConfiguration : VersionedEntityConfiguration<Gate>
     {
         public override void Configure(EntityTypeBuilder<Gate> builder)
         {

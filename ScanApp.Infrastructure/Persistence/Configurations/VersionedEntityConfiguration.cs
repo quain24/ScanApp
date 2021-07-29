@@ -9,7 +9,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
     /// and therefore are using <c>RowVersion</c> mechanism.
     /// </summary>
     /// <typeparam name="TEntity">Type of entity being configured, which must derive from <see cref="VersionedEntity"/>.</typeparam>
-    public abstract class VersionedEntityTypeConfiguration<TEntity> : IEntityTypeConfiguration<TEntity> where TEntity : VersionedEntity
+    public abstract class VersionedEntityConfiguration<TEntity> : IEntityTypeConfiguration<TEntity> where TEntity : VersionedEntity
     {
         /// <summary>
         /// When overridden, configures given <typeparamref name="TEntity"/>.<para/>

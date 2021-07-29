@@ -4,7 +4,7 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    internal class DepotConfiguration : VersionedEntityTypeConfiguration<Depot>
+    internal class DepotConfiguration : VersionedEntityConfiguration<Depot>
     {
         public override void Configure(EntityTypeBuilder<Depot> builder)
         {

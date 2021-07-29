@@ -5,7 +5,7 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class TrailerTypeConfiguration : VersionedEntityTypeConfiguration<TrailerType>
+    public class TrailerTypeConfiguration : VersionedEntityConfiguration<TrailerType>
     {
         public override void Configure(EntityTypeBuilder<TrailerType> builder)
         {
