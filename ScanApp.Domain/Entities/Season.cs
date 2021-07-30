@@ -3,7 +3,7 @@
 namespace ScanApp.Domain.Entities
 {
     /// <summary>
-    /// Represents an arbitrary time period of a year.
+    /// Represents an arbitrary time period in a year.
     /// </summary>
     public class Season : VersionedEntity
     {

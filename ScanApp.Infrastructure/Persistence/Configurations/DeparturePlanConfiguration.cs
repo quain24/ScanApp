@@ -31,6 +31,9 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                     .IsRequired();
             }).Navigation(e => e.ArrivalTimeAtDepot).IsRequired();
 
+            // todo For now ignoring - modes are still a placeholder.
+            builder.Ignore(x => x.Seasons);
+
             base.Configure(builder);
         }
     }

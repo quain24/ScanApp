@@ -10,7 +10,7 @@ namespace ScanApp.Domain.Entities
 
         public Depot Depots { get; set; }
 
-        public List<string> Modes { get; private set; } = new();
+        public List<Season> Seasons { get; private set; } = new();
 
         public TrailerType TrailerType { get; set; }
 
