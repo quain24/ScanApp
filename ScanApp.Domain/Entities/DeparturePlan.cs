@@ -9,30 +9,96 @@ namespace ScanApp.Domain.Entities
     {
         public int Id { get; set; }
 
-        public Depot Depots { get; set; }
+        public Depot Depot
+        {
+            get => _depot;
+            set => _depot = value ?? throw new ArgumentNullException(nameof(Depot));
+        }
+
+        private Depot _depot;
 
         private readonly List<Season> _seasons = new();
 
         public IEnumerable<Season> Seasons => _seasons.AsReadOnly();
 
-        public TrailerType TrailerType { get; set; }
+        public TrailerType TrailerType
+        {
+            get => _trailerType;
+            set => _trailerType = value ?? throw new ArgumentNullException(nameof(TrailerType));
+        }
 
-        public Gate Gate { get; set; }
+        private TrailerType _trailerType;
 
-        public DayAndTime LoadingStart { get; set; }
-        public TimeSpan LoadingDuration { get; set; }
+        public Gate Gate
+        {
+            get => _gate;
+            set => _gate = value ?? throw new ArgumentNullException(nameof(Gate));
+        }
 
-        public DayAndTime ArrivalTimeAtDepot { get; set; }
+        private Gate _gate;
+
+        public DayAndTime LoadingStart
+        {
+            get => _loadingStart;
+            set => _loadingStart = value ?? throw new ArgumentNullException(nameof(LoadingStart));
+        }
+
+        private DayAndTime _loadingStart;
+
+        public TimeSpan LoadingDuration
+        {
+            get => _loadingTimeDuration;
+            set => _loadingTimeDuration = value < TimeSpan.Zero
+                ? throw new ArgumentOutOfRangeException(nameof(LoadingDuration), "Duration must be 0 or more.")
+                : value;
+        }
+
+        private TimeSpan _loadingTimeDuration;
+
+        public DayAndTime ArrivalTimeAtDepot
+        {
+            get => _arrivalTimeAtDepot;
+            set => _arrivalTimeAtDepot = value ?? throw new ArgumentNullException(nameof(ArrivalTimeAtDepot));
+        }
+
+        private DayAndTime _arrivalTimeAtDepot;
+
+        // For Ef Core compliance
+        private DeparturePlan()
+        {
+        }
+
+        public DeparturePlan(Depot depot,
+            Season season,
+            Gate gate,
+            TrailerType trailerType,
+            DayAndTime loadingStart,
+            TimeSpan loadingDuration,
+            DayAndTime arrivalTimeAtDepot)
+        {
+            AssignToSeason(season);
+            Depot = depot;
+            TrailerType = trailerType;
+            Gate = gate;
+            LoadingStart = loadingStart;
+            LoadingDuration = loadingDuration;
+            ArrivalTimeAtDepot = arrivalTimeAtDepot;
+        }
 
         public void AssignToSeason(Season season)
         {
+            if (season is null)
+                throw new ArgumentNullException(nameof(season));
             if (Seasons.Any(x => x.Name.Equals(season.Name, StringComparison.OrdinalIgnoreCase)))
                 throw new ArgumentException($"{nameof(DeparturePlan)} already has a {nameof(Season)} named {season.Name}.");
             _seasons.Add(season);
+            RemoveFromSeason(null);
         }
 
         public void RemoveFromSeason(Season season)
         {
+            if (season is null)
+                throw new ArgumentNullException(nameof(season));
             if (_seasons.Count <= 1)
                 throw new ArgumentException($"Cannot remove only {nameof(Season)} from {nameof(DeparturePlan)}.");
 
