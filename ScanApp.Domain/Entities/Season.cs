@@ -27,6 +27,11 @@ namespace ScanApp.Domain.Entities
         /// </summary>
         public DateTime End { get; private set; }
 
+        // For Ef Core compliance
+        private Season()
+        {
+        }
+
         /// <summary>
         /// Creates new instance of <see cref="Season"/>.
         /// </summary>
