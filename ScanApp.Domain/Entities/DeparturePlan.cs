@@ -1,6 +1,7 @@
 ﻿using ScanApp.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScanApp.Domain.Entities
 {
@@ -10,7 +11,9 @@ namespace ScanApp.Domain.Entities
 
         public Depot Depots { get; set; }
 
-        public List<Season> Seasons { get; private set; } = new();
+        private readonly List<Season> _seasons = new();
+
+        public IEnumerable<Season> Seasons => _seasons.AsReadOnly();
 
         public TrailerType TrailerType { get; set; }
 
@@ -21,7 +24,23 @@ namespace ScanApp.Domain.Entities
 
         public DayAndTime ArrivalTimeAtDepot { get; set; }
 
-        //todo Temporary - placeholder for mode entity
+        public void AssignToSeason(Season season)
+        {
+            if (Seasons.Any(x => x.Name.Equals(season.Name, StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException($"{nameof(DeparturePlan)} already has a {nameof(Season)} named {season.Name}.");
+            _seasons.Add(season);
+        }
+
+        public void RemoveFromSeason(Season season)
+        {
+            if (_seasons.Count <= 1)
+                throw new ArgumentException($"Cannot remove only {nameof(Season)} from {nameof(DeparturePlan)}.");
+
+            var index = _seasons.FindIndex(x => x.Name.Equals(season.Name, StringComparison.OrdinalIgnoreCase));
+            if (index < 0)
+                throw new ArgumentException($"This {nameof(DeparturePlan)} does not have {nameof(Season)} named {season.Name} in it's collection.");
+            _seasons.RemoveAt(index);
+        }
     }
 }
 
@@ -31,7 +50,7 @@ namespace ScanApp.Domain.Entities
  * Combination of Mode and Depot for each departure plan must be unique.
  * -   Plan A for Default mode for Depot 56   - OK
  * -   Plan B for Default mode for Depot 56   - OK    - Mode (like Christmas) can have multiple departures to single depot.
- * -   Plan A for Default mode for Depot 100  - ERROR - Single plan is only for single depot - otherwise 2 depots would try to load at the same time on the same gate 
+ * -   Plan A for Default mode for Depot 100  - ERROR - Single plan is only for single depot - otherwise 2 depots would try to load at the same time on the same gate
  * -   Plan B for Christmas mode for Depot 56 - OK
  *
  *  >>>--- Detect collision Gate / time For plans in one mode ---<<<
