@@ -19,11 +19,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UnloadingTime)
                 .HasConversion(new TimeSpanToStringConverter());
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(new VersionConverter());
-
             base.Configure(builder);
         }
     }

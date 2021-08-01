@@ -12,11 +12,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.HasKey(e => e.Id);
             builder.HasIndex(e => e.Number).IsUnique();
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(new VersionConverter());
-
             base.Configure(builder);
         }
     }
