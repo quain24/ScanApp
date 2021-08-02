@@ -7,7 +7,15 @@ namespace ScanApp.Domain.Entities
 {
     public class DeparturePlan : VersionedEntity
     {
-        public int Id { get; set; }
+        public string Name
+        {
+            get => _name;
+            set => _name = string.IsNullOrWhiteSpace(value)
+                ? throw new ArgumentException("Name must have actual letters", nameof(Name))
+                : value;
+        }
+
+        private string _name;
 
         public Depot Depot
         {
@@ -17,9 +25,9 @@ namespace ScanApp.Domain.Entities
 
         private Depot _depot;
 
-        private readonly List<Season> _seasons = new();
-
         public IEnumerable<Season> Seasons => _seasons.AsReadOnly();
+
+        private readonly List<Season> _seasons = new();
 
         public TrailerType TrailerType
         {
@@ -68,7 +76,8 @@ namespace ScanApp.Domain.Entities
         {
         }
 
-        public DeparturePlan(Depot depot,
+        public DeparturePlan(string name,
+            Depot depot,
             Season season,
             Gate gate,
             TrailerType trailerType,
@@ -76,6 +85,7 @@ namespace ScanApp.Domain.Entities
             TimeSpan loadingDuration,
             DayAndTime arrivalTimeAtDepot)
         {
+            Name = name;
             AssignToSeason(season);
             Depot = depot;
             TrailerType = trailerType;
@@ -92,7 +102,6 @@ namespace ScanApp.Domain.Entities
             if (Seasons.Any(x => x.Name.Equals(season.Name, StringComparison.OrdinalIgnoreCase)))
                 throw new ArgumentException($"{nameof(DeparturePlan)} already has a {nameof(Season)} named {season.Name}.");
             _seasons.Add(season);
-            RemoveFromSeason(null);
         }
 
         public void RemoveFromSeason(Season season)
@@ -110,18 +119,19 @@ namespace ScanApp.Domain.Entities
     }
 }
 
-/* Departure plan have one or many Modes (Default, Christmas, etc) - Same plan for multiple Modes / one mode can have multiple plans = many to many
- * Departure plan must have at least one mode - make "default" non-deletable in modes table and force plan to have one.
- * Departure plan have one Depot assigned. Plan to depot = many to one: one depot can have many plans, one plan can have only one depot.
- * Combination of Mode and Depot for each departure plan must be unique.
- * -   Plan A for Default mode for Depot 56   - OK
- * -   Plan B for Default mode for Depot 56   - OK    - Mode (like Christmas) can have multiple departures to single depot.
- * -   Plan A for Default mode for Depot 100  - ERROR - Single plan is only for single depot - otherwise 2 depots would try to load at the same time on the same gate
- * -   Plan B for Christmas mode for Depot 56 - OK
+/* One plan has one depot and 1 - n.. seasons
+ * -  Plan 1 -> Depot 1 -> Winter.   - OK
+ * -  Plan 1 -> Depot 1 -> Winter.   - ERROR  - Impossible (SQL?) No duplication of Plan <-> season!
+ * -  Plan 1 -> Depot 1 -> Default.  - OK     - Plan have collection of seasons.
+ * -  Plan 2 -> Depot 1 -> Winter.   - OK     - One depot can have many different plans per season.
+ * -  Plan 1 -> Depot 2 -> Default.  - ERROR  - Impossible, plan has one place for Depot
  *
- *  >>>--- Detect collision Gate / time For plans in one mode ---<<<
+ * -- Relations:
+ *  - Plan to Depot  - many to one  - multiple plans can be assigned to single depot.
+ *  - Plan to Season - many to many - season can have many plans, plan can have many seasons
  *
- * One departure plan -> many Depots
- * One departure plan -> many Modes
- * Depot + mode = unique combination per depot.
+ * -- Validation needed for:
+ *  - Plan must have one season at least.
+ *  - Gate plus times per season - make sure there are no conflicts - overlap = Error | back to back - warning?.
+ *  - If seasons overlap - can they? - validate across seasons.
  */
