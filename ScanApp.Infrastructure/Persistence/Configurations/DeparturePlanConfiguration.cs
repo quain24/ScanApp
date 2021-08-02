@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScanApp.Domain.Entities;
+using System.Collections.Generic;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -20,8 +21,14 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Needed only for custom schema for many-to-many intermediate table.
             builder.HasMany(x => x.Seasons)
-                .WithMany(x => x.DeparturePlans);
+                .WithMany(x => x.DeparturePlans)
+                .UsingEntity<Dictionary<string, object>>(
+                    "DeparturePlanSeason",
+                    x => x.HasOne<Season>().WithMany(),
+                    x => x.HasOne<DeparturePlan>().WithMany(),
+                    x => x.ToTable("DeparturePlanSeason", "hub"));
 
             builder.HasOne(x => x.TrailerType)
                 .WithMany()
