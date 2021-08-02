@@ -107,7 +107,7 @@ namespace ScanApp.Tests.IntegrationTests
                 .WriteTo.TestOutput(Output ?? new TestOutputHelper())
                 .Enrich.FromLogContext()
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
                 .CreateLogger()));
         }
 
@@ -138,7 +138,7 @@ namespace ScanApp.Tests.IntegrationTests
                 foreach (var property in timestampProperties)
                 {
                     property.SetValueConverter(new SqliteTimestampConverter());
-                    property.SetDefaultValueSql("CURRENT_TIMESTAMP");
+                    property.SetDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')");
                 }
             }
         }
