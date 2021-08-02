@@ -1,0 +1,42 @@
+﻿@page "/devexpress-scheduler-test"
+
+<DxScheduler StartDate="@(DateTime.Today + TimeSpan.FromHours(8))"
+             DataStorage="@DataStorage"
+             ResourceNavigatorVisible="false"
+             GroupType="SchedulerGroupType.Resource">
+    <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(36))" CellMinWidth="100">
+        <Scales>
+            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day" UnitCount="1"></DxSchedulerTimeScale>
+            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Hour" UnitCount="6"></DxSchedulerTimeScale>
+        </Scales>
+    </DxSchedulerTimelineView>
+</DxScheduler>
+
+@code {
+    DxSchedulerDataStorage DataStorage = new DxSchedulerDataStorage()
+    {
+        AppointmentsSource = ResourceAppointmentCollection.GetAppointments(),
+        AppointmentMappings = new DxSchedulerAppointmentMappings()
+        {
+            Type = "AppointmentType",
+            Start = "StartDate",
+            End = "EndDate",
+            Subject = "Caption",
+            AllDay = "AllDay",
+            Location = "Location",
+            Description = "Description",
+            LabelId = "Label",
+            StatusId = "Status",
+            RecurrenceInfo = "Recurrence",
+            ResourceId = "DepotId"
+        },
+        ResourcesSource = ResourceAppointmentCollection.GetResourcesForGrouping(),
+        ResourceMappings = new DxSchedulerResourceMappings()
+        {
+            Id = "Id",
+            Caption = "Name",
+            BackgroundCssClass = "BackgroundCss",
+            TextCssClass = "TextCss"
+        }
+    };
+}
