@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ScanApp.Domain.Entities
 {
@@ -9,6 +10,10 @@ namespace ScanApp.Domain.Entities
     {
         private string _name;
 
+        /// <summary>
+        /// Gets or sets unique name of this <see cref="Season"/>.
+        /// </summary>
+        /// <value>Name of the season as <see cref="string"/>.</value>
         public string Name
         {
             get => _name;
@@ -26,6 +31,9 @@ namespace ScanApp.Domain.Entities
         /// Gets end date of this <see cref="Season"/>.
         /// </summary>
         public DateTime End { get; private set; }
+
+        private readonly List<DeparturePlan> _departurePlans = new();
+        public IEnumerable<DeparturePlan> DeparturePlans => _departurePlans.AsReadOnly();
 
         // For Ef Core compliance
         private Season()
@@ -55,7 +63,7 @@ namespace ScanApp.Domain.Entities
         public void ChangePeriod(DateTime startDate, DateTime endDate)
         {
             if (startDate > endDate)
-                throw new ArgumentException(nameof(startDate), $"{nameof(startDate)} must be lesser or equal to {nameof(endDate)}");
+                throw new ArgumentException($"{nameof(startDate)} must be lesser or equal to {nameof(endDate)}", nameof(startDate));
 
             Start = startDate;
             End = endDate;

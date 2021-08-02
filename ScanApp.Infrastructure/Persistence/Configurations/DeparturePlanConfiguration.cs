@@ -11,17 +11,17 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("DeparturePlans", "hub");
 
+            builder.HasKey(x => x.Name);
+            builder.Property(x => x.Name)
+                .HasMaxLength(120);
+
             builder.HasOne(x => x.Depot)
                 .WithMany()
                 .IsRequired()
-                .HasForeignKey("DepotId")
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex("DepotId", nameof(DeparturePlan.Id))
-                .IsUnique();
-
             builder.HasMany(x => x.Seasons)
-                .WithMany("DeparturePlans");
+                .WithMany(x => x.DeparturePlans);
 
             builder.HasOne(x => x.TrailerType)
                 .WithMany()
@@ -31,15 +31,15 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.HasOne(x => x.Gate)
                 .WithMany()
                 .IsRequired()
-                .OnDelete(DeleteBehavior.Restrict);;
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.OwnsOne(e => e.LoadingStart, lb =>
             {
                 lb.Property(x => x.Day)
-                    .HasColumnName("LoadingBeginningDay")
+                    .HasColumnName("LoadingStartDay")
                     .IsRequired();
                 lb.Property(x => x.Time)
-                    .HasColumnName("LoadingBeginningTime")
+                    .HasColumnName("LoadingStartTime")
                     .HasConversion(new TimeSpanToStringConverter())
                     .IsRequired();
             }).Navigation(e => e.LoadingStart).IsRequired();
