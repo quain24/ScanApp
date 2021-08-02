@@ -55,6 +55,7 @@ namespace ScanApp.Pages.DevExpressSchedulerTest
                     Accepted = true,
                     StartDate = date + (new TimeSpan(0, 10, 0, 0)),
                     EndDate = date + (new TimeSpan(0, 12, 0, 0)),
+                    DepotId = 5,
                     Status = 1
                 },
                 new ResourceAppointment {
@@ -151,14 +152,21 @@ namespace ScanApp.Pages.DevExpressSchedulerTest
         }
 
         public static List<Resource> GetResourcesForGrouping() {
-            return GetResources().Take(3).ToList();
+            return GetResources().ToList();
         }
 
         public static List<Resource> GetResources() {
             return new List<Resource>() {
                 new Resource() { Id=0 , Name="Depot 1", GroupId=100, BackgroundCss="dx-green-color", TextCss="text-white" },
                 new Resource() { Id=1 , Name="Depot 2", GroupId=101, BackgroundCss="dx-orange-color", TextCss="text-white" },
-                new Resource() { Id=2 , Name="Depot 3", GroupId=100, BackgroundCss="dx-purple-color", TextCss="text-white" },
+                new Resource() { Id=2 , Name="Depot 3", GroupId=100, BackgroundCss="dx-red-color", TextCss="text-white" },
+                new Resource() { Id=3 , Name="Depot 4", GroupId=100, BackgroundCss="dx-pink-color", TextCss="text-white" },
+                new Resource() { Id=4 , Name="Depot 5", GroupId=100, BackgroundCss="dx-blue-color", TextCss="text-white" },
+                new Resource() { Id=5 , Name="Depot 6", GroupId=100, BackgroundCss="dx-green-color", TextCss="text-white" },
+                new Resource() { Id=6 , Name="Depot 7", GroupId=100, BackgroundCss="dx-red-color", TextCss="text-white" },
+                new Resource() { Id=7 , Name="Depot 8", GroupId=100, BackgroundCss="dx-yellow-color", TextCss="text-white" },
+                new Resource() { Id=8 , Name="Depot 9", GroupId=100, BackgroundCss="dx-blue-color", TextCss="text-white" },
+                new Resource() { Id=9 , Name="Depot 10", GroupId=100, BackgroundCss="dx-purple-color", TextCss="text-white" }
             };
         }
     }

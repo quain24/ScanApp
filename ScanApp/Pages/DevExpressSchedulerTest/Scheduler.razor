@@ -4,10 +4,10 @@
              DataStorage="@DataStorage"
              ResourceNavigatorVisible="false"
              GroupType="SchedulerGroupType.Resource">
-    <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(36))" CellMinWidth="100">
+    <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(24))" CellMinWidth="100">
         <Scales>
             <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day" UnitCount="1"></DxSchedulerTimeScale>
-            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Hour" UnitCount="6"></DxSchedulerTimeScale>
+            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Hour" UnitCount="2"></DxSchedulerTimeScale>
         </Scales>
     </DxSchedulerTimelineView>
 </DxScheduler>
