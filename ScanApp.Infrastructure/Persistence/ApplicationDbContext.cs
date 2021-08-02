@@ -37,6 +37,8 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<Depot> Depots { get; set; }
         public DbSet<Gate> Gates { get; set; }
         public DbSet<TrailerType> TrailerTypes { get; set; }
+        public DbSet<Season> Seasons { get; set; }
+        public DbSet<DeparturePlan> DeparturePlans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
