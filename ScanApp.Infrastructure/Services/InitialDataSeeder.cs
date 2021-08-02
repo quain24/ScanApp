@@ -226,16 +226,20 @@ namespace ScanApp.Infrastructure.Services
             try
             {
                 _logInformation(name, "Beginning default season seeding");
-                await using var ctx = ContextFactory.CreateDbContext();
-                var existingData = await ctx.Seasons.FirstOrDefaultAsync(x => x.Name.Equals(_defaultSeason.Name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
-                if (existingData is not null)
+                await using (var ctx = ContextFactory.CreateDbContext())
                 {
-                    ctx.Remove(existingData);
-                    await ctx.SaveChangesAsync().ConfigureAwait(false);
-                    _logInformation(name, "Old default season removed");
+                    var existingData = await ctx.Seasons.FirstOrDefaultAsync(x => x.Name.Equals(_defaultSeason.Name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+                    if (existingData is not null)
+                    {
+                        ctx.Remove(existingData);
+                        await ctx.SaveChangesAsync().ConfigureAwait(false);
+                        _logInformation(name, "Old default season removed");
+                    }
                 }
-                await ctx.AddAsync(_defaultSeason).ConfigureAwait(false);
-                await ctx.SaveChangesAsync().ConfigureAwait(false);
+
+                await using var cctx = ContextFactory.CreateDbContext();
+                await cctx.AddAsync(_defaultSeason).ConfigureAwait(false);
+                await cctx.SaveChangesAsync().ConfigureAwait(false);
                 _logInformation(name, "Default season added");
                 _logInformation(name, "Finished default season seeding");
             }
