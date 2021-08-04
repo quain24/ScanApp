@@ -1,13 +1,14 @@
 ﻿@page "/timeline-grouping"
 @using Syncfusion.Blazor.Schedule
 
-<SfSchedule TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate">
+<SfSchedule TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true" >
     <ScheduleGroup Resources="@Resources"></ScheduleGroup>
     <ScheduleResources>
         <ScheduleResource TItem="ResourceData" TValue="int" DataSource="@GroupData" Field="GroupId" Title="Room" Name="Rooms" TextField="GroupText" IdField="Id" ColorField="RoomColor" AllowMultiple="false"></ScheduleResource>
         <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@DepotsData" Field="DepotId" Title="Owner" Name="Owners" TextField="DepotText" IdField="Id" GroupIDField="OwnerGroupId" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
     </ScheduleResources>
-    <ScheduleEventSettings DataSource="@DataSource"></ScheduleEventSettings>
+    <ScheduleEventSettings DataSource="@DataSource"/>
+    <ScheduleEvents TValue="AppointmentData" OnActionBegin="(async e => await OnBegin(e))"></ScheduleEvents>
     <ScheduleViews>
         <ScheduleView Option="View.TimelineDay" MaxEventsPerRow="2"></ScheduleView>
         <ScheduleView Option="View.TimelineWeek" MaxEventsPerRow="2"></ScheduleView>
@@ -16,6 +17,18 @@
     </ScheduleViews>
 </SfSchedule>
 @code{
+
+    public async Task OnBegin(ActionEventArgs<AppointmentData> args )
+    {
+        var a = args.ActionType;
+        var ad = args.AddedRecords;
+        var t = "";
+        if (args.AddedRecords.FirstOrDefault()?.Subject.Contains("aaa") ?? false)
+        {
+            args.Cancel = true;
+        }
+    }
+
     DateTime CurrentDate = new DateTime(2020, 1, 31);
     public string[] Resources { get; set; } = { "Rooms", "Owners" };
     public List<ResourceData> GroupData { get; set; } = new List<ResourceData>
@@ -49,9 +62,9 @@
     List<AppointmentData> DataSource = new List<AppointmentData>
     {
         new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
-        new AppointmentData { Id = 11, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
+        new AppointmentData { Id = 2, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        new AppointmentData { Id = 3, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
+        new AppointmentData { Id = 4, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
     };
     public class AppointmentData
     {
