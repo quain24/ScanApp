@@ -20,10 +20,11 @@
 
     public async Task OnBegin(ActionEventArgs<AppointmentData> args )
     {
-        var a = args.ActionType;
-        var ad = args.AddedRecords;
+        if (args.ActionType == ActionType.ViewNavigate) return;
+        var a = args?.ActionType;
+        var ad = args?.AddedRecords;
         var t = "";
-        if (args.AddedRecords.FirstOrDefault()?.Subject.Contains("aaa") ?? false)
+        if (args?.AddedRecords?.FirstOrDefault()?.Subject?.Contains("aaa") ?? false)
         {
             args.Cancel = true;
         }
