@@ -25,10 +25,12 @@
         var ad = args?.AddedRecords;
         var t = "";
 
-        Console.WriteLine($"start date    = {ad?.FirstOrDefault()?.StartTime.ToLongTimeString()}");
-        Console.WriteLine($"start date lo = {ad?.FirstOrDefault()?.StartTime.ToLocalTime().ToLongTimeString()}");
-        Console.WriteLine($"end date      = {ad?.FirstOrDefault()?.EndTime.ToLongTimeString()}");
-        Console.WriteLine($"end date lo   = {ad?.FirstOrDefault()?.EndTime.ToLocalTime().ToLongTimeString()}");
+        Console.WriteLine($"start date       = {ad?.FirstOrDefault()?.StartTime}");
+        Console.WriteLine($"start date Kind  = {ad?.FirstOrDefault()?.StartTime.Kind}");
+        Console.WriteLine($"start date Local = {ad?.FirstOrDefault()?.StartTime.ToLocalTime()}");
+        Console.WriteLine($"end date         = {ad?.FirstOrDefault()?.EndTime}");
+        Console.WriteLine($"end date   Kind  = {ad?.FirstOrDefault()?.EndTime.Kind}");
+        Console.WriteLine($"end date Local   = {ad?.FirstOrDefault()?.EndTime.ToLocalTime()}");
         if (args?.AddedRecords?.FirstOrDefault()?.Subject?.Contains("aaa") ?? false)
         {
             args.Cancel = true;
