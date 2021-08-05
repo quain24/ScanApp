@@ -24,6 +24,11 @@
         var a = args?.ActionType;
         var ad = args?.AddedRecords;
         var t = "";
+
+        Console.WriteLine($"start date    = {ad?.FirstOrDefault()?.StartTime.ToLongTimeString()}");
+        Console.WriteLine($"start date lo = {ad?.FirstOrDefault()?.StartTime.ToLocalTime().ToLongTimeString()}");
+        Console.WriteLine($"end date      = {ad?.FirstOrDefault()?.EndTime.ToLongTimeString()}");
+        Console.WriteLine($"end date lo   = {ad?.FirstOrDefault()?.EndTime.ToLocalTime().ToLongTimeString()}");
         if (args?.AddedRecords?.FirstOrDefault()?.Subject?.Contains("aaa") ?? false)
         {
             args.Cancel = true;
