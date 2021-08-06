@@ -17,7 +17,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             {
                 o.Property(x => x.Id).ValueGeneratedOnAdd();
                 o.HasOne(x => x.Parent).WithMany().OnDelete(DeleteBehavior.Cascade);
-                o.Ignore(x => x.OccurrenceOf);
+                o.HasOne(x => x.OccurrenceOf).WithMany().OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
