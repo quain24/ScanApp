@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Entities;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
+using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Infrastructure.Persistence
 {
@@ -39,6 +40,7 @@ namespace ScanApp.Infrastructure.Persistence
         public DbSet<TrailerType> TrailerTypes { get; set; }
         public DbSet<Season> Seasons { get; set; }
         public DbSet<DeparturePlan> DeparturePlans { get; set; }
+        public DbSet<DeparturePlanOccurrence> DeparturePlanOccurrences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
