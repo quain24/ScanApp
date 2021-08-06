@@ -24,7 +24,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             var subject = new TrailerType("name");
 
             using var _ = new AssertionScope();
-            subject.Version.Should().Be(Version.Empty());
+            subject.Version.Should().Be(Version.Empty);
             subject.Id.Should().Be(0);
             subject.LoadingTime.Should().Be(TimeSpan.Zero);
             subject.MaxVolume.Should().Be(0);

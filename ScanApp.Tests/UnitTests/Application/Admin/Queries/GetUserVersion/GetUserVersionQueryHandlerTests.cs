@@ -57,24 +57,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Queries.GetUserVersion
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
-            result.Output.Should().Be(Version.Empty());
-        }
-
-        [Theory]
-        [InlineData(typeof(OperationCanceledException))]
-        [InlineData(typeof(TaskCanceledException))]
-        public async Task Returns_invalid_result_of_cancelled_on_cancellation_or_timeout(Type type)
-        {
-            dynamic exc = Activator.CreateInstance(type);
-            var userInfoMock = new Mock<IUserInfo>();
-            userInfoMock.Setup(m => m.GetUserConcurrencyStamp("name", It.IsAny<CancellationToken>())).Throws(exc);
-
-            var subject = new GetUserVersionQueryHandler(userInfoMock.Object);
-            var result = await subject.Handle(new GetUserVersionQuery("name"), CancellationToken.None);
-
-            result.Conclusion.Should().BeFalse();
-            result.ErrorDescription.ErrorType.Should().Be(ErrorType.Cancelled);
-            result.ErrorDescription.Exception.Should().BeOfType(type);
+            result.Output.Should().Be(Version.Empty);
         }
 
         [Fact]

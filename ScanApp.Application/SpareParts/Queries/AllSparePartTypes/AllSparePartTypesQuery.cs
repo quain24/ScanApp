@@ -4,7 +4,6 @@ using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,25 +27,14 @@ namespace ScanApp.Application.SpareParts.Queries.AllSparePartTypes
 
         public async Task<Result<List<SparePartTypeModel>>> Handle(AllSparePartTypesQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var parts = await ctx.SparePartTypes
-                    .AsNoTracking()
-                    .Select(s => new SparePartTypeModel(s.Name))
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            await using var ctx = _contextFactory.CreateDbContext();
+            var parts = await ctx.SparePartTypes
+                .AsNoTracking()
+                .Select(s => new SparePartTypeModel(s.Name))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                return new Result<List<SparePartTypeModel>>(parts);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<SparePartTypeModel>>(ErrorType.Cancelled, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<List<SparePartTypeModel>>(ErrorType.DatabaseError, ex?.InnerException?.Message, ex);
-            }
+            return new Result<List<SparePartTypeModel>>(parts);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
             if (user.ConcurrencyStamp.Equals(stamp) is false)
                 return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
@@ -119,7 +119,7 @@ namespace ScanApp.Infrastructure.Identity
             var user = await _userManager.FindByNameAsync(data.Name).ConfigureAwait(false);
 
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(data.Name).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(data.Name).SetOutput(Version.Empty);
 
             // TODO this enables concurrency check when updating user
             if (user.ConcurrencyStamp.Equals(data.Version) is false)
@@ -229,7 +229,7 @@ namespace ScanApp.Infrastructure.Identity
                     var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
 
                     if (user is null)
-                        return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                        return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
                     if (user.ConcurrencyStamp != stamp)
                         return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
@@ -271,7 +271,7 @@ namespace ScanApp.Infrastructure.Identity
 
             var user = await GetBasicUserDataByName(userName, context).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
             if (user.ConcurrencyStamp != stamp)
                 return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
@@ -308,7 +308,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
             if (user.ConcurrencyStamp != version)
                 return ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp));
@@ -321,7 +321,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
             return user.ConcurrencyStamp != version
                 ? ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp))
@@ -332,7 +332,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var user = await _userManager.FindByNameAsync(userName).ConfigureAwait(false);
             if (user is null)
-                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty());
+                return ResultHelpers.UserNotFound<Version>(userName).SetOutput(Version.Empty);
 
             return user.ConcurrencyStamp != version
                 ? ResultHelpers.ConcurrencyError(Version.Create(user.ConcurrencyStamp))

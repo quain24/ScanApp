@@ -2,15 +2,12 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScanApp.Domain.Entities;
-using SharedExtensions;
-using System;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class TrailerTypeConfiguration : IEntityTypeConfiguration<TrailerType>
+    public class TrailerTypeConfiguration : VersionedEntityConfiguration<TrailerType>
     {
-        public void Configure(EntityTypeBuilder<TrailerType> builder)
+        public override void Configure(EntityTypeBuilder<TrailerType> builder)
         {
             builder.ToTable("Trailers", "hub");
             builder.Property(e => e.Name)
@@ -22,11 +19,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UnloadingTime)
                 .HasConversion(new TimeSpanToStringConverter());
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(c => c.IsEmpty ? null : Convert.FromBase64String(c.Value),
-                    x => x.IsNullOrEmpty() ? Version.Empty() : Version.Create(Convert.ToBase64String(x)));
+            base.Configure(builder);
         }
     }
 }

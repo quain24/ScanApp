@@ -1,15 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ScanApp.Domain.Entities;
-using SharedExtensions;
-using System;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    internal class DepotConfiguration : IEntityTypeConfiguration<Depot>
+    internal class DepotConfiguration : VersionedEntityConfiguration<Depot>
     {
-        public void Configure(EntityTypeBuilder<Depot> builder)
+        public override void Configure(EntityTypeBuilder<Depot> builder)
         {
             builder.ToTable("Depots", "hub");
             builder.HasKey(e => e.Id);
@@ -35,11 +32,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(c => c.IsEmpty ? null : Convert.FromBase64String(c.Value),
-                    x => x.IsNullOrEmpty() ? Version.Empty() : Version.Create(Convert.ToBase64String(x)));
+            base.Configure(builder);
         }
     }
 }

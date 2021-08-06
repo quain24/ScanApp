@@ -99,7 +99,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
 
         public static TheoryData<Version> InvalidVersion => new()
         {
-            Version.Empty(),
+            Version.Empty,
             null
         };
 
@@ -123,7 +123,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
         {
             var namingValidatorMock = new Mock<IdentityNamingValidator>();
             namingValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
-            var command = new AddUserToRoleCommand(null, Version.Empty(), "role_name");
+            var command = new AddUserToRoleCommand(null, Version.Empty, "role_name");
             var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
 
             var result = subject.TestValidate(command);
@@ -139,7 +139,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
         {
             var namingValidatorMock = new Mock<IdentityNamingValidator>();
             namingValidatorMock.Setup(m => m.Validate(It.IsAny<ValidationContext<string>>())).Returns(new ValidationResult());
-            var command = new AddUserToRoleCommand("name", Version.Empty(), null);
+            var command = new AddUserToRoleCommand("name", Version.Empty, null);
             var subject = new AddUserToRoleCommandValidator(namingValidatorMock.Object);
 
             var result = subject.TestValidate(command);

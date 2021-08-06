@@ -66,7 +66,7 @@ namespace ScanApp.Infrastructure.Identity
         {
             var stamp = await GetUserConcurrencyStamp(userName, token).ConfigureAwait(false);
             return stamp is null
-                ? Version.Empty()
+                ? Version.Empty
                 : Version.Create(stamp);
         }
 

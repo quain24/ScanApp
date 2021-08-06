@@ -48,6 +48,8 @@ namespace ScanApp.Infrastructure.Services
             new(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule)
         };
 
+        private readonly Season _defaultSeason = new Season("Default", DateTime.MinValue, DateTime.MaxValue);
+
         private IUserManager UserManager { get; }
 
         private IUserInfo UserInfo { get; }
@@ -89,6 +91,7 @@ namespace ScanApp.Infrastructure.Services
             await AddDefaultClaimSourceList().ConfigureAwait(false);
             await AssignClaimsToAdministratorRole().ConfigureAwait(false);
             await AssignRolesToAdministrator().ConfigureAwait(false);
+            await AddDefaultSeason().ConfigureAwait(false);
         }
 
         private async Task ApplyMigrations(bool force)
@@ -215,6 +218,36 @@ namespace ScanApp.Infrastructure.Services
             var res = await UserManager.AddUserToRole(Administrator, version, _defaultRoles[0]).ConfigureAwait(false);
             HandleResult(res, name);
             _logInformation(name, "Role added");
+        }
+
+        private async Task AddDefaultSeason()
+        {
+            const string name = "Seasons";
+            try
+            {
+                _logInformation(name, "Beginning default season seeding");
+                await using (var ctx = ContextFactory.CreateDbContext())
+                {
+                    var existingData = await ctx.Seasons.FirstOrDefaultAsync(x => x.Name.Equals(_defaultSeason.Name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+                    if (existingData is not null)
+                    {
+                        ctx.Remove(existingData);
+                        await ctx.SaveChangesAsync().ConfigureAwait(false);
+                        _logInformation(name, "Old default season removed");
+                    }
+                }
+
+                await using var cctx = ContextFactory.CreateDbContext();
+                await cctx.AddAsync(_defaultSeason).ConfigureAwait(false);
+                await cctx.SaveChangesAsync().ConfigureAwait(false);
+                _logInformation(name, "Default season added");
+                _logInformation(name, "Finished default season seeding");
+            }
+            catch (DbUpdateException)
+            {
+                Logger.LogError("{name} - {part} - seeding failed!", ServiceName, name);
+                throw;
+            }
         }
 
         private void HandleResult<TResult>(TResult result, string seedPartName) where TResult : Result

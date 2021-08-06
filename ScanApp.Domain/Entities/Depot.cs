@@ -8,7 +8,7 @@ namespace ScanApp.Domain.Entities
     /// <summary>
     /// Represents a single Hes depot / transport hub.
     /// </summary>
-    public class Depot
+    public class Depot : VersionedEntity
     {
         /// <summary>
         /// Database Id of this entity, primary key.
@@ -55,11 +55,6 @@ namespace ScanApp.Domain.Entities
         /// </summary>
         /// <value><see cref="Gate"/> entity representing default gate in the HSF HES warehouse assigned to this depot.</value>
         public Gate DefaultGate { get; set; }
-
-        /// <summary>
-        /// Gets a <see cref="ValueObjects.Version"/> representing 'RowVersion' property of this entity.
-        /// </summary>
-        public Version Version { get; private set; } = Version.Empty();
 
         /// <summary>
         /// For compliance with EF Core.
@@ -143,15 +138,6 @@ namespace ScanApp.Domain.Entities
             DistanceFromHub = distanceInKm >= 0
                 ? distanceInKm
                 : throw new ArgumentException("Distance must be 0 or more", nameof(distanceInKm));
-        }
-
-        /// <summary>
-        /// Changes 'RowVersion' of this entity.
-        /// </summary>
-        /// <param name="version">New 'RowVersion' in form of <see cref="ValueObjects.Version"/>.</param>
-        public void ChangeVersion(Version version)
-        {
-            Version = version ?? throw new ArgumentNullException(nameof(version));
         }
     }
 }

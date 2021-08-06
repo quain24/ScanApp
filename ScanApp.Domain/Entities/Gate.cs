@@ -6,7 +6,7 @@ namespace ScanApp.Domain.Entities
     /// <summary>
     /// Represents sing gate / loading bay inside the warehouse.
     /// </summary>
-    public class Gate
+    public class Gate : VersionedEntity
     {
         /// <summary>
         /// Database Id of this entity, primary key.
@@ -64,19 +64,6 @@ namespace ScanApp.Domain.Entities
         {
             Number = number;
             Direction = direction;
-        }
-
-        private Version _version = Version.Empty();
-
-        /// <summary>
-        /// Gets or sets entity Version (representation of RowVersion).
-        /// </summary>
-        /// <value>Version of this entity, by default an empty <see cref="Version"/>.</value>
-        /// <exception cref="ArgumentNullException">Given <see cref="ValueObjects.Version"/> was <see langword="null"/>.</exception>
-        public Version Version
-        {
-            get => _version;
-            set => _version = value ?? throw new ArgumentNullException(nameof(ValueObjects.Version), "Version cannot be null - use 'Version.Empty' instead.");
         }
 
         /// <summary>

@@ -230,7 +230,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
-            result.Output.Should().Be(Version.Empty());
+            result.Output.Should().Be(Version.Empty);
         }
 
         [Fact]
@@ -437,7 +437,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
         public static IEnumerable<object[]> GetInvalidVersions()
         {
-            yield return new object[] { Version.Empty() };
+            yield return new object[] {Version.Empty};
             yield return new object[] { Version.Create("not_match") };
         }
 
@@ -1052,7 +1052,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
-            result.Output.Should().Be(Version.Empty(), "on failure - empty version is returned, since no user is found to create one from");
+            result.Output.Should().Be(Version.Empty, "on failure - empty version is returned, since no user is found to create one from");
             userMgrMock.Verify(u => u.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
         }
 
@@ -1070,7 +1070,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
 
             result.Conclusion.Should().BeTrue();
-            result.Output.Should().BeOfType<Version>().And.Should().NotBe(Version.Empty());
+            result.Output.Should().BeOfType<Version>().And.Should().NotBe(Version.Empty);
             userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Once);
         }
 
@@ -1084,7 +1084,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), "a_role");
 
             result.Conclusion.Should().BeFalse();
-            result.Output.Should().Be(Version.Empty());
+            result.Output.Should().Be(Version.Empty);
             result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
             userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Never);
         }

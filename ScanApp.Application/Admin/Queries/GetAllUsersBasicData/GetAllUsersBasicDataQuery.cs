@@ -28,20 +28,13 @@ namespace ScanApp.Application.Admin.Queries.GetAllUsersBasicData
 
         public async Task<Result<List<BasicUserModel>>> Handle(GetAllUsersBasicDataQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _contextFactory.CreateDbContext();
-                var data = await ctx.Users
-                    .AsNoTracking()
-                    .Select(u => new BasicUserModel(u.UserName, Version.Create(u.ConcurrencyStamp)))
-                    .ToListAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                return new Result<List<BasicUserModel>>().SetOutput(data);
-            }
-            catch (OperationCanceledException ex)
-            {
-                return new Result<List<BasicUserModel>>(ErrorType.Cancelled, ex);
-            }
+            await using var ctx = _contextFactory.CreateDbContext();
+            var data = await ctx.Users
+                .AsNoTracking()
+                .Select(u => new BasicUserModel(u.UserName, Version.Create(u.ConcurrencyStamp)))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+            return new Result<List<BasicUserModel>>().SetOutput(data);
         }
     }
 }

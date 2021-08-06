@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using ScanApp.Application.Common.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+using ScanApp.Application.Common.Entities;
 
-namespace ScanApp.Tests.UnitTests
+namespace ScanApp.Tests
 {
     public class UserGeneratorFixture
     {

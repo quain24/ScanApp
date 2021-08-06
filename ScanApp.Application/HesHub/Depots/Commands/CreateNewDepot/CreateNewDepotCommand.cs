@@ -5,16 +5,15 @@ using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
 {
-    public record CreateNewDepot(DepotModel Model) : IRequest<Result<Version>>;
+    public record CreateNewDepotCommand(DepotModel Model) : IRequest<Result<Version>>;
 
-    internal class CreateNewDepotCommandHandler : IRequestHandler<CreateNewDepot, Result<Version>>
+    internal class CreateNewDepotCommandHandler : IRequestHandler<CreateNewDepotCommand, Result<Version>>
     {
         private readonly IContextFactory _factory;
 
@@ -23,45 +22,28 @@ namespace ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<Result<Version>> Handle(CreateNewDepot request, CancellationToken cancellationToken)
+        public async Task<Result<Version>> Handle(CreateNewDepotCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await using var ctx = _factory.CreateDbContext();
+            await using var ctx = _factory.CreateDbContext();
 
-                var model = request.Model;
-                var children = CreateChildren(model);
-                var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
-                    Address.Create(model.StreetName, model.ZipCode, model.City, model.Country))
-                {
-                    DefaultGate = children.Gate,
-                    DefaultTrailer = children.Trailer
-                };
-
-                await ctx.Depots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
-                if (depot.DefaultGate is not null)
-                    ctx.Entry(depot.DefaultGate).State = EntityState.Unchanged;
-                if (depot.DefaultTrailer is not null)
-                    ctx.Entry(depot.DefaultTrailer).State = EntityState.Unchanged;
-
-                var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-                return saved == 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
-            }
-            catch (OperationCanceledException ex)
+            var model = request.Model;
+            var (gate, trailer) = CreateChildren(model);
+            var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
+                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country))
             {
-                return new Result<Version>(ErrorType.Cancelled, ex);
-            }
-            catch (DbUpdateException ex)
-            {
-                return ex is DbUpdateConcurrencyException
-                    ? new Result<Version>(ErrorType.ConcurrencyFailure, ex.InnerException?.Message ?? ex.Message, ex)
-                    : new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
-            catch (SqlException ex)
-            {
-                return new Result<Version>(ErrorType.DatabaseError, ex.InnerException?.Message ?? ex.Message, ex);
-            }
+                DefaultGate = gate,
+                DefaultTrailer = trailer
+            };
+
+            await ctx.Depots.AddAsync(depot, cancellationToken).ConfigureAwait(false);
+            if (depot.DefaultGate is not null)
+                ctx.Entry(depot.DefaultGate).State = EntityState.Unchanged;
+            if (depot.DefaultTrailer is not null)
+                ctx.Entry(depot.DefaultTrailer).State = EntityState.Unchanged;
+
+            var saved = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return saved >= 1 ? new Result<Version>(ResultType.Created).SetOutput(depot.Version) : new Result<Version>(ErrorType.Unknown);
         }
 
         private static (Gate Gate, TrailerType Trailer) CreateChildren(DepotModel model)

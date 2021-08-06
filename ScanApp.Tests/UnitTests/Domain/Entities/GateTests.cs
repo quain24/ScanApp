@@ -19,7 +19,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
 
             using var _ = new AssertionScope();
             subject.Should().NotBeNull().And.BeOfType<Gate>();
-            subject.Version.Should().Be(Version.Empty(), "by default gate has empty version");
+            subject.Version.Should().Be(Version.Empty, "by default gate has empty version");
             subject.Id.Should().Be(0, "0 is default id");
             subject.Direction.Should().Be(direction);
             subject.Number.Should().Be(number);
