@@ -58,6 +58,9 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
             using (var u = NewDbContext)
             {
                 var dep = u.DeparturePlanOccurrences.Include(x => x.OccurrenceOf).First();
+                var del = u.DeparturePlans.Where(x => x.Name.Equals("name")).First();
+                u.DeparturePlans.Remove(del);
+                u.SaveChanges();
                 var t = "";
             }
         }

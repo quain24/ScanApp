@@ -11,13 +11,12 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("DeparturePlanOccurrences", "hub");
 
-            builder.HasOne(x => x.OccurrenceOf).WithOne().HasForeignKey<DeparturePlan>("aaaa");
+            builder.HasOne(x => x.OccurrenceOf).WithOne().HasPrincipalKey<DeparturePlan>(x => x.Name).OnDelete(DeleteBehavior.Cascade);
 
             builder.OwnsMany(x => x.Exceptions, o =>
             {
-                o.HasKey(x => x.Id);
                 o.Property(x => x.Id).ValueGeneratedOnAdd();
-                o.HasOne(x => x.Parent).WithMany();
+                o.HasOne(x => x.Parent).WithMany().OnDelete(DeleteBehavior.Cascade);
                 o.Ignore(x => x.OccurrenceOf);
             });
         }
