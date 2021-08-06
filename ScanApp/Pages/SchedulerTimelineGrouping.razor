@@ -8,7 +8,8 @@
         <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@DepotsData" Field="DepotId" Title="Owner" Name="Owners" TextField="DepotText" IdField="Id" GroupIDField="OwnerGroupId" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
     </ScheduleResources>
     <ScheduleEventSettings DataSource="@DataSource"/>
-    <ScheduleEvents TValue="AppointmentData" OnActionBegin="(async e => await OnBegin(e))"></ScheduleEvents>
+    <ScheduleEvents TValue="AppointmentData" OnActionBegin="(async e => await OnBegin(e))"
+                    ActionCompleted="(async e => await OnFinish(e))"></ScheduleEvents>
     <ScheduleViews>
         <ScheduleView Option="View.TimelineDay" MaxEventsPerRow="2"></ScheduleView>
         <ScheduleView Option="View.TimelineWeek" MaxEventsPerRow="2"></ScheduleView>
@@ -20,21 +21,32 @@
 
     public async Task OnBegin(ActionEventArgs<AppointmentData> args )
     {
-        if (args.ActionType == ActionType.ViewNavigate) return;
+        if (args.ActionType == ActionType.ViewNavigate || args.ActionType == ActionType.DateNavigate) return;
         var a = args?.ActionType;
-        var ad = args?.AddedRecords;
+        var ar = args?.AddedRecords;
+        var cr = args?.ChangedRecords;
+        var dr = args?.DeletedRecords;
         var t = "";
 
-        Console.WriteLine($"start date       = {ad?.FirstOrDefault()?.StartTime}");
-        Console.WriteLine($"start date Kind  = {ad?.FirstOrDefault()?.StartTime.Kind}");
-        Console.WriteLine($"start date Local = {ad?.FirstOrDefault()?.StartTime.ToLocalTime()}");
-        Console.WriteLine($"end date         = {ad?.FirstOrDefault()?.EndTime}");
-        Console.WriteLine($"end date   Kind  = {ad?.FirstOrDefault()?.EndTime.Kind}");
-        Console.WriteLine($"end date Local   = {ad?.FirstOrDefault()?.EndTime.ToLocalTime()}");
+        Console.WriteLine($"start date       = {ar?.FirstOrDefault()?.StartTime}");
+        Console.WriteLine($"start date Kind  = {ar?.FirstOrDefault()?.StartTime.Kind}");
+        Console.WriteLine($"start date Local = {ar?.FirstOrDefault()?.StartTime.ToLocalTime()}");
+        Console.WriteLine($"end date         = {ar?.FirstOrDefault()?.EndTime}");
+        Console.WriteLine($"end date   Kind  = {ar?.FirstOrDefault()?.EndTime.Kind}");
+        Console.WriteLine($"end date Local   = {ar?.FirstOrDefault()?.EndTime.ToLocalTime()}");
         if (args?.AddedRecords?.FirstOrDefault()?.Subject?.Contains("aaa") ?? false)
         {
             args.Cancel = true;
         }
+    }
+    public async Task OnFinish(ActionEventArgs<AppointmentData> args )
+    {
+        if (args.ActionType == ActionType.ViewNavigate || args.ActionType == ActionType.DateNavigate) return;
+        var a = args?.ActionType;
+        var ar = args?.AddedRecords;
+        var cr = args?.ChangedRecords;
+        var dr = args?.DeletedRecords;
+        var t = "";
     }
 
     DateTime CurrentDate = new DateTime(2020, 1, 31);
