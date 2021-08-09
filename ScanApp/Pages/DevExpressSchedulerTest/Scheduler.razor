@@ -1,12 +1,13 @@
 ﻿@page "/devexpress-scheduler-test"
 
+@using DevExpress.XtraScheduler.Internal
+@using DevExpress.Blazor.Scheduler.Internal
+
 <DxScheduler StartDate="@(DateTime.Today + TimeSpan.FromHours(8))"
              DataStorage="@DataStorage"
              ResourceNavigatorVisible="false"
              GroupType="SchedulerGroupType.Resource"
-             AppointmentInserting="OnAdding"
-             AppointmentUpdating="OnEdit"
-             AppointmentRemoving="OnRemove">
+             AppointmentUpdated="OnEdit">
     <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(24))" CellMinWidth="100">
         <Scales>
             <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day" UnitCount="1"></DxSchedulerTimeScale>
@@ -14,22 +15,40 @@
         </Scales>
     </DxSchedulerTimelineView>
 </DxScheduler>
-
+<MudPaper></MudPaper>
+<MudButton OnClick="stop"></MudButton>
 @code {
 
-    public void OnAdding(SchedulerAppointmentOperationEventArgs args)
+    public void stop()
     {
-        var t = args;
+        var t = "";
+    }
+    public void OnAdding(DxSchedulerAppointmentItem args)
+    {
+        var t = args.SourceObject;
+        Console.WriteLine($"Added - {((ResourceAppointmentCollection.ResourceAppointment)t).Recurrence}");
+        Console.WriteLine($"Type - {((ResourceAppointmentCollection.ResourceAppointment)t).AppointmentType}");
+        Console.WriteLine($"Status - {((ResourceAppointmentCollection.ResourceAppointment)t).Status}");
     }
 
-    public void OnEdit(SchedulerAppointmentOperationEventArgs args)
+    public void OnEdit(DxSchedulerAppointmentItem args)
     {
-        var t = args;
+        var t = args.SourceObject;
+        var occ = OccurrenceCalculator.CreateInstance(args.RecurrenceInfo);
+        var index = occ.FindOccurrenceIndex(DateTime.Today + TimeSpan.FromDays(71), TimeSpan.FromDays(args.RecurrenceInfo.Frequency));
+        var firstIndex = occ.FindFirstOccurrenceIndex(new DxSchedulerDateTimeRange(DateTime.Today, TimeSpan.FromDays(100)), TimeSpan.Zero);
+
+        Console.WriteLine($"Edited - {((ResourceAppointmentCollection.ResourceAppointment)t).Recurrence}");
+        Console.WriteLine($"Type - {((ResourceAppointmentCollection.ResourceAppointment)t).AppointmentType}");
+        Console.WriteLine($"Status - {((ResourceAppointmentCollection.ResourceAppointment)t).Status}");
     }
 
-    public void OnRemove(SchedulerAppointmentOperationEventArgs args)
+    public void OnRemove(DxSchedulerAppointmentItem args)
     {
-        var t = args;
+        var t = args.SourceObject;
+        Console.WriteLine($"Removed - {((ResourceAppointmentCollection.ResourceAppointment)t).Recurrence}");
+        Console.WriteLine($"Type - {((ResourceAppointmentCollection.ResourceAppointment)t).AppointmentType}");
+        Console.WriteLine($"Status - {((ResourceAppointmentCollection.ResourceAppointment)t).Status}");
     }
 
     DxSchedulerDataStorage DataStorage = new DxSchedulerDataStorage()
@@ -37,6 +56,7 @@
         AppointmentsSource = ResourceAppointmentCollection.GetAppointments(),
         AppointmentMappings = new DxSchedulerAppointmentMappings()
         {
+            Id = "Id",
             Type = "AppointmentType",
             Start = "StartDate",
             End = "EndDate",

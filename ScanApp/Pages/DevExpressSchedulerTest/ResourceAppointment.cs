@@ -7,7 +7,9 @@ namespace ScanApp.Pages.DevExpressSchedulerTest
 {
     public static partial class ResourceAppointmentCollection {
         public class ResourceAppointment {
+
             public ResourceAppointment() { }
+            public int Id { get; set; } = 1;
             public bool Accepted { get; set; }
             public int AppointmentType { get; set; }
             public DateTime StartDate { get; set; }
