@@ -3,7 +3,10 @@
 <DxScheduler StartDate="@(DateTime.Today + TimeSpan.FromHours(8))"
              DataStorage="@DataStorage"
              ResourceNavigatorVisible="false"
-             GroupType="SchedulerGroupType.Resource">
+             GroupType="SchedulerGroupType.Resource"
+             AppointmentInserting="OnAdding"
+             AppointmentUpdating="OnEdit"
+             AppointmentRemoving="OnRemove">
     <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(24))" CellMinWidth="100">
         <Scales>
             <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day" UnitCount="1"></DxSchedulerTimeScale>
@@ -13,6 +16,22 @@
 </DxScheduler>
 
 @code {
+
+    public void OnAdding(SchedulerAppointmentOperationEventArgs args)
+    {
+        var t = args;
+    }
+
+    public void OnEdit(SchedulerAppointmentOperationEventArgs args)
+    {
+        var t = args;
+    }
+
+    public void OnRemove(SchedulerAppointmentOperationEventArgs args)
+    {
+        var t = args;
+    }
+
     DxSchedulerDataStorage DataStorage = new DxSchedulerDataStorage()
     {
         AppointmentsSource = ResourceAppointmentCollection.GetAppointments(),
