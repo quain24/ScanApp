@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ScanApp.Domain.Entities
 {
-    public class DeparturePlan : VersionedEntity
+    public class DeparturePlan : Occurrence<DeparturePlan>
     {
         public string Name
         {
@@ -45,24 +45,6 @@ namespace ScanApp.Domain.Entities
 
         private Gate _gate;
 
-        public DayAndTime LoadingStart
-        {
-            get => _loadingStart;
-            set => _loadingStart = value ?? throw new ArgumentNullException(nameof(LoadingStart));
-        }
-
-        private DayAndTime _loadingStart;
-
-        public TimeSpan LoadingDuration
-        {
-            get => _loadingTimeDuration;
-            set => _loadingTimeDuration = value < TimeSpan.Zero
-                ? throw new ArgumentOutOfRangeException(nameof(LoadingDuration), "Duration must be 0 or more.")
-                : value;
-        }
-
-        private TimeSpan _loadingTimeDuration;
-
         public DayAndTime ArrivalTimeAtDepot
         {
             get => _arrivalTimeAtDepot;
@@ -71,27 +53,25 @@ namespace ScanApp.Domain.Entities
 
         private DayAndTime _arrivalTimeAtDepot;
 
-        // For Ef Core compliance
-        private DeparturePlan()
+        private DeparturePlan() : base()
         {
-        }
 
+        }
+        
         public DeparturePlan(string name,
+            DateTime start,
+            DateTime end,
             Depot depot,
             Season season,
             Gate gate,
             TrailerType trailerType,
-            DayAndTime loadingStart,
-            TimeSpan loadingDuration,
-            DayAndTime arrivalTimeAtDepot)
+            DayAndTime arrivalTimeAtDepot) : base(start, end)
         {
             Name = name;
             AssignToSeason(season);
             Depot = depot;
             TrailerType = trailerType;
             Gate = gate;
-            LoadingStart = loadingStart;
-            LoadingDuration = loadingDuration;
             ArrivalTimeAtDepot = arrivalTimeAtDepot;
         }
 

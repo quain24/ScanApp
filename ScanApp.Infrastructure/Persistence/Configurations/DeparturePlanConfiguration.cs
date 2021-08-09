@@ -6,13 +6,12 @@ using System.Collections.Generic;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class DeparturePlanConfiguration : VersionedEntityConfiguration<DeparturePlan>
+    public class DeparturePlanConfiguration : OccurrenceConfiguration<DeparturePlan>
     {
         public override void Configure(EntityTypeBuilder<DeparturePlan> builder)
         {
             builder.ToTable("DeparturePlans", "hub");
-
-            builder.HasKey(x => x.Name);
+            
             builder.Property(x => x.Name)
                 .HasMaxLength(120);
 
@@ -39,21 +38,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
-
-            builder.OwnsOne(e => e.LoadingStart, lb =>
-            {
-                lb.Property(x => x.Day)
-                    .HasColumnName("LoadingStartDay")
-                    .IsRequired();
-                lb.Property(x => x.Time)
-                    .HasColumnName("LoadingStartTime")
-                    .HasConversion(new TimeSpanToStringConverter())
-                    .IsRequired();
-            }).Navigation(e => e.LoadingStart).IsRequired();
-
-            builder.Property(x => x.LoadingDuration)
-                .IsRequired()
-                .HasConversion(new TimeSpanToStringConverter());
 
             builder.OwnsOne(e => e.ArrivalTimeAtDepot, at =>
             {
