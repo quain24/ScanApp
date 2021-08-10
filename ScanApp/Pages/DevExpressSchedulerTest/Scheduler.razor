@@ -7,7 +7,8 @@
              DataStorage="@DataStorage"
              ResourceNavigatorVisible="false"
              GroupType="SchedulerGroupType.Resource"
-             AppointmentUpdated="OnEdit">
+             AppointmentUpdating="OnEditing"
+             AppointmentRemoved="OnRemove">
     <DxSchedulerTimelineView Duration="@(TimeSpan.FromHours(24))" CellMinWidth="100">
         <Scales>
             <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day" UnitCount="1"></DxSchedulerTimeScale>
@@ -34,18 +35,30 @@
     public void OnEdit(DxSchedulerAppointmentItem args)
     {
         var t = args.SourceObject;
-        var occ = OccurrenceCalculator.CreateInstance(args.RecurrenceInfo);
-        var index = occ.FindOccurrenceIndex(DateTime.Today + TimeSpan.FromDays(71), TimeSpan.FromDays(args.RecurrenceInfo.Frequency));
+        var occ = OccurrenceCalculator.CreateInstance(args?.RecurrenceInfo);
+        var index = occ.FindOccurrenceIndex(args.Start, TimeSpan.FromDays(args.RecurrenceInfo.Frequency));
         var firstIndex = occ.FindFirstOccurrenceIndex(new DxSchedulerDateTimeRange(DateTime.Today, TimeSpan.FromDays(100)), TimeSpan.Zero);
 
         Console.WriteLine($"Edited - {((ResourceAppointmentCollection.ResourceAppointment)t).Recurrence}");
         Console.WriteLine($"Type - {((ResourceAppointmentCollection.ResourceAppointment)t).AppointmentType}");
         Console.WriteLine($"Status - {((ResourceAppointmentCollection.ResourceAppointment)t).Status}");
     }
+    
+    public void OnEditing(SchedulerAppointmentOperationEventArgs args)
+    {
+        var t = args.Appointment;
+        var g = args.Appointment?.RecurrenceIndex;
+        var occ = OccurrenceCalculator.CreateInstance(t?.RecurrenceInfo);
+        var index = occ.FindOccurrenceIndex(t.Start, TimeSpan.FromDays(t.RecurrenceInfo.Frequency));
+        var firstIndex = occ.FindFirstOccurrenceIndex(new DxSchedulerDateTimeRange(DateTime.Today, TimeSpan.FromDays(100)), TimeSpan.Zero);        
+    }
 
     public void OnRemove(DxSchedulerAppointmentItem args)
     {
         var t = args.SourceObject;
+        var occ = OccurrenceCalculator.CreateInstance(args?.RecurrenceInfo);
+        var index = occ.FindOccurrenceIndex(args.Start, TimeSpan.FromDays(args.RecurrenceInfo.Frequency));
+        var firstIndex = occ.FindFirstOccurrenceIndex(new DxSchedulerDateTimeRange(DateTime.Today, TimeSpan.FromDays(100)), TimeSpan.Zero);
         Console.WriteLine($"Removed - {((ResourceAppointmentCollection.ResourceAppointment)t).Recurrence}");
         Console.WriteLine($"Type - {((ResourceAppointmentCollection.ResourceAppointment)t).AppointmentType}");
         Console.WriteLine($"Status - {((ResourceAppointmentCollection.ResourceAppointment)t).Status}");

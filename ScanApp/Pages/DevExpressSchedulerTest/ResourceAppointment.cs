@@ -9,7 +9,7 @@ namespace ScanApp.Pages.DevExpressSchedulerTest
         public class ResourceAppointment {
 
             public ResourceAppointment() { }
-            public int Id { get; set; } = 1;
+            public int Id { get; set; }
             public bool Accepted { get; set; }
             public int AppointmentType { get; set; }
             public DateTime StartDate { get; set; }
