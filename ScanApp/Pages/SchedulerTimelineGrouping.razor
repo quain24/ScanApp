@@ -1,7 +1,8 @@
 ﻿@page "/timeline-grouping"
 @using Syncfusion.Blazor.Schedule
+@using MudBlazor.Extensions
 
-<SfSchedule TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true" >
+<SfSchedule ID="aaa1" TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true" >
     <ScheduleGroup Resources="@Resources"></ScheduleGroup>
     <ScheduleResources>
         <ScheduleResource TItem="ResourceData" TValue="int" DataSource="@GroupData" Field="GroupId" Title="Room" Name="Rooms" TextField="GroupText" IdField="Id" ColorField="RoomColor" AllowMultiple="false"></ScheduleResource>
@@ -46,10 +47,16 @@
         var ar = args?.AddedRecords;
         var cr = args?.ChangedRecords;
         var dr = args?.DeletedRecords;
+        var tt = args?.ChangedRecords?.FirstOrDefault();
+        var ggg = tt?.StartTime.ToIsoDateString();
+        var hhh = tt?.StartTime.ToString("o");
+        var ttt = tt?.StartTime.ToUniversalTime().ToString("o");
+        var hhhg = tt?.StartTime.ToString("O");
+        var tttg = tt?.StartTime.ToUniversalTime().ToString("O");
         var t = "";
     }
 
-    DateTime CurrentDate = new DateTime(2020, 1, 31);
+    DateTime CurrentDate = DateTime.Now;//new DateTime(2020, 1, 31);
     public string[] Resources { get; set; } = { "Rooms", "Owners" };
     public List<ResourceData> GroupData { get; set; } = new List<ResourceData>
     {
@@ -81,10 +88,10 @@
     };
     List<AppointmentData> DataSource = new List<AppointmentData>
     {
-        new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 2, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 3, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
-        new AppointmentData { Id = 4, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
+        //new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        //new AppointmentData { Id = 2, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        //new AppointmentData { Id = 3, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
+        //new AppointmentData { Id = 4, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
     };
     public class AppointmentData
     {
