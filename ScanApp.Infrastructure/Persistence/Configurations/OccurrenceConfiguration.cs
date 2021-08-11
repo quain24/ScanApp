@@ -20,7 +20,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.OwnsOne(x => x.Recurrence, o =>
+            builder.OwnsOne(x => x.RecurrencePattern, o =>
             {
                 o.Property(x => x.Type).HasColumnName("RecurrenceType");
                 o.Property(x => x.Interval).HasColumnName("RecurrenceInterval").IsRequired(false);
@@ -30,7 +30,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 o.Property(x => x.ByMonth).HasColumnName("RecurrenceByMonth").IsRequired(false);
                 o.Property(x => x.ByMonthDay).HasColumnName("RecurrenceByMonthDay").IsRequired(false);
                 o.Property(x => x.OnWeek).HasColumnName("RecurrenceOnWeek").IsRequired(false);
-            }).Navigation(x => x.Recurrence);
+            }).Navigation(x => x.RecurrencePattern);
 
             base.Configure(builder);
         }
