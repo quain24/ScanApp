@@ -1,89 +1,57 @@
 ﻿@page "/timeline-grouping"
 @using Syncfusion.Blazor.Schedule
-@using Syncfusion.Blazor.Calendars
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
+@using MudBlazor.Extensions
+@using SharedExtensions
+@using Syncfusion.Blazor.Schedule.Internal
+@using System.Globalization
+@using ScanApp.Domain.ValueObjects
 
-<style>
-    .custom-event-editor td {
-        padding: 7px;
-        padding-right: 16px;
-    }
-
-    .dropdown .e-dropdownlist {
-        color: inherit !important;
-    }
-</style>
-
-<SfSchedule TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true">
+<SfSchedule @ref="sfs" ID="aaa1" TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true">
     <ScheduleGroup Resources="@Resources"></ScheduleGroup>
     <ScheduleResources>
         <ScheduleResource TItem="ResourceData" TValue="int" DataSource="@GroupData" Field="GroupId" Title="Room" Name="Rooms" TextField="GroupText" IdField="Id" ColorField="RoomColor" AllowMultiple="false"></ScheduleResource>
         <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@DepotsData" Field="DepotId" Title="Owner" Name="Owners" TextField="DepotText" IdField="Id" GroupIDField="OwnerGroupId" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
     </ScheduleResources>
-    <ScheduleEventSettings DataSource="@DataSource" />
-    <ScheduleEvents TValue="AppointmentData" OnActionBegin="(async e => await OnBegin(e))"
-                    ActionCompleted="(async e => await OnFinish(e))"></ScheduleEvents>
-
-    <ScheduleTemplates>
-        <EditorTemplate>
-            <input type="hidden" name="Id" class="e-field" value="@((context as AppointmentData).Id)" />
-            <table class="custom-event-editor" width="100%" cellpadding="5">
-                <tbody>
-                <tr>
-                    <td class="e-textlabel">Summary</td>
-                    <td colspan="4">
-                        <SfTextBox @bind-Value="@((context as AppointmentData).Subject)"></SfTextBox>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="e-textlabel">Event is finished</td>
-                    <td colspan="4">
-                        <SfCheckBox @bind-Checked="((context as AppointmentData).IsFinished)"></SfCheckBox>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="e-textlabel">From</td>
-                    <td colspan="4">
-                        <SfDateTimePicker @bind-Value="@((context as AppointmentData).StartTime)"></SfDateTimePicker>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="e-textlabel">To</td>
-                    <td colspan="4">
-                        <SfDateTimePicker @bind-Value="@((context as AppointmentData).EndTime)"></SfDateTimePicker>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="e-textlabel">Recurrence</td>
-                    <td colspan="4">
-                        <SfRecurrenceEditor @bind-Value="@((context as AppointmentData).RecurrenceRule)"></SfRecurrenceEditor>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </EditorTemplate>
-    </ScheduleTemplates>
-
+    <ScheduleEventSettings TValue="AppointmentData">
+        <DataManager Adaptor="Adaptors.CustomAdaptor" AdaptorInstance="@(typeof(DataHandler))"></DataManager>
+    </ScheduleEventSettings>
+    
+    
+    @*<ScheduleEventSettings TValue="AppointmentData" DataSource="@DataSource">
+        <DataManager Data="@DataSource"></DataManager>
+        <DataManager Adaptor="Adaptors.CustomAdaptor" AdaptorInstance="@(typeof(DataHandler))"></DataManager>
+        <ScheduleEvents TValue="AppointmentData" OnActionBegin="OnBegin" DataBinding="OnBinding"
+                        ActionCompleted="OnFinish"></ScheduleEvents>
+    </ScheduleEventSettings>*@
+    
 
     <ScheduleViews>
-        <ScheduleView Option="View.TimelineDay" MaxEventsPerRow="2"></ScheduleView>
+        <ScheduleView Option="View.TimelineDay" MaxEventsPerRow="2" AllowVirtualScrolling="true"></ScheduleView>
         <ScheduleView Option="View.TimelineWeek" MaxEventsPerRow="2"></ScheduleView>
         <ScheduleView Option="View.TimelineMonth" MaxEventsPerRow="2"></ScheduleView>
         <ScheduleView Option="View.Agenda"></ScheduleView>
     </ScheduleViews>
 </SfSchedule>
 @code{
+    public SfSchedule<AppointmentData> sfs;
+
+    public async Task OnBinding(DataBindingEventArgs<AppointmentData> args )
+    {
+
+    }
 
     public async Task OnBegin(ActionEventArgs<AppointmentData> args)
     {
+        //await sfs.RefreshEventsAsync();
+        var gg = sfs.GetCurrentViewDates();
+        var tasd = sfs.GetCurrentAction();
         if (args.ActionType == ActionType.ViewNavigate || args.ActionType == ActionType.DateNavigate) return;
         var a = args?.ActionType;
         var ar = args?.AddedRecords;
         var cr = args?.ChangedRecords;
         var dr = args?.DeletedRecords;
         var t = "";
+        var tt = args?.ChangedRecords?.FirstOrDefault();
 
         Console.WriteLine($"start date       = {ar?.FirstOrDefault()?.StartTime}");
         Console.WriteLine($"start date Kind  = {ar?.FirstOrDefault()?.StartTime.Kind}");
@@ -98,22 +66,35 @@
     }
     public async Task OnFinish(ActionEventArgs<AppointmentData> args)
     {
+        args.Cancel = true;
         if (args.ActionType == ActionType.ViewNavigate || args.ActionType == ActionType.DateNavigate) return;
+        var tasd = sfs.GetCurrentAction();
         var a = args?.ActionType;
         var ar = args?.AddedRecords;
         var cr = args?.ChangedRecords;
         var dr = args?.DeletedRecords;
+        var tt = args?.ChangedRecords?.FirstOrDefault();
+        var ggg = tt?.StartTime.ToIsoDateString();
+        var hhh = tt?.StartTime.ToString("o");
+        var ttt = tt?.StartTime.ToUniversalTime().ToString("o");
+        var hhhg = tt?.StartTime.ToString("O");
+        var tttg = tt?.StartTime.ToUniversalTime().ToString("O");
+        var asd = tt?.RecurrenceException;
+        var gggg = DateTime.TryParse(ttt, null, DateTimeStyles.AssumeUniversal, out var parsed);
+        var agggg = DateTime.TryParse(asd, null, DateTimeStyles.AssumeUniversal, out var parsed2);
+        var df = parsed;
+        var dfs = parsed2;
         var t = "";
     }
 
-    DateTime CurrentDate = new DateTime(2020, 1, 31);
+    DateTime CurrentDate = DateTime.Now;//new DateTime(2020, 1, 31);
     public string[] Resources { get; set; } = { "Rooms", "Owners" };
     public List<ResourceData> GroupData { get; set; } = new List<ResourceData>
 {
         new ResourceData{ GroupText = "Depots 1-10", Id = 1, RoomColor = "#cb6bb2" },
         new ResourceData{ GroupText = "Depots 11-20", Id = 2, RoomColor = "#56ca85" }
     };
-    public List<ResourceData> DepotsData { get; set; } = new List<ResourceData>
+    public static List<ResourceData> DepotsData { get; set; } = new List<ResourceData>
 {
         new ResourceData{ DepotText = "Depot 1", Id = 1, OwnerGroupId = 1, OwnerColor = "#f8a398" },
         new ResourceData{ DepotText = "Depot 2", Id = 2, OwnerGroupId = 1, OwnerColor = "#f8a398" },
@@ -136,12 +117,12 @@
         new ResourceData{ DepotText = "Depot 19", Id = 19, OwnerGroupId = 2, OwnerColor = "#7499e1" },
         new ResourceData{ DepotText = "Depot 20", Id = 20, OwnerGroupId = 2, OwnerColor = "#7499e1" },
     };
-    List<AppointmentData> DataSource = new List<AppointmentData>
-{
-        new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 2, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
-        new AppointmentData { Id = 3, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
-        new AppointmentData { Id = 4, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
+    public static  List<AppointmentData>  DataSource = new List<AppointmentData>
+    {
+        //new AppointmentData { Id = 1, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 9, 30, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        //new AppointmentData { Id = 2, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 1, GroupId = 1 },
+        //new AppointmentData { Id = 3, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 10, 0, 0) , EndTime = new DateTime(2020, 1, 31, 11, 0, 0), DepotId = 11, GroupId = 2 },
+        //new AppointmentData { Id = 4, Subject = "Something", StartTime = new DateTime(2020, 1, 31, 15, 0, 0) , EndTime = new DateTime(2020, 1, 31, 16, 0, 0), DepotId = 13, GroupId = 2 }
     };
     public class AppointmentData
     {
@@ -157,7 +138,6 @@
         public Nullable<int> RecurrenceID { get; set; }
         public int DepotId { get; set; }
         public int GroupId { get; set; }
-        public bool IsFinished { get; set; }
     }
     public class ResourceData
     {
@@ -167,5 +147,58 @@
         public string DepotText { get; set; }
         public string OwnerColor { get; set; }
         public int OwnerGroupId { get; set; }
+    }
+
+    public class DataHandler : DataAdaptor
+    {
+        public override async Task<object> ReadAsync(DataManagerRequest dataManagerRequest, string key = null)
+        {
+            var t = RecurrencePattern.Monthly(1, Week.Last, Day.Wednesday | Day.Monday);
+            return DataSource;
+            return base.ReadAsync(dataManagerRequest, key);
+        }
+
+        public override object Read(DataManagerRequest dataManagerRequest, string key = null)
+        {
+            return base.Read(dataManagerRequest, key);
+        }
+
+        public override async Task<object> BatchUpdateAsync(DataManager dataManager, object changedRecords, object addedRecords, object deletedRecords, string keyField, string key, int? dropIndex)
+        {
+            if (changedRecords is List<AppointmentData> changes && changes.IsNullOrEmpty() is false)
+            {
+                changes.ForEach(x => UpdateAsync(dataManager, x, keyField, key));
+            }
+
+            if (addedRecords is List<AppointmentData> adds && adds.IsNullOrEmpty() is false)
+            {
+                adds.ForEach(x => DataSource.Add(x));
+            }
+
+            if (deletedRecords is List<AppointmentData> dels && dels.IsNullOrEmpty() is false)
+            {
+                dels.ForEach(x => DataSource.Remove(x));
+            }
+            return DataSource;
+        }
+
+        public override Task<object> UpdateAsync(DataManager dataManager, object data, string keyField, string key)
+        {
+            var g = dataManager.Data as IEnumerable<AppointmentData>;
+            DataSource.RemoveAt(DataSource.FindIndex(x => x.Id == (data as AppointmentData).Id));
+            DataSource.Add(data as AppointmentData);
+            return base.UpdateAsync(dataManager, data, keyField, key);
+        }
+
+        public override Task<object> RemoveAsync(DataManager dataManager, object data, string keyField, string key)
+        {
+            return base.RemoveAsync(dataManager, data, keyField, key);
+        }
+
+        public override Task<object> InsertAsync(DataManager dataManager, object data, string key)
+        {
+            DataSource.Add(data as AppointmentData);
+            return base.InsertAsync(dataManager, data, key);
+        }
     }
 }

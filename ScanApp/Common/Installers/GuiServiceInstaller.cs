@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Services;
+using static ScanApp.Pages.SchedulerTimelineGrouping;
 
 namespace ScanApp.Common.Installers
 {
@@ -18,6 +19,10 @@ namespace ScanApp.Common.Installers
         {
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+
+            
+
+            services.AddScoped<DataHandler>();
             return services;
         }
     }

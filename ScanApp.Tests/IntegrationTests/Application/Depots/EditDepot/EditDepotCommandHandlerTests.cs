@@ -31,7 +31,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.Depots.EditDepot
             var season = new Season("Default", DateTime.MinValue, DateTime.MaxValue);
             var depot = new DepotDataFixtures.DepotBuilder().WithGate(gate).WithTrailerType(trailer).Build();
             var plan = new DeparturePlan("Default", DateTime.Now, DateTime.Now + TimeSpan.FromHours(2), depot, season, gate, trailer, DayAndTime.From(DayOfWeek.Friday, TimeSpan.FromHours(12)));
-            plan.Recurrence = Recurrence.Daily(2);
+            plan.RecurrencePattern = RecurrencePattern.Daily(2);
             await using (var ctx = NewDbContext)
             {
                 ctx.Add(gate);
