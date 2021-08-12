@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ScanApp.Domain.ValueObjects;
+using ScanApp.Infrastructure.Common.Exceptions;
+using ScanApp.Infrastructure.Persistence.Extensions;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -10,22 +12,32 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         {
             builder.HasKey(x => x.Id);
 
+            builder.Property(x => x.Start)
+                .HasColumnName("StartDateUTC")
+                .IsRequired()
+                .UsesUtc();
+
+            builder.Property(x => x.End)
+                .HasColumnName("EndDateUTC")
+                .IsRequired()
+                .UsesUtc();
+
             builder.HasOne(x => x.ChangedOccurrenceOf)
                 .WithMany()
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-            
-            builder.HasOne(x => x.DeletedOccurrenceOf)
-                .WithMany()
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(x => x.RecurrenceExceptions)
+                .HasConversion(new DateTimeListToUtcStringConverter())
+                .HasColumnName("DeletedPatternOccurrencesUTC")
+                .HasComment("Timestamps stored in this column are in UTC time format.");
 
             builder.OwnsOne(x => x.RecurrencePattern, o =>
             {
-                o.Property(x => x.Type).HasColumnName("RecurrenceType");
+                o.Property(x => x.Type).HasColumnName("RecurrenceType").IsRequired();
                 o.Property(x => x.Interval).HasColumnName("RecurrenceInterval").IsRequired(false);
                 o.Property(x => x.Count).HasColumnName("RecurrenceCount").IsRequired(false);
-                o.Property(x => x.Until).HasColumnName("RecurrenceEndDate").IsRequired(false);
+                o.Property(x => x.Until).HasColumnName("RecurrenceEndDateUTC").UsesUtc().IsRequired(false);
                 o.Property(x => x.ByDay).HasColumnName("RecurrenceByDay").IsRequired(false);
                 o.Property(x => x.ByMonth).HasColumnName("RecurrenceByMonth").IsRequired(false);
                 o.Property(x => x.ByMonthDay).HasColumnName("RecurrenceByMonthDay").IsRequired(false);

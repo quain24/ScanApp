@@ -13,7 +13,7 @@ namespace ScanApp.Domain.ValueObjects
         private DateTime _start;
 
         /// <summary>
-        /// Gets or sets a start date for this <see cref="Occurrence{T}"/>.
+        /// Gets or sets a UTC start date for this <see cref="Occurrence{T}"/>.
         /// </summary>
         /// <value>Start date of this occurrence.</value>
         /// <exception cref="ArgumentNullException">Start date was equal or greater then end date.</exception>
@@ -28,7 +28,7 @@ namespace ScanApp.Domain.ValueObjects
         private DateTime _end;
 
         /// <summary>
-        /// Gets or sets an end date for this <see cref="Occurrence{T}"/>.
+        /// Gets or sets an UTC end date for this <see cref="Occurrence{T}"/>.
         /// </summary>
         /// <value>End date of this occurrence.</value>
         /// <exception cref="ArgumentNullException">End date was equal or lesser then start date.</exception>
@@ -40,7 +40,7 @@ namespace ScanApp.Domain.ValueObjects
                 : throw new ArgumentException("End date must be greater than start date.", nameof(End));
         }
 
-        private RecurrencePattern _recurrence = RecurrencePattern.None;
+        private RecurrencePattern _recurrencePattern = RecurrencePattern.None;
 
         /// <summary>
         /// Gets or sets object describing recurrence of this <see cref="Occurrence{T}"/>.
@@ -49,21 +49,23 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="ArgumentNullException">Recurrence was <see langword="null"/>.</exception>
         public RecurrencePattern RecurrencePattern
         {
-            get => _recurrence;
-            set => _recurrence = value ?? throw new ArgumentNullException(nameof(RecurrencePattern), $"{nameof(RecurrencePattern)} cannot be null, use {nameof(ValueObjects.RecurrencePattern)}.{nameof(ValueObjects.RecurrencePattern.None)} instead.");
+            get => _recurrencePattern;
+            set => _recurrencePattern = value ?? throw new ArgumentNullException(nameof(RecurrencePattern), $"{nameof(RecurrencePattern)} cannot be null, use {nameof(ValueObjects.RecurrencePattern)}.{nameof(ValueObjects.RecurrencePattern.None)} instead.");
         }
 
+        private readonly List<DateTime> _recurrenceExceptions = new(0);
+
         /// <summary>
-        /// Gets or sets the <typeparamref name="T"/> object for which this instance is an "delete" exception of it's recurrence rule.
+        /// Gets the <see cref="DateTime"/> collection of dates on which recurrence of this <see cref="Occurrence{T}"/> will be skipped.
         /// </summary>
-        public T DeletedOccurrenceOf { get; set; }
+        /// <value>Read only collection of <see cref="DateTime"/>.
+        /// If no exceptions to recurrence pattern are made or there is no such pattern, it will return empty collection. </value>
+        public IEnumerable<DateTime> RecurrenceExceptions => _recurrenceExceptions.AsReadOnly();
 
         /// <summary>
         /// Gets or sets the <typeparamref name="T"/> object for which this instance is an "modified" exception of it's recurrence rule.
         /// </summary>
         public T ChangedOccurrenceOf { get; set; }
-
-        public bool IsException => DeletedOccurrenceOf != null || ChangedOccurrenceOf != null;
 
         private protected Occurrence()
         {
@@ -128,7 +130,7 @@ namespace ScanApp.Domain.ValueObjects
         }
 
         /// <summary>
-        /// Gets end date of this recurrence, if set.
+        /// Gets UTC end date of this recurrence, if set.
         /// </summary>
         /// <value>End date for this recurrence, otherwise <see langword="null"/>.</value>
         public DateTime? Until { get; init; }
