@@ -1,93 +1,17 @@
 ﻿using ScanApp.Domain.Common;
-using ScanApp.Domain.Entities;
+using ScanApp.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace ScanApp.Domain.ValueObjects
 {
-    public abstract class Occurrence<T> : VersionedEntity where T : Occurrence<T>
-    {
-        public int Id { get; set; }
-
-        private DateTime _start;
-
-        /// <summary>
-        /// Gets or sets a UTC start date for this <see cref="Occurrence{T}"/>.
-        /// </summary>
-        /// <value>Start date of this occurrence.</value>
-        /// <exception cref="ArgumentNullException">Start date was equal or greater then end date.</exception>
-        public DateTime Start
-        {
-            get => _start;
-            set => _start = value < End
-                ? value
-                : throw new ArgumentException("Start date must be lesser than end date.", nameof(Start));
-        }
-
-        private DateTime _end;
-
-        /// <summary>
-        /// Gets or sets an UTC end date for this <see cref="Occurrence{T}"/>.
-        /// </summary>
-        /// <value>End date of this occurrence.</value>
-        /// <exception cref="ArgumentNullException">End date was equal or lesser then start date.</exception>
-        public DateTime End
-        {
-            get => _end;
-            set => _end = value > Start
-                ? value
-                : throw new ArgumentException("End date must be greater than start date.", nameof(End));
-        }
-
-        private RecurrencePattern _recurrencePattern = RecurrencePattern.None;
-
-        /// <summary>
-        /// Gets or sets object describing recurrence of this <see cref="Occurrence{T}"/>.
-        /// </summary>
-        /// <value>Detailed Recurrence representation if set, otherwise <see cref="RecurrencePattern.None"/>.</value>
-        /// <exception cref="ArgumentNullException">Recurrence was <see langword="null"/>.</exception>
-        public RecurrencePattern RecurrencePattern
-        {
-            get => _recurrencePattern;
-            set => _recurrencePattern = value ?? throw new ArgumentNullException(nameof(RecurrencePattern), $"{nameof(RecurrencePattern)} cannot be null, use {nameof(ValueObjects.RecurrencePattern)}.{nameof(ValueObjects.RecurrencePattern.None)} instead.");
-        }
-
-        private readonly List<DateTime> _recurrenceExceptions = new(0);
-
-        /// <summary>
-        /// Gets the <see cref="DateTime"/> collection of dates on which recurrence of this <see cref="Occurrence{T}"/> will be skipped.
-        /// </summary>
-        /// <value>Read only collection of <see cref="DateTime"/>.
-        /// If no exceptions to recurrence pattern are made or there is no such pattern, it will return empty collection. </value>
-        public IEnumerable<DateTime> RecurrenceExceptions => _recurrenceExceptions.AsReadOnly();
-
-        /// <summary>
-        /// Gets or sets the <typeparamref name="T"/> object for which this instance is an "modified" exception of it's recurrence rule.
-        /// </summary>
-        public T ChangedOccurrenceOf { get; set; }
-
-        private protected Occurrence()
-        {
-        }
-
-        protected Occurrence(DateTime start, DateTime end)
-        {
-            if (start >= end)
-                throw new ArgumentException("Start date must be less than end date.");
-            _start = start;
-            _end = end;
-        }
-
-        protected Occurrence(DateTime start, DateTime end, RecurrencePattern recurrence) : this(start, end)
-        {
-            RecurrencePattern = recurrence;
-        }
-    }
-
+    /// <summary>
+    /// Represents a recurrence pattern, typically used when a calendar meeting needs to reoccur.
+    /// </summary>
     public sealed class RecurrencePattern : ValueObject
     {
-        private static readonly Lazy<RecurrencePattern> NoRecurrence = new(new RecurrencePattern { Type = Type.None });
+        private static readonly Lazy<RecurrencePattern> NoRecurrence = new(new RecurrencePattern { Type = RecurrenceType.None });
 
         /// <summary>
         /// Gets a object that states lack of recurrence.
@@ -98,7 +22,7 @@ namespace ScanApp.Domain.ValueObjects
         /// Gets the type of this recurrence.
         /// </summary>
         /// <value>Recurrence type, by default <see cref="Type.None"/>.</value>
-        public Type Type { get; init; }
+        public RecurrenceType Type { get; init; }
 
         private readonly int? _interval;
 
@@ -148,7 +72,7 @@ namespace ScanApp.Domain.ValueObjects
         /// </item>
         /// <item>
         /// <term>Monthly occurrence</term>
-        /// <description>When happening on set <see cref="Week"/> - one day on which this recurrence should happen.</description>
+        /// <description>When happening on set <see cref="ScanApp.Domain.Enums.Week"/> - one day on which this recurrence should happen.</description>
         /// </item>
         /// <item>
         /// <term>Yearly occurrence</term>
@@ -223,7 +147,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="interval">Number of days between recurrences.</param>
         /// <returns>New daily recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Daily(int interval) => new() { Type = Type.Daily, Interval = interval };
+        public static RecurrencePattern Daily(int interval) => new() { Type = RecurrenceType.Daily, Interval = interval };
 
         /// <summary>
         /// Creates new daily <see cref="RecurrencePattern"/> limited by number of occurrences (<paramref name="count"/>).
@@ -233,7 +157,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New daily recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> was less than 1.</exception>
-        public static RecurrencePattern Daily(int interval, int count) => new() { Type = Type.Daily, Count = count, Interval = interval };
+        public static RecurrencePattern Daily(int interval, int count) => new() { Type = RecurrenceType.Daily, Count = count, Interval = interval };
 
         /// <summary>
         /// Creates new daily <see cref="RecurrencePattern"/> limited by ending date.
@@ -242,7 +166,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="until">Date until which this recurrence is valid.</param>
         /// <returns>New daily recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Daily(int interval, DateTime until) => new() { Type = Type.Daily, Until = until, Interval = interval };
+        public static RecurrencePattern Daily(int interval, DateTime until) => new() { Type = RecurrenceType.Daily, Until = until, Interval = interval };
 
         /// <summary>
         /// Creates new <see cref="RecurrencePattern"/> that will be set to weekly repetition without any limit.
@@ -252,7 +176,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New weekly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="InvalidEnumArgumentException"><paramref name="weekDays"/> is invalid.</exception>
-        public static RecurrencePattern Weekly(int interval, Day weekDays) => new() { Type = Type.Weekly, Interval = interval, ByDay = weekDays };
+        public static RecurrencePattern Weekly(int interval, Day weekDays) => new() { Type = RecurrenceType.Weekly, Interval = interval, ByDay = weekDays };
 
         /// <summary>
         /// Creates new weekly <see cref="RecurrencePattern"/> limited by number of occurrences.
@@ -264,7 +188,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> was less than 1.</exception>
         /// <exception cref="InvalidEnumArgumentException"><paramref name="weekDays"/> is invalid.</exception>
-        public static RecurrencePattern Weekly(int interval, int count, Day weekDays) => new() { Type = Type.Weekly, Interval = interval, ByDay = weekDays, Count = count };
+        public static RecurrencePattern Weekly(int interval, int count, Day weekDays) => new() { Type = RecurrenceType.Weekly, Interval = interval, ByDay = weekDays, Count = count };
 
         /// <summary>
         /// Creates new weekly <see cref="RecurrencePattern"/> limited by ending date.
@@ -275,7 +199,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New weekly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="InvalidEnumArgumentException"><paramref name="weekDays"/> is invalid.</exception>
-        public static RecurrencePattern Weekly(int interval, DateTime until, Day weekDays) => new() { Type = Type.Weekly, Interval = interval, ByDay = weekDays, Until = until };
+        public static RecurrencePattern Weekly(int interval, DateTime until, Day weekDays) => new() { Type = RecurrenceType.Weekly, Interval = interval, ByDay = weekDays, Until = until };
 
         /// <summary>
         /// Creates new <see cref="RecurrencePattern"/> that will be set to monthly repetition without any limit.
@@ -284,7 +208,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="monthDay">Day of the month on which this recurrence should happen.</param>
         /// <returns>New Monthly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Monthly(int interval, int monthDay) => new() { Type = Type.Monthly, Interval = interval, ByMonthDay = monthDay };
+        public static RecurrencePattern Monthly(int interval, int monthDay) => new() { Type = RecurrenceType.Monthly, Interval = interval, ByMonthDay = monthDay };
 
         /// <summary>
         /// Creates new monthly <see cref="RecurrencePattern"/> limited by number of occurrences.
@@ -295,7 +219,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New monthly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> was less than 1.</exception>
-        public static RecurrencePattern Monthly(int interval, int count, int monthDay) => new() { Type = Type.Monthly, Interval = interval, ByMonthDay = monthDay, Count = count };
+        public static RecurrencePattern Monthly(int interval, int count, int monthDay) => new() { Type = RecurrenceType.Monthly, Interval = interval, ByMonthDay = monthDay, Count = count };
 
         /// <summary>
         /// Creates new monthly <see cref="RecurrencePattern"/> limited by ending date.
@@ -305,7 +229,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="monthDay">Day of the month on which this recurrence should happen.</param>
         /// <returns>New monthly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Monthly(int interval, DateTime until, int monthDay) => new() { Type = Type.Monthly, Interval = interval, ByMonthDay = monthDay, Until = until };
+        public static RecurrencePattern Monthly(int interval, DateTime until, int monthDay) => new() { Type = RecurrenceType.Monthly, Interval = interval, ByMonthDay = monthDay, Until = until };
 
         /// <summary>
         /// Creates new <see cref="RecurrencePattern"/> that will be set to monthly repetition without any limit.
@@ -319,8 +243,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Monthly(int interval, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Monthly);
-            return new RecurrencePattern { Type = Type.Monthly, Interval = interval, OnWeek = week, ByDay = day };
+            GuardAgainstMultipleDays(day, RecurrenceType.Monthly);
+            return new RecurrencePattern { Type = RecurrenceType.Monthly, Interval = interval, OnWeek = week, ByDay = day };
         }
 
         /// <summary>
@@ -337,8 +261,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Monthly(int interval, int count, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Monthly);
-            return new RecurrencePattern { Type = Type.Monthly, Interval = interval, OnWeek = week, ByDay = day, Count = count };
+            GuardAgainstMultipleDays(day, RecurrenceType.Monthly);
+            return new RecurrencePattern { Type = RecurrenceType.Monthly, Interval = interval, OnWeek = week, ByDay = day, Count = count };
         }
 
         /// <summary>
@@ -354,8 +278,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Monthly(int interval, DateTime until, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Monthly);
-            return new RecurrencePattern { Type = Type.Monthly, Interval = interval, OnWeek = week, ByDay = day, Until = until };
+            GuardAgainstMultipleDays(day, RecurrenceType.Monthly);
+            return new RecurrencePattern { Type = RecurrenceType.Monthly, Interval = interval, OnWeek = week, ByDay = day, Until = until };
         }
 
         /// <summary>
@@ -366,7 +290,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="monthDay">Day of the month on which this recurrence should happen.</param>
         /// <returns>New yearly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Yearly(int interval, int month, int monthDay) => new() { Type = Type.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay };
+        public static RecurrencePattern Yearly(int interval, int month, int monthDay) => new() { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay };
 
         /// <summary>
         /// Creates new yearly <see cref="RecurrencePattern"/> limited by number of occurrences.
@@ -378,7 +302,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New yearly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> was less than 1.</exception>
-        public static RecurrencePattern Yearly(int interval, int count, int month, int monthDay) => new() { Type = Type.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay, Count = count };
+        public static RecurrencePattern Yearly(int interval, int count, int month, int monthDay) => new() { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay, Count = count };
 
         /// <summary>
         /// Creates new yearly <see cref="RecurrencePattern"/> limited by ending date.
@@ -389,7 +313,7 @@ namespace ScanApp.Domain.ValueObjects
         /// <param name="monthDay">Day of the month on which this recurrence should happen.</param>
         /// <returns>New yearly recurrence.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> was less than 1.</exception>
-        public static RecurrencePattern Yearly(int interval, DateTime until, int month, int monthDay) => new() { Type = Type.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay, Until = until };
+        public static RecurrencePattern Yearly(int interval, DateTime until, int month, int monthDay) => new() { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, ByMonthDay = monthDay, Until = until };
 
         /// <summary>
         /// Creates new <see cref="RecurrencePattern"/> that will be set to yearly repetition without any limit.
@@ -404,8 +328,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Yearly(int interval, int month, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Yearly);
-            return new RecurrencePattern { Type = Type.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day };
+            GuardAgainstMultipleDays(day, RecurrenceType.Yearly);
+            return new RecurrencePattern { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day };
         }
 
         /// <summary>
@@ -422,8 +346,8 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Yearly(int interval, int count, int month, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Yearly);
-            return new RecurrencePattern { Type = Type.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day, Count = count };
+            GuardAgainstMultipleDays(day, RecurrenceType.Yearly);
+            return new RecurrencePattern { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day, Count = count };
         }
 
         /// <summary>
@@ -440,11 +364,11 @@ namespace ScanApp.Domain.ValueObjects
         /// <exception cref="InvalidEnumArgumentException"><paramref name="day"/> is invalid.</exception>
         public static RecurrencePattern Yearly(int interval, DateTime until, int month, Week week, Day day)
         {
-            GuardAgainstMultipleDays(day, Type.Yearly);
-            return new RecurrencePattern { Type = Type.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day, Until = until };
+            GuardAgainstMultipleDays(day, RecurrenceType.Yearly);
+            return new RecurrencePattern { Type = RecurrenceType.Yearly, Interval = interval, ByMonth = month, OnWeek = week, ByDay = day, Until = until };
         }
 
-        private static void GuardAgainstMultipleDays(Day day, Type type)
+        private static void GuardAgainstMultipleDays(Day day, RecurrenceType type)
         {
             if ((day & (day - 1)) != 0)
                 throw new ArgumentOutOfRangeException(nameof(day), day, $"When setting {type} recurrence, {nameof(day)} must be set to a single day.");
@@ -461,35 +385,36 @@ namespace ScanApp.Domain.ValueObjects
             yield return ByMonth;
             yield return OnWeek;
         }
-    }
 
-    public enum Type
-    {
-        None,
-        Daily,
-        Weekly,
-        Monthly,
-        Yearly
-    }
+        /// <summary>
+        /// Represents type of recurrence.
+        /// </summary>
+        public enum RecurrenceType
+        {
+            /// <summary>
+            /// No recurrence.
+            /// </summary>
+            None,
 
-    public enum Week
-    {
-        First,
-        Second,
-        Third,
-        Fourth,
-        Last
-    }
+            /// <summary>
+            /// Reoccur daily.
+            /// </summary>
+            Daily,
 
-    [Flags]
-    public enum Day
-    {
-        Monday = 1 << 0,
-        Tuesday = 1 << 1,
-        Wednesday = 1 << 2,
-        Thursday = 1 << 3,
-        Friday = 1 << 4,
-        Saturday = 1 << 5,
-        Sunday = 1 << 6
+            /// <summary>
+            /// Reoccur weekly.
+            /// </summary>
+            Weekly,
+
+            /// <summary>
+            /// Reoccur monthly.
+            /// </summary>
+            Monthly,
+
+            /// <summary>
+            /// Reoccur yearly.
+            /// </summary>
+            Yearly
+        }
     }
 }
