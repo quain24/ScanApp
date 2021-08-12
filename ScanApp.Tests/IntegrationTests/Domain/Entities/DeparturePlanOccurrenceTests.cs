@@ -9,7 +9,6 @@ using ScanApp.Domain.ValueObjects;
 using ScanApp.Tests.IntegrationTests.Application.Depots;
 using Xunit;
 using Xunit.Abstractions;
-using Type = ScanApp.Domain.ValueObjects.Type;
 
 namespace ScanApp.Tests.IntegrationTests.Domain.Entities
 {

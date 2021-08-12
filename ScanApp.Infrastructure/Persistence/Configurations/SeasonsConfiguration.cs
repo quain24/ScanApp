@@ -5,7 +5,7 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class SeasonsConfiguration : VersionedEntityConfiguration<Season>
+    public class SeasonConfiguration : VersionedEntityConfiguration<Season>
     {
         public override void Configure(EntityTypeBuilder<Season> builder)
         {

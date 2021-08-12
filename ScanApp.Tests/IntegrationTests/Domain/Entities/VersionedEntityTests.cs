@@ -22,10 +22,17 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
             var implementors = assemblies
                 .SelectMany(a => a.GetTypes())
                 .Where(t => t.IsAssignableTo(typeof(VersionedEntity)) && t != typeof(VersionedEntity))
+                .Select(x => x.Name)
                 .ToList();
             var configurations = typeof(VersionedEntityConfiguration<>)
                 .GetDerivingTypes(assemblies)
-                .SelectMany(t => t.BaseType?.GenericTypeArguments)
+                .Select(x =>
+                {
+                    var index = x.Name.LastIndexOf("configuration", StringComparison.OrdinalIgnoreCase);
+                    return index >= 0
+                        ? x.Name.Remove(index, "configuration".Length)
+                        : x.Name;
+                })
                 .ToList();
 
             implementors.Should().BeEquivalentTo(configurations);
