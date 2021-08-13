@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ScanApp.Domain.ValueObjects;
+using System;
 using System.Collections.Generic;
-using ScanApp.Domain.ValueObjects;
 
 namespace ScanApp.Domain.Entities
 {
@@ -61,26 +61,75 @@ namespace ScanApp.Domain.Entities
         public IEnumerable<DateTime> RecurrenceExceptions => _recurrenceExceptions.AsReadOnly();
 
         /// <summary>
-        /// Gets or sets the <typeparamref name="T"/> object for which this instance is an "modified" exception of it's recurrence rule.
+        /// Gets the <typeparamref name="T"/> object for which this instance is an "modified" exception of it's recurrence rule.
         /// </summary>
         /// <value>If this instance is a recurrence rule exception, this property will return <typeparamref name="T"/> object to which it is exception to, otherwise <see langword="null"/>.</value>
         public T RecurrenceExceptionOf { get; private set; }
+
+        public DateTime? RecurrenceExceptionDate { get; private set; }
 
         private protected Occurrence()
         {
         }
 
-        protected Occurrence(DateTime start, DateTime end)
+        protected Occurrence(DateTime startUtc, DateTime endUtc)
         {
-            if (start >= end)
+            if (startUtc >= endUtc)
                 throw new ArgumentException("Start date must be less than end date.");
-            _start = start;
-            _end = end;
+            _start = startUtc;
+            _end = endUtc;
         }
 
-        protected Occurrence(DateTime start, DateTime end, RecurrencePattern recurrence) : this(start, end)
+        protected Occurrence(DateTime startUtc, DateTime endUtc, RecurrencePattern recurrence) : this(startUtc, endUtc)
         {
             RecurrencePattern = recurrence;
+        }
+
+        public virtual void AddRecurrenceException(Occurrence<T> exceptionOccurrence, DateTime dateUtc)
+            => AddRecurrenceException(exceptionOccurrence as T, dateUtc);
+
+        public virtual void AddRecurrenceException(T exceptionOccurrence, DateTime dateUtc)
+        {
+            _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
+            if (exceptionOccurrence.Id == Id)
+                throw new ArgumentException($"Occurrence cannot be an exception to itself (identity based on {nameof(Id)}).");
+
+            exceptionOccurrence.MarkAsExceptionTo(this, dateUtc);
+            AddRecurrenceException(dateUtc);
+        }
+
+        public virtual bool AddRecurrenceException(DateTime dateUtc)
+        {
+            if (_recurrenceExceptions.Contains(dateUtc))
+                return false;
+            _recurrenceExceptions.Add(dateUtc);
+            _recurrenceExceptions.Sort();
+            return true;
+        }
+
+        public virtual bool RemoveRecurrenceException(T exceptionOccurrence)
+        {
+            _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
+            if (exceptionOccurrence.RecurrenceExceptionDate.HasValue is false)
+                throw new ArgumentException("Given occurrence is not an exception to recurrence pattern - it has no exception date set.", nameof(exceptionOccurrence));
+
+            return RemoveRecurrenceException(exceptionOccurrence.RecurrenceExceptionDate.Value);
+        }
+
+        public virtual bool RemoveRecurrenceException(DateTime dateUtc) => _recurrenceExceptions.Remove(dateUtc);
+
+        protected virtual void MarkAsExceptionTo(Occurrence<T> baseOccurrence, DateTime dateOfReplacedOccurrence) =>
+            MarkAsExceptionTo(baseOccurrence as T, dateOfReplacedOccurrence);
+
+        protected virtual void MarkAsExceptionTo(T baseOccurrence, DateTime dateOfReplacedOccurrence)
+        {
+            RecurrenceExceptionDate = dateOfReplacedOccurrence;
+            RecurrenceExceptionOf = baseOccurrence;
+        }
+
+        public virtual void RemoveOccurrenceDateException(DateTime dateUtc)
+        {
+            _recurrenceExceptions.Remove(dateUtc);
         }
     }
 }
