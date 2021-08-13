@@ -16,7 +16,9 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
             var assemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
                 // Exclude XUnit temporary assembly - causes exception.
-                .Where(a => a.FullName?.Contains("DynamicProxyGenAssembly2", StringComparison.InvariantCultureIgnoreCase) is false)
+                // Exclude test assembly.
+                .Where(a => a.FullName?.Contains("DynamicProxyGenAssembly2", StringComparison.OrdinalIgnoreCase) is false &&
+                            a.FullName?.Contains("ScanApp.tests", StringComparison.OrdinalIgnoreCase) is false)
                 .ToArray();
 
             var implementors = assemblies

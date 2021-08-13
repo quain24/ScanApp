@@ -25,8 +25,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Navigation(x => x.RecurrenceExceptionOf)
-                .AutoInclude();
 
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())
@@ -43,7 +41,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 o.Property(x => x.ByMonth).HasColumnName("RecurrenceByMonth").IsRequired(false);
                 o.Property(x => x.ByMonthDay).HasColumnName("RecurrenceByMonthDay").IsRequired(false);
                 o.Property(x => x.OnWeek).HasColumnName("RecurrenceOnWeek").IsRequired(false);
-            }).Navigation(x => x.RecurrencePattern);
+            }).Navigation(x => x.RecurrencePattern).IsRequired();
 
             base.Configure(builder);
         }

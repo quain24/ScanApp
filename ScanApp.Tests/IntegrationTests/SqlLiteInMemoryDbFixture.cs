@@ -11,6 +11,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Linq;
+using ScanApp.Tests.IntegrationTests.Domain.Entities;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using Version = ScanApp.Domain.ValueObjects.Version;
@@ -63,6 +64,8 @@ namespace ScanApp.Tests.IntegrationTests
                 return Provider.GetService<ApplicationDbContext>();
             }
         }
+
+        protected AppDbContextStub NewStubDbContext => NewDbContext as AppDbContextStub;
 
         private const string InMemoryConnectionString = "DataSource=:memory:";
         private SqliteConnection _connection;
@@ -124,9 +127,13 @@ namespace ScanApp.Tests.IntegrationTests
         {
         }
 
+        public virtual DbSet<OccurrenceFixtures.Occurrence> Occurrences { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ApplyConfigurationsFromAssembly(typeof(SqlLiteInMemoryDbFixture).Assembly);
+
             if (Database.IsSqlite())
             {
                 var timestampProperties = builder.Model

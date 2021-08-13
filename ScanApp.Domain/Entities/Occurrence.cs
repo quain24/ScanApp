@@ -68,7 +68,7 @@ namespace ScanApp.Domain.Entities
 
         public DateTime? RecurrenceExceptionDate { get; private set; }
 
-        private protected Occurrence()
+        protected Occurrence()
         {
         }
 
@@ -125,6 +125,12 @@ namespace ScanApp.Domain.Entities
         {
             RecurrenceExceptionDate = dateOfReplacedOccurrence;
             RecurrenceExceptionOf = baseOccurrence;
+        }
+
+        protected virtual void MarkAsBaseOccurrence()
+        {
+            RecurrenceExceptionDate = null;
+            RecurrenceExceptionOf = null;
         }
 
         public virtual void RemoveOccurrenceDateException(DateTime dateUtc)
