@@ -1,7 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ScanApp.Domain.Entities;
 using ScanApp.Infrastructure.Persistence.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -25,11 +29,16 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.Navigation(x => x.RecurrenceExceptionOf);
 
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())
                 .HasColumnName("ExceptionsToPatternOccurrenceUTC")
-                .HasComment("Timestamps stored in this column are in UTC time format.");
+                .HasComment("Timestamps stored in this column are in UTC time format.")
+                .Metadata.SetValueComparer(new ValueComparer<IEnumerable<DateTime>>(
+                    (c1, c2) => c1.SequenceEqual(c2),
+                    c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c.ToList().AsEnumerable()));
 
             builder.OwnsOne(x => x.RecurrencePattern, o =>
             {
