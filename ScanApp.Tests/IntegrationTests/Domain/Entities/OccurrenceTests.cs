@@ -149,5 +149,36 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
                 cctx.Occurrences.Should().BeEmpty();
             }
         }
+
+        [Fact]
+        public void Will_hold_multiple_exception_dates()
+        {
+            var start = new DateTime(2021, 01, 21, 11, 45, 00, DateTimeKind.Utc);
+            var end = new DateTime(2021, 01, 21, 12, 45, 00, DateTimeKind.Utc);
+            var pattern = RecurrencePattern.Daily(1, 24);
+            var subject = new OccurrenceFixtures.Occurrence(start, end, pattern);
+            var ex1 = new DateTime(2021, 01, 25, 12, 45, 00, DateTimeKind.Utc);
+            var ex2 = new DateTime(2021, 01, 28, 12, 45, 00, DateTimeKind.Utc);
+            var ex3 = new DateTime(2021, 01, 30, 12, 45, 00, DateTimeKind.Utc);
+
+            subject.AddRecurrenceException(ex1);
+            subject.AddRecurrenceException(ex2);
+            subject.AddRecurrenceException(ex3);
+
+            using (var ctx = NewStubDbContext)
+            {
+                ctx.Add(subject);
+                ctx.SaveChanges();
+            }
+
+            using var scope = new AssertionScope();
+            using (var ctx = NewStubDbContext)
+            {
+                var result = ctx.Occurrences.First();
+
+                result.Should().BeEquivalentTo(subject);
+            }
+        }
+
     }
 }
