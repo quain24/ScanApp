@@ -11,6 +11,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Linq;
+using ScanApp.Tests.IntegrationTests.Domain.Entities;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using Version = ScanApp.Domain.ValueObjects.Version;
@@ -64,6 +65,8 @@ namespace ScanApp.Tests.IntegrationTests
             }
         }
 
+        protected AppDbContextStub NewStubDbContext => NewDbContext as AppDbContextStub;
+
         private const string InMemoryConnectionString = "DataSource=:memory:";
         private SqliteConnection _connection;
         private ApplicationDbContext _dbContext;
@@ -108,6 +111,10 @@ namespace ScanApp.Tests.IntegrationTests
                 .Enrich.FromLogContext()
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                // Exclude EF database creation messages.
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("create table", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE INDEX", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE UNIQUE INDEX", StringComparison.OrdinalIgnoreCase))
                 .CreateLogger()));
         }
 
@@ -124,9 +131,13 @@ namespace ScanApp.Tests.IntegrationTests
         {
         }
 
+        public virtual DbSet<OccurrenceFixtures.Occurrence> Occurrences { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ApplyConfigurationsFromAssembly(typeof(SqlLiteInMemoryDbFixture).Assembly);
+
             if (Database.IsSqlite())
             {
                 var timestampProperties = builder.Model

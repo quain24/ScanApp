@@ -30,8 +30,8 @@ namespace ScanApp.Tests.IntegrationTests.Application.Depots.EditDepot
             var trailer = new TrailerType("basic trailer") { LoadingTime = TimeSpan.FromHours(10) };
             var season = new Season("Default", DateTime.MinValue, DateTime.MaxValue);
             var depot = new DepotDataFixtures.DepotBuilder().WithGate(gate).WithTrailerType(trailer).Build();
-            var plan = new DeparturePlan("Default", depot, season, gate, trailer, DayAndTime.Now, TimeSpan.FromHours(12), DayAndTime.From(DayOfWeek.Friday, TimeSpan.FromHours(12)));
-
+            var plan = new DeparturePlan("Default", DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromHours(2), depot, season, gate, trailer, DayAndTime.From(DayOfWeek.Friday, TimeSpan.FromHours(12)));
+            plan.RecurrencePattern = RecurrencePattern.Daily(2);
             await using (var ctx = NewDbContext)
             {
                 ctx.Add(gate);
