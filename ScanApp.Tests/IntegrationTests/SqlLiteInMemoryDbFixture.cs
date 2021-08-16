@@ -111,6 +111,10 @@ namespace ScanApp.Tests.IntegrationTests
                 .Enrich.FromLogContext()
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                // Exclude EF database creation messages.
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("create table", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE INDEX", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE UNIQUE INDEX", StringComparison.OrdinalIgnoreCase))
                 .CreateLogger()));
         }
 
