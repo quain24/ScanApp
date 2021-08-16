@@ -96,7 +96,8 @@ namespace ScanApp.Domain.Entities
         }
 
         /// <summary>
-        /// Threats this instance as a base <see cref="Occurrence{T}"/> and assigns an Exception from recurrence rule to it.
+        /// Threats this instance as a base <see cref="Occurrence{T}"/> and assigns an Exception from recurrence rule to it. <br/>
+        /// Given <paramref name="exceptionOccurrence"/> will be set as exception automatically.
         /// </summary>
         /// <param name="exceptionOccurrence">A occurrence that will be used to replace an occurrence calculated from recurrence pattern.</param>
         /// <param name="dateUtc">Date of the replaced occurrence (UTC), including precise time of start of replaced occurrence.</param>

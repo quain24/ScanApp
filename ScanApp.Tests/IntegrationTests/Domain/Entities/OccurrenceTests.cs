@@ -94,7 +94,6 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
                 ctx.Add(subject);
                 ctx.SaveChanges();
                 ctx.Add(exception);
-                exception.MarkAsExceptionTo(subject, replacementDate);
                 subject.AddRecurrenceException(exception, replacementDate);
                 ctx.SaveChanges();
             }
@@ -136,7 +135,6 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
                 ctx.Add(subject);
                 ctx.SaveChanges();
                 ctx.Add(exception);
-                exception.MarkAsExceptionTo(subject, replacementDate);
                 subject.AddRecurrenceException(exception, replacementDate);
                 ctx.SaveChanges();
             }
