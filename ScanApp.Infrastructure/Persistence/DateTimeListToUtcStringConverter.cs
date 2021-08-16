@@ -27,8 +27,10 @@ namespace ScanApp.Infrastructure.Persistence
                     $"All dates being stored must be in UTC format ({nameof(DateTimeKind)} should be set to {nameof(DateTimeKind.Utc)})")));
 
         private static IEnumerable<DateTime> FromData(string data) =>
-            data.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => DateTime.SpecifyKind(DateTime.Parse(x), DateTimeKind.Utc))
-                .ToList();
+            string.IsNullOrWhiteSpace(data)
+                ? new List<DateTime>(0) // It must be a list type - underlying value in entity operates on this type.
+                : data.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => DateTime.SpecifyKind(DateTime.Parse(x), DateTimeKind.Utc))
+                    .ToList();
     }
 }
