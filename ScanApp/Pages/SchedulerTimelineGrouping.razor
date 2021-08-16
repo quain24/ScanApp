@@ -4,6 +4,7 @@
 @using SharedExtensions
 @using Syncfusion.Blazor.Schedule.Internal
 @using System.Globalization
+@using ScanApp.Domain.Enums
 @using ScanApp.Domain.ValueObjects
 
 <SfSchedule @ref="sfs" ID="aaa1" TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true">
@@ -153,7 +154,12 @@
     {
         public override async Task<object> ReadAsync(DataManagerRequest dataManagerRequest, string key = null)
         {
-            var t = RecurrencePattern.Monthly(1, Week.Last, Day.Wednesday | Day.Monday);
+            var g = new DateTimeOffset(DateTime.Now);
+            var rr = g.DateTime;
+            var ttt = g.LocalDateTime;
+            var tttt = g.UtcDateTime;
+            var gg = new DateTimeOffset(new DateTime(2021, 07, 24, 11, 24, 00));
+            var t = RecurrencePattern.Monthly(1, Week.Last, Day.Wednesday);
             return DataSource;
             return base.ReadAsync(dataManagerRequest, key);
         }

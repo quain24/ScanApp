@@ -92,7 +92,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
         }
 
         [Fact]
-        public void SendScoped_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
+        public async Task SendScoped_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();
@@ -105,13 +105,13 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
 
             Func<Task> act = async () => await subject.SendScoped(request);
 
-            act.Should().Throw<ArgumentNullException>();
+            await act.Should().ThrowAsync<ArgumentNullException>();
             scopeFactoryMock.Verify(m => m.CreateScope(), Times.Once);
             mediatorMock.Verify(m => m.Send(It.IsAny<IRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public void SendScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
+        public async void SendScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();
@@ -124,7 +124,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
 
             Func<Task> act = async () => await subject.SendScoped(request);
 
-            act.Should().Throw<ArgumentNullException>();
+            await act.Should().ThrowAsync<ArgumentNullException>();
             scopeFactoryMock.Verify(m => m.CreateScope(), Times.Once);
             mediatorMock.Verify(m => m.Send(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -212,7 +212,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
         }
 
         [Fact]
-        public void PublishScoped_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
+        public async Task PublishScoped_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();
@@ -225,13 +225,13 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
 
             Func<Task> act = async () => await subject.PublishScoped(request);
 
-            act.Should().Throw<ArgumentNullException>();
+            await act.Should().ThrowAsync<ArgumentNullException>();
             scopeFactoryMock.Verify(m => m.CreateScope(), Times.Once);
             mediatorMock.Verify(m => m.Publish(It.IsAny<IRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public void PublishScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
+        public async Task PublishScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();
@@ -244,7 +244,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
 
             Func<Task> act = async () => await subject.PublishScoped(request);
 
-            act.Should().Throw<ArgumentNullException>();
+            await act.Should().ThrowAsync<ArgumentNullException>();
             scopeFactoryMock.Verify(m => m.CreateScope(), Times.Once);
             mediatorMock.Verify(m => m.Publish(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never);
         }

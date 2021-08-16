@@ -29,7 +29,7 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands
 
             validators.Should().HaveCount(1);
             validators.Should().ContainKey(nameof(GateModel.Version))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeOfType<NotNullValidator<GateModel, Version>>();
         }
     }

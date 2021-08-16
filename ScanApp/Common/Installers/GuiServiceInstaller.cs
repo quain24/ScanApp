@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Services;
 using static ScanApp.Pages.SchedulerTimelineGrouping;
@@ -18,8 +19,6 @@ namespace ScanApp.Common.Installers
         public static IServiceCollection AddGuiServices(this IServiceCollection services)
         {
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-
-
             
 
             services.AddScoped<DataHandler>();
