@@ -29,7 +29,6 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Navigation(x => x.RecurrenceExceptionOf);
 
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())

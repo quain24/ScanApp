@@ -66,7 +66,17 @@ namespace ScanApp.Domain.Entities
         /// <value>If this instance is a recurrence rule exception, this property will return <typeparamref name="T"/> object to which it is exception to, otherwise <see langword="null"/>.</value>
         public T RecurrenceExceptionOf { get; private set; }
 
+        /// <summary>
+        /// Gets date of occurrence that this instance of <see cref="Occurrence{T}"/> is replacing, if it is an exception to recurrence rule.
+        /// </summary>
+        /// <value>Date of replaced occurrence if this instance is an exception, otherwise <see langword="null"/>.</value>
         public DateTime? RecurrenceExceptionDate { get; private set; }
+
+        /// <summary>
+        /// Gets value indicating if this instance of <see cref="Occurrence{T}"/> is an exception to other instance's recurrence rule.
+        /// </summary>
+        /// <value><see langowrd="true"/> if this instance is an exception to other instance recurrence rule, otherwise <see langword="false"/>.</value>
+        public bool IsException => RecurrenceExceptionOf != default && RecurrenceExceptionDate.HasValue;
 
         protected Occurrence()
         {
@@ -85,9 +95,15 @@ namespace ScanApp.Domain.Entities
             RecurrencePattern = recurrence;
         }
 
+        /// <summary>
+        /// Threats this instance as a base <see cref="Occurrence{T}"/> and assigns an Exception from recurrence rule to it.
+        /// </summary>
+        /// <param name="exceptionOccurrence">A occurrence that will be used to replace an occurrence calculated from recurrence pattern.</param>
+        /// <param name="dateUtc">Date of the replaced occurrence (UTC), including precise time of start of replaced occurrence.</param>
         public virtual void AddRecurrenceException(Occurrence<T> exceptionOccurrence, DateTime dateUtc)
             => AddRecurrenceException(exceptionOccurrence as T, dateUtc);
 
+        /// <inheritdoc cref="AddRecurrenceException(ScanApp.Domain.Entities.Occurrence{T},System.DateTime)"/>
         public virtual void AddRecurrenceException(T exceptionOccurrence, DateTime dateUtc)
         {
             _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
@@ -98,6 +114,11 @@ namespace ScanApp.Domain.Entities
             AddRecurrenceException(dateUtc);
         }
 
+        /// <summary>
+        /// Adds an exception to recurrence rule - on given <paramref name="dateUtc"/> recurrence will be skipped.
+        /// </summary>
+        /// <param name="dateUtc">Date of the skipped occurrence (UTC), including precise time of start of replaced occurrence.</param>
+        /// <returns><see langword="True"/> if date was successfully added to <see cref="RecurrenceExceptions"/>, <see langword="false"/> if such date was already present.</returns>
         public virtual bool AddRecurrenceException(DateTime dateUtc)
         {
             if (_recurrenceExceptions.Contains(dateUtc))
@@ -107,6 +128,11 @@ namespace ScanApp.Domain.Entities
             return true;
         }
 
+        /// <summary>
+        /// Removes given <paramref name="exceptionOccurrence"/> (it's date) from this <see cref="Occurrence{T}"/> instance.
+        /// </summary>
+        /// <returns><see langword="True"/> if date was successfully removed to <see cref="RecurrenceExceptions"/>, <see langword="false"/> if such date was not present.</returns>
+        /// <exception cref="ArgumentException">Given <paramref name="exceptionOccurrence"/> was not really an exception to the recurrence rule - it was missing a date of replacement.</exception>
         public virtual bool RemoveRecurrenceException(T exceptionOccurrence)
         {
             _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
@@ -116,26 +142,41 @@ namespace ScanApp.Domain.Entities
             return RemoveRecurrenceException(exceptionOccurrence.RecurrenceExceptionDate.Value);
         }
 
-        public virtual bool RemoveRecurrenceException(DateTime dateUtc) => _recurrenceExceptions.Remove(dateUtc);
-
-        protected virtual void MarkAsExceptionTo(Occurrence<T> baseOccurrence, DateTime dateOfReplacedOccurrence) =>
-            MarkAsExceptionTo(baseOccurrence as T, dateOfReplacedOccurrence);
-
-        protected virtual void MarkAsExceptionTo(T baseOccurrence, DateTime dateOfReplacedOccurrence)
+        /// <summary>
+        /// Removes an exception to recurrence rule.
+        /// </summary>
+        /// <param name="dateUtc">Date of the skipped occurrence (UTC), including precise time of start of replaced occurrence.</param>
+        /// <returns><see langword="True"/> if date was successfully removed to <see cref="RecurrenceExceptions"/>, <see langword="false"/> if such date was not present.</returns>
+        public virtual bool RemoveRecurrenceException(DateTime dateUtc)
         {
-            RecurrenceExceptionDate = dateOfReplacedOccurrence;
-            RecurrenceExceptionOf = baseOccurrence;
+            if (_recurrenceExceptions.Remove(dateUtc) is false)
+                return false;
+            _recurrenceExceptions.Sort();
+            return true;
         }
 
-        protected virtual void MarkAsBaseOccurrence()
+        /// <summary>
+        /// This instance will be set as an exception to recurrence rule of <paramref name="baseOccurrence"/>.
+        /// </summary>
+        /// <param name="baseOccurrence">Occurrence to which this instance is an exception of recurrence rule.</param>
+        /// <param name="dateOfReplacedOccurrence">Precise UTC date of replaced occurrence (including start time of replaced occurrence).</param>
+        public virtual void MarkAsExceptionTo(Occurrence<T> baseOccurrence, DateTime dateOfReplacedOccurrence) =>
+            MarkAsExceptionTo(baseOccurrence as T, dateOfReplacedOccurrence);
+
+        /// <inheritdoc cref="MarkAsExceptionTo(ScanApp.Domain.Entities.Occurrence{T},System.DateTime)"/>
+        public virtual void MarkAsExceptionTo(T baseOccurrence, DateTime dateOfReplacedOccurrence)
+        {
+            RecurrenceExceptionDate = dateOfReplacedOccurrence;
+            RecurrenceExceptionOf = baseOccurrence ?? throw new ArgumentNullException(nameof(baseOccurrence));
+        }
+
+        /// <summary>
+        /// Transforms this <see cref="Occurrence{T}"/> to a base occurrence.
+        /// </summary>
+        public virtual void MarkAsBaseOccurrence()
         {
             RecurrenceExceptionDate = null;
             RecurrenceExceptionOf = null;
-        }
-
-        public virtual void RemoveOccurrenceDateException(DateTime dateUtc)
-        {
-            _recurrenceExceptions.Remove(dateUtc);
         }
     }
 }
