@@ -8,7 +8,7 @@ namespace ScanApp.Common.Extensions
         /// Checks if given <paramref name="values"/> are defined in a corresponding <c>[flag] enum</c>.<br/>
         /// </summary>
         /// <param name="values">One or more values of <c>[flag] enumeration</c></param>
-        /// <returns><see langword="True"/> if given <paramref name="values"/> represents a valid flag combination, otherwise <see langword="false"/>.</returns>
+        /// <returns><see langword="True"/> if given <paramref name="values"/> represent a valid flag combination, otherwise <see langword="false"/>.</returns>
         public static bool IsDefinedFlag(this Enum values)
         {
             var firstDigit = values.ToString()[0];

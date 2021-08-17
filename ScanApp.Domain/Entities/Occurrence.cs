@@ -20,7 +20,7 @@ namespace ScanApp.Domain.Entities
             get => _start;
             set => _start = value < End
                 ? value
-                : throw new ArgumentException("Start date must be lesser than end date.", nameof(Start));
+                : throw new ArgumentOutOfRangeException(nameof(Start), "Start date must be lesser than end date.");
         }
 
         private DateTime _end;
@@ -35,7 +35,7 @@ namespace ScanApp.Domain.Entities
             get => _end;
             set => _end = value > Start
                 ? value
-                : throw new ArgumentException("End date must be greater than start date.", nameof(End));
+                : throw new ArgumentOutOfRangeException(nameof(End), "End date must be greater than start date.");
         }
 
         private RecurrencePattern _recurrencePattern = RecurrencePattern.None;
@@ -85,7 +85,7 @@ namespace ScanApp.Domain.Entities
         protected Occurrence(DateTime startUtc, DateTime endUtc)
         {
             if (startUtc >= endUtc)
-                throw new ArgumentException("Start date must be less than end date.");
+                throw new ArgumentOutOfRangeException(nameof(startUtc), "Start date must be less than end date.");
             _start = startUtc;
             _end = endUtc;
         }

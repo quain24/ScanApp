@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.EntityFrameworkCore;
-using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
 using System.Linq;
@@ -13,15 +12,6 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
     public class OccurrenceTests : SqlLiteInMemoryDbFixture
     {
         public OccurrenceTests(ITestOutputHelper output) => Output = output;
-
-        [Fact]
-        public void Will_create_instance()
-        {
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue);
-
-            subject.Should().BeOfType<OccurrenceFixtures.Occurrence>()
-                .And.BeAssignableTo<Occurrence<OccurrenceFixtures.Occurrence>>();
-        }
 
         [Fact]
         public void Will_save_normal_occurrence()
