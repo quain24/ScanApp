@@ -459,5 +459,41 @@ namespace ScanApp.Tests.UnitTests.Domain.ValueObjects
 
             act.Should().Throw<ArgumentException>();
         }
+
+        [Fact]
+        public void Two_recurrence_objects_of_none_are_value__and_reference_equal()
+        {
+            var left = RecurrencePattern.None;
+            var right = RecurrencePattern.None;
+
+            left.Should().BeSameAs(right);
+        }
+
+        [Fact]
+        public void Two_recurrence_objects_of_actual_value_are_value_equal()
+        {
+            var left = RecurrencePattern.Daily(2);
+            var right = RecurrencePattern.Daily(2);
+
+            left.Should().BeEquivalentTo(right);
+        }
+
+        [Fact]
+        public void Two_recurrence_objects_of_actual_value_are_equal_using_equals()
+        {
+            var left = RecurrencePattern.Daily(2);
+            var right = RecurrencePattern.Daily(2);
+
+            left.Equals(right).Should().BeTrue();
+        }
+
+        [Fact]
+        public void Two_recurrence_objects_of_actual_value_are_equal_using_equality_operator()
+        {
+            var left = RecurrencePattern.Daily(2);
+            var right = RecurrencePattern.Daily(2);
+
+            (left == right).Should().BeTrue();
+        }
     }
 }
