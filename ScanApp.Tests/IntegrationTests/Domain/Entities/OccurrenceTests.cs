@@ -200,7 +200,7 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
         }
 
         [Fact]
-        public void Will_add_occurrence_and_exception_to_recurrence_rule_in_sigle_operation()
+        public void Will_add_occurrence_and_exception_to_recurrence_rule_in_single_operation()
         {
             var start = new DateTime(2021, 01, 21, 11, 45, 00, DateTimeKind.Utc);
             var end = new DateTime(2021, 01, 21, 12, 45, 00, DateTimeKind.Utc);

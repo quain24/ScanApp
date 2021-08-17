@@ -3,6 +3,7 @@ using ScanApp.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using ScanApp.Common.Extensions;
 
 namespace ScanApp.Domain.ValueObjects
 {
@@ -87,7 +88,7 @@ namespace ScanApp.Domain.ValueObjects
         public Day? ByDay
         {
             get => _byDay;
-            init => _byDay = value is null || Enum.IsDefined(typeof(Day), value)
+            init => _byDay = value is null || Enum.IsDefined(typeof(Day), value) || value.IsDefinedFlag()
                 ? value
                 : throw new InvalidEnumArgumentException(nameof(ByDay), (int)value, typeof(Day));
         }
