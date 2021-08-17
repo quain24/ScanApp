@@ -11,7 +11,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         public override void Configure(EntityTypeBuilder<DeparturePlan> builder)
         {
             builder.ToTable("DeparturePlans", "hub");
-            
+
             builder.Property(x => x.Name)
                 .HasMaxLength(120);
 

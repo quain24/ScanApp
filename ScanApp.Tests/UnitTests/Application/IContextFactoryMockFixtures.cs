@@ -42,8 +42,9 @@ namespace ScanApp.Tests.UnitTests.Application
             ContextMock.Setup(x => x.DisposeAsync()).Callback(() => _disposeCount -= 1);
             ContextMock.Setup(x => x.Dispose()).Callback(() => _disposeCount -= 1);
         }
-    private int _disposeCount;
-    public bool AllContextsDisposed => _disposeCount <= 0;
+
+        private int _disposeCount;
+        public bool AllContextsDisposed => _disposeCount <= 0;
     }
 
     internal class DefaultDbContextValueProvider : DefaultValueProvider

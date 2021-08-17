@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using ScanApp.Domain.Entities;
-using ScanApp.Domain.ValueObjects;
-using ScanApp.Tests.IntegrationTests.Application.Depots;
+﻿using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using FluentAssertions;
+﻿using FluentAssertions;
 using ScanApp.Components.ScanAppTable.FilterDialog;
 using ScanApp.Components.ScanAppTable.Options;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.FilterDialog
@@ -17,10 +17,10 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Filter
             {
                 var obj = new FiltertingTestsFixture
                 {
-                    Integer = i, 
+                    Integer = i,
                     Date = new DateTime(2021, 1, 1).AddDays(i),
                     String = "test" + i,
-                    Decimal = i + (i/100)
+                    Decimal = i + (i / 100)
                 };
 
                 objectList.Add(obj);
@@ -31,7 +31,6 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Filter
             columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.Date, "Date"));
             columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.Integer, "Integer"));
             columnConfigs.Add(new ColumnConfiguration<FiltertingTestsFixture>(x => x.String, "String"));
-
 
             var from = new int?[columnConfigs.Count];
             var to = new int?[columnConfigs.Count];
@@ -54,7 +53,6 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Filter
 
             return new FilteringOperationsFactory<FiltertingTestsFixture>(columnConfigs, from, to, contains, fromDate, toDate, fromDecimal, toDecimal);
         }
-
 
         [Fact]
         public void Will_create_instance()

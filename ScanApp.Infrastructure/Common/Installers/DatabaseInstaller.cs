@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EntityFramework.Exceptions.SqlServer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
 using ScanApp.Infrastructure.Services;
 using System;
-using EntityFramework.Exceptions.SqlServer;
 
 namespace ScanApp.Infrastructure.Common.Installers
 {

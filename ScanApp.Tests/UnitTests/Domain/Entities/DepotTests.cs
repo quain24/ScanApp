@@ -4,7 +4,6 @@ using ScanApp.Domain.ValueObjects;
 using System;
 using Xunit;
 using Xunit.Abstractions;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {

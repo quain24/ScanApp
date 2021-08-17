@@ -179,6 +179,5 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
                 result.Should().BeEquivalentTo(subject);
             }
         }
-
     }
 }

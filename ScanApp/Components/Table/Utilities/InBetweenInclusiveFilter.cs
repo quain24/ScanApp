@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ScanApp.Common.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ScanApp.Common.Extensions;
 
 namespace ScanApp.Components.Table.Utilities
 {

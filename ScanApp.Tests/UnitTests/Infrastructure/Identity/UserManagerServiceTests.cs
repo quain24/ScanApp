@@ -437,7 +437,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
         public static IEnumerable<object[]> GetInvalidVersions()
         {
-            yield return new object[] {Version.Empty};
+            yield return new object[] { Version.Empty };
             yield return new object[] { Version.Create("not_match") };
         }
 

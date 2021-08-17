@@ -1,17 +1,14 @@
 ﻿using FluentAssertions;
 using MediatR;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Moq;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
+using ScanApp.Application.HesHub.Depots;
 using ScanApp.Application.HesHub.Depots.Commands.CreateNewDepot;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using MockQueryable.Moq;
-using ScanApp.Application.HesHub.Depots;
-using ScanApp.Domain.Entities;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 

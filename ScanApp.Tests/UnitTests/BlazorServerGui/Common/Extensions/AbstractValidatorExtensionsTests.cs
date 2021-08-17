@@ -2,12 +2,11 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
+using ScanApp.Common;
 using ScanApp.Common.Extensions;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Common;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Common.Extensions

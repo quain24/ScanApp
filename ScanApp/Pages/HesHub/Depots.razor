@@ -64,7 +64,7 @@
                 _mediator.Send(new AllTrailerTypesQuery(), _exitCancellationSource.Token));
 
             var results = new List<Result>
-            {
+        {
                 depots.Result,
                 gates.Result,
                 trailerTypes.Result

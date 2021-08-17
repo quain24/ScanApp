@@ -1,9 +1,9 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using MediatR.Pipeline;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.ExceptionHandlers.GeneralHandlers
 {

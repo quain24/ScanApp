@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using ScanApp.Application.Common.Behaviors;
 using ScanApp.Application.Common.Installers;
-using Serilog;
-using Serilog.Events;
 using Xunit.Abstractions;
 
 namespace ScanApp.Tests.IntegrationTests.Application

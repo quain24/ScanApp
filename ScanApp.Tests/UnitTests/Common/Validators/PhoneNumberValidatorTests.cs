@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using FluentValidation.Results;
 using ScanApp.Common.Validators;
 using Xunit;
 

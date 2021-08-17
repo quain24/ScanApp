@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using AutoFixture;
+﻿using AutoFixture;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using ScanApp.Components.Table;
 using ScanApp.Components.Table.Utilities;
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.Table.Utilities
