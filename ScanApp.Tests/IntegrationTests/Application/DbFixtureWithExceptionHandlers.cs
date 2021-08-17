@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace ScanApp.Tests.IntegrationTests.Application
 {
-    public abstract class DbFixtureWithExtensionHandlers : SqlLiteInMemoryDbFixture
+    public abstract class DbFixtureWithExceptionHandlers : SqlLiteInMemoryDbFixture
     {
         protected ITestOutputHelper Output { get; init; }
 
