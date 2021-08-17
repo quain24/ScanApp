@@ -108,7 +108,8 @@ namespace ScanApp.Domain.Entities
         public virtual void AddRecurrenceException(T exceptionOccurrence, DateTime dateUtc)
         {
             _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
-            if (exceptionOccurrence.Id == Id)
+            // default exclusions enables adding of base occurrence and exception to it in one db update (id is auto-generated)
+            if (exceptionOccurrence.Id == Id && Id != default)
                 throw new ArgumentException($"Occurrence cannot be an exception to itself (identity based on {nameof(Id)}).");
 
             exceptionOccurrence.MarkAsExceptionTo(this, dateUtc);

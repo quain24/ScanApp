@@ -34,9 +34,11 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .HasConversion(new DateTimeListToUtcStringConverter())
                 .HasColumnName("ExceptionsToPatternOccurrenceUTC")
                 .HasComment("Timestamps stored in this column are in UTC time format.")
+                // Custom comparer is needed for EF to detect changes inside this collection.
                 .Metadata.SetValueComparer(new ValueComparer<IEnumerable<DateTime>>(
                     (c1, c2) => c1.SequenceEqual(c2),
                     c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    // ToList and AsEnumerable are both needed
                     c => c.ToList().AsEnumerable()));
 
             builder.OwnsOne(x => x.RecurrencePattern, o =>
