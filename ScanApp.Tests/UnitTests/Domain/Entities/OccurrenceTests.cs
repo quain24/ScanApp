@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using ScanApp.Domain.Entities;
+using ScanApp.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -16,10 +17,19 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         [Fact]
         public void Will_create_instance()
         {
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
 
             subject.Should().BeOfType<OccurrenceFixtures.Occurrence>()
                 .And.BeAssignableTo<Occurrence<OccurrenceFixtures.Occurrence>>();
+        }
+
+        [Fact]
+        public void Will_create_instance_with_recurrence()
+        {
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue, RecurrencePattern.Daily(1));
+            subject.Should().BeOfType<OccurrenceFixtures.Occurrence>()
+                .And.BeAssignableTo<Occurrence<OccurrenceFixtures.Occurrence>>();
+            subject.RecurrencePattern.Should().Be(RecurrencePattern.Daily(1));
         }
 
         public static IEnumerable<object[]> InvalidDates =>
@@ -68,6 +78,32 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             Action act = () => subject.Start = start;
 
             act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [Fact]
+        public void Default_recurrence_is_none()
+        {
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+
+            subject.RecurrencePattern.Should().Be(RecurrencePattern.None);
+        }
+
+        [Fact]
+        public void Throws_arg_null_exc_if_given_null_recurrence_pattern_in_constructor()
+        {
+            Action act = () => _ = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), null);
+
+            act.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void Throws_arg_null_exc_if_changed_recurrence_pattern_to_null()
+        {
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+
+            Action act = () => subject.RecurrencePattern = null;
+
+            act.Should().Throw<ArgumentNullException>();
         }
     }
 }
