@@ -290,5 +290,37 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
                 result.Should().BeEquivalentTo(subject);
             }
         }
+
+        [Fact]
+        public void Occurrence_can_be_found_using_IsException_calculated_column()
+        {
+            var start = new DateTime(2021, 01, 21, 11, 45, 00, DateTimeKind.Utc);
+            var end = new DateTime(2021, 01, 21, 12, 45, 00, DateTimeKind.Utc);
+            var pattern = RecurrencePattern.Daily(1, 24);
+            var subject = new OccurrenceFixtures.Occurrence(start, end, pattern);
+
+            var excStart = new DateTime(2021, 01, 24, 11, 45, 00, DateTimeKind.Utc);
+            var excEnd = new DateTime(2021, 01, 24, 12, 45, 00, DateTimeKind.Utc);
+            var replacementDate = new DateTime(2021, 01, 24, 12, 45, 00, DateTimeKind.Utc);
+            var exception = new OccurrenceFixtures.Occurrence(excStart, excEnd);
+
+            using (var ctx = NewStubDbContext)
+            {
+                ctx.Add(subject);
+                ctx.Add(exception);
+                subject.AddRecurrenceException(exception, replacementDate);
+                ctx.SaveChanges();
+            }
+
+            using var scope = new AssertionScope();
+            using (var cctx = NewStubDbContext)
+            {
+                var standard = cctx.Occurrences.First(x => !x.IsException);
+                var exc = cctx.Occurrences.First(x => x.IsException);
+
+                standard.Should().BeEquivalentTo(subject);
+                exc.Should().BeEquivalentTo(exception);
+            }
+        }
     }
 }

@@ -76,7 +76,11 @@ namespace ScanApp.Domain.Entities
         /// Gets value indicating if this instance of <see cref="Occurrence{T}"/> is an exception to other instance's recurrence rule.
         /// </summary>
         /// <value><see langowrd="true"/> if this instance is an exception to other instance recurrence rule, otherwise <see langword="false"/>.</value>
-        public bool IsException => RecurrenceExceptionOf != default && RecurrenceExceptionDate.HasValue;
+        public bool IsException
+        {
+            get => RecurrenceExceptionOf != default && RecurrenceExceptionDate.HasValue;
+            private set => _ = value; // EF core compatibility - needed for SQL calculated column.
+        }
 
         protected Occurrence()
         {

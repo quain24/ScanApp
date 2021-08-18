@@ -30,6 +30,10 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Property(x => x.IsException)
+                .HasComputedColumnSql("[RecurrenceExceptionOfId] IS NOT NULL AND [RecurrenceExceptionDate] IS NOT NULL")
+                .UsePropertyAccessMode(PropertyAccessMode.Property);
+
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())
                 .HasColumnName("ExceptionsToPatternOccurrenceUTC")
