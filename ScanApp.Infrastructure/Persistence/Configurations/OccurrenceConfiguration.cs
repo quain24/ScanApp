@@ -49,7 +49,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             {
                 o.Property(x => x.Type).HasColumnName("RecurrenceType").IsRequired();
                 o.Property(x => x.Interval).HasColumnName("RecurrenceInterval").IsRequired(false);
-                o.Property(x => x.Count).HasColumnName("RecurrenceCount").IsRequired(false);
+                o.Property(x => x.Count).HasColumnName("RecurrenceCountLimit").IsRequired(false);
                 o.Property(x => x.Until).HasColumnName("RecurrenceEndDateUTC").UsesUtc().IsRequired(false);
                 o.Property(x => x.ByDay).HasColumnName("RecurrenceByDay").IsRequired(false);
                 o.Property(x => x.ByMonth).HasColumnName("RecurrenceByMonth").IsRequired(false);
