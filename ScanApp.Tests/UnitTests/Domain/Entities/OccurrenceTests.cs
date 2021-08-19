@@ -4,7 +4,7 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -205,11 +205,9 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
             var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
             subject.AddRecurrenceException(date);
-            
+
             // Method is protected - but we want to set the test data without calling other tested method.
-            typeof(OccurrenceFixtures.Occurrence)
-                .GetMethod("MarkAsExceptionTo", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(OccurrenceFixtures.Occurrence), typeof(DateTime) }, null)
-                ?.Invoke(exception, new object[] { subject, date });
+            exception.ConvertToException(subject, date);
 
             subject.RemoveRecurrenceException(exception);
 
@@ -223,6 +221,64 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             exception.RecurrenceExceptionDate.Should().BeNull();
             exception.RecurrenceExceptionOf.Should().BeNull();
             exception.RecurrenceExceptions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void AddRecurrenceException_throws_InvalidOperationException_if_tried_to_add_exception_to_exception()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var dummyOccurrence = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromMinutes(10));
+            var occ1 = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromDays(5), date + TimeSpan.FromDays(5) + TimeSpan.FromMinutes(70));
+            var occ2 = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromDays(1), date + TimeSpan.FromDays(1) + TimeSpan.FromMinutes(70));
+            occ1.ConvertToException(dummyOccurrence, date - TimeSpan.FromDays(10));
+            occ2.ConvertToException(dummyOccurrence, date - TimeSpan.FromDays(20));
+
+            Action act = () => occ2.AddRecurrenceException(occ1, date - TimeSpan.FromDays(10));
+
+            var result = act.Should().Throw<InvalidOperationException>();
+            Output.WriteLine(result.Subject.First().Message);
+        }
+
+        [Fact]
+        public void AddRecurrenceException_throws_ArgumentException_if_tried_to_add_occurrence_already_marked_as_exception()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var dummyOccurrence = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.UtcNow + TimeSpan.FromMinutes(10));
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+            exception.ConvertToException(dummyOccurrence, date - TimeSpan.FromDays(10));
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+
+            Action act = () => subject.AddRecurrenceException(exception, date - TimeSpan.FromDays(10));
+
+            var result = act.Should().Throw<ArgumentException>();
+            Output.WriteLine(result.Subject.First().Message);
+        }
+
+        [Fact]
+        public void AddRecurrenceException_throws_Arg_Exc_if_tried_to_add_occurrence_exception_with_same_non_default_id()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+            subject.Id = 1;
+            exception.Id = 1;
+
+            Action act = () => subject.AddRecurrenceException(exception, date - TimeSpan.FromDays(10));
+
+            var result = act.Should().Throw<ArgumentException>();
+            Output.WriteLine(result.Subject.First().Message);
+        }
+
+        [Fact]
+        public void AddRecurrenceException_allows_same_id_if_it_is_a_default_one()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+
+            Action act = () => subject.AddRecurrenceException(exception, date - TimeSpan.FromDays(10));
+
+            var result = act.Should().NotThrow();
         }
     }
 }

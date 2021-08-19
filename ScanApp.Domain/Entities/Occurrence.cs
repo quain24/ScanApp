@@ -101,29 +101,33 @@ namespace ScanApp.Domain.Entities
 
         /// <summary>
         /// Threats this instance as a base <see cref="Occurrence{T}"/> and assigns an Exception from recurrence rule to it. <br/>
-        /// Given <paramref name="exceptionOccurrence"/> will be set as <b>exception</b> automatically.
+        /// Given <paramref name="occurrence"/> will be set as <b>exception</b> automatically.
         /// </summary>
-        /// <param name="exceptionOccurrence">A occurrence that will be used to replace an occurrence calculated from recurrence pattern.</param>
+        /// <param name="occurrence">A standard occurrence that will be used to replace an occurrence calculated from recurrence pattern.<br/>
+        /// It will be converted to <b><c>exception occurrence.</c></b></param>
         /// <param name="dateUtc">Date of the replaced occurrence (UTC), including precise time of start of replaced occurrence.</param>
-        public virtual void AddRecurrenceException(Occurrence<T> exceptionOccurrence, DateTime dateUtc)
-            => AddRecurrenceException(exceptionOccurrence as T, dateUtc);
+        public virtual void AddRecurrenceException(Occurrence<T> occurrence, DateTime dateUtc)
+            => AddRecurrenceException(occurrence as T, dateUtc);
 
         /// <inheritdoc cref="AddRecurrenceException(ScanApp.Domain.Entities.Occurrence{T},System.DateTime)"/>
-        public virtual void AddRecurrenceException(T exceptionOccurrence, DateTime dateUtc)
+        public virtual void AddRecurrenceException(T occurrence, DateTime dateUtc)
         {
-            _ = exceptionOccurrence ?? throw new ArgumentNullException(nameof(exceptionOccurrence));
+            _ = occurrence ?? throw new ArgumentNullException(nameof(occurrence));
 
-            if (exceptionOccurrence.IsException)
+            if (IsException)
+                throw new InvalidOperationException("You cannot add and exception to the Occurrence that is itself an exception.");
+
+            if (occurrence.IsException)
             {
                 throw new ArgumentException(
-                    $"Given {nameof(exceptionOccurrence)} already is an exception to base occurrence" +
-                    $" (with Id of {exceptionOccurrence.RecurrenceExceptionOf?.Id.ToString() ?? "Data not loaded"})" +
+                    $"Given {nameof(occurrence)} already is an exception to base occurrence" +
+                    $" (with Id of {occurrence.RecurrenceExceptionOf?.Id.ToString() ?? "Data not loaded"})" +
                     $" - convert it to base occurrence by using {nameof(RemoveRecurrenceException)} method of corresponding base occurrence" +
                     " before making it exception again.");
             }
 
             // default exclusions enables adding of base occurrence and exception to it in one db update (id is auto-generated)
-            if (exceptionOccurrence.Id == Id && Id != default)
+            if (occurrence.Id == Id && Id != default)
                 throw new ArgumentException($"Occurrence cannot be an exception to itself (identity based on {nameof(Id)}).");
 
             if (AddRecurrenceException(dateUtc) is false)
@@ -133,7 +137,7 @@ namespace ScanApp.Domain.Entities
                     $"{nameof(dateUtc)} ({dateUtc}) is already present in this instance {nameof(RecurrenceExceptions)}" +
                     " - only one exception per occurrence date is allowed.");
             }
-            exceptionOccurrence.MarkAsExceptionTo(this, dateUtc);
+            occurrence.MarkAsExceptionTo(this, dateUtc);
         }
 
         /// <summary>

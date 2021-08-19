@@ -3,6 +3,7 @@ using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using ScanApp.Infrastructure.Persistence.Configurations;
 using System;
+using System.Reflection;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {
@@ -29,6 +30,14 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             {
                 base.Configure(builder);
             }
+        }
+
+        public static Occurrence ConvertToException(this Occurrence toExceptionOccurrence, Occurrence baseOccurrence, DateTime replacingDate)
+        {
+            typeof(OccurrenceFixtures.Occurrence)
+                .GetMethod("MarkAsExceptionTo", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(OccurrenceFixtures.Occurrence), typeof(DateTime) }, null)
+                ?.Invoke(toExceptionOccurrence, new object[] { baseOccurrence, replacingDate });
+            return toExceptionOccurrence;
         }
     }
 }
