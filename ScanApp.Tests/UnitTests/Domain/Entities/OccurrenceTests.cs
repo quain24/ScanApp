@@ -120,7 +120,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         public void AddRecurrenceException_will_add_date_to_exception_list()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
 
             subject.AddRecurrenceException(date);
 
@@ -131,7 +131,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         public void AddRecurrenceException_returns_false_if_given_date_is_already_used()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
 
             var result = subject.AddRecurrenceException(date);
@@ -147,7 +147,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             var date2 = date + TimeSpan.FromMinutes(10);
             var date3 = date2 + TimeSpan.FromMinutes(10);
             var date4 = date3 + TimeSpan.FromMinutes(10);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
 
             subject.AddRecurrenceException(date);
             subject.AddRecurrenceException(date4);
@@ -165,7 +165,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             var date2 = date + TimeSpan.FromMinutes(10);
             var date3 = date2 + TimeSpan.FromMinutes(10);
             var date4 = date3 + TimeSpan.FromMinutes(10);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
             subject.AddRecurrenceException(date4);
             subject.AddRecurrenceException(date2);
@@ -182,7 +182,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
 
             subject.AddRecurrenceException(exception, date);
 
@@ -248,7 +248,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         public void AddRecurrenceException_allows_same_id_if_it_is_a_default_one()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
 
             Action act = () => subject.AddRecurrenceException(exception, date - TimeSpan.FromDays(10));
@@ -260,7 +260,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         public void AddRecurrenceException_throws_ArgumentOutOfRangeException_if_exception_date_is_already_used()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
 
@@ -270,10 +270,22 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         }
 
         [Fact]
-        public void RemoveRecurrenceException_will_remove_date_from_exception_list()
+        public void AddRecurrenceException_throws_InvalidOperationException_if_tried_to_add_exception_non_recurring_occurrence()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+
+            Action act = () => subject.AddRecurrenceException(exception, date);
+
+            act.Should().Throw<InvalidOperationException>();
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_remove_date_from_exception_list()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
 
             var result = subject.RemoveRecurrenceException(date);
@@ -286,7 +298,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         public void RemoveRecurrenceException_will_return_false_if_there_is_no_such_date_to_remove()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
 
             var result = subject.RemoveRecurrenceException(date + TimeSpan.FromMinutes(10));
@@ -300,7 +312,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             subject.AddRecurrenceException(date);
 
             // Method is protected - but we want to set the test data without calling other tested method.
@@ -321,11 +333,11 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         }
 
         [Fact]
-        public void RemoveRecurrenceException_will_throw_ArgumentException_if_trying_to_remove_non_exeption()
+        public void RemoveRecurrenceException_will_throw_ArgumentException_if_trying_to_remove_non_exception()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var occurrence = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
 
             Action act = () => subject.RemoveRecurrenceException(occurrence);
 
@@ -338,7 +350,7 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime(), RecurrencePattern.Daily(1));
             var dummyOccurrence = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime())
             {
                 Id = 10

@@ -14,7 +14,7 @@ namespace ScanApp.Domain.Entities
         /// Gets or sets a UTC start date for this <see cref="Occurrence{T}"/>.
         /// </summary>
         /// <value>Start date of this occurrence.</value>
-        /// <exception cref="ArgumentNullException">Start date was equal or greater then end date.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Start date was equal or greater then end date.</exception>
         public DateTime Start
         {
             get => _start;
@@ -29,7 +29,7 @@ namespace ScanApp.Domain.Entities
         /// Gets or sets an UTC end date for this <see cref="Occurrence{T}"/>.
         /// </summary>
         /// <value>End date of this occurrence.</value>
-        /// <exception cref="ArgumentNullException">End date was equal or lesser then start date.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">End date was equal or lesser then start date.</exception>
         public DateTime End
         {
             get => _end;
@@ -106,6 +106,12 @@ namespace ScanApp.Domain.Entities
         /// <param name="occurrence">A standard occurrence that will be used to replace an occurrence calculated from recurrence pattern.<br/>
         /// It will be converted to <b><c>exception occurrence.</c></b></param>
         /// <param name="dateUtc">Date of the replaced occurrence (UTC), including precise time of start of replaced occurrence.</param>
+        /// <exception cref="ArgumentException"><paramref name="occurrence"/> was already an exception to some <see cref="Occurrence{T}"/>.</exception>
+        /// <exception cref="ArgumentException">Instance of <paramref name="occurrence"/> and instance of base <see cref="Occurrence{T}"/> are the same (checked by Id).</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="occurrence"/> was <see langword="null"/>.</exception>
+        /// <exception cref="InvalidOperationException">Tried to add exception to <see cref="Occurrence{T}"/> that is exception by itself.</exception>
+        /// <exception cref="InvalidOperationException">Tried to add exception to a non-recurring <see cref="Occurrence{T}"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Replacement <paramref name="dateUtc"/> for given <paramref name="occurrence"/> has been already used.</exception>
         public virtual void AddRecurrenceException(Occurrence<T> occurrence, DateTime dateUtc)
             => AddRecurrenceException(occurrence as T, dateUtc);
 
@@ -145,8 +151,11 @@ namespace ScanApp.Domain.Entities
         /// </summary>
         /// <param name="dateUtc">Date of the skipped occurrence (UTC), including precise time of start of replaced occurrence.</param>
         /// <returns><see langword="True"/> if date was successfully added to <see cref="RecurrenceExceptions"/>, <see langword="false"/> if such date was already present.</returns>
+        /// <exception cref="InvalidOperationException">Tried to add exception to a non-recurring <see cref="Occurrence{T}"/>.</exception>
         public virtual bool AddRecurrenceException(DateTime dateUtc)
         {
+            if (RecurrencePattern == RecurrencePattern.None)
+                throw new InvalidOperationException("Cannot add exception to a non-recurring occurrence.");
             if (_recurrenceExceptions.Contains(dateUtc))
                 return false;
             _recurrenceExceptions.Add(dateUtc);
@@ -159,6 +168,7 @@ namespace ScanApp.Domain.Entities
         /// Given <paramref name="exceptionOccurrence"/> will be set as <b>base occurrence</b> automatically.
         /// </summary>
         /// <returns><see langword="True"/> if date was successfully removed to <see cref="RecurrenceExceptions"/>, <see langword="false"/> if such date was not present.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="exceptionOccurrence"/> was <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException">Given <paramref name="exceptionOccurrence"/> was not really an exception to the recurrence rule - it was missing a date of replacement.</exception>
         public virtual bool RemoveRecurrenceException(T exceptionOccurrence)
         {
