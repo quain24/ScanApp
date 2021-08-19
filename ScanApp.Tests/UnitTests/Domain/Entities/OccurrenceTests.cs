@@ -128,16 +128,16 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         }
 
         [Fact]
-        public void RemoveRecurrenceException_will_remove_date_from_exception_list()
+        public void AddRecurrenceException_returns_false_if_given_date_is_already_used()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
             var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
             subject.AddRecurrenceException(date);
 
-            var result = subject.RemoveRecurrenceException(date);
+            var result = subject.AddRecurrenceException(date);
 
-            result.Should().BeTrue();
-            subject.RecurrenceExceptions.Should().BeEmpty();
+            result.Should().BeFalse();
+            subject.RecurrenceExceptions.Should().BeEquivalentTo(new[] { date });
         }
 
         [Fact]
@@ -199,31 +199,6 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
         }
 
         [Fact]
-        public void RemoveRecurrenceException_will_remove_date_from_exception_list_and_will_set_exception_occurrence_as_base()
-        {
-            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
-            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
-            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
-            subject.AddRecurrenceException(date);
-
-            // Method is protected - but we want to set the test data without calling other tested method.
-            exception.ConvertToException(subject, date);
-
-            subject.RemoveRecurrenceException(exception);
-
-            using var scope = new AssertionScope();
-            subject.IsException.Should().BeFalse();
-            subject.RecurrenceExceptionDate.Should().BeNull();
-            subject.RecurrenceExceptionOf.Should().BeNull();
-            subject.RecurrenceExceptions.Should().BeEmpty();
-
-            exception.IsException.Should().BeFalse();
-            exception.RecurrenceExceptionDate.Should().BeNull();
-            exception.RecurrenceExceptionOf.Should().BeNull();
-            exception.RecurrenceExceptions.Should().BeEmpty();
-        }
-
-        [Fact]
         public void AddRecurrenceException_throws_InvalidOperationException_if_tried_to_add_exception_to_exception()
         {
             var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
@@ -278,7 +253,103 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
 
             Action act = () => subject.AddRecurrenceException(exception, date - TimeSpan.FromDays(10));
 
-            var result = act.Should().NotThrow();
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void AddRecurrenceException_throws_ArgumentOutOfRangeException_if_exception_date_is_already_used()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            subject.AddRecurrenceException(date);
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+
+            Action act = () => subject.AddRecurrenceException(exception, date);
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_remove_date_from_exception_list()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            subject.AddRecurrenceException(date);
+
+            var result = subject.RemoveRecurrenceException(date);
+
+            result.Should().BeTrue();
+            subject.RecurrenceExceptions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_return_false_if_there_is_no_such_date_to_remove()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            subject.AddRecurrenceException(date);
+
+            var result = subject.RemoveRecurrenceException(date + TimeSpan.FromMinutes(10));
+
+            result.Should().BeFalse();
+            subject.RecurrenceExceptions.Should().BeEquivalentTo(new[] { date });
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_remove_date_from_exception_list_and_will_set_exception_occurrence_as_base()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            subject.AddRecurrenceException(date);
+
+            // Method is protected - but we want to set the test data without calling other tested method.
+            exception.ConvertToException(subject, date);
+
+            subject.RemoveRecurrenceException(exception);
+
+            using var scope = new AssertionScope();
+            subject.IsException.Should().BeFalse();
+            subject.RecurrenceExceptionDate.Should().BeNull();
+            subject.RecurrenceExceptionOf.Should().BeNull();
+            subject.RecurrenceExceptions.Should().BeEmpty();
+
+            exception.IsException.Should().BeFalse();
+            exception.RecurrenceExceptionDate.Should().BeNull();
+            exception.RecurrenceExceptionOf.Should().BeNull();
+            exception.RecurrenceExceptions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_throw_ArgumentException_if_trying_to_remove_non_exeption()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var occurrence = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+
+            Action act = () => subject.RemoveRecurrenceException(occurrence);
+
+            var result = act.Should().Throw<ArgumentException>();
+            Output.WriteLine(result.Subject.First().Message);
+        }
+
+        [Fact]
+        public void RemoveRecurrenceException_will_throw_ArgumentException_if_trying_to_remove_exception_from_other_occurrence()
+        {
+            var date = new DateTime(2002, 12, 24, 12, 32, 00, DateTimeKind.Utc);
+            var exception = new OccurrenceFixtures.Occurrence(date + TimeSpan.FromMinutes(10), date + TimeSpan.FromMinutes(70));
+            var subject = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime());
+            var dummyOccurrence = new OccurrenceFixtures.Occurrence(DateTime.UtcNow, DateTime.MaxValue.ToUniversalTime())
+            {
+                Id = 10
+            };
+            subject.AddRecurrenceException(date);
+            exception.ConvertToException(dummyOccurrence, date);
+
+            Action act = () => subject.RemoveRecurrenceException(exception);
+
+            var result = act.Should().Throw<ArgumentException>();
+            Output.WriteLine(result.Subject.First().Message);
         }
     }
 }

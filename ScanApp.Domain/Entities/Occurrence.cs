@@ -174,7 +174,7 @@ namespace ScanApp.Domain.Entities
             {
                 throw new ArgumentException(
                     $"Given {nameof(exceptionOccurrence)} has {nameof(exceptionOccurrence.RecurrenceExceptionOf)}" +
-                    $"pointing to other {nameof(Occurrence<T>)} (value checked by {nameof(Id)}" +
+                    $" pointing to other {nameof(Occurrence<T>)} (value checked by {nameof(Id)}" +
                     " - possibly given exception is valid for other base occurrence.");
             }
 
