@@ -1,8 +1,8 @@
 ﻿using ScanApp.Domain.Common;
-using System;
-using System.Collections.Generic;
 using ScanApp.Domain.Enums;
 using ScanApp.Domain.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace ScanApp.Domain.ValueObjects
 {
@@ -40,6 +40,9 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New instance of <see cref="DayAndTime"/>.</returns>
         public static DayAndTime From(DayOfWeek day, TimeSpan time) => new(day, time);
 
+        /// <inheritdoc cref="From(DayOfWeek, TimeSpan)"/>
+        public static DayAndTime From(Day day, TimeSpan time) => new(day, time);
+
         /// <summary>
         /// Gets stored day of the week using MS <see cref="System.DayOfWeek"/> enumeration.<br/>
         /// Mind that MS threats Sunday as first day, but objects of type <see cref="DayAndTime"/> uses Monday as first day when comparing values.
@@ -59,7 +62,7 @@ namespace ScanApp.Domain.ValueObjects
         /// </summary>
         /// <value>Time of day in form of <see cref="TimeSpan"/>.</value>
         public TimeSpan Time { get; }
-        
+
         private DayAndTime(DayOfWeek day, TimeSpan time)
         {
             if (Enum.IsDefined(typeof(DayOfWeek), day) is false)
@@ -104,9 +107,9 @@ namespace ScanApp.Domain.ValueObjects
             return dayComparison != 0 ? dayComparison : Time.CompareTo(other.Time);
         }
 
-        public static bool operator < (DayAndTime left, DayAndTime right) => Comparer<DayAndTime>.Default.Compare(left, right) < 0;
+        public static bool operator <(DayAndTime left, DayAndTime right) => Comparer<DayAndTime>.Default.Compare(left, right) < 0;
 
-        public static bool operator > (DayAndTime left, DayAndTime right) => Comparer<DayAndTime>.Default.Compare(left, right) > 0;
+        public static bool operator >(DayAndTime left, DayAndTime right) => Comparer<DayAndTime>.Default.Compare(left, right) > 0;
 
         public static bool operator <=(DayAndTime left, DayAndTime right) => Comparer<DayAndTime>.Default.Compare(left, right) <= 0;
 
