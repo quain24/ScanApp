@@ -47,6 +47,7 @@ namespace ScanApp.Domain.Entities
         /// <param name="startDate">Start date.</param>
         /// <param name="endDate">End date.</param>
         /// <exception cref="ArgumentException"><paramref name="startDate"/> was greater then <paramref name="endDate"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="startDate"/> or <paramref name="endDate"/> was not UTC.</exception>
         /// <exception cref="ArgumentException"><paramref name="name"/> was empty, <see langword="null"/> or contained only white-spaces.</exception>
         public Season(string name, DateTime startDate, DateTime endDate)
         {
@@ -57,9 +58,10 @@ namespace ScanApp.Domain.Entities
         /// <summary>
         /// Changes this <see cref="Season"/> start and end date.
         /// </summary>
-        /// <param name="startDate">Start date.</param>
-        /// <param name="endDate">End date.</param>
+        /// <param name="startDate">Start date (UTC).</param>
+        /// <param name="endDate">End date (UTC).</param>
         /// <exception cref="ArgumentException"><paramref name="startDate"/> was greater then <paramref name="endDate"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="startDate"/> or <paramref name="endDate"/> was not UTC.</exception>
         public void ChangePeriod(DateTime startDate, DateTime endDate)
         {
             if (startDate.Kind != DateTimeKind.Utc || endDate.Kind != DateTimeKind.Utc)
