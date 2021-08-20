@@ -23,12 +23,12 @@ namespace ScanApp.Domain.Entities
         }
 
         /// <summary>
-        /// Gets starting date of this <see cref="Season"/>.
+        /// Gets starting date of this <see cref="Season"/> (UTC).
         /// </summary>
         public DateTime Start { get; private set; }
 
         /// <summary>
-        /// Gets end date of this <see cref="Season"/>.
+        /// Gets end date of this <see cref="Season"/> (UTC).
         /// </summary>
         public DateTime End { get; private set; }
 
@@ -62,7 +62,13 @@ namespace ScanApp.Domain.Entities
         /// <exception cref="ArgumentException"><paramref name="startDate"/> was greater then <paramref name="endDate"/>.</exception>
         public void ChangePeriod(DateTime startDate, DateTime endDate)
         {
-            if (startDate > endDate)
+            if (startDate.Kind != DateTimeKind.Utc || endDate.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException($"{nameof(startDate)} and {nameof(endDate)} both" +
+                                            " must be in UTC format (DateTime Kind must be set to UTC).");
+            }
+
+            if (startDate >= endDate)
                 throw new ArgumentException($"{nameof(startDate)} must be lesser or equal to {nameof(endDate)}", nameof(startDate));
 
             Start = startDate;
