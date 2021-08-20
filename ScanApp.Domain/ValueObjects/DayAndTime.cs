@@ -66,32 +66,41 @@ namespace ScanApp.Domain.ValueObjects
         private DayAndTime(DayOfWeek day, TimeSpan time)
         {
             if (Enum.IsDefined(typeof(DayOfWeek), day) is false)
-                throw new ArgumentOutOfRangeException(nameof(day), $"Given day value ({(int)day}) is not in range of the {nameof(System.DayOfWeek)} enum.");
-            if (time > TimeSpan.FromHours(24))
-                throw new ArgumentOutOfRangeException(nameof(time), "Given time period exceedes 24 hours.");
-            if (time < TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException(nameof(time), "Time cannot be negative.");
+            {
+                throw new ArgumentOutOfRangeException(nameof(day),
+                    $"Given day value ({(int)day}) is not in range of the {nameof(System.DayOfWeek)} enum.");
+            }
+
+            Time = ValidateTimeSpan(time);
             Day = day.AsScanAppDay();
-            Time = time;
         }
 
         private DayAndTime(Day day, TimeSpan time)
         {
             if (Enum.IsDefined(typeof(Day), day) is false)
-                throw new ArgumentOutOfRangeException(nameof(day), $"Given day value ({(int)day}) is not in range of the {nameof(Enums.Day)} enum or is a set of flags.");
+            {
+                throw new ArgumentOutOfRangeException(nameof(day),
+                    $"Given day value ({(int)day}) is not in range of the {nameof(Enums.Day)} enum or is a set of flags.");
+            }
+
+            Time = ValidateTimeSpan(time);
+            Day = day;
+        }
+
+        private static TimeSpan ValidateTimeSpan(TimeSpan time)
+        {
             if (time > TimeSpan.FromHours(24))
                 throw new ArgumentOutOfRangeException(nameof(time), "Given time period exceedes 24 hours.");
             if (time < TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(time), "Time cannot be negative.");
-            Day = day;
-            Time = time;
+            return time;
         }
 
         /// <summary>
         /// A string representation of stored day of the week and time.
         /// </summary>
         /// <returns>"Day Hours:Minutes" <see cref="string"/> representation of stored data.</returns>
-        public override string ToString() => $"{DayOfWeek} {Time:hh\\:mm\\:ss}";
+        public override string ToString() => $"{Day} {Time:hh\\:mm\\:ss}";
 
         protected override IEnumerable<object> GetEqualityComponents()
         {
