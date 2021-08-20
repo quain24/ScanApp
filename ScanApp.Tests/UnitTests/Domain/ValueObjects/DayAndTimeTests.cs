@@ -4,6 +4,7 @@ using ScanApp.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using ScanApp.Domain.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -47,7 +48,8 @@ namespace ScanApp.Tests.UnitTests.Domain.ValueObjects
 
             Output.WriteLine(data.ToString(CultureInfo.InvariantCulture));
             subject.Should().NotBeNull();
-            subject.Day.Should().Be(data.DayOfWeek);
+            subject.DayOfWeek.Should().Be(data.DayOfWeek);
+            subject.Day.Should().Be(data.DayOfWeek.AsScanAppDay());
             subject.Time.Should().Be(data.TimeOfDay);
         }
 
@@ -59,7 +61,8 @@ namespace ScanApp.Tests.UnitTests.Domain.ValueObjects
 
             Output.WriteLine(data.ToString(CultureInfo.InvariantCulture));
             subject.Should().NotBeNull();
-            subject.Day.Should().Be(data.DayOfWeek);
+            subject.DayOfWeek.Should().Be(data.DayOfWeek);
+            subject.Day.Should().Be(data.DayOfWeek.AsScanAppDay());
             subject.Time.Should().Be(data.TimeOfDay);
         }
 
