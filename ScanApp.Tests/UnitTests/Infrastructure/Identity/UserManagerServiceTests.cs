@@ -1070,7 +1070,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
             var result = await sut.RemoveUserFromRole(user.UserName, Version.Create(user.ConcurrencyStamp), roles);
 
             result.Conclusion.Should().BeTrue();
-            result.Output.Should().BeOfType<Version>().And.Should().NotBe(Version.Empty);
+            result.Output.Should().BeOfType<Version>().And.NotBe(Version.Empty);
             userMgrMock.Verify(u => u.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<string[]>()), Times.Once);
         }
 
