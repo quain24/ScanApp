@@ -18,7 +18,7 @@ using Xunit.Abstractions;
 
 namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Commands.CreateSpareParts
 {
-    public class CreateSparePartsCommandHandlerTests : DbFixtureWithExtensionHandlers
+    public class CreateSparePartsCommandHandlerTests : DbFixtureWithExceptionHandlers
     {
         public CreateSparePartsCommandHandlerTests(ITestOutputHelper output)
         {

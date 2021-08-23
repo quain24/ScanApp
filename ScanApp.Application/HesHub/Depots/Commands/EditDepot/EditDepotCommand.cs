@@ -5,6 +5,7 @@ using ScanApp.Application.Common.Interfaces;
 using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Version = ScanApp.Domain.ValueObjects.Version;
@@ -47,19 +48,20 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
 
             if (originalDepot.Id != editedDepot.Id)
             {
-                ctx.Remove(originalDepot);
-                await ctx.SaveChangesAsync(token).ConfigureAwait(false);
-                // Must detach or 'Add' will throw
-                if (originalDepot.DefaultGate is not null)
-                    ctx.Entry(originalDepot.DefaultGate).State = EntityState.Detached;
-                if (originalDepot.DefaultTrailer is not null)
-                    ctx.Entry(originalDepot.DefaultTrailer).State = EntityState.Detached;
                 ctx.Add(editedDepot);
-                // Do not want to re-save existing entities, just update navigation in parent.
                 if (editedDepot.DefaultGate is not null)
                     ctx.Entry(editedDepot.DefaultGate).State = EntityState.Unchanged;
                 if (editedDepot.DefaultTrailer is not null)
                     ctx.Entry(editedDepot.DefaultTrailer).State = EntityState.Unchanged;
+                await ctx.SaveChangesAsync(token).ConfigureAwait(false);
+
+                var plans = ctx.DeparturePlans.Where(x => x.Depot == originalDepot).ToList();
+                plans.ForEach(x => x.Depot = editedDepot);
+                await ctx.SaveChangesAsync(token).ConfigureAwait(false);
+
+                originalDepot.DefaultGate = null;
+                originalDepot.DefaultTrailer = null;
+                ctx.Remove(originalDepot);
             }
             else
             {
@@ -113,8 +115,10 @@ namespace ScanApp.Application.HesHub.Depots.Commands.EditDepot
         private static Depot MapFrom(DepotModel model)
         {
             var depot = new Depot(model.Id, model.Name, model.PhoneNumber, model.Email,
-                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country));
-            depot.ChangeVersion(model.Version);
+                Address.Create(model.StreetName, model.ZipCode, model.City, model.Country))
+            {
+                Version = model.Version
+            };
             depot.ChangeDistanceToHub(model.DistanceToDepot);
 
             return depot;

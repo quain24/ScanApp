@@ -23,7 +23,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddNewUserRole
 
             var validators = subject.ExtractPropertyValidators();
             validators.Should().HaveCount(1).And.ContainKey(nameof(AddNewUserRoleCommand.RoleName))
-                .WhichValue.First().Should().BeOfType<ChildValidatorAdaptor<AddNewUserRoleCommand, string>>()
+                .WhoseValue.First().Should().BeOfType<ChildValidatorAdaptor<AddNewUserRoleCommand, string>>()
                 .Which.ValidatorType.Should().BeAssignableTo<IdentityNamingValidator>();
 
             var result = subject.Validate(command);

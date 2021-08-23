@@ -12,6 +12,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.Common.ExceptionHandlers
         public ServiceProvider Provider => _provider ??= ServiceCollection.BuildServiceProvider();
 
         private ServiceCollection _serviceCollection;
+
         public ServiceCollection ServiceCollection
         {
             get

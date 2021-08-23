@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace ScanApp.Components.Table.Dialogs
 {

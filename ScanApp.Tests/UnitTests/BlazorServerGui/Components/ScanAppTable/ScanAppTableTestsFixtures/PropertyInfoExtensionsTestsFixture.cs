@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ScanApp.Components.ScanAppTable.Options;
+using System;
 using System.Collections.Generic;
-using ScanApp.Components.ScanAppTable.Options;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.ScanAppTableTestsFixtures
 {

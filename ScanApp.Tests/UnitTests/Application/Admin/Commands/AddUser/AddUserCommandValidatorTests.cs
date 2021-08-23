@@ -41,7 +41,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeOfType<NotNullValidator<AddUserCommand, AddUserDto>>();
         }
 
@@ -53,7 +53,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Name))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<IdentityNamingValidator>();
         }
 
@@ -65,7 +65,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Email))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserCommand, string>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<AddUserCommand, string>))
                     .Subject.As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<EmailValidator>();
@@ -79,7 +79,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Password))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PasswordValidator>();
         }
 
@@ -91,7 +91,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUser
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserCommand.NewUser) + '.' + nameof(AddUserDto.Phone))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().As<ChildValidatorAdaptor<AddUserCommand, string>>().ValidatorType.Should().BeAssignableTo<PhoneNumberValidator>();
         }
 

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using MudBlazor;
+using ScanApp.Common.Extensions;
+using ScanApp.Components.Table.Dialogs;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using MudBlazor;
-using ScanApp.Common.Extensions;
-using ScanApp.Components.Table.Dialogs;
 
 namespace ScanApp.Components.Table.Utilities
 {

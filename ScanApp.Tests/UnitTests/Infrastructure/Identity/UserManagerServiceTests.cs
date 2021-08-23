@@ -154,7 +154,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             result.Conclusion.Should().BeFalse("unknown location has been supplied");
             result.Output.Should().BeNull();
-            result.ErrorDescription.ErrorType.Should().BeEquivalentTo(ErrorType.NotFound);
+            result.ErrorDescription.ErrorType.Should().Be(ErrorType.NotFound);
 
             using (var ctx = new ApplicationDbContext(options))
             {
@@ -276,7 +276,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
         }
 
         [Fact]
-        public void ValidatePassword_will_throw_arg_null_if_given_null()
+        public async Task ValidatePassword_will_throw_arg_null_if_given_null()
         {
             var userMgrMock = UserManagerFixture.MockUserManager(new List<ApplicationUser>(0));
             var ctxFacMock = AppDbContextFactoryMockFixture.CreateSimpleFactoryMock();
@@ -284,7 +284,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
             Func<Task> act = async () => await sut.ValidatePassword(null);
 
-            act.Should().Throw<ArgumentNullException>();
+            await act.Should().ThrowAsync<ArgumentNullException>();
         }
 
         [Fact]
@@ -437,7 +437,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Identity
 
         public static IEnumerable<object[]> GetInvalidVersions()
         {
-            yield return new object[] {Version.Empty};
+            yield return new object[] { Version.Empty };
             yield return new object[] { Version.Create("not_match") };
         }
 

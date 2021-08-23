@@ -48,9 +48,9 @@ namespace ScanApp.Tests.IntegrationTests.Application.Common.ExceptionHandlers
             var allAssemblies = AppDomain.CurrentDomain
                 .GetAssemblies()
                 .Where(x => x.GetName().FullName.Contains("ScanApp", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            var handlers = allAssemblies.SelectMany(x => typeof(IRequestExceptionHandler<,,>).GetImplementingTypes(x)).ToList();
-            handlers.AddRange(allAssemblies.SelectMany(x => typeof(IRequestExceptionHandler<,>).GetImplementingTypes(x)));
+                .ToArray();
+            var handlers = typeof(IRequestExceptionHandler<,,>).GetImplementingTypes(allAssemblies).ToList();
+            handlers.AddRange(typeof(IRequestExceptionHandler<,>).GetImplementingTypes(allAssemblies));
 
             // Grab generic constraints from last generic parameter (99% exception constraint).
             var handledExceptionTypes = handlers

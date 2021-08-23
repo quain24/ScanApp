@@ -266,6 +266,7 @@ namespace ScanApp.Components.Table.Dialogs
             builder.AddComponentReferenceCapture(LineNumber.Get(), o => CreateFieldReference(o, config));
             builder.CloseComponent();
         }
+
         private static bool ShouldConvertDateTime(ColumnConfig<T> config) => config.Converter switch
         {
             null => false,
@@ -286,7 +287,6 @@ namespace ScanApp.Components.Table.Dialogs
                 _fieldReferences.Add(config, o);
             }
         }
-
 
         private void CreateTimeFields(RenderTreeBuilder builder, ColumnConfig<T> config)
         {

@@ -4,7 +4,6 @@ using MockQueryable.Moq;
 using Moq;
 using ScanApp.Application.Admin;
 using ScanApp.Application.Admin.Queries.GetAllClaims;
-using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Domain.Entities;
 using System;
 using System.Linq;

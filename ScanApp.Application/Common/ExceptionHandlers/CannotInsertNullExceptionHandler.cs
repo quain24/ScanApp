@@ -23,7 +23,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers
             var message = new StringBuilder(requestName).Append(" - ")
                 .Append(entityNames).Append(": ")
                 .Append(exception.InnerException?.Message);
-            response.Set(ErrorType.CannotInsertNull, message.ToString(), exception);
+            response.Set(ErrorType.CannotInsertNull, message.ToString(), exception: exception);
             state.SetHandled(response);
             return Task.CompletedTask;
         }

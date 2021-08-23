@@ -1,9 +1,9 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using MediatR.Pipeline;
 using Microsoft.EntityFrameworkCore;
 using ScanApp.Application.Common.Helpers.Result;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ScanApp.Application.Common.ExceptionHandlers.GeneralHandlers
 {
@@ -17,7 +17,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers.GeneralHandlers
         {
             var response = new TResponse();
             var name = request.GetType().Name;
-            response.Set(ErrorType.DatabaseError, $"{name} - {exception.InnerException?.Message ?? exception.Message}", exception);
+            response.Set(ErrorType.DatabaseError, $"{name} - {exception.InnerException?.Message ?? exception.Message}", exception: exception);
             state.SetHandled(response);
             return Task.CompletedTask;
         }

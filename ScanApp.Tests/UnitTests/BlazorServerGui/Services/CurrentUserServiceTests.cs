@@ -29,7 +29,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Services
         }
 
         [Fact]
-        public void Throws_WrongScopeException_if_used_in_new_scope()
+        public async Task Throws_WrongScopeException_if_used_in_new_scope()
         {
             // When calling upon AuthenticationStateProvider.GetAuthenticationStateAsync()
             // InvalidOperationException is thrown if this call has been made in new scope.
@@ -39,8 +39,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Services
 
             Func<Task> act = async () => _ = await subject.Name();
 
-            act.Should().Throw<WrongScopeException>()
-                .WithInnerException<InvalidOperationException>();
+            await act.Should().ThrowAsync<WrongScopeException>()
+                .Where(x => x.InnerException.GetType() == typeof(InvalidOperationException));
         }
 
         // Extension methods used in CurrentUserService are tested separately.

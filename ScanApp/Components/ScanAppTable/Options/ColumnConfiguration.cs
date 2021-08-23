@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reflection;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ScanApp.Components.ScanAppTable.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ScanApp.Components.ScanAppTable.Options
 {

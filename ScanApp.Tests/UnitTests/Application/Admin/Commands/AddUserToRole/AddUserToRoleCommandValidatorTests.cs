@@ -57,7 +57,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserToRoleCommand.UserName))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should()
                 .ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserToRoleCommand, string>))
                 .And.Subject.Should().ContainSingle(c =>
@@ -75,7 +75,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserToRoleCommand.RoleName))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserToRoleCommand, string>))
                 .And.Subject.Should().ContainSingle(c =>
                     c.GetType() == typeof(ChildValidatorAdaptor<AddUserToRoleCommand, string>))
@@ -92,7 +92,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserToRoleCommand.Version))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(PredicateValidator<AddUserToRoleCommand, Version>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotNullValidator<AddUserToRoleCommand, Version>));
         }

@@ -77,7 +77,7 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// <summary>
         /// User should be authenticated to perform operation, but was not.
         /// </summary>
-        NoAuthentication,
+        NotAuthenticated,
 
         /// <summary>
         /// User should be authorized (including claims and roles) to perform operation, but was not.
@@ -253,15 +253,17 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessage">Message describing error</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
-        public Result(ErrorType errorType, string errorMessage, Exception exception = null)
+        public Result(ErrorType errorType, string errorMessage, string errorCode = null, Exception exception = null)
         {
             Conclusion = false;
             ErrorDescription = new ErrorDescription
             {
                 ErrorMessage = errorMessage,
                 Exception = exception,
-                ErrorType = errorType
+                ErrorType = errorType,
+                ErrorCode = errorCode
             };
         }
 
@@ -271,15 +273,17 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
-        public Result(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
+        public Result(ErrorType errorType, IEnumerable<string> errorMessages, string errorCode = null, Exception exception = null)
         {
             Conclusion = false;
             ErrorDescription = new ErrorDescription
             {
                 ErrorMessage = string.Join("\n", errorMessages),
                 Exception = exception,
-                ErrorType = errorType
+                ErrorType = errorType,
+                ErrorCode = errorCode
             };
         }
 
@@ -289,10 +293,11 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessage">Message describing error</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
         /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
-        public Result Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
-            Set(errorType, new[] { errorMessage }, exception);
+        public Result Set(ErrorType errorType, string errorMessage, string errorCode = null, Exception exception = null) =>
+            Set(errorType, new[] { errorMessage }, errorCode, exception);
 
         /// <summary>
         /// Sets source <see cref="Result"/> as negative and overrides its <paramref name="errorType"/>, <paramref name="errorMessages"/> and <paramref name="exception"/>
@@ -300,16 +305,18 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result"/>.</param>
         /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
-        public Result Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
+        public Result Set(ErrorType errorType, IEnumerable<string> errorMessages, string errorCode = null, Exception exception = null)
         {
             Conclusion = false;
             ErrorDescription = new ErrorDescription
             {
                 ErrorMessage = string.Join("\n", errorMessages),
                 Exception = exception,
-                ErrorType = errorType
+                ErrorType = errorType,
+                ErrorCode = errorCode
             };
             return this;
         }
@@ -393,8 +400,10 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessage">Message describing error</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
-        public Result(ErrorType errorType, string errorMessage, Exception exception = null) : base(errorType, errorMessage, exception)
+        public Result(ErrorType errorType, string errorMessage, string errorCode = null, Exception exception = null)
+            : base(errorType, errorMessage, errorCode, exception)
         {
         }
 
@@ -404,10 +413,11 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome.</param>
         /// <param name="errorMessage">Message describing error.</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
         /// <returns>Instance of <see cref="Result"/> upon which this method has been run.</returns>
-        public new Result<T> Set(ErrorType errorType, string errorMessage, Exception exception = null) =>
-            Set(errorType, new[] { errorMessage }, exception);
+        public new Result<T> Set(ErrorType errorType, string errorMessage, string errorCode = null, Exception exception = null) =>
+            Set(errorType, new[] { errorMessage }, errorCode, exception);
 
         /// <summary>
         /// <inheritdoc cref="Result{T}(ErrorType)"/><br/>
@@ -415,10 +425,11 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <param name="errorType">Type of result's negative outcome</param>
         /// <param name="errorMessages">Messages describing error, that will be stored as single <see cref="string"/> separated by "\n"</param>
+        /// <param name="errorCode">Additional, optional error code to precise <paramref name="errorType"/>.</param>
         /// <param name="exception">Exception to be stored in <see cref="ErrorDescription"/>, typically one that was catch inside operation that provided this <see cref="Result{T}"/>.</param>
-        public new Result<T> Set(ErrorType errorType, IEnumerable<string> errorMessages, Exception exception = null)
+        public new Result<T> Set(ErrorType errorType, IEnumerable<string> errorMessages, string errorCode = null, Exception exception = null)
         {
-            base.Set(errorType, errorMessages, exception);
+            base.Set(errorType, errorMessages, errorCode, exception);
             return this;
         }
 

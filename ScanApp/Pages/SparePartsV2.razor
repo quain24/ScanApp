@@ -49,15 +49,15 @@
     private readonly List<ColumnConfig<SparePartGUIModel>> _configs = new()
     {
             ColumnBuilder<SparePartGUIModel>.For(p => p.Amount)
-                                    .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
-                                    .ColumnStyle("width: 75px;")
-                                    .Groupable()
-                                    .Editable()
-                                    .Build(),
+                                        .ValidateUsing(new FluentValidationWrapper<int>(x => x.InclusiveBetween(0, 1000)))
+                                        .ColumnStyle("width: 75px;")
+                                        .Groupable()
+                                        .Editable()
+                                        .Build(),
             ColumnBuilder<SparePartGUIModel>.For(x => x.Name)
-                                    .UnderName("Part name")
-                                    .Groupable()
-                                    .Build()
+                                        .UnderName("Part name")
+                                        .Groupable()
+                                        .Build()
         };
 
     private volatile bool _busyIncoming;

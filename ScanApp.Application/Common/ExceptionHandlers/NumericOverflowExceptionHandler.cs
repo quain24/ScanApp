@@ -26,7 +26,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers
                 .Append(entityNames).Append(": ")
                 .Append(exception.InnerException?.Message);
 
-            response.Set(ErrorType.NumericOverflow, message.ToString(), exception);
+            response.Set(ErrorType.NumericOverflow, message.ToString(), exception: exception);
             state.SetHandled(response);
             return Task.CompletedTask;
         }

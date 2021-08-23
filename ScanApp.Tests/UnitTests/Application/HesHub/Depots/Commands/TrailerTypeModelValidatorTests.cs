@@ -28,7 +28,7 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(TrailerTypeModel.Version))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeOfType<NotNullValidator<TrailerTypeModel, Version>>();
         }
 
@@ -39,7 +39,7 @@ namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(TrailerTypeModel.Name))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeOfType<NotEmptyValidator<TrailerTypeModel, string>>();
         }
     }

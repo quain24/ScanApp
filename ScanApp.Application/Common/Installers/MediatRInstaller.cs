@@ -2,7 +2,6 @@
 using MediatR.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Behaviors;
-using ScanApp.Application.Common.ExceptionHandlers;
 
 namespace ScanApp.Application.Common.Installers
 {

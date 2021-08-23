@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using ScanApp.Components.ScanAppTable.FilterDialog.FilteringOperations;
+﻿using ScanApp.Components.ScanAppTable.FilterDialog.FilteringOperations;
 using ScanApp.Components.ScanAppTable.Options;
+using System;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.ScanAppTable.FilterDialog
 {
