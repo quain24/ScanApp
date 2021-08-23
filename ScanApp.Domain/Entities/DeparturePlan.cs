@@ -97,20 +97,3 @@ namespace ScanApp.Domain.Entities
         }
     }
 }
-
-/* One plan has one depot and 1 - n.. seasons
- * -  Plan 1 -> Depot 1 -> Winter.   - OK
- * -  Plan 1 -> Depot 1 -> Winter.   - ERROR  - Impossible (SQL?) No duplication of Plan <-> season!
- * -  Plan 1 -> Depot 1 -> Default.  - OK     - Plan have collection of seasons.
- * -  Plan 2 -> Depot 1 -> Winter.   - OK     - One depot can have many different plans per season.
- * -  Plan 1 -> Depot 2 -> Default.  - ERROR  - Impossible, plan has one place for Depot
- *
- * -- Relations:
- *  - Plan to Depot  - many to one  - multiple plans can be assigned to single depot.
- *  - Plan to Season - many to many - season can have many plans, plan can have many seasons
- *
- * -- Validation needed for:
- *  - Plan must have one season at least.
- *  - Gate plus times per season - make sure there are no conflicts - overlap = Error | back to back - warning?.
- *  - If seasons overlap - can they? - validate across seasons.
- */
