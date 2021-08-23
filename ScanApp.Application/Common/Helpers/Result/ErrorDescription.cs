@@ -14,6 +14,11 @@ namespace ScanApp.Application.Common.Helpers.Result
         public ErrorType ErrorType { get; init; }
 
         /// <summary>
+        /// Gets additional, optional error code that provides more precise information about error that occurred.
+        /// </summary>
+        public string ErrorCode { get; init; }
+
+        /// <summary>
         /// Gets error message.
         /// </summary>
         /// <value>Error message stored in this object or <see langword="null"/> if no message is stored.</value>

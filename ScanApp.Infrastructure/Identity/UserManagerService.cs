@@ -71,7 +71,7 @@ namespace ScanApp.Infrastructure.Identity
             }
             catch (TransactionAbortedException ex)
             {
-                return new Result<BasicUserModel>(ErrorType.Timeout, $"Failed to add \"{userName}\" to db - transaction timeout", ex);
+                return new Result<BasicUserModel>(ErrorType.Timeout, $"Failed to add \"{userName}\" to db - transaction timeout", exception: ex);
             }
         }
 
@@ -163,15 +163,15 @@ namespace ScanApp.Infrastructure.Identity
                 }
                 catch (DbUpdateConcurrencyException e)
                 {
-                    return new Result<Version>(ErrorType.ConcurrencyFailure, "User or location has been changed during this command.", e);
+                    return new Result<Version>(ErrorType.ConcurrencyFailure, "User or location has been changed during this command.", exception: e);
                 }
                 catch (DbUpdateException e)
                 {
-                    return new Result<Version>(ErrorType.Unknown, $"Something happened during update of {data.Name}.", e);
+                    return new Result<Version>(ErrorType.Unknown, $"Something happened during update of {data.Name}.", exception: e);
                 }
                 catch (TransactionAbortedException e)
                 {
-                    return new Result<Version>(ErrorType.Timeout, "User or location has been changed during this command.", e);
+                    return new Result<Version>(ErrorType.Timeout, "User or location has been changed during this command.", exception: e);
                 }
             }).ConfigureAwait(false);
         }

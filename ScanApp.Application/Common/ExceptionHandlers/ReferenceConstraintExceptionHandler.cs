@@ -24,7 +24,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers
                 .Append(exception.Message).Append(", ")
                 .Append(entityNames).Append(": ")
                 .Append(exception.InnerException?.Message);
-            response.Set(ErrorType.ReferenceConstraint, message.ToString(), exception);
+            response.Set(ErrorType.ReferenceConstraint, message.ToString(), exception: exception);
             state.SetHandled(response);
             return Task.CompletedTask;
         }

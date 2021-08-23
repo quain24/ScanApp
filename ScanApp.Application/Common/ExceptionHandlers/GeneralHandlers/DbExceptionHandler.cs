@@ -23,11 +23,11 @@ namespace ScanApp.Application.Common.ExceptionHandlers.GeneralHandlers
             if (exception is SqlException exc)
             {
                 var errors = string.Join("\r\n", exc.Errors.Cast<SqlError>().Select(x => x.Message));
-                response.Set(ErrorType.DatabaseError, $"{name} - {exc.Number} - {exc.Message}\n\r{errors}", exc);
+                response.Set(ErrorType.DatabaseError, $"{name} - {exc.Number} - {exc.Message}\n\r{errors}", exception: exc);
             }
             else
             {
-                response.Set(ErrorType.DatabaseError, $"{name} - {exception.Message}\n\r{exception?.InnerException?.Message}", exception);
+                response.Set(ErrorType.DatabaseError, $"{name} - {exception.Message}\n\r{exception?.InnerException?.Message}", exception: exception);
             }
             state.SetHandled(response);
             return Task.CompletedTask;
