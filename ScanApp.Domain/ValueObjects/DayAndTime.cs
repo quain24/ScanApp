@@ -1,4 +1,6 @@
 ﻿using ScanApp.Domain.Common;
+using ScanApp.Domain.Enums;
+using ScanApp.Domain.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -38,12 +40,22 @@ namespace ScanApp.Domain.ValueObjects
         /// <returns>New instance of <see cref="DayAndTime"/>.</returns>
         public static DayAndTime From(DayOfWeek day, TimeSpan time) => new(day, time);
 
+        /// <inheritdoc cref="From(DayOfWeek, TimeSpan)"/>
+        public static DayAndTime From(Day day, TimeSpan time) => new(day, time);
+
         /// <summary>
-        /// Gets stored day of the week using MS <see cref="DayOfWeek"/> enumeration.<br/>
+        /// Gets stored day of the week using MS <see cref="System.DayOfWeek"/> enumeration.<br/>
         /// Mind that MS threats Sunday as first day, but objects of type <see cref="DayAndTime"/> uses Monday as first day when comparing values.
         /// </summary>
         /// <value>Stored day of the week.</value>
-        public DayOfWeek Day { get; }
+        public DayOfWeek DayOfWeek => Day.AsMsDayOfWeek();
+
+        /// <summary>
+        /// Gets stored day of the week using ScanApp implementation (Monday first).<br/>
+        /// Mind that MS threats Sunday as first day, but objects of type <see cref="DayAndTime"/> uses Monday as first day when comparing values.
+        /// </summary>
+        /// <value>Stored day of the week.</value>
+        public Day Day { get; }
 
         /// <summary>
         /// Gets stored time of day.
@@ -51,21 +63,37 @@ namespace ScanApp.Domain.ValueObjects
         /// <value>Time of day in form of <see cref="TimeSpan"/>.</value>
         public TimeSpan Time { get; }
 
-        private readonly ushort _comparableDay;
-
         private DayAndTime(DayOfWeek day, TimeSpan time)
         {
             if (Enum.IsDefined(typeof(DayOfWeek), day) is false)
-                throw new ArgumentOutOfRangeException(nameof(day), $"Given day value ({(int)day}) is not in range of the {nameof(DayOfWeek)} enum.");
-            if (time > TimeSpan.FromDays(1))
+            {
+                throw new ArgumentOutOfRangeException(nameof(day),
+                    $"Given day value ({(int)day}) is not in range of the {nameof(System.DayOfWeek)} enum.");
+            }
+
+            Time = ValidateTimeSpan(time);
+            Day = day.AsScanAppDay();
+        }
+
+        private DayAndTime(Day day, TimeSpan time)
+        {
+            if (Enum.IsDefined(typeof(Day), day) is false)
+            {
+                throw new ArgumentOutOfRangeException(nameof(day),
+                    $"Given day value ({(int)day}) is not in range of the {nameof(Enums.Day)} enum or is a set of flags.");
+            }
+
+            Time = ValidateTimeSpan(time);
+            Day = day;
+        }
+
+        private static TimeSpan ValidateTimeSpan(TimeSpan time)
+        {
+            if (time > TimeSpan.FromHours(24))
                 throw new ArgumentOutOfRangeException(nameof(time), "Given time period exceedes 24 hours.");
             if (time < TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(time), "Time cannot be negative.");
-            Day = day;
-            Time = time;
-
-            // This assigns Monday as first day of the week for internal IComparable implementation
-            _comparableDay = Day == 0 ? (ushort)7 : (ushort)Day;
+            return time;
         }
 
         /// <summary>
@@ -77,14 +105,14 @@ namespace ScanApp.Domain.ValueObjects
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return Time;
-            yield return _comparableDay;
+            yield return Day;
         }
 
         public int CompareTo(DayAndTime other)
         {
             if (ReferenceEquals(this, other)) return 0;
             if (ReferenceEquals(null, other)) return 1;
-            var dayComparison = _comparableDay.CompareTo(other._comparableDay);
+            var dayComparison = Day.CompareTo(other.Day);
             return dayComparison != 0 ? dayComparison : Time.CompareTo(other.Time);
         }
 

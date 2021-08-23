@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using ScanApp.Application.Common.Helpers.Result;
 using System;
+using FluentAssertions.Execution;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -120,6 +121,37 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
                 .And.Subject.As<ErrorDescription>().ErrorType.Should().Be(type);
         }
 
+        [Theory]
+        [InlineData(ErrorType.Canceled, "TestCode")]
+        [InlineData(ErrorType.ConfigurationError, "00458")]
+        [InlineData(ErrorType.Duplicated, "TestCode")]
+        [InlineData(ErrorType.NotFound, "@@AAll")]
+        public void Created_with_ErrorType_and_error_code_will_be_invalid_and_will_contain_given_error_type_and_code(ErrorType type, string code)
+        {
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(type, string.Empty, code);
+
+            using var scope = new AssertionScope();
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.Should().BeOfType<ErrorDescription>()
+                .And.Subject.As<ErrorDescription>().ErrorType.Should().Be(type);
+            result.ErrorDescription.ErrorCode.Should().Be(code);
+        }
+
+        [Theory]
+        [InlineData(ErrorType.Canceled, "TestCode")]
+        [InlineData(ErrorType.ConfigurationError, "00458")]
+        [InlineData(ErrorType.Duplicated, "TestCode")]
+        [InlineData(ErrorType.NotFound, "@@AAll")]
+        public void Created_generic_with_ErrorType_and_error_code_will_be_invalid_and_will_contain_given_error_type_and_code(ErrorType type, string code)
+        {
+            var result = new Result<long>(type, string.Empty, code);
+
+            result.Conclusion.Should().BeFalse();
+            result.ErrorDescription.Should().BeOfType<ErrorDescription>()
+                .And.Subject.As<ErrorDescription>().ErrorType.Should().Be(type);
+            result.ErrorDescription.ErrorCode.Should().Be(code);
+        }
+
         [Fact]
         public void Given_error_type_and_exception_will_store_exception_and_provide_basic_data_directly()
         {
@@ -169,7 +201,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "error_message", exception);
+            var result = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "error_message", exception: exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("error_message");
@@ -182,7 +214,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         {
             var exception = new ArgumentNullException("name", "message");
 
-            var result = new Result<string>(ErrorType.Canceled, "error_message", exception);
+            var result = new Result<string>(ErrorType.Canceled, "error_message", exception: exception);
 
             result.Conclusion.Should().BeFalse();
             result.ErrorDescription.ErrorMessage.Should().Be("error_message");
@@ -236,7 +268,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Set_will_replace_existing_ErrorDescription()
         {
-            var subject = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "err_message", new Exception());
+            var subject = new ScanApp.Application.Common.Helpers.Result.Result(ErrorType.Canceled, "err_message", exception: new Exception());
 
             subject.Set(ErrorType.Duplicated, "new_err_message");
 
@@ -248,7 +280,7 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
         [Fact]
         public void Set_will_replace_existing_ErrorDescription_in_generic_result()
         {
-            var subject = new Result<int>(ErrorType.Canceled, "err_message", new Exception());
+            var subject = new Result<int>(ErrorType.Canceled, "err_message", exception: new Exception());
 
             subject.Set(ErrorType.Duplicated, "new_err_message");
 

@@ -28,7 +28,7 @@ namespace ScanApp.Application.Common.ExceptionHandlers
             {
                 message.Append(",\r\n").Append(exception.InnerException.Message);
             }
-            response.Set(ErrorType.ConcurrencyFailure, message.ToString(), exception);
+            response.Set(ErrorType.ConcurrencyFailure, message.ToString(), exception: exception);
             state.SetHandled(response);
             return Task.CompletedTask;
         }

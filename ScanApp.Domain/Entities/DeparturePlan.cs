@@ -57,7 +57,7 @@ namespace ScanApp.Domain.Entities
         {
 
         }
-        
+
         public DeparturePlan(string name,
             DateTime start,
             DateTime end,

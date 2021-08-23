@@ -1,5 +1,4 @@
 ﻿using System;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {

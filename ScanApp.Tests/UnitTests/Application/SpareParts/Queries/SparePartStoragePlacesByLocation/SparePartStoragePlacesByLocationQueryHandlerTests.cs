@@ -1,8 +1,6 @@
 ﻿using FluentAssertions;
 using MediatR;
 using MockQueryable.Moq;
-using ScanApp.Application.Common.Helpers.Result;
-using ScanApp.Application.SpareParts.Queries.GetAllSparePartStoragePlaces;
 using ScanApp.Application.SpareParts.Queries.SparePartStoragePlacesByLocation;
 using ScanApp.Domain.Entities;
 using System;

@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Queries.AllSparePartTypes
 {
-    public class AllSparePartTypesQueryHandlerTests : DbFixtureWithExtensionHandlers
+    public class AllSparePartTypesQueryHandlerTests : DbFixtureWithExceptionHandlers
     {
         public AllSparePartTypesQueryHandlerTests(ITestOutputHelper output)
         {

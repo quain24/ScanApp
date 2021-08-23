@@ -30,20 +30,26 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Property(x => x.IsException)
+                .HasComputedColumnSql("[RecurrenceExceptionOfId] IS NOT NULL AND [RecurrenceExceptionDate] IS NOT NULL")
+                .UsePropertyAccessMode(PropertyAccessMode.Property);
+
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())
                 .HasColumnName("ExceptionsToPatternOccurrenceUTC")
                 .HasComment("Timestamps stored in this column are in UTC time format.")
+                // Custom comparer is needed for EF to detect changes inside this collection.
                 .Metadata.SetValueComparer(new ValueComparer<IEnumerable<DateTime>>(
                     (c1, c2) => c1.SequenceEqual(c2),
                     c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    // ToList and AsEnumerable are both needed
                     c => c.ToList().AsEnumerable()));
 
             builder.OwnsOne(x => x.RecurrencePattern, o =>
             {
                 o.Property(x => x.Type).HasColumnName("RecurrenceType").IsRequired();
                 o.Property(x => x.Interval).HasColumnName("RecurrenceInterval").IsRequired(false);
-                o.Property(x => x.Count).HasColumnName("RecurrenceCount").IsRequired(false);
+                o.Property(x => x.Count).HasColumnName("RecurrenceCountLimit").IsRequired(false);
                 o.Property(x => x.Until).HasColumnName("RecurrenceEndDateUTC").UsesUtc().IsRequired(false);
                 o.Property(x => x.ByDay).HasColumnName("RecurrenceByDay").IsRequired(false);
                 o.Property(x => x.ByMonth).HasColumnName("RecurrenceByMonth").IsRequired(false);

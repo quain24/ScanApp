@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Helpers;
+using ScanApp.Components.Table.Dialogs;
+using ScanApp.Components.Table.Enums;
+using ScanApp.Components.Table.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Components.Table;
-using ScanApp.Components.Table.Dialogs;
-using ScanApp.Components.Table.Enums;
-using ScanApp.Components.Table.Utilities;
 
 namespace ScanApp.Components.Table
 {

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScanApp.Domain.Entities;
+using ScanApp.Infrastructure.Persistence.Extensions;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -16,12 +17,14 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .HasMaxLength(120);
 
             builder.Property(x => x.Start)
+                .HasColumnName("StartDateUTC")
                 .IsRequired()
-                .HasConversion(new DateTimeToStringConverter());
+                .UsesUtc();
 
             builder.Property(x => x.End)
+                .HasColumnName("EndDateUTC")
                 .IsRequired()
-                .HasConversion(new DateTimeToStringConverter());
+                .UsesUtc();
 
             base.Configure(builder);
         }

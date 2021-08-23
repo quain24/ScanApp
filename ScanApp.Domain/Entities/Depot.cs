@@ -1,7 +1,6 @@
 ﻿using ScanApp.Domain.ValueObjects;
 using System;
 using System.Linq;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {

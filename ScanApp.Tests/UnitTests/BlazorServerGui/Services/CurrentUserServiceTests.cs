@@ -39,8 +39,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Services
 
             Func<Task> act = async () => _ = await subject.Name();
 
-            (await act.Should().ThrowAsync<WrongScopeException>())
-                .WithInnerException<InvalidOperationException>();
+            await act.Should().ThrowAsync<WrongScopeException>()
+                .Where(x => x.InnerException.GetType() == typeof(InvalidOperationException));
         }
 
         // Extension methods used in CurrentUserService are tested separately.

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using FluentValidation;
+using Moq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using FluentValidation;
-using Moq;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 

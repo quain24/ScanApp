@@ -1,17 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
-using ScanApp.Application.HesHub.Depots;
 using ScanApp.Application.HesHub.Depots.Commands.EditDepot;
-using ScanApp.Infrastructure.Persistence;
+using System;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 

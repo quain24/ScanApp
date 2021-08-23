@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ScanApp.Domain.Entities;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using ScanApp.Domain.Enums;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
@@ -11,7 +13,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
         public override void Configure(EntityTypeBuilder<DeparturePlan> builder)
         {
             builder.ToTable("DeparturePlans", "hub");
-            
+
             builder.Property(x => x.Name)
                 .HasMaxLength(120);
 
@@ -41,12 +43,14 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
 
             builder.OwnsOne(e => e.ArrivalTimeAtDepot, at =>
             {
+                at.Ignore(x => x.DayOfWeek);
                 at.Property(x => x.Day)
                     .HasColumnName("ArrivalTimeAtDepotDay")
+                    .HasConversion(new EnumToStringConverter<Day>())
+                    .HasComment("Field is mapped to ScanApp 'Day' enumeration.")
                     .IsRequired();
                 at.Property(x => x.Time)
                     .HasColumnName("ArrivalTimeAtDepotTime")
-                    .HasConversion(new TimeSpanToStringConverter())
                     .IsRequired();
             }).Navigation(e => e.ArrivalTimeAtDepot).IsRequired();
 

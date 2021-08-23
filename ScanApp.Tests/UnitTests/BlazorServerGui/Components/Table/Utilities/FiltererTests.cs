@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using Moq;
 using ScanApp.Components.Table.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 

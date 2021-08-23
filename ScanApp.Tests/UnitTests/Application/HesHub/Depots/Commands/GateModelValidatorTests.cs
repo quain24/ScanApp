@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Validators;
 using ScanApp.Application.HesHub.Depots;
 using ScanApp.Application.HesHub.Depots.Commands;
 using ScanApp.Domain.ValueObjects;
 using ScanApp.Tests.TestExtensions;
+using System.Linq;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.Application.HesHub.Depots.Commands

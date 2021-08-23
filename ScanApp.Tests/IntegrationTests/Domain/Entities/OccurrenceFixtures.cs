@@ -1,8 +1,8 @@
-﻿using ScanApp.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ScanApp.Domain.Entities;
 using ScanApp.Domain.ValueObjects;
-using System;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ScanApp.Infrastructure.Persistence.Configurations;
+using System;
 
 namespace ScanApp.Tests.IntegrationTests.Domain.Entities
 {
@@ -10,7 +10,9 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
     {
         public class Occurrence : Occurrence<Occurrence>
         {
-            private Occurrence(){}
+            private Occurrence()
+            {
+            }
 
             public Occurrence(DateTime startUtc, DateTime endUtc) : base(startUtc, endUtc)
             {

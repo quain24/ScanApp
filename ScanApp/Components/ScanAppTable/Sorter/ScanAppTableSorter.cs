@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using ScanApp.Components.ScanAppTable.Extensions;
+﻿using ScanApp.Components.ScanAppTable.Extensions;
 using ScanApp.Components.ScanAppTable.Options;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScanApp.Components.ScanAppTable.Sorter
 {

@@ -48,7 +48,7 @@ namespace ScanApp.Infrastructure.Services
             new(Globals.ClaimTypes.IgnoreLocation, Globals.ModuleNames.SparePartsModule)
         };
 
-        private readonly Season _defaultSeason = new Season("Default", DateTime.MinValue, DateTime.MaxValue);
+        private readonly Season _defaultSeason = new Season("Default", DateTime.MinValue.ToUniversalTime(), DateTime.MaxValue.ToUniversalTime());
 
         private IUserManager UserManager { get; }
 

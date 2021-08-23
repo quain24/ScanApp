@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using ScanApp.Common;
 using ScanApp.Components.ScanAppTable.Options;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.ScanAppTableTestsFixtures;
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Options
@@ -69,7 +69,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Option
         [Fact]
         public void Will_create_instance_with_fluent_validation_wrapper()
         {
-            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A", 
+            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A",
                 new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
 
             subject.Validator.Should().BeOfType<FluentValidationWrapper<int>>();
@@ -78,7 +78,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Option
         [Fact]
         public void Will_create_instance_with_fluent_validator()
         {
-            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A", 
+            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A",
                 new ColumnConfigurationTestsValidatorFixture());
 
             subject.Validator.Should().BeOfType<ColumnConfigurationTestsValidatorFixture>();
@@ -87,7 +87,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Option
         [Fact]
         public void Will_transform_fluent_validation_wrapper_into_MudBlazor_compatible_field_validator()
         {
-            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A", 
+            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A",
                 new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
 
             var encapsulation = subject.ToMudFormFieldValidator<int>();
@@ -97,7 +97,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Option
         [Fact]
         public void Will_transform_abstract_validator_into_MudBlazor_compatible_field_validator()
         {
-            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A", 
+            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A",
                 new ColumnConfigurationTestsValidatorFixture());
 
             var encapsulation = subject.ToMudFormFieldValidator<int>();
@@ -117,7 +117,7 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Option
         public void
             Will_transform_validator_into_MudBlazor_compatible_field_validator_with_different_types()
         {
-            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A", 
+            var subject = new ColumnConfiguration<ColumnConfigurationTestsFixture>(s => s.A, "A",
                 new FluentValidationWrapper<int>(x => x.GreaterThan(10)));
 
             var encapsulation = subject.ToMudFormFieldValidator<int?>();

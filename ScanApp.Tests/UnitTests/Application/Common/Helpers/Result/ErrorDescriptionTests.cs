@@ -29,6 +29,18 @@ namespace ScanApp.Tests.UnitTests.Application.Common.Helpers.Result
             subject.ToString().Should().Be($"{subject.ErrorType} - {subject.ErrorMessage}");
         }
 
+        [Fact] public void ToString_returns_given_code_and_error_code_and_message_if_all_are_present()
+        {
+            var subject = new ErrorDescription
+            {
+                ErrorType = ErrorType.Canceled,
+                ErrorMessage = "message",
+                ErrorCode = "code"
+            };
+
+            subject.ToString().Should().Be($"{subject.ErrorType} - {subject.ErrorCode} - {subject.ErrorMessage}");
+        }
+
         [Fact]
         public void ToString_returns_given_code_if_only_code_is_present()
         {

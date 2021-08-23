@@ -3,7 +3,6 @@ using MediatR;
 using MockQueryable.Moq;
 using ScanApp.Application.Admin.Queries.GetAllUsersBasicData;
 using ScanApp.Application.Common.Entities;
-using ScanApp.Application.Common.Helpers.Result;
 using System;
 using System.Collections.Generic;
 using System.Linq;

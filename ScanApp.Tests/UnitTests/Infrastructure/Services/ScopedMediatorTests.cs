@@ -111,7 +111,7 @@ namespace ScanApp.Tests.UnitTests.Infrastructure.Services
         }
 
         [Fact]
-        public async void SendScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
+        public async Task SendScoped_sending_object_Will_throw_arg_null_if_did_not_get_mediator_instance_from_scope()
         {
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();

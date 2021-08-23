@@ -57,8 +57,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.AddUserToRole
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(AddUserToRoleCommand.UserName))
-                .WhoseValue
-                .Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should()
                 .ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<AddUserToRoleCommand, string>))
                 .And.Subject.Should().ContainSingle(c =>

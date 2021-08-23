@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace ScanApp.Infrastructure.Persistence.Extensions
 {
