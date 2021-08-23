@@ -58,7 +58,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserPassword
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(ChangeUserPasswordCommand.NewPassword))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeAssignableTo<ChildValidatorAdaptor<ChangeUserPasswordCommand, string>>()
                 .And.Subject.As<ChildValidatorAdaptor<ChangeUserPasswordCommand, string>>().ValidatorType.Should().BeAssignableTo<PasswordValidator>();
         }
@@ -72,7 +72,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserPassword
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(ChangeUserPasswordCommand.UserName))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeAssignableTo<NotEmptyValidator<ChangeUserPasswordCommand, string>>();
         }
 
@@ -88,7 +88,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.ChangeUserPassword
             var t = validators["Version"].First();
 
             validators.Should().ContainKey(nameof(ChangeUserPasswordCommand.Version))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(PredicateValidator<ChangeUserPasswordCommand, Version>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotNullValidator<ChangeUserPasswordCommand, Version>));
         }

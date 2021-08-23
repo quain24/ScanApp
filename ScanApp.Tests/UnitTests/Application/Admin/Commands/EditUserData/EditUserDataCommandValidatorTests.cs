@@ -64,7 +64,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(EditUserDataCommand.Name))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<EditUserDataCommand, string>))
                 .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(IdentityNamingValidator));
@@ -78,7 +78,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(EditUserDataCommand.Email))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotEmptyValidator<EditUserDataCommand, string>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(ChildValidatorAdaptor<EditUserDataCommand, string>))
                 .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(EmailValidator));
@@ -92,7 +92,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(EditUserDataCommand.Phone))
-                .WhichValue.Should().HaveCount(1)
+                .WhoseValue.Should().HaveCount(1)
                 .And.Subject.First().Should().BeOfType<ChildValidatorAdaptor<EditUserDataCommand, string>>()
                 .Subject.As<ChildValidatorAdaptor<EditUserDataCommand, string>>().ValidatorType.IsAssignableTo(typeof(PhoneNumberValidator));
         }
@@ -105,7 +105,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.EditUserData
             var validators = subject.ExtractPropertyValidators();
 
             validators.Should().ContainKey(nameof(EditUserDataCommand.Version))
-                .WhichValue.Should().HaveCount(2)
+                .WhoseValue.Should().HaveCount(2)
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(NotNullValidator<EditUserDataCommand, Version>))
                 .And.Subject.Should().ContainSingle(c => c.GetType() == typeof(PredicateValidator<EditUserDataCommand, Version>));
         }

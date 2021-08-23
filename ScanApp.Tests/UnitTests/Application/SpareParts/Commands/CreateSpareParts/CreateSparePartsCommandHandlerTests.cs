@@ -1,13 +1,10 @@
 ﻿using FluentAssertions;
 using MediatR;
-using MockQueryable.Moq;
 using Moq;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Application.SpareParts.Commands.CreateSpareParts;
-using ScanApp.Domain.Entities;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;

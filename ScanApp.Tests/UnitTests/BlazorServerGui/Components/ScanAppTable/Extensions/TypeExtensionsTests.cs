@@ -1,6 +1,6 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using ScanApp.Components.ScanAppTable.Extensions;
+using System;
 using Xunit;
 using TypeExtensions = FluentAssertions.TypeExtensions;
 

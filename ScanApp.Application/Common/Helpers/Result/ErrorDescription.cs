@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace ScanApp.Application.Common.Helpers.Result
 {
@@ -12,6 +13,11 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// </summary>
         /// <value>Code / type of error stored in this object</value>
         public ErrorType ErrorType { get; init; }
+
+        /// <summary>
+        /// Gets additional, optional error code that provides more precise information about error that occurred.
+        /// </summary>
+        public string ErrorCode { get; init; }
 
         /// <summary>
         /// Gets error message.
@@ -63,6 +69,14 @@ namespace ScanApp.Application.Common.Helpers.Result
         /// <returns><para><see cref="string"/> containing <see cref="ErrorType"/> and <see cref="ErrorMessage"/> if both are present.</para>
         /// <para><see cref="string"/> containing just <see cref="ErrorType"/> if there is no error message.</para>
         /// </returns>
-        public override string ToString() => string.IsNullOrEmpty(ErrorMessage) ? ErrorType.ToString() : $"{ErrorType} - {ErrorMessage}";
+        public override string ToString()
+        {
+            var builder = new StringBuilder(ErrorType.ToString());
+            if (string.IsNullOrWhiteSpace(ErrorCode) is false)
+                builder.Append(" - ").Append(ErrorCode);
+            if (string.IsNullOrWhiteSpace(ErrorMessage) is false)
+                builder.Append(" - ").Append(ErrorMessage);
+            return builder.ToString();
+        }
     }
 }

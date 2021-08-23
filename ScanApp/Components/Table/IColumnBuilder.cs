@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using FluentValidation;
+﻿using FluentValidation;
 using MudBlazor;
+using System.Collections.Generic;
 
 namespace ScanApp.Components.Table
 {
@@ -35,7 +35,7 @@ namespace ScanApp.Components.Table
         /// <typeparam name="TType">Type being converted.</typeparam>
         /// <returns>Instance of <see cref="IColumnBuilder{T}"/> for further configuration.</returns>
         IColumnBuilder<T> ConvertUsing<TType>(Converter<TType> converter);
-        
+
         /// <summary>
         /// Set converter that will be used to translate from and to a <see cref="SCTable{TTableType}"/> display-friendly format.
         /// </summary>

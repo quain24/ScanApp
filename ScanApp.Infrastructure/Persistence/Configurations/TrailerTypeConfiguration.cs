@@ -5,9 +5,9 @@ using ScanApp.Domain.Entities;
 
 namespace ScanApp.Infrastructure.Persistence.Configurations
 {
-    public class TrailerTypeConfiguration : IEntityTypeConfiguration<TrailerType>
+    public class TrailerTypeConfiguration : VersionedEntityConfiguration<TrailerType>
     {
-        public void Configure(EntityTypeBuilder<TrailerType> builder)
+        public override void Configure(EntityTypeBuilder<TrailerType> builder)
         {
             builder.ToTable("Trailers", "hub");
             builder.Property(e => e.Name)
@@ -19,10 +19,7 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.Property(e => e.UnloadingTime)
                 .HasConversion(new TimeSpanToStringConverter());
 
-            builder.Property(e => e.Version)
-                .HasComment("This Row version is converted to 'Version' object in ScanApp")
-                .IsRowVersion()
-                .HasConversion(new VersionConverter());
+            base.Configure(builder);
         }
     }
 }

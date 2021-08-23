@@ -1,12 +1,11 @@
 ﻿using System;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Domain.Entities
 {
     /// <summary>
     /// Entity representing a single type of trailer (LKW) configuration.
     /// </summary>
-    public class TrailerType
+    public class TrailerType : VersionedEntity
     {
         /// <summary>
         /// Database Id of this entity, primary key.
@@ -76,19 +75,6 @@ namespace ScanApp.Domain.Entities
         {
             get => _unloadingTime;
             set => _unloadingTime = value >= TimeSpan.Zero ? value : throw new ArgumentException("Unloading time has to be >= 0.", nameof(UnloadingTime));
-        }
-
-        private Version _version = Version.Empty;
-
-        /// <summary>
-        /// Gets or sets entity Version (representation of RowVersion).
-        /// </summary>
-        /// <value>Version of this entity, by default an empty <see cref="Version"/>.</value>
-        /// <exception cref="ArgumentNullException">Given <see cref="ValueObjects.Version"/> was <see langword="null"/>.</exception>
-        public Version Version
-        {
-            get => _version;
-            set => _version = value ?? throw new ArgumentNullException(nameof(ValueObjects.Version), "Version cannot be null - use 'Version.Empty' instead.");
         }
 
         /// <summary>

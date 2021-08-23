@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Moq;
 using ScanApp.Application.Common.Helpers.Result;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Application.HesHub.Depots.Commands.DeleteDepot;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Version = ScanApp.Domain.ValueObjects.Version;
 

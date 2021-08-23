@@ -24,8 +24,10 @@ namespace ScanApp.Application.HesHub.Depots.Commands.DeleteDepot
         public async Task<Result> Handle(DeleteDepotCommand request, CancellationToken cancellationToken)
         {
             await using var ctx = _factory.CreateDbContext();
-            var depot = new Depot(request.Id, "name", "0", "e@m.c", Address.Create("name", "name", "name", "name"));
-            depot.ChangeVersion(request.Version);
+            var depot = new Depot(request.Id, "name", "0", "e@m.c", Address.Create("name", "name", "name", "name"))
+            {
+                Version = request.Version
+            };
 
             ctx.Remove(depot);
             var removed = await ctx.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ScanApp.Application.Common.Interfaces;
 using ScanApp.Infrastructure.Persistence;
 using ScanApp.Infrastructure.Services;
+using ScanApp.Tests.IntegrationTests.Domain.Entities;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -64,6 +65,8 @@ namespace ScanApp.Tests.IntegrationTests
             }
         }
 
+        protected AppDbContextStub NewStubDbContext => NewDbContext as AppDbContextStub;
+
         private const string InMemoryConnectionString = "DataSource=:memory:";
         private SqliteConnection _connection;
         private ApplicationDbContext _dbContext;
@@ -107,7 +110,11 @@ namespace ScanApp.Tests.IntegrationTests
                 .WriteTo.TestOutput(Output ?? new TestOutputHelper())
                 .Enrich.FromLogContext()
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Error)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                // Exclude EF database creation messages.
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("create table", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE INDEX", StringComparison.OrdinalIgnoreCase))
+                .Filter.ByExcluding(x => x.RenderMessage().Contains("CREATE UNIQUE INDEX", StringComparison.OrdinalIgnoreCase))
                 .CreateLogger()));
         }
 
@@ -124,9 +131,13 @@ namespace ScanApp.Tests.IntegrationTests
         {
         }
 
+        public virtual DbSet<OccurrenceFixtures.Occurrence> Occurrences { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ApplyConfigurationsFromAssembly(typeof(SqlLiteInMemoryDbFixture).Assembly);
+
             if (Database.IsSqlite())
             {
                 var timestampProperties = builder.Model
@@ -138,7 +149,7 @@ namespace ScanApp.Tests.IntegrationTests
                 foreach (var property in timestampProperties)
                 {
                     property.SetValueConverter(new SqliteTimestampConverter());
-                    property.SetDefaultValueSql("CURRENT_TIMESTAMP");
+                    property.SetDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')");
                 }
             }
         }

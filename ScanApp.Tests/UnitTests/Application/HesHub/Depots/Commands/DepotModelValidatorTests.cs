@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using System.Reflection;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentValidation;
 using ScanApp.Application.HesHub.Depots;
 using ScanApp.Application.HesHub.Depots.Commands;
 using ScanApp.Tests.TestExtensions;
+using System.Linq;
+using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
 

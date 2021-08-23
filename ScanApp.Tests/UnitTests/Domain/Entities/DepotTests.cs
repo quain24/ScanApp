@@ -4,7 +4,6 @@ using ScanApp.Domain.ValueObjects;
 using System;
 using Xunit;
 using Xunit.Abstractions;
-using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Tests.UnitTests.Domain.Entities
 {
@@ -155,26 +154,6 @@ namespace ScanApp.Tests.UnitTests.Domain.Entities
             Action act = () => subject.ChangeDistanceToHub(-1);
 
             act.Should().Throw<ArgumentException>();
-        }
-
-        [Fact]
-        public void ChangeVersion_accepts_valid_data()
-        {
-            var subject = DepotBuilder.CreateWithRandomValidData().Build();
-
-            subject.ChangeVersion(Version.Create("aa"));
-
-            subject.Version.Should().Be(Version.Create("aa"));
-        }
-
-        [Fact]
-        public void ChangeVersion_throws_when_new_version_is_null()
-        {
-            var subject = DepotBuilder.CreateWithRandomValidData().Build();
-
-            Action act = () => subject.ChangeVersion(null);
-
-            act.Should().Throw<ArgumentNullException>();
         }
     }
 }

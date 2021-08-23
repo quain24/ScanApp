@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace ScanApp.Tests.IntegrationTests.Application.SpareParts.Queries.GetAllSparePartStoragePlaces
 {
-    public class GetAllSparePartStoragePlacesQueryHandlerTests : DbFixtureWithExtensionHandlers
+    public class GetAllSparePartStoragePlacesQueryHandlerTests : DbFixtureWithExceptionHandlers
     {
         public GetAllSparePartStoragePlacesQueryHandlerTests(ITestOutputHelper output)
         {

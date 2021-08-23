@@ -26,7 +26,7 @@ namespace ScanApp.Tests.UnitTests.Application.Admin.Commands.DeleteRole
 
             var validators = subject.ExtractPropertyValidators();
             validators.Should().ContainKey(nameof(DeleteRoleCommand.RoleName))
-                .WhichValue.Should().HaveCount(1, "only one validator is used")
+                .WhoseValue.Should().HaveCount(1, "only one validator is used")
                 .And.Subject.First().Should().BeOfType<PredicateValidator<DeleteRoleCommand, string>>();
         }
 

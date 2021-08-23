@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharedExtensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -46,16 +47,50 @@ namespace ScanApp.Common.Extensions
             };
         }
 
-        public static IEnumerable<Type> GetImplementingTypes(this Type type, Assembly assembly = null)
+        /// <summary>
+        /// Provides all implementation of given <paramref name="type"/> <b>interface</b>.
+        /// </summary>
+        /// <param name="type">Interface to be checked.</param>
+        /// <param name="assemblies">List of assemblies to be scanned for implementations of <paramref name="type"/>.</param>
+        /// <returns>List of implementations of given <paramref name="type"/>.</returns>
+        public static IEnumerable<Type> GetImplementingTypes(this Type type, params Assembly[] assemblies)
         {
-            assembly ??= Assembly.GetExecutingAssembly();
+            if (type.IsInterface is false)
+                throw new ArgumentException($"{nameof(type)} must be an interface. To get objects" +
+                                            $" derived from {nameof(type)} use {nameof(Type)}.{nameof(GetDerivingTypes)}");
+
+            assemblies = assemblies.IsNullOrEmpty()
+                ? AppDomain.CurrentDomain.GetAssemblies()
+                : assemblies;
 
             if (!type.IsGenericTypeDefinition)
-                return assembly.GetTypes().Where(x => x.IsAssignableFrom(type) && x.IsClass && !x.IsAbstract).ToList();
+                return assemblies.SelectMany(a => a.GetTypes().Where(x => x.IsAssignableFrom(type) && x.IsClass && !x.IsAbstract)).ToList();
 
-            return assembly
+            return assemblies.SelectMany(a => a
                 .GetTypes()
-                .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == type));
+                .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == type)))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Provides all types that derive from given <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">Type to be checked.</param>
+        /// <param name="assemblies">List of assemblies to be scanned for implementations of <paramref name="type"/>.</param>
+        /// <returns>List of types derived from given <paramref name="type"/>.</returns>
+        public static IEnumerable<Type> GetDerivingTypes(this Type type, params Assembly[] assemblies)
+        {
+            assemblies = assemblies.IsNullOrEmpty() ? AppDomain.CurrentDomain.GetAssemblies() : assemblies;
+
+            if (!type.IsGenericTypeDefinition)
+                return assemblies.SelectMany(a =>
+                    a.GetTypes()
+                        .Where(x => x.IsAssignableFrom(type) && !x.IsAbstract && x != type)).ToList();
+
+            return assemblies.SelectMany(a => a
+                .GetTypes()
+                .Where(t => t.IsSubclassOfDeep(type)))
+                .ToList();
         }
 
         public static IEnumerable<Type> GetAllTypesFromGeneric(this Type genericType, Assembly assembly = null, params Type[] genericParameterTypes)
@@ -73,6 +108,42 @@ namespace ScanApp.Common.Extensions
                          type.GetGenericArguments()
                             .Zip(genericParameterTypes, (f, s) => s.IsAssignableFrom(f))
                             .All(z => z)));
+        }
+
+        /// <inheritdoc cref="Type.IsSubclassOf"/>
+        /// <remarks>
+        /// This implementation checks for implementations of given <param name="type"> also in nested types.</param>
+        /// </remarks>
+        public static bool IsSubclassOfDeep(this Type type, Type baseType)
+        {
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+
+            if (baseType == null || type == baseType)
+                return false;
+
+            if (baseType.IsGenericType == false)
+            {
+                if (type.IsGenericType == false)
+                    return type.IsSubclassOf(baseType);
+            }
+            else
+            {
+                baseType = baseType.GetGenericTypeDefinition();
+            }
+
+            type = type.BaseType;
+            var objectType = typeof(object);
+            while (type != objectType && type != null)
+            {
+                Type currentType = type.IsGenericType ?
+                    type.GetGenericTypeDefinition() : type;
+                if (currentType == baseType)
+                    return true;
+
+                type = type.BaseType;
+            }
+
+            return false;
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using System;
-using ScanApp.Components.ScanAppTable.Extensions;
+﻿using ScanApp.Components.ScanAppTable.Extensions;
 using ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.ScanAppTableTestsFixtures;
+using System;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Extensions
@@ -22,9 +22,8 @@ namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Extens
             var subject = new PropertyInfoExtensionsTestsFixture();
             var columnConfigs = subject.GetColumnConfigurations();
             var value = columnConfigs[0].PropInfo.GetValue(subject, columnConfigs[0]);
-            Assert.Equal(new DateTime(2021,03,21).ToShortDateString(), value);
+            Assert.Equal(new DateTime(2021, 03, 21).ToShortDateString(), value);
         }
-
 
         [Fact]
         public void Will_get_a_nested_property_value_with_DateTime_is_show_day_only()

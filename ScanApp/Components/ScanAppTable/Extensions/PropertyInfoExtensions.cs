@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using ScanApp.Components.ScanAppTable.Options;
+﻿using ScanApp.Components.ScanAppTable.Options;
 using ScanApp.Components.ScanAppTable.Utilities;
+using System;
+using System.Reflection;
 
 namespace ScanApp.Components.ScanAppTable.Extensions
 {

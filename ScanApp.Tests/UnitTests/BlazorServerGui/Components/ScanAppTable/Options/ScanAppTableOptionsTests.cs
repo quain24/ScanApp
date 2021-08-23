@@ -3,7 +3,7 @@ using ScanApp.Components.ScanAppTable.Options;
 using Xunit;
 
 namespace ScanApp.Tests.UnitTests.BlazorServerGui.Components.ScanAppTable.Options
-{  
+{
     public class ScanAppTableOptionsTests
     {
         [Fact]
