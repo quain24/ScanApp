@@ -28,10 +28,10 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
             builder.HasOne(x => x.RecurrenceExceptionOf)
                 .WithMany()
                 .IsRequired(false)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(x => x.IsException)
-                .HasComputedColumnSql("[RecurrenceExceptionOfId] IS NOT NULL AND [RecurrenceExceptionDate] IS NOT NULL")
+                .HasComputedColumnSql("CAST (CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END AS BIT)", stored:true)
                 .UsePropertyAccessMode(PropertyAccessMode.Property);
 
             builder.Property(x => x.RecurrenceExceptions)

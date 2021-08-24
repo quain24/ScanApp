@@ -229,7 +229,7 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
         }
 
         [Fact]
-        public void Will_cascade_delete_to_exceptions()
+        public void Will_throw_db_update_exc_if_tried_to_delete_occurrence_with_existing_exceptions()
         {
             var start = new DateTime(2021, 01, 21, 11, 45, 00, DateTimeKind.Utc);
             var end = new DateTime(2021, 01, 21, 12, 45, 00, DateTimeKind.Utc);
@@ -256,8 +256,8 @@ namespace ScanApp.Tests.IntegrationTests.Domain.Entities
             {
                 var mainOccurrence = cctx.Occurrences.First();
                 cctx.Remove(mainOccurrence);
-                cctx.SaveChanges();
-                cctx.Occurrences.Should().BeEmpty();
+                Action act = () => _ = cctx.SaveChanges();
+                act.Should().Throw<DbUpdateException>("main occurrence cannot be deleted before");
             }
         }
 
