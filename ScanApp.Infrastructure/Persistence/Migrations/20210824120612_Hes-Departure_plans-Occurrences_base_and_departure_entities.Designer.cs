@@ -10,7 +10,7 @@ using ScanApp.Infrastructure.Persistence;
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210824111143_Hes-Departure_plans-Occurrences_base_and_departure_entities")]
+    [Migration("20210824120612_Hes-Departure_plans-Occurrences_base_and_departure_entities")]
     partial class HesDeparture_plansOccurrences_base_and_departure_entities
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -280,7 +280,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsException")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("bit")
-                        .HasComputedColumnSql("CAST (CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END AS BIT)", true);
+                        .HasComputedColumnSql("CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END", true);
 
                     b.Property<string>("Name")
                         .HasMaxLength(120)
