@@ -278,7 +278,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsException")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("bit")
-                        .HasComputedColumnSql("CAST (CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END AS BIT)", true);
+                        .HasComputedColumnSql("CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END", true);
 
                     b.Property<string>("Name")
                         .HasMaxLength(120)

@@ -34,7 +34,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     ExceptionsToPatternOccurrenceUTC = table.Column<string>(type: "nvarchar(max)", nullable: true, comment: "Timestamps stored in this column are in UTC time format."),
                     RecurrenceExceptionOfId = table.Column<int>(type: "int", nullable: true),
                     RecurrenceExceptionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsException = table.Column<bool>(type: "bit", nullable: false, computedColumnSql: "CAST (CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END AS BIT)", stored: true)
+                    IsException = table.Column<bool>(type: "bit", nullable: false, computedColumnSql: "CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END", stored: true)
                 },
                 constraints: table =>
                 {
