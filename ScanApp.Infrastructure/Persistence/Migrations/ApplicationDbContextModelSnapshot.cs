@@ -268,6 +268,9 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     b.Property<int>("DepotId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime2")
                         .HasColumnName("EndDateUTC");
