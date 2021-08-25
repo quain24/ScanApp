@@ -10,7 +10,7 @@ using ScanApp.Infrastructure.Persistence;
 namespace ScanApp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210824120612_Hes-Departure_plans-Occurrences_base_and_departure_entities")]
+    [Migration("20210825141322_Hes-Departure_plans-Occurrences_base_and_departure_entities")]
     partial class HesDeparture_plansOccurrences_base_and_departure_entities
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -269,6 +269,9 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("DepotId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("End")
                         .HasColumnType("datetime2")

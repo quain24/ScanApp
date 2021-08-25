@@ -20,6 +20,7 @@ namespace ScanApp.Infrastructure.Persistence.Migrations
                     GateId = table.Column<int>(type: "int", nullable: false),
                     ArrivalTimeAtDepotDay = table.Column<string>(type: "nvarchar(max)", nullable: false, comment: "Field is mapped to ScanApp 'Day' enumeration."),
                     ArrivalTimeAtDepotTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Version = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true, comment: "This Row version is converted to 'Version' object in ScanApp"),
                     StartDateUTC = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDateUTC = table.Column<DateTime>(type: "datetime2", nullable: false),
