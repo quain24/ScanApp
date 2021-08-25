@@ -1,0 +1,32 @@
+﻿@using Syncfusion.Blazor.Schedule
+@using ScanApp.Application.HesHub.DeparturePlans.Queries.AllResourceSeasons
+@using MediatR
+@using ScanApp.Application.HesHub.DeparturePlans.Queries
+@using ScanApp.Application.HesHub.DeparturePlans.Queries.GetResourceDataForDepots
+@using ScanApp.Common.Interfaces
+@inject IDateTime _dateTimeService
+@inject IMediator _mediator
+
+<h3>DeparturePlans</h3>
+
+@code {
+
+    private IEnumerable<SeasonResourceModel> _seasonResources = Array.Empty<SeasonResourceModel>();
+    private IEnumerable<DepotResourceModel> _depotResources = Array.Empty<DepotResourceModel>();
+    private DateTime _now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _now = _dateTimeService.Now;
+
+        var seasonsResult = await _mediator.Send(new AllSeasonResourcesQuery());
+        _seasonResources = seasonsResult.Output;
+
+        var depotResult = await _mediator.Send(new GetResourceDataForDepotsQuery());
+        _depotResources = depotResult.Output;
+
+        
+        await base.OnInitializedAsync();
+    }
+    
+} 
