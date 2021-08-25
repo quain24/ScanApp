@@ -53,6 +53,8 @@ namespace ScanApp.Domain.Entities
 
         private DayAndTime _arrivalTimeAtDepot;
 
+        public string Description { get; set; }
+
         private DeparturePlan() : base()
         {
 
