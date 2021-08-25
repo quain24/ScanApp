@@ -17,7 +17,7 @@
                   Filter="new Func<BasicRoleModel, bool>(FilterRoles)" OnRowClick="@(async args => await FillSelectedRoleClaimsData(args))" Hover="true" Dense="true" Outlined="false" Elevation="0">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Roles</MudText>
-                <MudToolBarSpacer />
+                <MudSpacer />
                 <MudTextField @bind-Value="_searchStringRole" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
             </ToolBarContent>
             <HeaderContent>
@@ -36,7 +36,7 @@
                   Filter="new Func<(ClaimModel Claim, bool IsInClaim), bool>(FilterClaims)" Hover="true" Dense="true" Outlined="false" Elevation="0">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Claims</MudText>
-                <MudToolBarSpacer />
+                <MudSpacer />
                 <MudTextField @bind-Value="_searchStringClaim" Placeholder="Search" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
             </ToolBarContent>
             <HeaderContent>
