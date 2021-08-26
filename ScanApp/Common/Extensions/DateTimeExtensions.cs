@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace ScanApp.Common.Extensions
 {
@@ -16,6 +17,23 @@ namespace ScanApp.Common.Extensions
                 .Replace("-", "", StringComparison.OrdinalIgnoreCase)
                 .Replace(":", "", StringComparison.OrdinalIgnoreCase);
             return isoDate + 'Z';
+        }
+
+        public static DateTime FromSyncfusionDateString(this string date)
+        {
+            _ = date ?? throw new ArgumentNullException(nameof(date));
+
+            if (date.Length != 16 || Equals(date[15], 'Z') is false || date[8] != 'T')
+            {
+                throw new FormatException($"Given {nameof(date)} string ({date}) is not valid Syncfusion date string\r\n" +
+                                          "Valid example: 20210826T084826Z");
+            }
+
+            date = date.Remove(8, 1);
+
+            return DateTime.TryParseExact(date[..^1], "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)
+                ? DateTime.SpecifyKind(result, DateTimeKind.Utc)
+                : throw new ArgumentOutOfRangeException($"Given {nameof(date)} string ({date}) could not be parsed to a valid date.");
         }
     }
 }
