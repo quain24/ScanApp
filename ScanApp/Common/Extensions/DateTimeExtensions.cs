@@ -12,7 +12,7 @@ namespace ScanApp.Common.Extensions
             if (date.Kind != DateTimeKind.Utc)
                 throw new ArgumentException("Conversion can be performed only on dates marked as UTC.");
 
-            var isoDate = date.ToString("S")
+            var isoDate = date.ToString("s")
                 .Replace("-", "", StringComparison.OrdinalIgnoreCase)
                 .Replace(":", "", StringComparison.OrdinalIgnoreCase);
             return isoDate + 'Z';

@@ -9,21 +9,17 @@ namespace ScanApp.Services
 {
     public class RecurrenceSyncfusionMapper
     {
-        public RecurrenceSyncfusionMapper()
-        {
-        }
-
-        public string ToSyncfusionRule(RecurrencePattern pattern)
+        public static string ToSyncfusionRule(RecurrencePattern pattern)
         {
             if (pattern is null || pattern.Type == RecurrencePattern.RecurrenceType.None)
                 return null;
 
-            var builder = new StringBuilder("FREQ=").Append(pattern.Type.ToString().ToUpperInvariant()).Append(';');
+            var builder = new StringBuilder("FREQ=").Append(pattern.Type).Append(';');
 
             builder.Append(pattern switch
             {
                 var p when p.Type is RecurrencePattern.RecurrenceType.Daily => string.Empty,
-                var p when p.Type is RecurrencePattern.RecurrenceType.Weekly => $"BYDAY={GetDayShorts(p.ByDay)};",
+                var p when p.Type is RecurrencePattern.RecurrenceType.Weekly => $"BYDAY={GetShortDayNames(p.ByDay)};",
                 _ => string.Empty
             });
 
@@ -40,28 +36,28 @@ namespace ScanApp.Services
                 builder.Append(pattern.ByMonthDay switch
                 {
                     not null => $"BYMONTHDAY={pattern.ByMonthDay};",
-                    _ => $"BYDAY={GetDayShorts(pattern.ByDay)};BYSETPOS={((int)pattern.OnWeek.Value) + 1};"
+                    _ => $"BYDAY={GetShortDayNames(pattern.ByDay)};BYSETPOS={((int)pattern.OnWeek.Value) + 1};"
                 });
             }
 
             if (pattern.Type is RecurrencePattern.RecurrenceType.Yearly)
             {
-                builder.Append($"BYMONTH={pattern.ByMonth};");
+                builder.Append("BYMONTH=").Append(pattern.ByMonth).Append(';');
             }
 
-            return builder.ToString();
+            return builder.ToString().ToUpperInvariant();
         }
 
-        private static string GetDayShorts(Day? days)
+        private static string GetShortDayNames(Day? days)
         {
             if (days.HasValue is false)
-                throw new ArgumentException(nameof(days));
+                throw new ArgumentException("No days were given.", nameof(days));
             var shortDays = days.Value
                 .ToString("f")
                 .Replace(" ", "")
                 .Split(',')
                 .Select(x => x[..2]);
-            return string.Join(',', shortDays).ToUpperInvariant();
+            return string.Join(',', shortDays);
         }
     }
 }
