@@ -67,7 +67,7 @@ namespace ScanApp.Services
             var settings = ExtractSettingsFrom(pattern);
 
             var type = settings.TryGetValue("FREQ", out var typeResult)
-                ? Enum.Parse<RecurrenceType>(typeResult)
+                ? Enum.Parse<RecurrenceType>(typeResult, ignoreCase: true)
                 : throw new FormatException("Given pattern is missing recurrence type data.");
             var interval = settings.TryGetValue("INTERVAL", out var intervalResult)
                 ? int.Parse(intervalResult)
