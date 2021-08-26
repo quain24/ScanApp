@@ -2,28 +2,30 @@
 using ScanApp.Domain.Enums;
 using ScanApp.Domain.ValueObjects;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static ScanApp.Domain.ValueObjects.RecurrencePattern;
 
 namespace ScanApp.Services
 {
-    public class RecurrenceSyncfusionMapper
+    public static class RecurrenceSyncfusionMapper
     {
         public static string ToSyncfusionRule(RecurrencePattern pattern)
         {
-            if (pattern is null || pattern.Type == RecurrencePattern.RecurrenceType.None)
+            if (pattern is null || pattern.Type == RecurrenceType.None)
                 return null;
 
             var builder = new StringBuilder("FREQ=").Append(pattern.Type).Append(';');
 
             builder.Append(pattern switch
             {
-                var p when p.Type is RecurrencePattern.RecurrenceType.Daily => string.Empty,
-                var p when p.Type is RecurrencePattern.RecurrenceType.Weekly => $"BYDAY={GetShortDayNames(p.ByDay)};",
+                var p when p.Type is RecurrenceType.Daily => string.Empty,
+                var p when p.Type is RecurrenceType.Weekly => $"BYDAY={GetShortDayNames(p.ByDay)};",
                 _ => string.Empty
             });
 
-            builder.Append("INTERVAL=").Append(pattern?.Interval ?? 1).Append(';');
+            builder.Append("INTERVAL=").Append(pattern.Interval).Append(';');
             builder.Append(pattern switch
             {
                 var t when t.Count is not null => $"COUNT={t.Count};",
@@ -31,7 +33,7 @@ namespace ScanApp.Services
                 _ => string.Empty
             });
 
-            if (pattern.Type is RecurrencePattern.RecurrenceType.Monthly or RecurrencePattern.RecurrenceType.Yearly)
+            if (pattern.Type is RecurrenceType.Monthly or RecurrenceType.Yearly)
             {
                 builder.Append(pattern.ByMonthDay switch
                 {
@@ -40,7 +42,7 @@ namespace ScanApp.Services
                 });
             }
 
-            if (pattern.Type is RecurrencePattern.RecurrenceType.Yearly)
+            if (pattern.Type is RecurrenceType.Yearly)
             {
                 builder.Append("BYMONTH=").Append(pattern.ByMonth).Append(';');
             }
@@ -58,6 +60,152 @@ namespace ScanApp.Services
                 .Split(',')
                 .Select(x => x[..2]);
             return string.Join(',', shortDays);
+        }
+
+        public static RecurrencePattern FromSyncfusionRecurrenceString(string pattern)
+        {
+            var settings = ExtractSettingsFrom(pattern);
+
+            var type = settings.TryGetValue("FREQ", out var typeResult)
+                ? Enum.Parse<RecurrenceType>(typeResult)
+                : throw new FormatException("Given pattern is missing recurrence type data.");
+            var interval = settings.TryGetValue("INTERVAL", out var intervalResult)
+                ? int.Parse(intervalResult)
+                : throw new FormatException("Given pattern is missing recurrence type data.");
+            Day? days = settings.TryGetValue("BYDAY", out var dayResult)
+                ? GetDays(dayResult)
+                : null;
+            int? count = settings.TryGetValue("COUNT", out var countResult)
+                ? int.Parse(countResult)
+                : null;
+            DateTime? until = settings.TryGetValue("UNTIL", out var untilResult)
+                ? untilResult.FromSyncfusionDateString()
+                : null;
+            int? byMonth = settings.TryGetValue("BYMONTH", out var byMonthResult)
+                ? int.Parse(byMonthResult)
+                : null;
+            int? monthDay = settings.TryGetValue("BYMONTHDAY", out var byMonthDayResult)
+                ? int.Parse(byMonthDayResult)
+                : null;
+            Week? onWeek = settings.TryGetValue("BYSETPOS", out var weekResult)
+                ? (Week)(int.Parse(weekResult) - 1)
+                : null;
+
+            return type switch
+            {
+                RecurrenceType.Daily => CreateDailyRecurrence(interval, count, until),
+                RecurrenceType.Weekly => CreateWeeklyRecurrence(interval, count, until, days),
+                RecurrenceType.Monthly => CreateMonthlyRecurrence(interval, count, until, monthDay, onWeek, days),
+                RecurrenceType.Yearly => CreateYearlyRecurrence(interval, count, until, byMonth, monthDay, onWeek, days),
+                _ => RecurrencePattern.None
+            };
+        }
+
+        private static Dictionary<string, string> ExtractSettingsFrom(string pattern)
+        {
+            if (pattern is null)
+                throw new ArgumentNullException(nameof(pattern));
+            var data = pattern.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            return data.Select(x => x.Split('='))
+                .ToDictionary(x => x[0], x => x.Length == 2 ? x[1] : null, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static Day GetDays(string shortDayFormat)
+        {
+            var sDays = shortDayFormat.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            Day days = 0;
+            var dayValues = Enum.GetNames<Day>();
+            foreach (var sDay in sDays)
+            {
+                days |= Enum.TryParse<Day>(dayValues.First(x => x.StartsWith(sDay)), out var result)
+                    ? result
+                    : throw new FormatException($"Given day names in short Syncfusion format cannot be parsed to {nameof(Day)} enumeration.");
+            }
+
+            return days;
+        }
+
+        private static RecurrencePattern CreateDailyRecurrence(int interval, int? count, DateTime? until)
+        {
+            GuardAgainstDuplicatedRecurrence(count, until);
+
+            return count switch
+            {
+                null when until is null => Daily(interval),
+                null => Daily(interval, until.Value),
+                _ => Daily(interval, count.Value)
+            };
+        }
+
+        private static RecurrencePattern CreateWeeklyRecurrence(int interval, int? count, DateTime? until, Day? days)
+        {
+            GuardAgainstDuplicatedRecurrence(count, until);
+
+            _ = days ?? throw new ArgumentNullException(nameof(days), "Days value is missing - weekly reoccurring pattern cannot be recreated without it.");
+
+            return count switch
+            {
+                null when until is null => Weekly(interval, days.Value),
+                null => Weekly(interval, until.Value, days.Value),
+                _ => Weekly(interval, count.Value, days.Value)
+            };
+        }
+
+        private static RecurrencePattern CreateMonthlyRecurrence(int interval, int? count, DateTime? until, int? monthDay, Week? onWeek, Day? days)
+        {
+            GuardAgainstDuplicatedRecurrence(count, until);
+            if ((monthDay is null && (onWeek is null || days is null)) ||
+                (monthDay is not null && (days is not null || onWeek is not null)))
+            {
+                throw new ArgumentException("Invalid monthly recurrence pattern - check if there are no missing parameters or too many parameters were given.");
+            }
+
+            return count switch
+            {
+                null when until is null => monthDay.HasValue
+                    ? Monthly(interval, monthDay.Value)
+                    : Monthly(interval, onWeek.Value, days.Value),
+                null => monthDay.HasValue
+                    ? Monthly(interval, until.Value, monthDay.Value)
+                    : Monthly(interval, until.Value, onWeek.Value, days.Value),
+                _ => monthDay.HasValue
+                    ? Monthly(interval, count.Value, monthDay.Value)
+                    : Monthly(interval, count.Value, onWeek.Value, days.Value)
+            };
+        }
+
+        private static RecurrencePattern CreateYearlyRecurrence(int interval, int? count, DateTime? until, int? byMonth, int? monthDay, Week? onWeek, Day? days)
+        {
+            GuardAgainstDuplicatedRecurrence(count, until);
+            if (byMonth is null)
+                throw new ArgumentNullException(nameof(byMonth), "Invalid yearly recurrence pattern - no 'month' was given.");
+            if ((monthDay is null && (onWeek is null || days is null)) ||
+                (monthDay is not null && (days is not null || onWeek is not null)))
+            {
+                throw new ArgumentException("Invalid yearly recurrence pattern - check if there are no missing parameters or too many parameters were given.");
+            }
+
+            return count switch
+            {
+                null when until is null => monthDay.HasValue
+                    ? Yearly(interval, byMonth.Value, monthDay.Value)
+                    : Yearly(interval, byMonth.Value, onWeek.Value, days.Value),
+                null => monthDay.HasValue
+                    ? Yearly(interval, until.Value, byMonth.Value, monthDay.Value)
+                    : Yearly(interval, until.Value, byMonth.Value, onWeek.Value, days.Value),
+                _ => monthDay.HasValue
+                    ? Yearly(interval, count.Value, byMonth.Value, monthDay.Value)
+                    : Yearly(interval, count.Value, byMonth.Value, onWeek.Value, days.Value)
+            };
+        }
+
+        private static void GuardAgainstDuplicatedRecurrence(int? count, DateTime? until)
+        {
+            if (count is not null && until is not null)
+            {
+                throw new ArgumentException($"Either {nameof(count)} or {nameof(until)} parameters can be used but both were given" +
+                                            " - recurrence pattern string could be corrupted.");
+            }
         }
     }
 }
