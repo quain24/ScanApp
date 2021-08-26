@@ -22,11 +22,14 @@ namespace ScanApp.Tests.IntegrationTests.Application.HesHub.DeparturePlans.Depar
         [Fact]
         public async Task Will_retrieve_correct_models()
         {
+            var eeee = new DateTime(2002, 11, 24, 12, 35, 00, DateTimeKind.Utc);
+
+
             var startDate = new DateTime(2000, 04, 24, 11, 35, 00, DateTimeKind.Utc);
             var endDate = new DateTime(2000, 04, 24, 12, 35, 00, DateTimeKind.Utc);
             var startExceptionDate = new DateTime(2000, 08, 24, 11, 35, 00, DateTimeKind.Utc);
             var endExceptionDate = new DateTime(2000, 08, 24, 12, 35, 00, DateTimeKind.Utc);
-            var recurrence = RecurrencePattern.Daily(2, 4);
+            var recurrence = RecurrencePattern.Daily(2, eeee);
 
             var depot = new DepotFixtures.DepotBuilder()
                 .WithId(10).WithDefaultValidAddress()
@@ -63,18 +66,20 @@ namespace ScanApp.Tests.IntegrationTests.Application.HesHub.DeparturePlans.Depar
 
             var startPeriod = new DateTime(2000, 10, 24, 11, 35, 00, DateTimeKind.Utc);
             var endPeriod = new DateTime(2000, 11, 24, 12, 35, 00, DateTimeKind.Utc);
+            
             var request = new DeparturePlansBetweenQuery(startPeriod, endPeriod);
 
             var handler = new DeparturePlansBetweenQueryHandler(Provider.GetRequiredService<IContextFactory>());
 
             var result = await handler.Handle(request, CancellationToken.None);
-
-            var map = new RecurrenceSyncfusionMapper();
+            
             var srv = new OccurrenceCalculatorService();
-            var g = map.ToSyncfusionRule(recurrence);
+            var g = RecurrenceSyncfusionMapper.ToSyncfusionRule(recurrence);
 
             var dd = startDate + TimeSpan.FromDays(21);
             var iss = srv.GetOccurrenceDates(recurrence, startDate, dd);
+
+            var r = srv.WillOccurOnDate(recurrence, startDate, startExceptionDate + TimeSpan.FromHours(2));
 
             var t = result.Output;
             t = result.Output;
