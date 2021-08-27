@@ -16,25 +16,23 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
     internal class DeparturePlansBetweenQueryHandler : IRequestHandler<DeparturePlansBetweenQuery, Result<IEnumerable<DeparturePlanModel>>>
     {
         private readonly IContextFactory _factory;
+        private readonly IOccurrenceCalculatorService _occurrenceCalculator;
 
-        public DeparturePlansBetweenQueryHandler(IContextFactory factory)
+        public DeparturePlansBetweenQueryHandler(IContextFactory factory, IOccurrenceCalculatorService occurrenceCalculator)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _occurrenceCalculator = occurrenceCalculator ?? throw new ArgumentNullException(nameof(occurrenceCalculator));
         }
 
         public async Task<Result<IEnumerable<DeparturePlanModel>>> Handle(DeparturePlansBetweenQuery request, CancellationToken cancellationToken)
         {
             await using var ctx = _factory.CreateDbContext();
 
+            var possibleOccurrences = await GetPossibleOccurrences(request.From, request.To, cancellationToken).ConfigureAwait(false);
+
             var depots = await ctx.DeparturePlans
                 .AsNoTracking()
-                .Where(x => (x.Start >= request.From && x.End <= request.To) ||
-                            x.RecurrencePattern.Type != RecurrenceType.None)
-                .Include(x => x.Seasons)
-                .Include(x => x.Depot)
-                .Include(x => x.Gate)
-                .Include(x => x.TrailerType)
-                .Include(x => x.RecurrenceExceptionOf)
+                .Where(x => (x.Start >= request.From && x.End <= request.To) || possibleOccurrences.Contains(x.Id))
                 .Select(x => new DeparturePlanModel
                 {
                     Gate = new GateModel { Id = x.Gate.Id, Name = x.Gate.Number.ToString(), Version = x.Gate.Version },
@@ -74,9 +72,31 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
                         ExceptionToDate = null
                     }
                 })
-                .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
 
             return new Result<IEnumerable<DeparturePlanModel>>(depots);
+        }
+
+        private async Task<List<int>> GetPossibleOccurrences(DateTime from, DateTime to, CancellationToken token)
+        {
+            await using var ctx = _factory.CreateDbContext();
+
+            return (await ctx.DeparturePlans.AsNoTracking()
+                    .Where(x => !x.IsException)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.Start,
+                        x.RecurrencePattern,
+                        x.RecurrenceExceptions
+                    })
+                    .Where(x => x.RecurrencePattern.Type != RecurrenceType.None &&
+                                (x.RecurrencePattern.Until == null || to <= x.RecurrencePattern.Until))
+                    .ToListAsync(token).ConfigureAwait(false))
+                    .Where(x => _occurrenceCalculator
+                        .WillOccurBetweenDates(x.RecurrencePattern, x.Start, from, to, true, x.RecurrenceExceptions))
+                    .Select(x => x.Id)
+                    .ToList();
         }
     }
 }
