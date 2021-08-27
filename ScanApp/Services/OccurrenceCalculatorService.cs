@@ -11,6 +11,7 @@ namespace ScanApp.Services
     public class OccurrenceCalculatorService : IOccurrenceCalculatorService
     {
         private readonly SfRecurrenceEditor _re = new();
+
         /// <inheritdoc cref="IOccurrenceCalculatorService.GetOccurrenceDates"/>
         /// <exception cref="ArgumentException"><paramref name="patternStartDate"/> or <paramref name="endDate"/> <see cref="DateTimeKind"/> is not <see cref="DateTimeKind.Utc"/>.</exception>
         public List<DateTime> GetOccurrenceDates(RecurrencePattern pattern, DateTime patternStartDate, DateTime endDate, IEnumerable<DateTime> exceptions = null, int? maxResultCount = null)
@@ -43,7 +44,6 @@ namespace ScanApp.Services
             DateTime to, bool ignoreTimePortion = true, IEnumerable<DateTime> exceptions = null)
         {
             EnsureUtc(patternStartDate, from, to);
-
             var result = _re.GetRecurrenceDates(patternStartDate, RecurrenceSyncfusionMapper.ToSyncfusionRule(pattern),
                 DateTimesToString(exceptions), null, to);
 
@@ -66,7 +66,7 @@ namespace ScanApp.Services
             EnsureUtc(arr);
             return arr.Length is 0
                 ? null
-                : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate())) + ';';
+                : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate()));
         }
     }
 }
