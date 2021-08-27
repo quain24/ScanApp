@@ -16,36 +16,35 @@ namespace ScanApp.Services
             if (pattern is null || pattern.Type == RecurrenceType.None)
                 return null;
 
-            var builder = new StringBuilder("FREQ=").Append(pattern.Type).Append(';');
+            // Mandatory parameters.
+            var builder = new StringBuilder("FREQ=").Append(pattern.Type);
+            builder.Append(";INTERVAL=").Append(pattern.Interval);
 
             builder.Append(pattern switch
             {
-                var p when p.Type is RecurrenceType.Daily => string.Empty,
-                var p when p.Type is RecurrenceType.Weekly => $"BYDAY={GetShortDayNames(p.ByDay)};",
+                var t when t.Count is not null => $";COUNT={t.Count}",
+                var t when t.Until is not null => $";UNTIL={t.Until.ToSyncfusionSchedulerDate()}",
                 _ => string.Empty
             });
 
-            builder.Append("INTERVAL=").Append(pattern.Interval).Append(';');
-            builder.Append(pattern switch
+            // Parameters depending on recurrence type (Daily recurrence does not need additional parameters).
+            switch (pattern.Type)
             {
-                var t when t.Count is not null => $"COUNT={t.Count};",
-                var t when t.Until is not null => $"UNTIL={t.Until.ToSyncfusionSchedulerDate()};",
-                _ => string.Empty
-            });
+                case RecurrenceType.Weekly:
+                    builder.Append(";BYDAY=").Append(GetShortDayNames(pattern.ByDay));
+                    break;
 
-            if (pattern.Type is RecurrenceType.Monthly or RecurrenceType.Yearly)
-            {
-                builder.Append(pattern.ByMonthDay switch
-                {
-                    not null => $"BYMONTHDAY={pattern.ByMonthDay};",
-                    _ => $"BYDAY={GetShortDayNames(pattern.ByDay)};BYSETPOS={((int)pattern.OnWeek.Value) + 1};"
-                });
+                case RecurrenceType.Monthly or RecurrenceType.Yearly:
+                    builder.Append(pattern.ByMonthDay switch
+                    {
+                        not null => $";BYMONTHDAY={pattern.ByMonthDay}",
+                        _ => $";BYDAY={GetShortDayNames(pattern.ByDay)};BYSETPOS={((int)pattern.OnWeek.Value) + 1}"
+                    });
+                    break;
             }
 
             if (pattern.Type is RecurrenceType.Yearly)
-            {
-                builder.Append("BYMONTH=").Append(pattern.ByMonth).Append(';');
-            }
+                builder.Append(";BYMONTH=").Append(pattern.ByMonth);
 
             return builder.ToString().ToUpperInvariant();
         }
@@ -62,7 +61,7 @@ namespace ScanApp.Services
             return string.Join(',', shortDays);
         }
 
-        public static RecurrencePattern FromSyncfusionRecurrenceString(string pattern)
+        public static RecurrencePattern FromSyncfusionRule(string pattern)
         {
             var settings = ExtractSettingsFrom(pattern.AsSpan());
 
@@ -111,13 +110,17 @@ namespace ScanApp.Services
             {
                 var index = pattern.IndexOf(';');
                 var eqIndex = pattern.IndexOf('=');
-                if (index == -1)     // End of settings
-                    break;
-                if (index < eqIndex) // A setting without value
-                    throw new FormatException($"Given recurrence pattern ({pattern.ToString()}) is invalid, could not extract settings.");
 
-                result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..index].ToString());
-                pattern = pattern[(index + 1)..];
+                if (index != -1)
+                {
+                    result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..index].ToString());
+                    pattern = pattern[(index + 1)..];
+                }
+                else
+                {
+                    result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..].ToString());
+                    break;
+                }
             }
 
             return result;
@@ -130,7 +133,7 @@ namespace ScanApp.Services
             var dayValues = Enum.GetNames<Day>();
             foreach (var sDay in sDays)
             {
-                days |= Enum.TryParse<Day>(dayValues.First(x => x.StartsWith(sDay)), out var result)
+                days |= Enum.TryParse<Day>(dayValues.First(x => x.StartsWith(sDay, StringComparison.OrdinalIgnoreCase)), out var result)
                     ? result
                     : throw new FormatException($"Given day names in short Syncfusion format cannot be parsed to {nameof(Day)} enumeration.");
             }
