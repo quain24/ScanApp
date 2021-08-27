@@ -64,7 +64,7 @@ namespace ScanApp.Services
 
         public static RecurrencePattern FromSyncfusionRecurrenceString(string pattern)
         {
-            var settings = ExtractSettingsFrom(pattern);
+            var settings = ExtractSettingsFrom(pattern.AsSpan());
 
             var type = settings.TryGetValue("FREQ", out var typeResult)
                 ? Enum.Parse<RecurrenceType>(typeResult, ignoreCase: true)
@@ -97,17 +97,30 @@ namespace ScanApp.Services
                 RecurrenceType.Weekly => CreateWeeklyRecurrence(interval, count, until, days),
                 RecurrenceType.Monthly => CreateMonthlyRecurrence(interval, count, until, monthDay, onWeek, days),
                 RecurrenceType.Yearly => CreateYearlyRecurrence(interval, count, until, byMonth, monthDay, onWeek, days),
-                _ => RecurrencePattern.None
+                _ => None
             };
         }
 
-        private static Dictionary<string, string> ExtractSettingsFrom(string pattern)
+        private static Dictionary<string, string> ExtractSettingsFrom(ReadOnlySpan<char> pattern)
         {
-            if (pattern is null)
+            if (pattern.IsEmpty)
                 throw new ArgumentNullException(nameof(pattern));
-            var data = pattern.Split(';', StringSplitOptions.RemoveEmptyEntries);
-            return data.Select(x => x.Split('='))
-                .ToDictionary(x => x[0], x => x.Length == 2 ? x[1] : null, StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, string>();
+
+            while (true)
+            {
+                var index = pattern.IndexOf(';');
+                var eqIndex = pattern.IndexOf('=');
+                if (index == -1)     // End of settings
+                    break;
+                if (index < eqIndex) // A setting without value
+                    throw new FormatException($"Given recurrence pattern ({pattern.ToString()}) is invalid, could not extract settings.");
+
+                result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..index].ToString());
+                pattern = pattern[(index + 1)..];
+            }
+
+            return result;
         }
 
         private static Day GetDays(string shortDayFormat)
