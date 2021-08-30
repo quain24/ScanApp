@@ -38,6 +38,7 @@ namespace ScanApp
             services.AddLocalization();
             services.AddSecurityConfiguration();
             services.AddMediatR();
+            services.AddApplicationServices();
             services.AddInfrastructureServices(Configuration);
             services.AddGuiServices();
             services.AddDatabases(Configuration, _env.IsDevelopment());
