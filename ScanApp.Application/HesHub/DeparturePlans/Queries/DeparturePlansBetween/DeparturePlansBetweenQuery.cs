@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScanApp.Application.Common.Helpers.EF_Queryable;
-using static ScanApp.Domain.ValueObjects.RecurrencePattern;
 
 namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetween
 {
@@ -33,50 +31,15 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
                 .ConfigureAwait(false);
 
             var depots = await ctx.DeparturePlans
-                .AsNoTracking()
+                .AsNoTrackingWithIdentityResolution()
+                .Include(x => x.RecurrenceExceptionOf)
+                .Include(x => x.Gate)
+                .Include(x => x.TrailerType)
+                .Include(x => x.Seasons)
                 .Where(x => (x.Start >= request.From && x.End <= request.To) || possibleOccurrences.Contains(x.Id))
-                .Select(x => new DeparturePlanModel
-                {
-                    Gate = new GateModel { Id = x.Gate.Id, Name = x.Gate.Number.ToString(), Version = x.Gate.Version },
-                    Trailer = new TrailerModel { Id = x.TrailerType.Id, Name = x.TrailerType.Name, Version = x.TrailerType.Version },
-                    Season = x.Seasons.Select(s => new SeasonResourceModel()
-                    {
-                        Name = s.Name,
-                        Version = s.Version
-                    }).ToList(),
-                    Version = x.Version,
-                    ArrivalDayAndTime = x.ArrivalTimeAtDepot,
-                    Id = x.Id,
-                    Start = x.Start,
-                    End = x.End,
-                    Description = x.Description,
-                    ExceptionToDate = x.RecurrenceExceptionDate,
-                    Exceptions = x.RecurrenceExceptions.ToList(),
-                    RecurrencePattern = x.RecurrencePattern,
-                    ExceptionTo = x.RecurrenceExceptionOf == null ? null : new DeparturePlanModel
-                    {
-                        Gate = new GateModel { Id = x.RecurrenceExceptionOf.Gate.Id, Name = x.RecurrenceExceptionOf.Gate.Number.ToString(), Version = x.RecurrenceExceptionOf.Gate.Version },
-                        Trailer = new TrailerModel { Id = x.RecurrenceExceptionOf.TrailerType.Id, Name = x.RecurrenceExceptionOf.TrailerType.Name, Version = x.RecurrenceExceptionOf.TrailerType.Version },
-                        Season = x.RecurrenceExceptionOf.Seasons.Select(s => new SeasonResourceModel()
-                        {
-                            Name = s.Name,
-                            Version = s.Version
-                        }).ToList(),
-                        Version = x.RecurrenceExceptionOf.Version,
-                        ArrivalDayAndTime = x.RecurrenceExceptionOf.ArrivalTimeAtDepot,
-                        Id = x.RecurrenceExceptionOf.Id,
-                        Start = x.RecurrenceExceptionOf.Start,
-                        End = x.RecurrenceExceptionOf.End,
-                        Description = x.RecurrenceExceptionOf.Description,
-                        Exceptions = x.RecurrenceExceptionOf.RecurrenceExceptions.ToList(),
-                        RecurrencePattern = x.RecurrenceExceptionOf.RecurrencePattern,
-                        ExceptionTo = null,
-                        ExceptionToDate = null
-                    }
-                })
-            .ToListAsync(cancellationToken).ConfigureAwait(false);
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            return new Result<IEnumerable<DeparturePlanModel>>(depots);
+            return new Result<IEnumerable<DeparturePlanModel>>(depots.ToModels());
         }
     }
 }

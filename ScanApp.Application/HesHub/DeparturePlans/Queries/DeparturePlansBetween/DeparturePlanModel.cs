@@ -11,7 +11,7 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
         public string Description { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
-        public List<SeasonResourceModel> Season { get; set; }
+        public List<SeasonResourceModel> Seasons { get; set; }
         public DayAndTime ArrivalDayAndTime { get; set; }
 
         public RecurrencePattern RecurrencePattern { get; set; }
