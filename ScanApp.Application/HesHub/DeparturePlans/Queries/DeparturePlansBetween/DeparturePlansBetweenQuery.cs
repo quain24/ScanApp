@@ -32,14 +32,16 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
 
             var depots = await ctx.DeparturePlans
                 .AsNoTrackingWithIdentityResolution()
+                //.AsSplitQuery() - this is pushed to EF Core 6 - stopped working.
                 .Include(x => x.RecurrenceExceptionOf)
                 .Include(x => x.Gate)
                 .Include(x => x.TrailerType)
                 .Include(x => x.Seasons)
                 .Where(x => (x.Start >= request.From && x.End <= request.To) || possibleOccurrences.Contains(x.Id))
+                .Select(DeparturePlanModel.Projection)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-            return new Result<IEnumerable<DeparturePlanModel>>(depots.ToModels());
+            return new Result<IEnumerable<DeparturePlanModel>>(depots);
         }
     }
 }
