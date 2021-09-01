@@ -25,8 +25,10 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.GetResourceDataForDe
         {
             await using var ctx = _factory.CreateDbContext();
 
-            var data = await ctx.Depots.Select(x =>
-                new DepotResourceModel()
+            var data = await ctx.Depots
+                .AsNoTracking()
+                .Select(x =>
+                new DepotResourceModel
                 {
                     Id = x.Id,
                     Name = x.Name,
