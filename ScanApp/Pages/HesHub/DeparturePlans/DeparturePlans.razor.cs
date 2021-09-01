@@ -20,6 +20,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         private IEnumerable<GateModel> _gates = Array.Empty<GateModel>();
         private IEnumerable<TrailerModel> _trailerTypes = Array.Empty<TrailerModel>();
         private DateTime _now;
+        private ResourceDataProvider _resourceProvider;
 
         [Inject] private IMediator Mediator { get; init; }
 
@@ -27,20 +28,21 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         
         public SfSchedule<AppointmentData> SchedulerRef { get; set; }
 
+        protected override void OnInitialized()
+        {
+            _resourceProvider = new(Mediator);
+            base.OnInitialized();
+        }
+
         protected override async Task OnInitializedAsync()
         {
             _now = DateTimeService.Now;
 
-            var seasonsResultTask = Mediator.Send(new AllSeasonResourcesQuery());
-            var depotResultTask = Mediator.Send(new GetResourceDataForDepotsQuery());
-            var gatesTask = Mediator.Send(new AllGatesQuery());
-            var trailerTask = Mediator.Send(new AllTrailerTypesQuery());
-
-            await Task.WhenAll(seasonsResultTask, depotResultTask, gatesTask, trailerTask);
-            _seasonResources = seasonsResultTask.Result.Output;
-            _depotResources = depotResultTask.Result.Output;
-            _gates = gatesTask.Result.Output;
-            _trailerTypes = trailerTask.Result.Output;
+            // For testing, data will be resolved lazily
+            _seasonResources = await _resourceProvider.GetSeasonsResources();
+            _depotResources = await _resourceProvider.GetDepotResources();
+            _gates = await _resourceProvider.GetGates();
+            _trailerTypes = await _resourceProvider.GetTrailerTypes();
 
             await base.OnInitializedAsync();
         }
