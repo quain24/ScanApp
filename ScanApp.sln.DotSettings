@@ -67,6 +67,7 @@
 	<s:Boolean x:Key="/Default/Housekeeping/UnitTestingMru/UnitTestSessionDefault/ShowTime/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Housekeeping/UpgradeFromExceptionReport/UpgradePerformed/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/Housekeeping/WhatsNewShown/WhatsNewShownIndexedEntry/=RS/@EntryIndexedValue">2021.1</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Adaptor/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=exceedes/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=prevalidate/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Resharper/@EntryIndexedValue">True</s:Boolean>
