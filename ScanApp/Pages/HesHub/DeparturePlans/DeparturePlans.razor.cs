@@ -9,6 +9,7 @@ using ScanApp.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Syncfusion.Blazor.Schedule;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
 {
@@ -16,13 +17,15 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
     {
         private IEnumerable<SeasonResourceModel> _seasonResources = Array.Empty<SeasonResourceModel>();
         private IEnumerable<DepotResourceModel> _depotResources = Array.Empty<DepotResourceModel>();
-        private IEnumerable<Application.HesHub.DeparturePlans.Queries.AllGates.GateModel> _gates = Array.Empty<Application.HesHub.DeparturePlans.Queries.AllGates.GateModel>();
+        private IEnumerable<GateModel> _gates = Array.Empty<GateModel>();
         private IEnumerable<TrailerModel> _trailerTypes = Array.Empty<TrailerModel>();
         private DateTime _now;
 
         [Inject] private IMediator Mediator { get; init; }
 
         [Inject] private IDateTime DateTimeService { get; init; }
+        
+        public SfSchedule<AppointmentData> SchedulerRef { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -40,6 +43,20 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             _trailerTypes = trailerTask.Result.Output;
 
             await base.OnInitializedAsync();
+        }
+
+        public class AppointmentData
+        {
+            public int Id { get; set; }
+            public string Subject { get; set; }
+            public string Location { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime EndTime { get; set; }
+            public string Description { get; set; }
+            public bool IsAllDay { get; set; }
+            public string RecurrenceRule { get; set; }
+            public string RecurrenceException { get; set; }
+            public Nullable<int> RecurrenceID { get; set; }
         }
     }
 }

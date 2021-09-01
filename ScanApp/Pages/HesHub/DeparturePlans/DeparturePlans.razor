@@ -1,4 +1,12 @@
 ﻿@page "/departureplans"
 @using Syncfusion.Blazor.Schedule
-
-<h3>DeparturePlans</h3>
+@using Syncfusion.Blazor.Data
+<CascadingValue Value="SchedulerRef" Name="SchedulerRef">
+    <SfSchedule @ref="SchedulerRef" TValue="AppointmentData" Width="100%" Height="650px" SelectedDate="@(new DateTime(2020, 1, 9))">
+        <ScheduleEventSettings TValue="AppointmentData">
+            <SfDataManager Adaptor="Adaptors.CustomAdaptor">
+                <DeparturePlansDataAdaptor></DeparturePlansDataAdaptor>
+            </SfDataManager>
+        </ScheduleEventSettings>
+    </SfSchedule>
+</CascadingValue>
