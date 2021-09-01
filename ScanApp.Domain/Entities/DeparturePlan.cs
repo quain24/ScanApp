@@ -57,7 +57,6 @@ namespace ScanApp.Domain.Entities
 
         private DeparturePlan() : base()
         {
-
         }
 
         public DeparturePlan(string name,
@@ -67,10 +66,36 @@ namespace ScanApp.Domain.Entities
             Season season,
             Gate gate,
             TrailerType trailerType,
+            DayAndTime arrivalTimeAtDepot) : this(name, start, end, depot, gate, trailerType, arrivalTimeAtDepot)
+        {
+            AssignToSeason(season);
+        }
+
+        public DeparturePlan(string name,
+            DateTime start,
+            DateTime end,
+            Depot depot,
+            IEnumerable<Season> seasons,
+            Gate gate,
+            TrailerType trailerType,
+            DayAndTime arrivalTimeAtDepot) : this(name, start, end, depot, gate, trailerType, arrivalTimeAtDepot)
+        {
+            _ = seasons ?? throw new ArgumentNullException(nameof(seasons));
+            foreach (var season in seasons)
+            {
+                AssignToSeason(season);
+            }
+        }
+
+        private DeparturePlan(string name,
+            DateTime start,
+            DateTime end,
+            Depot depot,
+            Gate gate,
+            TrailerType trailerType,
             DayAndTime arrivalTimeAtDepot) : base(start, end)
         {
             Name = name;
-            AssignToSeason(season);
             Depot = depot;
             TrailerType = trailerType;
             Gate = gate;
