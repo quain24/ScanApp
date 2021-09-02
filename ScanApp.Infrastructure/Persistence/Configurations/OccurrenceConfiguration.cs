@@ -20,10 +20,20 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .UsesUtc();
 
+            builder.Property(x => x.StartTimeZone)
+                .HasColumnName("StartDateTimeZone")
+                .HasConversion(new TimeZoneInfoToStringConverter())
+                .IsRequired(false);
+
             builder.Property(x => x.End)
                 .HasColumnName("EndDateUTC")
                 .IsRequired()
                 .UsesUtc();
+
+            builder.Property(x => x.EndTimeZone)
+                .HasColumnName("EndDateTimeZone")
+                .HasConversion(new TimeZoneInfoToStringConverter())
+                .IsRequired(false);
 
             builder.HasOne(x => x.RecurrenceExceptionOf)
                 .WithMany()

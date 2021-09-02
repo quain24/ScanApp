@@ -23,6 +23,18 @@ namespace ScanApp.Domain.Entities
                 : throw new ArgumentOutOfRangeException(nameof(Start), "Start date must be lesser than end date.");
         }
 
+        private TimeZoneInfo _startTimeZone;
+
+        /// <summary>
+        /// Gets or sets <see cref="TimeZoneInfo"/> for <see cref="Start"/> date.
+        /// </summary>
+        /// <value>Timezone of start date if set, otherwise <see langword="null"/>.</value>
+        public TimeZoneInfo StartTimeZone
+        {
+            get => _startTimeZone;
+            set => _startTimeZone = value ?? throw new ArgumentNullException(nameof(StartTimeZone));
+        }
+
         private DateTime _end;
 
         /// <summary>
@@ -37,6 +49,26 @@ namespace ScanApp.Domain.Entities
                 ? value
                 : throw new ArgumentOutOfRangeException(nameof(End), "End date must be greater than start date.");
         }
+
+        private TimeZoneInfo _endTimeZone;
+
+        /// <summary>
+        /// Gets or sets <see cref="TimeZoneInfo"/> for <see cref="End"/> date.
+        /// </summary>
+        /// <value>Timezone of end date if set, otherwise <see langword="null"/>.</value>
+        public TimeZoneInfo EndTimeZone
+        {
+            get => _endTimeZone;
+            set => _endTimeZone = value ?? throw new ArgumentNullException(nameof(EndTimeZone));
+        }
+
+        /// <summary>
+        /// Gets or sets value indicating whether this <see cref="Occurrence{T}"/> is taking whole day.<br/>
+        /// This value is not connected to <see cref="Start"/> and <see cref="End"/> dates.
+        /// </summary>
+        /// <remarks>Typically, this value precedes Start and End dates.</remarks>
+        /// <value><see langword="True"/> if this <see cref="Occurrence{T}"/> takes whole day, otherwise <see langword="false"/> (default).</value>
+        public bool IsAllDay { get; set; }
 
         private RecurrencePattern _recurrencePattern = RecurrencePattern.None;
 
