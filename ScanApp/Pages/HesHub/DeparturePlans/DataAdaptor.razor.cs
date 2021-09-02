@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Syncfusion.Blazor.Schedule.Internal;
+using TimeZoneConverter;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
 {
@@ -34,6 +36,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         {
             Console.WriteLine(SchedulerRef.GetCurrentAction());
             EventData.Insert(0, data as DeparturePlans.AppointmentData);
+            var g = TZConvert.IanaToWindows(((DeparturePlans.AppointmentData)data).StartTimezone);
+            var t = TimeZoneInfo.FindSystemTimeZoneById(g);
             return data;
         }
 
@@ -54,6 +58,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 appointment.RecurrenceException = val.RecurrenceException;
                 appointment.RecurrenceID = val.RecurrenceID;
                 appointment.RecurrenceRule = val.RecurrenceRule;
+                appointment.StartTimezone = val.StartTimezone;
+                appointment.EndTimezone = val.EndTimezone;
             }
             return data;
         }

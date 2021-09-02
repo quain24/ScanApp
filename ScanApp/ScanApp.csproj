@@ -30,6 +30,7 @@
 		<PackageReference Include="Syncfusion.Blazor.Inputs" Version="19.2.0.59" />
 		<PackageReference Include="Syncfusion.Blazor.Schedule" Version="19.2.0.59" />
 		<PackageReference Include="System.Security.AccessControl" Version="5.0.0" />
+		<PackageReference Include="TimeZoneConverter" Version="3.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>

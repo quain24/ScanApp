@@ -8,7 +8,7 @@
 @using ScanApp.Domain.ValueObjects
 
 <SfSchedule @ref="sfs" ID="aaa1" TValue="AppointmentData" Height="550px" @bind-SelectedDate="@CurrentDate" EnablePersistence="true">
-    <ScheduleGroup Resources="@Resources"></ScheduleGroup>
+    <ScheduleGroup Resources="@Resources" AllowGroupEdit="true"></ScheduleGroup>
     <ScheduleResources>
         <ScheduleResource TItem="ResourceData" TValue="int" DataSource="@GroupData" Field="GroupId" Title="Room" Name="Rooms" TextField="GroupText" IdField="Id" ColorField="RoomColor" AllowMultiple="false"></ScheduleResource>
         <ScheduleResource TItem="ResourceData" TValue="int[]" DataSource="@DepotsData" Field="DepotId" Title="Owner" Name="Owners" TextField="DepotText" IdField="Id" GroupIDField="OwnerGroupId" ColorField="OwnerColor" AllowMultiple="true"></ScheduleResource>
@@ -18,12 +18,12 @@
     </ScheduleEventSettings>
     
     
-    @*<ScheduleEventSettings TValue="AppointmentData" DataSource="@DataSource">
+    <ScheduleEventSettings TValue="AppointmentData" DataSource="@DataSource">
         <DataManager Data="@DataSource"></DataManager>
         <DataManager Adaptor="Adaptors.CustomAdaptor" AdaptorInstance="@(typeof(DataHandler))"></DataManager>
         <ScheduleEvents TValue="AppointmentData" OnActionBegin="OnBegin" DataBinding="OnBinding"
                         ActionCompleted="OnFinish"></ScheduleEvents>
-    </ScheduleEventSettings>*@
+    </ScheduleEventSettings>
     
 
     <ScheduleViews>
@@ -137,8 +137,8 @@
         public string RecurrenceRule { get; set; }
         public string RecurrenceException { get; set; }
         public Nullable<int> RecurrenceID { get; set; }
-        public int DepotId { get; set; }
         public int GroupId { get; set; }
+        public int[] DepotId { get; set; }
     }
     public class ResourceData
     {
