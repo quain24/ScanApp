@@ -53,28 +53,32 @@ namespace ScanApp.Application.Common.Behaviors
         /// <para>Awaitable task returning the <typeparamref name="TResponse"/> if <paramref name="request"/> was valid</para>
         /// <para>Awaitable task returning new <typeparamref name="TResponse"/> containing error code and combined list of validation errors if <paramref name="request"/> was invalid</para>
         /// </returns>
-        public Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+        public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
         {
             if (!_validators?.Any() ?? true)
-                return next();
+                return await next().ConfigureAwait(false);
 
-            var failures = _validators
-                .Select(v => v.Validate(request))
+            var failures = (await Task.WhenAll
+                (
+                _validators
+                    .Select(v => v.ValidateAsync(request, cancellationToken))
+                )
+                .ConfigureAwait(false))
                 .SelectMany(result => result.Errors)
                 .Where(f => f != null)
                 .ToList();
 
             if (failures.Count == 0)
-                return next();
+                return await next().ConfigureAwait(false);
 
             var response = new TResponse();
-            var errors = failures.Select(f => $"{f.ErrorMessage}").ToArray();
+            var errors = failures.Select(f => f.ErrorMessage + (f.ErrorCode is null ? string.Empty : $" - {f.ErrorCode}")).ToArray();
             response.Set(ErrorType.NotValid, errors);
 
             var userName = _accessor?.HttpContext?.User?.Identity?.Name ?? "Unknown";
             _logger.LogWarning("[VALIDATION ERROR] [{name}] {request} - {errors} ", userName, typeof(TRequest).Name, response.ErrorDescription.ErrorMessage);
 
-            return Task.FromResult(response);
+            return response;
         }
     }
 }
