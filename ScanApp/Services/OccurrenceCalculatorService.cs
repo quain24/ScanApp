@@ -19,7 +19,7 @@ namespace ScanApp.Services
             EnsureUtc(patternStartDate, endDate);
 
             return _re.GetRecurrenceDates(patternStartDate, RecurrenceSyncfusionMapper.ToSyncfusionRule(pattern),
-                DateTimesToString(exceptions), maxResultCount, endDate);
+                exceptions.ToSyncfusionSchedulerDates(), maxResultCount, endDate);
         }
 
         public bool WillOccurOnDate(RecurrencePattern pattern, DateTime patternStartDate, DateTime dateToCheck)
@@ -45,7 +45,7 @@ namespace ScanApp.Services
         {
             EnsureUtc(patternStartDate, from, to);
             var result = _re.GetRecurrenceDates(patternStartDate, RecurrenceSyncfusionMapper.ToSyncfusionRule(pattern),
-                DateTimesToString(exceptions), null, to);
+                exceptions.ToSyncfusionSchedulerDates(), null, to);
 
             return ignoreTimePortion
                 ? result.Any(x => x.Date >= from.Date && x.Date <= to.Date)
@@ -56,17 +56,6 @@ namespace ScanApp.Services
         {
             if (dates.Any(d => d.Kind is not DateTimeKind.Utc))
                 throw new ArgumentException("One of given dates is not in UTC format - it's 'Kind' is not set to UTC.");
-        }
-
-        private static string DateTimesToString(IEnumerable<DateTime> dates)
-        {
-            if (dates is null) return null;
-
-            var arr = dates.ToArray();
-            EnsureUtc(arr);
-            return arr.Length is 0
-                ? null
-                : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate()));
         }
     }
 }

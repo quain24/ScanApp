@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace ScanApp.Common.Extensions
 {
@@ -17,6 +19,16 @@ namespace ScanApp.Common.Extensions
                 .Replace("-", "", StringComparison.OrdinalIgnoreCase)
                 .Replace(":", "", StringComparison.OrdinalIgnoreCase);
             return isoDate + 'Z';
+        }
+
+        public static string ToSyncfusionSchedulerDates(this IEnumerable<DateTime> dates)
+        {
+            if (dates is null) return null;
+
+            var arr = dates.ToArray();
+            return arr.Length is 0
+                ? null
+                : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate()));
         }
 
         public static DateTime FromSyncfusionDateString(this string date)
