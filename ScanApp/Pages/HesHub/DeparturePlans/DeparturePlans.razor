@@ -2,7 +2,7 @@
 @using Syncfusion.Blazor.Schedule
 @using Syncfusion.Blazor.Data
 
-    <SfSchedule @ref="SchedulerRef" TValue="AppointmentData" Width="100%" Height="650px" @bind-SelectedDate="_now">
+    <SfSchedule @ref="SchedulerRef" TValue="AppointmentData" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
         <ScheduleEventSettings TValue="AppointmentData">
             <SfDataManager Adaptor="Adaptors.CustomAdaptor">
                 <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">

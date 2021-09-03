@@ -78,5 +78,7 @@ namespace ScanApp.Application.Common.Helpers.Result
                 builder.Append(" - ").Append(ErrorMessage);
             return builder.ToString();
         }
+
+        public static implicit operator string(ErrorDescription error) => error.ToString();
     }
 }

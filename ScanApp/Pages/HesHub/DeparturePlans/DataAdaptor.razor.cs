@@ -6,17 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Syncfusion.Blazor.Schedule.Internal;
+using MediatR;
 using TimeZoneConverter;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
 {
     public partial class DataAdaptor : DataAdaptor<DeparturePlans.AppointmentData>
     {
-        [Parameter] public RenderFragment ChildContent { get; set; }
-
         [CascadingParameter]
         public SfSchedule<DeparturePlans.AppointmentData> SchedulerRef { get; set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        [Inject] public IMediator Mediator { get; init; }
+
 
         public List<DeparturePlans.AppointmentData> EventData { get; set; } = new List<DeparturePlans.AppointmentData>
         {
@@ -34,10 +37,14 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         public async override Task<object> InsertAsync(DataManager dataManager, object data, string key)
         {
+            var gs = SchedulerRef.Timezone;
             Console.WriteLine(SchedulerRef.GetCurrentAction());
             EventData.Insert(0, data as DeparturePlans.AppointmentData);
-            var g = TZConvert.IanaToWindows(((DeparturePlans.AppointmentData)data).StartTimezone);
-            var t = TimeZoneInfo.FindSystemTimeZoneById(g);
+            if (((DeparturePlans.AppointmentData)data).StartTimezone is not null)
+            {
+                var g = TZConvert.IanaToWindows(((DeparturePlans.AppointmentData)data).StartTimezone);
+                var t = TimeZoneInfo.FindSystemTimeZoneById(g);
+            }
             return data;
         }
 

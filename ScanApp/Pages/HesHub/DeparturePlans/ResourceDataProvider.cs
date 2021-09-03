@@ -38,12 +38,22 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         public async ValueTask<IEnumerable<TrailerModel>> GetTrailerTypes(CancellationToken token = default) =>
             _trailerTypes ??= await GetResource(new AllTrailerTypesQuery(), token).ConfigureAwait(false);
 
+        public ValueTask Flush()
+        {
+            _gates = null;
+            _trailerTypes = null;
+            _depotResources = null;
+            _seasonResources = null;
+
+            return ValueTask.CompletedTask;
+        }
+
         private async Task<T> GetResource<T>(IRequest<Result<T>> resourceRequest, CancellationToken token)
         {
-            var result = await _mediator.Send(resourceRequest, token);
+            var result = await _mediator.Send(resourceRequest, token).ConfigureAwait(false);
             if (result.Conclusion is false)
             {
-                throw new Exception(result.ErrorDescription.ToString());
+                throw new Exception(result.ErrorDescription, result.ErrorDescription?.Exception);
             }
 
             return result.Output;
