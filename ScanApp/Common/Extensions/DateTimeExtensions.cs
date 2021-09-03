@@ -31,16 +31,51 @@ namespace ScanApp.Common.Extensions
                 : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate()));
         }
 
-        public static DateTime FromSyncfusionDateString(this string date)
+        public static IList<DateTime> FromSyncfusionDateString(this string dates)
+        {
+            _ = dates ?? throw new ArgumentNullException(nameof(dates));
+            var data = dates.AsSpan();
+            var result = new List<DateTime>();
+            while (true)
+            {
+                var index = data.IndexOf(';');
+
+                if (index != -1)
+                {
+                    ValidatePattern(data[..index]);
+                    result.Add(CreateDate(data[..index].ToString()));
+                    data = data[(index + 1)..];
+                }
+                else
+                {
+                    ValidatePattern(data);
+                    result.Add(CreateDate(data.ToString()));
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        public static DateTime FromSyncfusionSingleDate(this string date)
         {
             _ = date ?? throw new ArgumentNullException(nameof(date));
 
-            if (date.Length != 16 || Equals(date[15], 'Z') is false || date[8] != 'T')
-            {
-                throw new FormatException($"Given {nameof(date)} string ({date}) is not valid Syncfusion date string\r\n" +
-                                          "Valid example: 20210826T084826Z");
-            }
+            ValidatePattern(date.AsSpan());
+            return CreateDate(date);
+        }
 
+        private static void ValidatePattern(ReadOnlySpan<char> date)
+        {
+            if (date.Length != 16 || Equals(date[15], 'Z') is false || Equals(date[8], 'T') is false)
+            {
+                throw new FormatException($"Given {nameof(date)} string or it's part ({date.ToString()}) is not valid Syncfusion date string\r\n" +
+                                          "Valid example: '20210826T084826Z' for single date, '20210826T084826Z;20210826T084826Z' etc. for multiple dates.");
+            }
+        }
+
+        private static DateTime CreateDate(string date)
+        {
             date = date.Remove(8, 1);
 
             return DateTime.TryParseExact(date[..^1], "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result)

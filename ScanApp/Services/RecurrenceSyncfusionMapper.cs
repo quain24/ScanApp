@@ -78,7 +78,7 @@ namespace ScanApp.Services
                 ? int.Parse(countResult)
                 : null;
             DateTime? until = settings.TryGetValue("UNTIL", out var untilResult)
-                ? untilResult.FromSyncfusionDateString()
+                ? untilResult.FromSyncfusionSingleDate()
                 : null;
             int? byMonth = settings.TryGetValue("BYMONTH", out var byMonthResult)
                 ? int.Parse(byMonthResult)
