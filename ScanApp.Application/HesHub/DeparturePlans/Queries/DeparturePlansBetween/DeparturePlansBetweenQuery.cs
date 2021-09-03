@@ -39,7 +39,7 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
                 .Include(x => x.Seasons)
                 .Where(x => (x.Start >= request.From && x.End <= request.To) || possibleOccurrences.Contains(x.Id))
                 .Select(DeparturePlanModel.Projection)
-                .ToListAsync(cancellationToken).ConfigureAwait(false);
+                .ToListAsync(cancellationToken);
 
             return new Result<IEnumerable<DeparturePlanModel>>(depots);
         }

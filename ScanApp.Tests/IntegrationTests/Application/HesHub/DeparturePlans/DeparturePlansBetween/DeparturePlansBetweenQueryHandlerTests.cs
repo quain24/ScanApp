@@ -65,7 +65,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.HesHub.DeparturePlans.Depar
                 ctx.SaveChanges();
             }
 
-            var startPeriod = new DateTime(1995, 08, 24, 11, 35, 00, DateTimeKind.Utc);
+            var startPeriod = new DateTime(2003, 08, 24, 11, 35, 00, DateTimeKind.Utc);
             var endPeriod = new DateTime(2005, 9, 25, 12, 35, 00, DateTimeKind.Utc);
 
             var request = new DeparturePlansBetweenQuery(startPeriod, endPeriod);
@@ -75,9 +75,6 @@ namespace ScanApp.Tests.IntegrationTests.Application.HesHub.DeparturePlans.Depar
 
             var result = await handler.Handle(request, CancellationToken.None);
             var ttt = result.Output.ToList();
-
-            var ggu = ttt[0] == ttt[1].ExceptionTo;
-            var gsgu = ttt[1] == ttt[0].ExceptionTo;
 
             var u = startDate.ToSyncfusionSchedulerDate();
             var v = u.FromSyncfusionDateString();
