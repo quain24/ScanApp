@@ -7,21 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
+using ScanApp.Models.HesHub.DeparturePlans;
 using TimeZoneConverter;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
 {
-    public partial class DataAdaptor : DataAdaptor<DeparturePlans.AppointmentData>
+    public partial class DataAdaptor : DataAdaptor<DeparturePlanGuiModel>
     {
         [CascadingParameter]
-        public SfSchedule<DeparturePlans.AppointmentData> SchedulerRef { get; set; }
+        public SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
 
         [Parameter] public RenderFragment ChildContent { get; set; }
 
         [Inject] public IMediator Mediator { get; init; }
 
 
-        public List<DeparturePlans.AppointmentData> EventData { get; set; } = new List<DeparturePlans.AppointmentData>
+        public List<DeparturePlanGuiModel> EventData { get; set; } = new()
         {
             new () { Id = 1, Subject = "Meeting", StartTime = new DateTime(2020, 1, 5, 10, 0, 0) , EndTime = new DateTime(2020, 1, 5, 11, 0, 0)},
             new () { Id = 2, Subject = "Project Discussion", StartTime = new DateTime(2020, 1, 6, 11, 30, 0) , EndTime = new DateTime(2020, 1, 6, 13, 0, 0), },
@@ -39,10 +40,10 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         {
             var gs = SchedulerRef.Timezone;
             Console.WriteLine(SchedulerRef.GetCurrentAction());
-            EventData.Insert(0, data as DeparturePlans.AppointmentData);
-            if (((DeparturePlans.AppointmentData)data).StartTimezone is not null)
+            EventData.Insert(0, data as DeparturePlanGuiModel);
+            if (((DeparturePlanGuiModel)data).StartTimezone is not null)
             {
-                var g = TZConvert.IanaToWindows(((DeparturePlans.AppointmentData)data).StartTimezone);
+                var g = TZConvert.IanaToWindows(((DeparturePlanGuiModel)data).StartTimezone);
                 var t = TimeZoneInfo.FindSystemTimeZoneById(g);
             }
             return data;
@@ -51,7 +52,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         public async override Task<object> UpdateAsync(DataManager dataManager, object data, string keyField, string key)
         {
             Console.WriteLine(SchedulerRef.GetCurrentAction());
-            var val = (data as DeparturePlans.AppointmentData);
+            var val = (data as DeparturePlanGuiModel);
             var appointment = EventData.FirstOrDefault(AppointmentData => AppointmentData.Id == val.Id);
             if (appointment != null)
             {
@@ -86,18 +87,18 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             Console.WriteLine(SchedulerRef.GetCurrentAction());
 
             object records = deletedRecords;
-            var deleteData = deletedRecords as List<DeparturePlans.AppointmentData>;
+            var deleteData = deletedRecords as List<DeparturePlanGuiModel>;
             foreach (var data in deleteData)
             {
                 EventData.Remove(EventData.FirstOrDefault(AppointmentData => AppointmentData.Id == data.Id));
             }
-            var addData = addedRecords as List<DeparturePlans.AppointmentData>;
+            var addData = addedRecords as List<DeparturePlanGuiModel>;
             foreach (var data in addData)
             {
                 EventData.Insert(0, data);
                 records = addedRecords;
             }
-            List<DeparturePlans.AppointmentData> updateData = changedRecords as List<DeparturePlans.AppointmentData>;
+            List<DeparturePlanGuiModel> updateData = changedRecords as List<DeparturePlanGuiModel>;
             foreach (var data in updateData)
             {
                 var val = (data);

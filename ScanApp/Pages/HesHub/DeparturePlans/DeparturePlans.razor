@@ -1,13 +1,14 @@
 ﻿@page "/departureplans"
 @using Syncfusion.Blazor.Schedule
+@using ScanApp.Models.HesHub.DeparturePlans;
 @using Syncfusion.Blazor.Data
 
-    <SfSchedule @ref="SchedulerRef" TValue="AppointmentData" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
-        <ScheduleEventSettings TValue="AppointmentData">
-            <SfDataManager Adaptor="Adaptors.CustomAdaptor">
-                <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
-                    <DataAdaptor></DataAdaptor>
-                </CascadingValue>
-            </SfDataManager>
-        </ScheduleEventSettings>
-    </SfSchedule>
+<SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
+    <ScheduleEventSettings TValue="DeparturePlanGuiModel">
+        <SfDataManager Adaptor="Adaptors.CustomAdaptor">
+            <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
+                <DataAdaptor></DataAdaptor>
+            </CascadingValue>
+        </SfDataManager>
+    </ScheduleEventSettings>
+</SfSchedule>

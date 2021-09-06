@@ -10,15 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Syncfusion.Blazor.Schedule;
+using ScanApp.Models.HesHub.DeparturePlans;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
 {
     public partial class DeparturePlans
     {
-        private IEnumerable<SeasonResourceModel> _seasonResources = Array.Empty<SeasonResourceModel>();
-        private IEnumerable<DepotResourceModel> _depotResources = Array.Empty<DepotResourceModel>();
-        private IEnumerable<GateModel> _gates = Array.Empty<GateModel>();
-        private IEnumerable<TrailerModel> _trailerTypes = Array.Empty<TrailerModel>();
         private DateTime _now;
         private ResourceDataProvider _resourceProvider;
 
@@ -26,7 +23,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         [Inject] private IDateTime DateTimeService { get; init; }
         
-        public SfSchedule<AppointmentData> SchedulerRef { get; set; }
+        public SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
 
         protected override void OnInitialized()
         {
@@ -37,13 +34,6 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         protected override async Task OnInitializedAsync()
         {
             _now = DateTimeService.Now;
-
-            // For testing, data will be resolved lazily
-            _seasonResources = await _resourceProvider.GetSeasonsResources();
-            _depotResources = await _resourceProvider.GetDepotResources();
-            _gates = await _resourceProvider.GetGates();
-            _trailerTypes = await _resourceProvider.GetTrailerTypes();
-
             await base.OnInitializedAsync();
         }
 
