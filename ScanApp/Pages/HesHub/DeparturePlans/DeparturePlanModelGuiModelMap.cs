@@ -41,18 +41,21 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         public static DeparturePlanModel ToStandardModel(this DeparturePlanGuiModel model)
         {
             _ = model ?? throw new ArgumentNullException(nameof(model));
-
             return new DeparturePlanModel
             {
                 Id = model.Id,
                 Start = model.StartTime,
                 End = model.EndTime,
-                StartTimezone = TZConvert.TryIanaToWindows(model.StartTimezone, out var idStart)
-                    ? TimeZoneInfo.FindSystemTimeZoneById(idStart)
-                    : null,
-                EndTimezone = TZConvert.TryIanaToWindows(model.EndTimezone, out var idEnd)
-                    ? TimeZoneInfo.FindSystemTimeZoneById(idEnd)
-                    : null,
+                StartTimezone = string.IsNullOrWhiteSpace(model.StartTimezone)
+                    ? null
+                    : TZConvert.TryIanaToWindows(model.StartTimezone, out var idStart)
+                        ? TimeZoneInfo.FindSystemTimeZoneById(idStart)
+                        : null,
+                EndTimezone = string.IsNullOrWhiteSpace(model.EndTimezone)
+                    ? null
+                    : TZConvert.TryIanaToWindows(model.EndTimezone, out var idEnd)
+                        ? TimeZoneInfo.FindSystemTimeZoneById(idEnd)
+                        : null,
                 Description = model.Description,
                 Subject = model.Subject,
                 ArrivalDayAndTime = model.ArrivalDayTime,
@@ -65,13 +68,13 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 // if model is not exception (RecurrenceID is null) - grab list of exceptions 
                 // as if it was a master occurrence
                 Exceptions = model.RecurrenceID is null
-                    ? model.RecurrenceException.FromSyncfusionDateString() as List<DateTime>
+                    ? model.RecurrenceException?.FromSyncfusionDateString() as List<DateTime>
                     : null,
                 ExceptionToDate = model.RecurrenceID is not null
-                    ? model.RecurrenceException.FromSyncfusionSingleDate()
+                    ? model.RecurrenceException?.FromSyncfusionSingleDate()
                     : null,
                 ExceptionToId = model.RecurrenceID,
-                Seasons = model.SeasonsIds.ToList(),
+                Seasons = model.SeasonsIds?.ToList(),
                 Version = model.Version
             };
         }

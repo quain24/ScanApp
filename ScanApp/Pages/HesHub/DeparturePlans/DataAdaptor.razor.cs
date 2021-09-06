@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
+using ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetween;
 using ScanApp.Models.HesHub.DeparturePlans;
 using TimeZoneConverter;
 
@@ -21,7 +22,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         [Inject] public IMediator Mediator { get; init; }
 
-
+        public List<DeparturePlanModel> ModelData { get; set; } = new();
         public List<DeparturePlanGuiModel> EventData { get; set; } = new()
         {
             new () { Id = 1, Subject = "Meeting", StartTime = new DateTime(2020, 1, 5, 10, 0, 0) , EndTime = new DateTime(2020, 1, 5, 11, 0, 0)},
@@ -29,6 +30,14 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             new () { Id = 3, Subject = "Work Flow Analysis", StartTime = new DateTime(2020, 1, 7, 12, 0, 0) , EndTime = new DateTime(2020, 1, 7, 13, 0, 0), },
             new () { Id = 4, Subject = "Report", StartTime = new DateTime(2020, 1, 10, 11, 30, 0) , EndTime = new DateTime(2020, 1, 10, 13, 0, 0)}
         };
+
+        protected override void OnParametersSet()
+        {
+            foreach (var departurePlanGuiModel in EventData)
+            {
+                ModelData.Add(departurePlanGuiModel.ToStandardModel());
+            }
+        }
 
         public async override Task<object> ReadAsync(DataManagerRequest dataManagerRequest, string key = null)
         {
