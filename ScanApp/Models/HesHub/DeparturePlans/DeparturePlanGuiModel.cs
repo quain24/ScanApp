@@ -1,4 +1,5 @@
 ﻿using System;
+using ScanApp.Domain.ValueObjects;
 using Version = ScanApp.Domain.ValueObjects.Version;
 
 namespace ScanApp.Models.HesHub.DeparturePlans
@@ -13,6 +14,7 @@ namespace ScanApp.Models.HesHub.DeparturePlans
         public DateTime EndTime { get; set; }
         public string StartTimezone { get; set; }
         public string EndTimezone { get; set; }
+        public DayAndTime ArrivalDayTime { get; set; }
         public bool IsAllDay { get; set; }
         public string RecurrenceRule { get; set; }
         public string RecurrenceException { get; set; }
@@ -24,4 +26,5 @@ namespace ScanApp.Models.HesHub.DeparturePlans
 
         public Version Version { get; set; }
     }
+
 }
