@@ -1,0 +1,17 @@
+﻿<MudDialog>
+    <DialogContent>
+        Selected Occurrence is part of a series - what would you like to do?
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="ChooseSingleEvent">Edit single event</MudButton>
+        <MudButton OnClick="ChooseSeries">Edit series</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] protected MudDialogInstance MudDialog { get; set; }
+
+    public void ChooseSingleEvent() => MudDialog.Close(DialogResult.Ok(CurrentAction.EditOccurrence, typeof(CurrentAction)));
+
+    public void ChooseSeries() => MudDialog.Close(DialogResult.Ok(CurrentAction.EditSeries, typeof(CurrentAction)));
+}

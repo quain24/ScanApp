@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using MediatR;
+using Microsoft.AspNetCore.Components;
+using ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetween;
+using ScanApp.Common.Extensions;
+using ScanApp.Models.HesHub.DeparturePlans;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Data;
 using Syncfusion.Blazor.Schedule;
@@ -6,9 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediatR;
-using ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetween;
-using ScanApp.Models.HesHub.DeparturePlans;
 using TimeZoneConverter;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
@@ -23,12 +24,13 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         [Inject] public IMediator Mediator { get; init; }
 
         public List<DeparturePlanModel> ModelData { get; set; } = new();
+
         public List<DeparturePlanGuiModel> EventData { get; set; } = new()
         {
-            new () { Id = 1, Subject = "Meeting", StartTime = new DateTime(2020, 1, 5, 10, 0, 0) , EndTime = new DateTime(2020, 1, 5, 11, 0, 0)},
-            new () { Id = 2, Subject = "Project Discussion", StartTime = new DateTime(2020, 1, 6, 11, 30, 0) , EndTime = new DateTime(2020, 1, 6, 13, 0, 0), },
-            new () { Id = 3, Subject = "Work Flow Analysis", StartTime = new DateTime(2020, 1, 7, 12, 0, 0) , EndTime = new DateTime(2020, 1, 7, 13, 0, 0), },
-            new () { Id = 4, Subject = "Report", StartTime = new DateTime(2020, 1, 10, 11, 30, 0) , EndTime = new DateTime(2020, 1, 10, 13, 0, 0)}
+            new() { Id = 1, Subject = "Meeting", StartTime = new DateTime(2020, 1, 5, 10, 0, 0), EndTime = new DateTime(2020, 1, 5, 11, 0, 0) },
+            new() { Id = 2, Subject = "Project Discussion", StartTime = new DateTime(2020, 1, 6, 11, 30, 0), EndTime = new DateTime(2020, 1, 6, 13, 0, 0), },
+            new() { Id = 3, Subject = "Work Flow Analysis", StartTime = new DateTime(2020, 1, 7, 12, 0, 0), EndTime = new DateTime(2020, 1, 7, 13, 0, 0), },
+            new() { Id = 4, Subject = "Report", StartTime = new DateTime(2020, 1, 10, 11, 30, 0), EndTime = new DateTime(2020, 1, 10, 13, 0, 0) }
         };
 
         protected override void OnInitialized()
@@ -47,10 +49,20 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         public async override Task<object> InsertAsync(DataManager dataManager, object data, string key)
         {
-            var gs = SchedulerRef.Timezone;
             Console.WriteLine(SchedulerRef.GetCurrentAction());
-            EventData.Insert(0, data as DeparturePlanGuiModel);
-            ModelData.Add((data as DeparturePlanGuiModel).ToStandardModel());
+            var plan = data as DeparturePlanGuiModel;
+            if (plan.RecurrenceID is not null)
+            {
+                var master = EventData.FirstOrDefault(x => x.Id == plan.RecurrenceID);
+                var exc = master.RecurrenceException?.FromSyncfusionDateString();
+                if (exc is null)
+                    exc = new List<DateTime>(1);
+                exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
+                master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
+            }
+
+            EventData.Add(plan);
+
             if (((DeparturePlanGuiModel)data).StartTimezone is not null)
             {
                 var g = TZConvert.IanaToWindows(((DeparturePlanGuiModel)data).StartTimezone);
