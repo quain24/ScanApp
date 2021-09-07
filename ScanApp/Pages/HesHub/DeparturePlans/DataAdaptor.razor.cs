@@ -31,7 +31,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             new () { Id = 4, Subject = "Report", StartTime = new DateTime(2020, 1, 10, 11, 30, 0) , EndTime = new DateTime(2020, 1, 10, 13, 0, 0)}
         };
 
-        protected override void OnParametersSet()
+        protected override void OnInitialized()
         {
             foreach (var departurePlanGuiModel in EventData)
             {
@@ -50,6 +50,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             var gs = SchedulerRef.Timezone;
             Console.WriteLine(SchedulerRef.GetCurrentAction());
             EventData.Insert(0, data as DeparturePlanGuiModel);
+            ModelData.Add((data as DeparturePlanGuiModel).ToStandardModel());
             if (((DeparturePlanGuiModel)data).StartTimezone is not null)
             {
                 var g = TZConvert.IanaToWindows(((DeparturePlanGuiModel)data).StartTimezone);
