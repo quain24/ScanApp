@@ -54,9 +54,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             if (plan.RecurrenceID is not null)
             {
                 var master = EventData.FirstOrDefault(x => x.Id == plan.RecurrenceID);
-                var exc = master.RecurrenceException?.FromSyncfusionDateString();
-                if (exc is null)
-                    exc = new List<DateTime>(1);
+                var exc = master.RecurrenceException.FromSyncfusionDateString();
                 exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
                 master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
             }

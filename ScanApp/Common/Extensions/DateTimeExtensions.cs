@@ -23,17 +23,19 @@ namespace ScanApp.Common.Extensions
 
         public static string ToSyncfusionSchedulerDates(this IEnumerable<DateTime> dates)
         {
-            if (dates is null) return null;
+            _ = dates ?? throw new ArgumentNullException(nameof(dates));
 
             var arr = dates.ToArray();
-            return arr.Length is 0
-                ? null
-                : string.Join(',', arr.Select(a => a.ToSyncfusionSchedulerDate()));
+            return arr.Length > 0
+                ? string.Join(',', arr.Select(a => a.ToSyncfusionSchedulerDate()))
+                : null;
         }
 
         public static IList<DateTime> FromSyncfusionDateString(this string dates)
         {
-            _ = dates ?? throw new ArgumentNullException(nameof(dates));
+            if(dates is null)
+                return new List<DateTime>(0);
+
             var data = dates.AsSpan();
             var result = new List<DateTime>();
             while (true)
