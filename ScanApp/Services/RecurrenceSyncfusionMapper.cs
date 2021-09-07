@@ -121,7 +121,8 @@ namespace ScanApp.Services
                 }
                 else
                 {
-                    result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..].ToString());
+                    if(!pattern.IsEmpty && eqIndex != -1)
+                        result.Add(pattern[..eqIndex].ToString(), pattern[(eqIndex + 1)..].ToString());
                     break;
                 }
             }
