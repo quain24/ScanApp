@@ -5,13 +5,11 @@
 
 <SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
     <ScheduleEventSettings TValue="DeparturePlanGuiModel">
-        <ScheduleField>
-            <FieldSubject Name="Subject"> </FieldSubject>
-            <FieldLocation Name="Location"> </FieldLocation>
-            <FieldDescription Name="Description"></FieldDescription>
-            <FieldStartTime Name="StartTime"></FieldStartTime>
-            <FieldEndTime Name="EndTime"></FieldEndTime>
-        </ScheduleField>
+        <ScheduleTemplates>
+            <EditorTemplate>
+                <DeparturePlanEditor DeparturePlan="context as DeparturePlanGuiModel"/>
+            </EditorTemplate>
+        </ScheduleTemplates>
         <SfDataManager Adaptor="Adaptors.CustomAdaptor">
             <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
                 <DataAdaptor></DataAdaptor>

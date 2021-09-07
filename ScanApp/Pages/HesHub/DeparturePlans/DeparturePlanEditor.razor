@@ -1,0 +1,9 @@
+﻿@using ScanApp.Models.HesHub.DeparturePlans
+
+<MudTextFieldString @bind-Value="DeparturePlan.Subject" Text="@(nameof(DeparturePlan.Subject))"/>
+
+
+@code {
+    [Parameter] public DeparturePlanGuiModel DeparturePlan { get; set; }
+
+}
