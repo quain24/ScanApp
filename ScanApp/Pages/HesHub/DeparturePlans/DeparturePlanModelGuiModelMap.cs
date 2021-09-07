@@ -46,16 +46,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 Id = model.Id,
                 Start = model.StartTime,
                 End = model.EndTime,
-                StartTimezone = string.IsNullOrWhiteSpace(model.StartTimezone)
-                    ? null
-                    : TZConvert.TryIanaToWindows(model.StartTimezone, out var idStart)
-                        ? TimeZoneInfo.FindSystemTimeZoneById(idStart)
-                        : null,
-                EndTimezone = string.IsNullOrWhiteSpace(model.EndTimezone)
-                    ? null
-                    : TZConvert.TryIanaToWindows(model.EndTimezone, out var idEnd)
-                        ? TimeZoneInfo.FindSystemTimeZoneById(idEnd)
-                        : null,
+                StartTimezone = ToTimeZoneInfo(model.StartTimezone),
+                EndTimezone = ToTimeZoneInfo(model.EndTimezone),
                 Description = model.Description,
                 Subject = model.Subject,
                 ArrivalDayAndTime = model.ArrivalDayTime,
@@ -77,6 +69,15 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 Seasons = model.SeasonsIds?.ToList(),
                 Version = model.Version
             };
+
+            static TimeZoneInfo ToTimeZoneInfo(string timezone)
+            {
+                return string.IsNullOrWhiteSpace(timezone)
+                    ? null
+                    : TZConvert.TryIanaToWindows(timezone, out var id)
+                        ? TimeZoneInfo.FindSystemTimeZoneById(id)
+                        : null;
+            }
         }
     }
 }
