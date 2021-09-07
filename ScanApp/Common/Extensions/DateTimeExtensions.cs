@@ -28,7 +28,7 @@ namespace ScanApp.Common.Extensions
             var arr = dates.ToArray();
             return arr.Length is 0
                 ? null
-                : string.Join(';', arr.Select(a => a.ToSyncfusionSchedulerDate()));
+                : string.Join(',', arr.Select(a => a.ToSyncfusionSchedulerDate()));
         }
 
         public static IList<DateTime> FromSyncfusionDateString(this string dates)
@@ -38,7 +38,7 @@ namespace ScanApp.Common.Extensions
             var result = new List<DateTime>();
             while (true)
             {
-                var index = data.IndexOf(';');
+                var index = data.IndexOf(',');
 
                 if (index != -1)
                 {
