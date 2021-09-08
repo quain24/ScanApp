@@ -33,6 +33,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             new() { Id = 4, Subject = "Report", StartTime = new DateTime(2020, 1, 10, 11, 30, 0), EndTime = new DateTime(2020, 1, 10, 13, 0, 0) }
         };
 
+        private Random _rand = new Random(15);
+
         protected override void OnInitialized()
         {
             foreach (var departurePlanGuiModel in EventData)
@@ -51,11 +53,16 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         {
             Console.WriteLine(SchedulerRef.GetCurrentAction());
             var plan = data as DeparturePlanGuiModel;
+            if (plan is null) return null;
+
+            plan.Id = _rand.Next();
+
             if (plan.RecurrenceID is not null)
             {
                 var master = EventData.FirstOrDefault(x => x.Id == plan.RecurrenceID);
                 var exc = master.RecurrenceException.FromSyncfusionDateString();
-                exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
+                if(plan.RecurrenceException is not null)
+                    exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
                 master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
             }
 
@@ -80,7 +87,6 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 appointment.Subject = val.Subject;
                 appointment.StartTime = val.StartTime;
                 appointment.EndTime = val.EndTime;
-                appointment.Location = val.Location;
                 appointment.Description = val.Description;
                 appointment.IsAllDay = val.IsAllDay;
                 appointment.RecurrenceException = val.RecurrenceException;
@@ -88,8 +94,11 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 appointment.RecurrenceRule = val.RecurrenceRule;
                 appointment.StartTimezone = val.StartTimezone;
                 appointment.EndTimezone = val.EndTimezone;
+                appointment.GateId = val.GateId;
+                appointment.TrailerId = val.TrailerId;
+                appointment.SeasonsIds = val.SeasonsIds;
             }
-            return data;
+            return appointment;
         }
 
         public override async Task<object> RemoveAsync(DataManager dataManager, object data, string keyField, string key) //triggers on appointment deletion through public method DeleteEvent
@@ -115,6 +124,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             var addData = addedRecords as List<DeparturePlanGuiModel>;
             foreach (var data in addData)
             {
+                data.Id = _rand.Next();
                 EventData.Insert(0, data);
                 records = addedRecords;
             }
@@ -129,12 +139,16 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                     appointment.Subject = val.Subject;
                     appointment.StartTime = val.StartTime;
                     appointment.EndTime = val.EndTime;
-                    appointment.Location = val.Location;
                     appointment.Description = val.Description;
                     appointment.IsAllDay = val.IsAllDay;
                     appointment.RecurrenceException = val.RecurrenceException;
                     appointment.RecurrenceID = val.RecurrenceID;
                     appointment.RecurrenceRule = val.RecurrenceRule;
+                    appointment.StartTimezone = val.StartTimezone;
+                    appointment.EndTimezone = val.EndTimezone;
+                    appointment.GateId = val.GateId;
+                    appointment.TrailerId = val.TrailerId;
+                    appointment.SeasonsIds = val.SeasonsIds;
                 }
                 records = changedRecords;
             }

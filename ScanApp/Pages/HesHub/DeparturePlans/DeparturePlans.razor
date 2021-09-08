@@ -4,16 +4,21 @@
 @using Syncfusion.Blazor.Data
 
 <SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
-    <ScheduleEvents TValue="DeparturePlanGuiModel" OnPopupOpen="PopupOpen" />
+    <ScheduleEvents TValue="DeparturePlanGuiModel" OnActionBegin="Callback" OnPopupOpen="@(async arg => await PopupOpen(arg))" />
     <ScheduleEventSettings TValue="DeparturePlanGuiModel">
+        <ScheduleViews>
+            <ScheduleView Option="View.Day"></ScheduleView>
+            <ScheduleView Option="View.Week"></ScheduleView>
+            <ScheduleView Option="View.Month"></ScheduleView>
+        </ScheduleViews>
         <ScheduleTemplates>
             <EditorTemplate>
-                <DeparturePlanEditor DeparturePlan="context as DeparturePlanGuiModel" />
+                <DeparturePlanEditor DeparturePlan="context as DeparturePlanGuiModel" ResourceDataProvider="_resourceProvider"/>
             </EditorTemplate>
         </ScheduleTemplates>
         <SfDataManager Adaptor="Adaptors.CustomAdaptor">
             <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
-                <DataAdaptor />
+                <DataAdaptor/>
             </CascadingValue>
         </SfDataManager>
     </ScheduleEventSettings>

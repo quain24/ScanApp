@@ -1,0 +1,75 @@
+﻿@using ScanApp.Models.HesHub.DeparturePlans
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Calendars
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Data.Id" OnKeyDown="OnKeyDownPress" />
+        <MudTextFieldString @bind-Value="Data.Subject" OnKeyDown="OnKeyDownPress" />
+        <MudTextField @bind-Value="Data.RecurrenceException" ReadOnly="false"/>
+        @* Show recurrence editor only when appointment is not an exception. *@
+        @if (Data?.RecurrenceID is null)
+        {
+            <SfRecurrenceEditor @bind-Value="Data.RecurrenceRule"></SfRecurrenceEditor>
+        }
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Primary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Submit</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Delete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] protected MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public DeparturePlanGuiModel Data { get; set; }
+    [Parameter]
+    public CurrentAction? DeleteAction { get; set; }
+
+    public CurrentAction? CurrentAction { get; set; }
+
+    private bool _success = true;
+    private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
+
+    public async Task Submit()
+    {
+        CurrentAction = AddOrEdit(Data);
+        MudDialog.Close(DialogResult.Ok((Data, CurrentAction), _returnType));
+    }
+
+    public async Task Delete()
+    {
+        MudDialog.Close(DialogResult.Ok((Data, DeleteAction), _returnType));
+    }
+
+    public CurrentAction AddOrEdit(DeparturePlanGuiModel model)
+    {
+        return model.Id == default
+            ? Syncfusion.Blazor.Schedule.CurrentAction.Add
+            : Syncfusion.Blazor.Schedule.CurrentAction.EditOccurrence;
+    }
+
+    public void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private async Task OnKeyDownPress(KeyboardEventArgs args)
+    {
+        switch (args.Key)
+        {
+            case "Enter":
+                await Submit();
+                break;
+
+            case "Escape":
+                Cancel();
+                break;
+        }
+    }
+}
