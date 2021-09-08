@@ -40,7 +40,13 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         private async Task PopupOpen(PopupOpenEventArgs<DeparturePlanGuiModel> args)
         {
             args.Cancel = true; //to prevent the default editor window
-
+            var t = SchedulerRef.GetCurrentAction();
+            if (args.Type == PopupType.DeleteAlert)
+            {
+                args.Cancel = false;
+                return;
+            }
+            
             DialogResult recurrenceResult;
             if (args.Type == PopupType.RecurrenceAlert)
             {
