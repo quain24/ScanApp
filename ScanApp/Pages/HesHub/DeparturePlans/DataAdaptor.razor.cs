@@ -54,17 +54,17 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             Console.WriteLine(SchedulerRef.GetCurrentAction());
             var plan = data as DeparturePlanGuiModel;
             if (plan is null) return null;
-
+            
             plan.Id = _rand.Next();
 
-            if (plan.RecurrenceID is not null)
-            {
-                var master = EventData.FirstOrDefault(x => x.Id == plan.RecurrenceID);
-                var exc = master.RecurrenceException.FromSyncfusionDateString();
-                if(plan.RecurrenceException is not null)
-                    exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
-                master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
-            }
+            //if (plan.RecurrenceID is not null)
+            //{
+            //    var master = EventData.FirstOrDefault(x => x.Id == plan.RecurrenceID);
+            //    var exc = master.RecurrenceException.FromSyncfusionDateString();
+            //    if(plan.RecurrenceException is not null)
+            //        exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
+            //    master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
+            //}
 
             EventData.Add(plan);
 

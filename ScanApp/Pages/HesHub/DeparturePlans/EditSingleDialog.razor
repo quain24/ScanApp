@@ -9,7 +9,9 @@
         <MudTextFieldString @bind-Value="Data.Subject" OnKeyDown="OnKeyDownPress" />
         <MudTextField @bind-Value="Data.RecurrenceException" ReadOnly="false"/>
         @* Show recurrence editor only when appointment is not an exception. *@
-        @if (Data?.RecurrenceID is null)
+        @if (EditAction is Syncfusion.Blazor.Schedule.CurrentAction.EditSeries or
+            Syncfusion.Blazor.Schedule.CurrentAction.Add or
+            Syncfusion.Blazor.Schedule.CurrentAction.Save)
         {
             <SfRecurrenceEditor @bind-Value="Data.RecurrenceRule"></SfRecurrenceEditor>
         }
@@ -30,28 +32,20 @@
     public DeparturePlanGuiModel Data { get; set; }
     [Parameter]
     public CurrentAction? DeleteAction { get; set; }
-
-    public CurrentAction? CurrentAction { get; set; }
+    [Parameter]
+    public CurrentAction? EditAction { get; set; }
 
     private bool _success = true;
     private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
 
     public async Task Submit()
     {
-        CurrentAction = AddOrEdit(Data);
-        MudDialog.Close(DialogResult.Ok((Data, CurrentAction), _returnType));
+        MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));
     }
 
     public async Task Delete()
     {
         MudDialog.Close(DialogResult.Ok((Data, DeleteAction), _returnType));
-    }
-
-    public CurrentAction AddOrEdit(DeparturePlanGuiModel model)
-    {
-        return model.Id == default
-            ? Syncfusion.Blazor.Schedule.CurrentAction.Add
-            : Syncfusion.Blazor.Schedule.CurrentAction.EditOccurrence;
     }
 
     public void Cancel()
