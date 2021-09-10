@@ -4,7 +4,7 @@
 @using Syncfusion.Blazor.Data
 
 <SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
-    <ScheduleEvents TValue="DeparturePlanGuiModel" OnActionBegin="Callback" OnPopupOpen="@(async arg => await PopupOpen(arg))" />
+    <ScheduleEvents TValue="DeparturePlanGuiModel" OnActionBegin="Callback" OnPopupOpen="@(async arg => await OnPopupOpen(arg))" />
     <ScheduleEventSettings TValue="DeparturePlanGuiModel">
         <ScheduleViews>
             <ScheduleView Option="View.Day"></ScheduleView>

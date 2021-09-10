@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using CommandLineParser.Exceptions;
+using MediatR;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using ScanApp.Common.Extensions;
@@ -6,7 +7,6 @@ using ScanApp.Common.Interfaces;
 using ScanApp.Models.HesHub.DeparturePlans;
 using Syncfusion.Blazor.Schedule;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
@@ -22,143 +22,75 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         [Inject] private IDateTime DateTimeService { get; init; }
 
-        public SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
+        private SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
 
         protected override void OnInitialized()
         {
-            _resourceProvider = new(Mediator);
+            _resourceProvider = new ResourceDataProvider(Mediator);
+            _now = DateTimeService.Now;
             base.OnInitialized();
         }
 
-        protected override async Task OnInitializedAsync()
-        {
-            _now = DateTimeService.Now;
-            await base.OnInitializedAsync();
-        }
-
-        private Random rand = new Random(12);
-
-        private async Task PopupOpen(PopupOpenEventArgs<DeparturePlanGuiModel> args)
+        private Task OnPopupOpen(PopupOpenEventArgs<DeparturePlanGuiModel> args)
         {
             var popupType = args.Type;
-            CurrentAction? actualActionSave = null;
-            CurrentAction? actualActionDelete = null;
 
+            // Leave those as default Syncfusion implementations.
             switch (popupType)
             {
                 case PopupType.RecurrenceAlert or PopupType.DeleteAlert or PopupType.RecurrenceValidationAlert:
-                    return;
+                    return Task.CompletedTask;
 
+                // Disable QuickInfo
                 case PopupType.QuickInfo:
                     args.Cancel = true;
-                    return;
+                    return Task.CompletedTask;
             }
 
-            args.Cancel = true; //to prevent the default editor window
+            // Everything else will be handle by custom dialogs
+            args.Cancel = true;
 
-            if (args.Type == PopupType.Editor)
-            {
-                // New from cell
-                if (args.Data.Id == default)
+            return popupType is PopupType.Editor
+                ? EditorDialogHandler(args.Data)
+                : Task.CompletedTask;
+        }
+
+        private async Task EditorDialogHandler(DeparturePlanGuiModel originalPlan)
+        {
+            var dialog = DialogService.Show<EditSingleDialog>("Edit dialog", new DialogParameters
                 {
-                    actualActionSave = CurrentAction.Add;
-                    actualActionDelete = CurrentAction.Delete;
-                }
-                else
-                {
-                    // Edit normal event
-                    var sFModel = args.Data;
-                    if (sFModel.RecurrenceException is null && sFModel.RecurrenceRule is null &&
-                        sFModel.RecurrenceID is null)
-                    {
-                        actualActionSave = CurrentAction.Save;
-                        actualActionDelete = CurrentAction.Delete;
-                    }
-
-                    // New from clicked calculated occurrence.
-                    if (sFModel.Id == sFModel.RecurrenceID)
-                    {
-                        actualActionSave = CurrentAction.Add;
-                        actualActionDelete = CurrentAction.DeleteOccurrence;
-                        sFModel.RecurrenceException = sFModel.StartTime.ToUniversalTime().ToSyncfusionSchedulerDate();
-                    }
-
-                    // Edit previously modded occurrence
-                    else if (sFModel.RecurrenceID is not null)
-                    {
-                        actualActionSave = CurrentAction.Save;
-                        actualActionDelete = CurrentAction.DeleteOccurrence;
-                    }
-
-                    // Edit series
-                    else if (sFModel.RecurrenceID is null && sFModel.RecurrenceRule is not null)
-                    {
-                        actualActionSave = CurrentAction.EditSeries;
-                        actualActionDelete = CurrentAction.DeleteSeries;
-                    }
-                }
-
-                var dialog = DialogService.Show<EditSingleDialog>("Main dialog", new DialogParameters()
-                {
-                    { "Data", args.Data.Copy() },
-                    { "EditAction", actualActionSave },
-                    { "DeleteAction", actualActionDelete }
+                    { "Data", originalPlan.Copy() },
+                    { "EditAction", originalPlan.RecurrenceID is null ? CurrentAction.EditSeries : CurrentAction.EditOccurrence },
+                    { "DeleteAction", CurrentAction.Delete }
                 });
 
-                var result = await dialog.Result;
-                if (result.Cancelled) return;
-                var (model, action) = ((DeparturePlanGuiModel, CurrentAction?))result.Data;
+            var result = await dialog.Result;
+            if (result.Cancelled) return;
+            var (modifiedPlan, action) = ((DeparturePlanGuiModel, CurrentAction?))result.Data;
 
-                switch (action)
+            var schedulerAction = SchedulerRef.GetCurrentAction();
+            Func<Task> chosenAction = action is CurrentAction.Delete
+                ? originalPlan switch
                 {
-                    //case CurrentAction.DeleteOccurrence when actualActionSave is CurrentAction.Add:
-                    //    await SchedulerRef.DeleteEventAsync(model, action);
-                    //    break;
-
-                    case CurrentAction.DeleteOccurrence:
-                        await SchedulerRef.DeleteEventAsync(model, action);
-                        break;
-
-                    case CurrentAction.Delete:
-                        await SchedulerRef.DeleteEventAsync(model);
-                        break;
-
-                    case CurrentAction.DeleteSeries:
-                        await SchedulerRef.DeleteEventAsync(model, action);
-                        break;
-
-                    case CurrentAction.Add when actualActionDelete is CurrentAction.DeleteOccurrence:
-                        var master = (await SchedulerRef.GetEventsAsync(SchedulerRef.GetCurrentViewDates().First(),
-                            SchedulerRef.GetCurrentViewDates().Last(), false)).First(x => x.Id == model.RecurrenceID);
-                        var dates = master.RecurrenceException.FromSyncfusionDateString();
-                        var excDate = model.RecurrenceException.FromSyncfusionSingleDate();
-                        if (dates.Contains(excDate) is false)
-                            dates.Add(model.RecurrenceException.FromSyncfusionSingleDate());
-                        master.RecurrenceException = dates.ToSyncfusionSchedulerDates();
-                        await SchedulerRef.AddEventAsync(model);
-                        break;
-
-                    case CurrentAction.Add:
-                        await SchedulerRef.AddEventAsync(model);
-                        break;
-
-                    case CurrentAction.Save when actualActionDelete is CurrentAction.Delete:
-                        await SchedulerRef.SaveEventAsync(model, CurrentAction.Save);
-                        break;
-
-                    case CurrentAction.Save when actualActionDelete is CurrentAction.DeleteOccurrence:
-                        await SchedulerRef.SaveEventAsync(model, CurrentAction.Save);
-                        break;
-
-                    case CurrentAction.EditOccurrence:
-                        await SchedulerRef.SaveEventAsync(model, CurrentAction.EditOccurrence);
-                        break;
-
-                    case CurrentAction.EditSeries:
-                        await SchedulerRef.SaveEventAsync(model, CurrentAction.EditSeries);
-                        break;
+                    var pl when pl.Id == default => () => Task.CompletedTask,
+                    { RecurrenceRule: null } => () => SchedulerRef.DeleteEventAsync(modifiedPlan),
+                    _ when schedulerAction is CurrentAction.EditOccurrence => () =>
+                        SchedulerRef.DeleteEventAsync(modifiedPlan, CurrentAction.DeleteOccurrence),
+                    _ when schedulerAction is CurrentAction.EditSeries => () =>
+                        SchedulerRef.DeleteEventAsync(modifiedPlan, CurrentAction.DeleteSeries),
+                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}", nameof(originalPlan))
                 }
-            }
+                : originalPlan switch
+                {
+                    var pl when pl.Id == default => () => SchedulerRef.AddEventAsync(modifiedPlan),
+                    { RecurrenceRule: null } => () => SchedulerRef.SaveEventAsync(modifiedPlan),
+                    _ when schedulerAction is CurrentAction.EditOccurrence or CurrentAction.EditSeries => () =>
+                        SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
+                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",
+                        nameof(originalPlan))
+                };
+
+            await chosenAction().ConfigureAwait(false);
         }
 
         private ActionType? _action;
