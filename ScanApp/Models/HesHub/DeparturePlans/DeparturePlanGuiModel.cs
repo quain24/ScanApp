@@ -10,45 +10,34 @@ namespace ScanApp.Models.HesHub.DeparturePlans
         public string Subject { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
-        private DateTime _startTime;
 
-        public DateTime StartTime
-        {
-            get => _startTime;
-            set => _startTime = value;
-        }
+        public DateTime StartTime { get; set; }
 
         // Start and end separate time and date portions are for MudBlazor pickers.
         internal DateTime? StartDatePortion
         {
-            get => _startTime.Date;
-            set => _startTime = (value?.Date ?? DateTime.MinValue.Date) + _startTime.TimeOfDay;
+            get => StartTime.Date;
+            set => StartTime = (value?.Date ?? DateTime.MinValue.Date) + StartTime.TimeOfDay;
         }
 
         internal TimeSpan? StartTimePortion
         {
-            get => _startTime.TimeOfDay;
-            set => _startTime = _startTime.Date + (value ?? TimeSpan.Zero);
+            get => StartTime.TimeOfDay;
+            set => StartTime = StartTime.Date + (value ?? TimeSpan.Zero);
         }
 
-        private DateTime _endTime;
-
-        public DateTime EndTime
-        {
-            get => _endTime;
-            set => _endTime = value;
-        }
+        public DateTime EndTime { get; set; }
 
         internal DateTime? EndDatePortion
         {
-            get => _endTime.Date;
-            set => _endTime = (value?.Date ?? DateTime.MinValue.Date) + _endTime.TimeOfDay;
+            get => EndTime.Date;
+            set => EndTime = (value?.Date ?? DateTime.MinValue.Date) + EndTime.TimeOfDay;
         }
 
         internal TimeSpan? EndTimePortion
         {
-            get => _endTime.TimeOfDay;
-            set => _endTime = _endTime.Date + (value ?? TimeSpan.Zero);
+            get => EndTime.TimeOfDay;
+            set => EndTime = EndTime.Date + (value ?? TimeSpan.Zero);
         }
 
         public string StartTimezone { get; set; }
