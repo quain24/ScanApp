@@ -3,9 +3,9 @@
 @using ScanApp.Models.HesHub.DeparturePlans;
 @using Syncfusion.Blazor.Data
 
-<SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now">
+<SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now" AllowKeyboardInteraction="false">
     <ScheduleEvents TValue="DeparturePlanGuiModel" OnActionBegin="Callback" OnPopupOpen="@(async arg => await OnPopupOpen(arg))" />
-    <ScheduleEventSettings TValue="DeparturePlanGuiModel">
+    <ScheduleEventSettings TValue="DeparturePlanGuiModel" AllowEditFollowingEvents="true">
         <ScheduleViews>
             <ScheduleView Option="View.Day"></ScheduleView>
             <ScheduleView Option="View.Week"></ScheduleView>

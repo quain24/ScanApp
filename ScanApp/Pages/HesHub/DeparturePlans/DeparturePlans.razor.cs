@@ -73,19 +73,22 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 ? originalPlan switch
                 {
                     var pl when pl.Id == default => () => Task.CompletedTask,
-                    { RecurrenceRule: null } => () => SchedulerRef.DeleteEventAsync(modifiedPlan),
+                    { RecurrenceRule: null } => () => SchedulerRef.DeleteEventAsync(originalPlan),
                     _ when schedulerAction is CurrentAction.EditOccurrence => () =>
-                        SchedulerRef.DeleteEventAsync(modifiedPlan, CurrentAction.DeleteOccurrence),
-                    _ when schedulerAction is CurrentAction.EditSeries => () =>
-                        SchedulerRef.DeleteEventAsync(modifiedPlan, CurrentAction.DeleteSeries),
-                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}", nameof(originalPlan))
+                        SchedulerRef.DeleteEventAsync(originalPlan, CurrentAction.DeleteOccurrence),
+                    _ when schedulerAction is CurrentAction.EditSeries =>
+                        () => SchedulerRef.DeleteEventAsync(originalPlan, CurrentAction.DeleteSeries),
+                    _ when schedulerAction is CurrentAction.EditFollowingEvents =>
+                        () => SchedulerRef.DeleteEventAsync(originalPlan, CurrentAction.DeleteFollowingEvents),
+                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",
+                        nameof(originalPlan))
                 }
                 : originalPlan switch
                 {
                     var pl when pl.Id == default => () => SchedulerRef.AddEventAsync(modifiedPlan),
                     { RecurrenceRule: null } => () => SchedulerRef.SaveEventAsync(modifiedPlan),
-                    _ when schedulerAction is CurrentAction.EditOccurrence or CurrentAction.EditSeries => () =>
-                        SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
+                    _ when schedulerAction is CurrentAction.EditOccurrence or CurrentAction.EditSeries or CurrentAction.EditFollowingEvents =>
+                        () => SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
                     _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",
                         nameof(originalPlan))
                 };
