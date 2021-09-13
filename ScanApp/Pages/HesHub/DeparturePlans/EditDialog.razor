@@ -5,13 +5,15 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="Data.Id" OnKeyDown="OnKeyDownPress" />
-        <MudTextFieldString @bind-Value="Data.Subject" OnKeyDown="OnKeyDownPress" />
-        <MudTextField @bind-Value="Data.RecurrenceException" ReadOnly="false"/>
+        <MudTextField @bind-Value="Data.Subject" OnKeyDown="OnKeyDownPress" />
+        <MudTextField @bind-Value="Data.Description" OnKeyDown="OnKeyDownPress" Lines="5" />
+        <MudDatePicker @bind-Date="Data.StartDatePortion" AutoClose="true" AllowKeyboardInput="true"></MudDatePicker>
+        <MudTimePicker @bind-Time="Data.StartTimePortion" AutoClose="true" AllowKeyboardInput="true"></MudTimePicker>
+        <MudDatePicker @bind-Date="Data.EndDatePortion" AutoClose="true" AllowKeyboardInput="true"></MudDatePicker>
+        <MudTimePicker @bind-Time="Data.EndTimePortion" AutoClose="true" AllowKeyboardInput="true"></MudTimePicker>
+        <MudTextField @bind-Value="Data.RecurrenceException" ReadOnly="false" />
         @* Show recurrence editor only when appointment is not an exception. *@
-        @if (EditAction is Syncfusion.Blazor.Schedule.CurrentAction.EditSeries or
-            Syncfusion.Blazor.Schedule.CurrentAction.Add or
-            Syncfusion.Blazor.Schedule.CurrentAction.Save)
+        @if (EditAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents or CurrentAction.Add or CurrentAction.Save)
         {
             <SfRecurrenceEditor @bind-Value="Data.RecurrenceRule"></SfRecurrenceEditor>
         }
@@ -19,9 +21,9 @@
     </DialogContent>
 
     <DialogActions>
-        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Primary" OnClick="Cancel">Cancel</MudButton>
         <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Submit</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Delete">Delete</MudButton>
+        <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="!_success" OnClick="Delete">Delete</MudButton>
     </DialogActions>
 </MudDialog>
 

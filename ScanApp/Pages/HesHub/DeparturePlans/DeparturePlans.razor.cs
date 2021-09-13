@@ -57,7 +57,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         private async Task EditorDialogHandler(DeparturePlanGuiModel originalPlan)
         {
-            var dialog = DialogService.Show<EditSingleDialog>("Edit dialog", new DialogParameters
+            var dialog = DialogService.Show<EditDialog>("Edit dialog", new DialogParameters
                 {
                     { "Data", originalPlan.Copy() },
                     { "EditAction", originalPlan.RecurrenceID is null ? CurrentAction.EditSeries : CurrentAction.EditOccurrence },
@@ -87,7 +87,13 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 {
                     var pl when pl.Id == default => () => SchedulerRef.AddEventAsync(modifiedPlan),
                     { RecurrenceRule: null } => () => SchedulerRef.SaveEventAsync(modifiedPlan),
-                    _ when schedulerAction is CurrentAction.EditOccurrence or CurrentAction.EditSeries or CurrentAction.EditFollowingEvents =>
+                    _ when schedulerAction is CurrentAction.EditOccurrence or CurrentAction.EditFollowingEvents => () =>
+                    {
+                        modifiedPlan.RecurrenceID = modifiedPlan.Id;
+                        return SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction);
+                    }
+                    ,
+                    _ when schedulerAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents =>
                         () => SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
                     _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",
                         nameof(originalPlan))

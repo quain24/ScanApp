@@ -11,11 +11,6 @@
             <ScheduleView Option="View.Week"></ScheduleView>
             <ScheduleView Option="View.Month"></ScheduleView>
         </ScheduleViews>
-        <ScheduleTemplates>
-            <EditorTemplate>
-                <DeparturePlanEditor DeparturePlan="context as DeparturePlanGuiModel" ResourceDataProvider="_resourceProvider"/>
-            </EditorTemplate>
-        </ScheduleTemplates>
         <SfDataManager Adaptor="Adaptors.CustomAdaptor">
             <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
                 <DataAdaptor/>
