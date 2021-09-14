@@ -2,6 +2,7 @@
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Calendars
+@using TimeZoneConverter
 @using Orientation = MudBlazor.Orientation
 
 <MudDialog>
@@ -21,10 +22,16 @@
             <MudItem xs="12">
                 <MudField Label="End date and time" Variant="Variant.Outlined">
                     <div class="d-flex flex-row">
-                        <MudDatePicker @bind-Date="Data.EndDatePortion" Label="End date" Class="ml-0 px-2" AutoClose="true" AllowKeyboardInput="true" />
+                        <MudDatePicker @bind-Date="Data.EndDatePortion" Label="End date" Class="ml-0 pr-2" AutoClose="true" AllowKeyboardInput="true" />
                         <MudTimePicker @bind-Time="Data.EndTimePortion" Label="End time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
-                        <MudCheckBox @bind-Checked="_enableStartTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
+                        <MudCheckBox @bind-Checked="_enableEndTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
                     </div>
+                    @if (_enableEndTimezone)
+                    {
+                        <div class="d-flex flex-row">
+                            <MudAutocomplete T="string" @bind-Value="Data.EndTimezone" Clearable="true" SearchFunc="@Search" MaxItems="512"/>
+                        </div>
+                    }
                 </MudField>
             </MudItem>
             @* Show recurrence editor only when appointment is not an exception. *@
@@ -59,9 +66,25 @@
     private bool _success = true;
     private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
     private bool _enableStartTimezone;
+    private bool _enableEndTimezone;
+    private readonly List<string> _timezones = TZConvert.KnownIanaTimeZoneNames.Append(null).ToList();
     
+    private Task<IEnumerable<string>> Search(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return Task.FromResult(_timezones.AsEnumerable());
+        return Task.FromResult(_timezones.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
+    }
+
+    protected override void OnInitialized()
+    {
+        _enableEndTimezone = Data?.EndTimezone is not null;
+        base.OnInitialized();
+    }
+
     public async Task Submit()
     {
+        //Data.EndTimezone = Data.EndTimezone is null ? null : TZConvert.WindowsToIana(Data.EndTimezone);
         MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));
     }
 
