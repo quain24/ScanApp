@@ -2,28 +2,47 @@
 @using Syncfusion.Blazor.DropDowns
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Calendars
+@using Orientation = MudBlazor.Orientation
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="Data.Subject" OnKeyDown="OnKeyDownPress" />
-        <MudTextField @bind-Value="Data.Description" OnKeyDown="OnKeyDownPress" Lines="5" />
-        <MudDatePicker @bind-Date="Data.StartDatePortion" AutoClose="true" AllowKeyboardInput="true"></MudDatePicker>
-        <MudTimePicker @bind-Time="Data.StartTimePortion" AutoClose="true" AllowKeyboardInput="true"></MudTimePicker>
-        <MudDatePicker @bind-Date="Data.EndDatePortion" AutoClose="true" AllowKeyboardInput="true"></MudDatePicker>
-        <MudTimePicker @bind-Time="Data.EndTimePortion" AutoClose="true" AllowKeyboardInput="true"></MudTimePicker>
-        <MudTextField @bind-Value="Data.RecurrenceException" ReadOnly="false" />
-        @* Show recurrence editor only when appointment is not an exception. *@
-        @if (EditAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents or CurrentAction.Add or CurrentAction.Save)
-        {
-            <SfRecurrenceEditor @bind-Value="Data.RecurrenceRule"></SfRecurrenceEditor>
-        }
+        <MudGrid Spacing="1">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="Data.Subject" Label="Subject" OnKeyDown="OnKeyDownPress" Class="my-2" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="Data.Description" Label="Description" OnKeyDown="OnKeyDownPress" Lines="5" Class="my-2" Variant="Variant.Outlined" />
 
+            </MudItem>
+            <MudItem xs="12">
+                <MudField Label="Start date and time" Variant="Variant.Outlined">
+                    <MudDatePicker @bind-Date="Data.StartDatePortion" AutoClose="true" AllowKeyboardInput="true" PickerVariant="PickerVariant.Dialog" />
+                    <MudTimePicker @bind-Time="Data.StartTimePortion" AutoClose="true" AllowKeyboardInput="true" PickerVariant="PickerVariant.Dialog" />
+                </MudField>
+            </MudItem>
+            <MudItem xs="12">
+                <MudField Label="End date and time" Variant="Variant.Outlined">
+                    <div class="d-flex flex-row">
+                        <MudDatePicker @bind-Date="Data.EndDatePortion" Label="End date" Class="ml-0 px-2" AutoClose="true" AllowKeyboardInput="true" />
+                        <MudTimePicker @bind-Time="Data.EndTimePortion" Label="End time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
+                        <MudCheckBox @bind-Checked="_enableStartTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
+                    </div>
+                </MudField>
+            </MudItem>
+            @* Show recurrence editor only when appointment is not an exception. *@
+            @if (EditAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents or CurrentAction.Add or CurrentAction.Save)
+            {
+                <MudItem xs="12">
+                    <MudField Label="Recurrence" Variant="Variant.Outlined">
+                        <SfRecurrenceEditor @bind-Value="Data.RecurrenceRule"></SfRecurrenceEditor>
+                    </MudField>
+                </MudItem>
+            }
+            </MudGrid>
     </DialogContent>
 
     <DialogActions>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Submit</MudButton>
+        <MudButton Class="ml-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Submit</MudButton>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-auto" Variant="Variant.Filled" Color="Color.Error" Disabled="!_success" OnClick="Delete">Delete</MudButton>
+        <MudButton Class="mr-2" Variant="Variant.Filled" Color="Color.Error" Disabled="!_success" OnClick="Delete">Delete</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -39,7 +58,8 @@
 
     private bool _success = true;
     private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
-
+    private bool _enableStartTimezone;
+    
     public async Task Submit()
     {
         MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));

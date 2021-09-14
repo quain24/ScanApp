@@ -57,18 +57,18 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         private async Task EditorDialogHandler(DeparturePlanGuiModel originalPlan)
         {
+            var schedulerAction = SchedulerRef.GetCurrentAction();
             var dialog = DialogService.Show<EditDialog>("Edit dialog", new DialogParameters
                 {
                     { "Data", originalPlan.Copy() },
-                    { "EditAction", originalPlan.RecurrenceID is null ? CurrentAction.EditSeries : CurrentAction.EditOccurrence },
+                    { "EditAction", originalPlan.Id == default ? CurrentAction.EditSeries : schedulerAction },
                     { "DeleteAction", CurrentAction.Delete }
-                });
+                }, new DialogOptions { CloseButton = true });
 
             var result = await dialog.Result;
             if (result.Cancelled) return;
             var (modifiedPlan, action) = ((DeparturePlanGuiModel, CurrentAction?))result.Data;
 
-            var schedulerAction = SchedulerRef.GetCurrentAction();
             Func<Task> chosenAction = action is CurrentAction.Delete
                 ? originalPlan switch
                 {
@@ -80,7 +80,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                         () => SchedulerRef.DeleteEventAsync(originalPlan, CurrentAction.DeleteSeries),
                     _ when schedulerAction is CurrentAction.EditFollowingEvents =>
                         () => SchedulerRef.DeleteEventAsync(originalPlan, CurrentAction.DeleteFollowingEvents),
-                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",
+                    _ => throw new UnknownArgumentException($"Unhandled action for departure plan deletion - {schedulerAction}",
                         nameof(originalPlan))
                 }
                 : originalPlan switch
@@ -100,13 +100,6 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 };
 
             await chosenAction().ConfigureAwait(false);
-        }
-
-        private ActionType? _action;
-
-        private void Callback(ActionEventArgs<DeparturePlanGuiModel> args)
-        {
-            _action = args.ActionType;
         }
     }
 }

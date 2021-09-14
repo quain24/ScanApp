@@ -55,7 +55,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             var plan = data as DeparturePlanGuiModel;
             if (plan is null) return null;
             
-            plan.Id = _rand.Next();
+            if(plan.Id == default)
+                plan.Id = _rand.Next();
 
             //if (plan.RecurrenceID is not null)
             //{
