@@ -40,6 +40,7 @@ namespace ScanApp.Models.HesHub.DeparturePlans
             set => EndTime = EndTime.Date + (value ?? TimeSpan.Zero);
         }
 
+        // Timezones in GUI model are in IANA notation
         public string StartTimezone { get; set; }
         public string EndTimezone { get; set; }
         public DayAndTime ArrivalDayTime { get; set; }

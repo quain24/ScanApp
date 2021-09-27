@@ -1,22 +1,28 @@
 ﻿@using ScanApp.Models.HesHub.DeparturePlans
-@using Syncfusion.Blazor.DropDowns
-@using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Calendars
 @using TimeZoneConverter
-@using Orientation = MudBlazor.Orientation
+@inject IDialogService _dialogService
 
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="1">
             <MudItem xs="12">
-                <MudTextField @bind-Value="Data.Subject" Label="Subject" OnKeyDown="OnKeyDownPress" Class="my-2" Variant="Variant.Outlined" />
-                <MudTextField @bind-Value="Data.Description" Label="Description" OnKeyDown="OnKeyDownPress" Lines="5" Class="my-2" Variant="Variant.Outlined" />
-
+                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="Data.Description" Class="my-2" Label="Description" Lines="5" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12">
                 <MudField Label="Start date and time" Variant="Variant.Outlined">
-                    <MudDatePicker @bind-Date="Data.StartDatePortion" AutoClose="true" AllowKeyboardInput="true" PickerVariant="PickerVariant.Dialog" />
-                    <MudTimePicker @bind-Time="Data.StartTimePortion" AutoClose="true" AllowKeyboardInput="true" PickerVariant="PickerVariant.Dialog" />
+                    <div class="d-flex flex-row">
+                        <MudDatePicker @bind-Date="Data.StartDatePortion" Label="Start date" Class="ml-0 pr-2" AutoClose="true" AllowKeyboardInput="true" />
+                        <MudTimePicker @bind-Time="Data.StartTimePortion" Label="Start time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
+                    </div>
+                    @if (_enableTimezone)
+                    {
+                        <div class="d-flex flex-row">
+                            <MudAutocomplete T="string" Value="Data.StartTimezone" ToStringFunc="TimezoneSelectFormatter" Clearable="true"
+                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true"
+                                             ValueChanged="OnStartTimezoneChanged" />
+                        </div>
+                    }
                 </MudField>
             </MudItem>
             <MudItem xs="12">
@@ -24,18 +30,21 @@
                     <div class="d-flex flex-row">
                         <MudDatePicker @bind-Date="Data.EndDatePortion" Label="End date" Class="ml-0 pr-2" AutoClose="true" AllowKeyboardInput="true" />
                         <MudTimePicker @bind-Time="Data.EndTimePortion" Label="End time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
-                        <MudCheckBox @bind-Checked="_enableEndTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
                     </div>
-                    @if (_enableEndTimezone)
+                    @if (_enableTimezone)
                     {
                         <div class="d-flex flex-row">
-                            <MudAutocomplete T="string" @bind-Value="Data.EndTimezone" Clearable="true" SearchFunc="@Search" MaxItems="512"/>
+                            <MudAutocomplete T="string" @bind-Value="Data.EndTimezone" ToStringFunc="TimezoneSelectFormatter" Clearable="true"
+                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true" />
                         </div>
                     }
                 </MudField>
             </MudItem>
+            <MudItem>
+                <MudCheckBox @bind-Checked="_enableTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
+            </MudItem>
             @* Show recurrence editor only when appointment is not an exception. *@
-            @if (EditAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents or CurrentAction.Add or CurrentAction.Save)
+            @if (EditAction is not CurrentAction.EditOccurrence)
             {
                 <MudItem xs="12">
                     <MudField Label="Recurrence" Variant="Variant.Outlined">
@@ -43,13 +52,13 @@
                     </MudField>
                 </MudItem>
             }
-            </MudGrid>
+        </MudGrid>
     </DialogContent>
 
     <DialogActions>
         <MudButton Class="ml-2" Variant="Variant.Filled" Color="Color.Primary" Disabled="!_success" OnClick="Submit">Submit</MudButton>
         <MudButton Class="ml-auto" Variant="Variant.Filled" Color="Color.Warning" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Class="mr-2" Variant="Variant.Filled" Color="Color.Error" Disabled="!_success" OnClick="Delete">Delete</MudButton>
+        <MudButton Class="mr-2" Variant="Variant.Filled" Color="Color.Error" Disabled="@(!_success || Data?.Id == 0)" OnClick="Delete">Delete</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -63,33 +72,68 @@
     [Parameter]
     public CurrentAction? EditAction { get; set; }
 
-    private bool _success = true;
     private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
-    private bool _enableStartTimezone;
-    private bool _enableEndTimezone;
-    private readonly List<string> _timezones = TZConvert.KnownIanaTimeZoneNames.Append(null).ToList();
-    
+    private bool _success = true;
+    private bool _enableTimezone;
+    private Dictionary<string, TimeSpan> _timezones;
+
     private Task<IEnumerable<string>> Search(string value)
     {
         if (string.IsNullOrEmpty(value))
-            return Task.FromResult(_timezones.AsEnumerable());
-        return Task.FromResult(_timezones.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
+            return Task.FromResult(_timezones?.Keys.AsEnumerable());
+        return Task.FromResult(_timezones?.Keys.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
     }
 
     protected override void OnInitialized()
     {
-        _enableEndTimezone = Data?.EndTimezone is not null;
+        _enableTimezone = Data?.EndTimezone is not null || Data?.StartTimezone is not null;
+        _timezones = GetKnownTimezones();
+
         base.OnInitialized();
+    }
+
+    private static Dictionary<string, TimeSpan> GetKnownTimezones()
+    {
+        return TimeZoneInfo
+            .GetSystemTimeZones()
+            .Select(x => (TZConvert.WindowsToIana(x.Id), x.BaseUtcOffset))
+            .GroupBy(x => x.Item1)
+            .Select(y => y.First())
+            .ToDictionary(x => x.Item1, x => x.BaseUtcOffset);
+    }
+
+    private string TimezoneSelectFormatter(string timezoneId)
+    {
+        if (timezoneId is null || _timezones is null || _timezones.TryGetValue(timezoneId, out var offset) is false)
+            return null;
+        return $"{timezoneId} ({(offset < TimeSpan.Zero ? '-' : '+')}{offset:hh\\:mm})";
     }
 
     public async Task Submit()
     {
-        //Data.EndTimezone = Data.EndTimezone is null ? null : TZConvert.WindowsToIana(Data.EndTimezone);
+        if (_enableTimezone is false)
+        {
+            Data.EndTimezone = null;
+            Data.StartTimezone = null;
+        }
         MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));
     }
 
     public async Task Delete()
     {
+        var type = EditAction switch
+        {
+            CurrentAction.EditOccurrence => "occurrence",
+            _ => "series"
+        };
+
+        var confirmation = await _dialogService.ShowMessageBox("Confirm deletion.",
+            $"Do you really want to delete this {type}?", "Yes", "No", null, new DialogOptions
+            {
+                DisableBackdropClick = true
+            });
+
+        if (confirmation is false) return;
         MudDialog.Close(DialogResult.Ok((Data, DeleteAction), _returnType));
     }
 
@@ -110,5 +154,12 @@
                 Cancel();
                 break;
         }
+    }
+
+    private void OnStartTimezoneChanged(string timezoneId)
+    {
+        var _ = Data.StartTimezone == Data.EndTimezone
+            ? Data.StartTimezone = Data.EndTimezone = timezoneId
+            : Data.StartTimezone = timezoneId;
     }
 }

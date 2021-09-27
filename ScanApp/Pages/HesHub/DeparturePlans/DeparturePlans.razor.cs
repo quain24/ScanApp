@@ -61,7 +61,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             var dialog = DialogService.Show<EditDialog>("Edit dialog", new DialogParameters
                 {
                     { "Data", originalPlan.Copy() },
-                    { "EditAction", originalPlan.Id == default ? CurrentAction.EditSeries : schedulerAction },
+                    { "EditAction", originalPlan.Id == default ? CurrentAction.Add : schedulerAction },
                     { "DeleteAction", CurrentAction.Delete }
                 }, new DialogOptions { CloseButton = true });
 
