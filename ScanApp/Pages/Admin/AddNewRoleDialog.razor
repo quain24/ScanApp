@@ -45,7 +45,7 @@
 
     async Task Submit()
     {
-        _form.Validate();
+        await _form.Validate();
         if (!_success)
             return;
 
