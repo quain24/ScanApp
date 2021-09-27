@@ -109,7 +109,7 @@
         return $"{timezoneId} ({(offset < TimeSpan.Zero ? '-' : '+')}{offset:hh\\:mm})";
     }
 
-    public async Task Submit()
+    private async Task Submit()
     {
         if (_enableTimezone is false)
         {
@@ -119,7 +119,7 @@
         MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));
     }
 
-    public async Task Delete()
+    private async Task Delete()
     {
         var type = EditAction switch
         {
@@ -133,7 +133,7 @@
                 DisableBackdropClick = true
             });
 
-        if (confirmation is false) return;
+        if (confirmation is null or false) return;
         MudDialog.Close(DialogResult.Ok((Data, DeleteAction), _returnType));
     }
 
