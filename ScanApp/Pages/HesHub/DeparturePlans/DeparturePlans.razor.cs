@@ -91,8 +91,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                     {
                         modifiedPlan.RecurrenceID = modifiedPlan.Id;
                         return SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction);
-                    }
-                    ,
+                    },
                     _ when schedulerAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents =>
                         () => SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
                     _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",

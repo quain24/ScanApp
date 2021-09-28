@@ -6,27 +6,15 @@
     <DialogContent>
         <MudGrid Spacing="1">
             <MudItem xs="12">
-                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined"/>
                 <MudTextField @bind-Value="Data.Description" Class="my-2" Label="Description" Lines="5" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12">
-                <MudField Label="Start date and time" Variant="Variant.Outlined">
+                <MudField Label="Start date and time" Class="d-flex flex-column" Variant="Variant.Outlined">
                     <div class="d-flex flex-row">
                         <MudDatePicker @bind-Date="Data.StartDatePortion" Label="Start date" Class="ml-0 pr-2" AutoClose="true" AllowKeyboardInput="true" />
                         <MudTimePicker @bind-Time="Data.StartTimePortion" Label="Start time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
                     </div>
-                    @if (_enableTimezone)
-                    {
-                        <div class="d-flex flex-row">
-                            <MudAutocomplete T="string" Value="Data.StartTimezone" ToStringFunc="TimezoneSelectFormatter" Clearable="true"
-                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true"
-                                             ValueChanged="OnStartTimezoneChanged" />
-                        </div>
-                    }
-                </MudField>
-            </MudItem>
-            <MudItem xs="12">
-                <MudField Label="End date and time" Variant="Variant.Outlined">
                     <div class="d-flex flex-row">
                         <MudDatePicker @bind-Date="Data.EndDatePortion" Label="End date" Class="ml-0 pr-2" AutoClose="true" AllowKeyboardInput="true" />
                         <MudTimePicker @bind-Time="Data.EndTimePortion" Label="End time" Class="ml-auto px-2" AutoClose="true" AllowKeyboardInput="true" />
@@ -34,14 +22,16 @@
                     @if (_enableTimezone)
                     {
                         <div class="d-flex flex-row">
+                            <MudAutocomplete T="string" Value="Data.StartTimezone" ToStringFunc="TimezoneSelectFormatter" Clearable="true"
+                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true"
+                                             ValueChanged="OnStartTimezoneChanged" Label="Start timezone" Class="ml-0 pr-2" />
                             <MudAutocomplete T="string" @bind-Value="Data.EndTimezone" ToStringFunc="TimezoneSelectFormatter" Clearable="true"
-                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true" />
+                                             ResetValueOnEmptyText="true" SearchFunc="@Search" MaxItems="1024" CoerceText="true"
+                                             Label="End timezone" Class="ml-auto px-2" />
                         </div>
                     }
+                    <MudCheckBox @bind-Checked="_enableTimezone" Dense="true" Class="ml-n2 pt-2">Enable timezones</MudCheckBox>
                 </MudField>
-            </MudItem>
-            <MudItem>
-                <MudCheckBox @bind-Checked="_enableTimezone" Dense="true" Class="mr-0 align-self-end px-2">Timezone</MudCheckBox>
             </MudItem>
             @* Show recurrence editor only when appointment is not an exception. *@
             @if (EditAction is not CurrentAction.EditOccurrence)
@@ -137,7 +127,7 @@
         MudDialog.Close(DialogResult.Ok((Data, DeleteAction), _returnType));
     }
 
-    public void Cancel()
+    private void Cancel()
     {
         MudDialog.Cancel();
     }
