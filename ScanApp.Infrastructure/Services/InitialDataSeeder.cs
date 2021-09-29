@@ -102,7 +102,7 @@ namespace ScanApp.Infrastructure.Services
             {
                 _logInformation(name, "Beginning applying pending database migrations");
                 await ctx.Database.MigrateAsync().ConfigureAwait(false);
-                _logInformation(name, "Migrations applied");
+                _logInformation(name, "Migrations work finished");
             }
         }
 
@@ -127,7 +127,7 @@ namespace ScanApp.Infrastructure.Services
             {
                 foreach (var spsp in _defaultSparePartStoragePlaces)
                 {
-                    if (ctx.SparePartStoragePlaces.AsNoTracking().Any(s => s.Name.Equals(spsp.LocationId)))
+                    if (ctx.SparePartStoragePlaces.Any(s => s.LocationId.Equals(spsp.LocationId)))
                         continue;
                     ctx.Add(spsp);
                 }
@@ -228,7 +228,7 @@ namespace ScanApp.Infrastructure.Services
                 _logInformation(name, "Beginning default season seeding");
                 await using (var ctx = ContextFactory.CreateDbContext())
                 {
-                    var existingData = await ctx.Seasons.FirstOrDefaultAsync(x => x.Name.Equals(_defaultSeason.Name, StringComparison.OrdinalIgnoreCase)).ConfigureAwait(false);
+                    var existingData = await ctx.Seasons.FirstOrDefaultAsync(x => x.Name.Equals(_defaultSeason.Name)).ConfigureAwait(false);
                     if (existingData is not null)
                     {
                         ctx.Remove(existingData);
