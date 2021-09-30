@@ -1,12 +1,14 @@
 ﻿@using ScanApp.Models.HesHub.DeparturePlans
 @using TimeZoneConverter
+@using ScanApp.Application.HesHub.DeparturePlans.Queries
+@using ScanApp.Application.HesHub.DeparturePlans.Queries.AllGates
 @inject IDialogService _dialogService
 
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="1">
             <MudItem xs="12">
-                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined"/>
+                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
                 <MudTextField @bind-Value="Data.Description" Class="my-2" Label="Description" Lines="5" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12">
@@ -31,6 +33,29 @@
                         </div>
                     }
                     <MudCheckBox @bind-Checked="_enableTimezone" Dense="true" Class="ml-n2 pt-2">Enable timezones</MudCheckBox>
+                </MudField>
+            </MudItem>
+            <MudItem xs="12">
+                <MudField Label="Additional settings" Variant="Variant.Outlined" Class="d-flex">
+                    <div class="d-flex">
+                        <MudSelect T="string" Disabled="EditAction is CurrentAction.EditOccurrence" Label="Seasons" Strict="true" Class="ml-0 pr-2" Style="width: 50%"
+                                   MultiSelection="true" SelectedValues="Data?.SeasonsIds?.ToHashSet() ?? new HashSet<string>()"
+                                   SelectedValuesChanged="set => Data.SeasonsIds = set?.ToArray() ?? Array.Empty<string>()"
+                                   HelperText="Choose at least one season" OffsetY="true">
+                            @foreach (var season in _seasons ?? Enumerable.Empty<SeasonResourceModel>())
+                            {
+                                <MudSelectItem Value="season.Name"></MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="int?" Label="Gate" Strict="true" Class="ml-auto px-2" Value="Data?.GateId" ValueChanged="val => Data.GateId = val"
+                                   ToStringFunc="id => _gates?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
+                                   HelperText="Choose single gate" OffsetY="true">
+                            @foreach (var gate in _gates ?? Enumerable.Empty<GateModel>())
+                            {
+                                <MudSelectItem Value="(int?)gate.Id"></MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
                 </MudField>
             </MudItem>
             @* Show recurrence editor only when appointment is not an exception. *@
@@ -61,17 +86,22 @@
     public CurrentAction? DeleteAction { get; set; }
     [Parameter]
     public CurrentAction? EditAction { get; set; }
+    [Parameter]
+    public ResourceDataProvider Resources { get; set; }
 
     private readonly Type _returnType = typeof(ValueTuple<,>).MakeGenericType(typeof(DeparturePlanGuiModel), typeof(CurrentAction?));
     private bool _success = true;
     private bool _enableTimezone;
     private Dictionary<string, TimeSpan> _timezones;
+    IEnumerable<SeasonResourceModel> _seasons;
+    IEnumerable<GateModel> _gates;
 
     private Task<IEnumerable<string>> Search(string value)
     {
         if (string.IsNullOrEmpty(value))
             return Task.FromResult(_timezones?.Keys.AsEnumerable());
         return Task.FromResult(_timezones?.Keys.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
+
     }
 
     protected override void OnInitialized()
@@ -80,6 +110,13 @@
         _timezones = GetKnownTimezones();
 
         base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _seasons = await Resources.GetSeasonsResources();
+        _gates = await Resources.GetGates();
+        await base.OnInitializedAsync();
     }
 
     private static Dictionary<string, TimeSpan> GetKnownTimezones()

@@ -62,7 +62,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 {
                     { "Data", originalPlan.Copy() },
                     { "EditAction", originalPlan.Id == default ? CurrentAction.Add : schedulerAction },
-                    { "DeleteAction", CurrentAction.Delete }
+                    { "DeleteAction", CurrentAction.Delete },
+                    {"Resources", _resourceProvider}
                 }, new DialogOptions { CloseButton = true });
 
             var result = await dialog.Result;
