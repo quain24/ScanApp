@@ -7,6 +7,8 @@ using ScanApp.Common.Interfaces;
 using ScanApp.Models.HesHub.DeparturePlans;
 using Syncfusion.Blazor.Schedule;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
@@ -23,6 +25,30 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
         [Inject] private IDateTime DateTimeService { get; init; }
 
         private SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
+
+        private List<CompositeResource> Gates { get; set; } = new(0);
+        private List<CompositeResource> Seasons { get; set; } = new(0);
+
+        private string[] Resources { get; } = { "Gates"/*, "Seasons"*/ };
+
+        protected override async Task OnParametersSetAsync()
+        {
+            Gates = (await _resourceProvider.GetGates()).Select(x => new CompositeResource()
+            {
+                Id = x.Id,
+                GateId = x.Id,
+                GateName = x.Name
+            }).ToList();
+
+            Seasons = (await _resourceProvider.GetSeasonsResources()).Select(x => new CompositeResource()
+            {
+                Id = x.Name.GetHashCode(),
+                SeasonId = x.Name,
+                SeasonName = x.Name
+
+                ,GateId = -1
+            }).ToList();
+        }
 
         protected override void OnInitialized()
         {
@@ -92,7 +118,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                     {
                         modifiedPlan.RecurrenceID = modifiedPlan.Id;
                         return SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction);
-                    },
+                    }
+                    ,
                     _ when schedulerAction is CurrentAction.EditSeries or CurrentAction.EditFollowingEvents =>
                         () => SchedulerRef.SaveEventAsync(modifiedPlan, schedulerAction),
                     _ => throw new UnknownArgumentException($"Unhandled action for departure plan - {schedulerAction}",

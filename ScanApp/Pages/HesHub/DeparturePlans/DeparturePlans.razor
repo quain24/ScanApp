@@ -4,6 +4,14 @@
 @using Syncfusion.Blazor.Data
 
 <SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now" AllowKeyboardInteraction="true">
+    <ScheduleGroup AllowGroupEdit="true" Resources="@Resources"></ScheduleGroup>
+    <ScheduleResources>
+        <ScheduleResource TItem="CompositeResource" TValue="int?" DataSource="@Gates"
+                          Field="GateId" Title="Gate" TextField="Gate"
+                          IdField="Id" Name="Gates" AllowMultiple="false" ColorField="Color"></ScheduleResource>
+        @*<ScheduleResource TItem="CompositeResource" TValue="string" DataSource="@Seasons" Field="SeasonIds" Title="Seasons" Name="Seasons"
+                          TextField="SeasonName" IdField="Id" ColorField="Color" AllowMultiple="true"></ScheduleResource>*@
+    </ScheduleResources>
     <ScheduleEvents TValue="DeparturePlanGuiModel" OnPopupOpen="@(async arg => await OnPopupOpen(arg))" />
     <ScheduleEventSettings TValue="DeparturePlanGuiModel" AllowEditFollowingEvents="true">
         <ScheduleViews>
@@ -13,7 +21,7 @@
         </ScheduleViews>
         <SfDataManager Adaptor="Adaptors.CustomAdaptor">
             <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
-                <DataAdaptor/>
+                <DataAdaptor />
             </CascadingValue>
         </SfDataManager>
     </ScheduleEventSettings>

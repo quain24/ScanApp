@@ -98,10 +98,9 @@
 
     private Task<IEnumerable<string>> Search(string value)
     {
-        if (string.IsNullOrEmpty(value))
-            return Task.FromResult(_timezones?.Keys.AsEnumerable());
-        return Task.FromResult(_timezones?.Keys.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
-
+        return Task.FromResult(string.IsNullOrEmpty(value)
+            ? _timezones?.Keys.AsEnumerable()
+            : _timezones?.Keys.Where(x => x?.Contains(value, StringComparison.InvariantCultureIgnoreCase) ?? false));
     }
 
     protected override void OnInitialized()
