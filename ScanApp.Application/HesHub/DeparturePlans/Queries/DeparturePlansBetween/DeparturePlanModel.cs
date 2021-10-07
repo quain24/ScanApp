@@ -17,7 +17,7 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
         public DateTime End { get; set; }
         public TimeZoneInfo StartTimezone { get; set; }
         public TimeZoneInfo EndTimezone { get; set; }
-        public List<string> Seasons { get; set; }
+        public List<string> Seasons { get; set; } = new(0);
         public DayAndTime ArrivalDayAndTime { get; set; }
         public bool IsAllDay { get; set; }
 

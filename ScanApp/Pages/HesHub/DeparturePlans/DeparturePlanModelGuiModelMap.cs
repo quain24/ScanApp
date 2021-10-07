@@ -25,8 +25,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 Description = model.Description,
                 Subject = model.Subject,
                 ArrivalDayTime = model.ArrivalDayAndTime,
-                GateId = model.GateId,
-                TrailerId = model.TrailerId,
+                GateId = model.GateId ?? -1,
+                TrailerId = model.TrailerId ?? -1,
                 IsAllDay = model.IsAllDay,
                 RecurrenceRule = RecurrenceSyncfusionMapper.ToSyncfusionRule(model.RecurrencePattern),
                 RecurrenceException = model.ExceptionToDate is null
@@ -51,8 +51,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
                 Description = model.Description,
                 Subject = model.Subject,
                 ArrivalDayAndTime = model.ArrivalDayTime,
-                GateId = model.GateId,
-                TrailerId = model.TrailerId,
+                GateId = model.GateId == -1 ? null : model.GateId,
+                TrailerId = model.TrailerId == -1 ? null : model.TrailerId,
                 IsAllDay = model.IsAllDay,
                 RecurrencePattern = RecurrenceSyncfusionMapper.FromSyncfusionRule(model.RecurrenceRule),
 

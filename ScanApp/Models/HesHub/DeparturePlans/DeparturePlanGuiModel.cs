@@ -33,7 +33,7 @@ namespace ScanApp.Models.HesHub.DeparturePlans
             get => EndTime.Date;
             set => EndTime = (value?.Date ?? DateTime.MinValue.Date) + EndTime.TimeOfDay;
         }
-
+        
         internal TimeSpan? EndTimePortion
         {
             get => EndTime.TimeOfDay;
@@ -49,8 +49,8 @@ namespace ScanApp.Models.HesHub.DeparturePlans
         public string RecurrenceException { get; set; }
         public int? RecurrenceID { get; set; }
 
-        public int? GateId { get; set; }
-        public int? TrailerId { get; set; }
+        public int GateId { get; set; }
+        public int TrailerId { get; set; }
         public string[] SeasonsIds { get; set; } = Array.Empty<string>();
 
         public Version Version { get; set; }

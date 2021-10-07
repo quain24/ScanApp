@@ -47,12 +47,12 @@
                                 <MudSelectItem Value="season.Name"></MudSelectItem>
                             }
                         </MudSelect>
-                        <MudSelect T="int?" Label="Gate" Strict="true" Class="ml-auto px-2" Value="Data?.GateId" ValueChanged="val => Data.GateId = val"
+                        <MudSelect T="int" Label="Gate" Strict="true" Class="ml-auto px-2" Value="Data.GateId" ValueChanged="val => Data.GateId = val"
                                    ToStringFunc="id => _gates?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
                                    HelperText="Choose single gate" OffsetY="true">
                             @foreach (var gate in _gates ?? Enumerable.Empty<GateModel>())
                             {
-                                <MudSelectItem Value="(int?)gate.Id"></MudSelectItem>
+                                <MudSelectItem Value="gate.Id"></MudSelectItem>
                             }
                         </MudSelect>
                     </div>
