@@ -51,7 +51,7 @@ namespace ScanApp.Models.HesHub.DeparturePlans
 
         public int GateId { get; set; }
         public int TrailerId { get; set; }
-        public string[] SeasonsIds { get; set; } = Array.Empty<string>();
+        public string[] SeasonsIds { get; set; }
 
         public Version Version { get; set; }
     }

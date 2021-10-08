@@ -26,41 +26,19 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
 
         private SfSchedule<DeparturePlanGuiModel> SchedulerRef { get; set; }
 
-        private List<CompositeResource> Gates { get; set; } = new(0);
+        private readonly string[] _resources = { "Seasons" };
         private List<CompositeResource> Seasons { get; set; } = new(0);
-
-        private readonly string[] _resources = { /*"Gates",*/ "Seasons" };
 
         protected override async Task OnInitializedAsync()
         {
             _resourceProvider = new ResourceDataProvider(Mediator);
-            Gates = (await _resourceProvider.GetGates()).Select(x => new CompositeResource()
-            {
-                Id = x.Id,
-                GateId = x.Id,
-                GateName = x.Name
-            }).Prepend(new CompositeResource()
-            {
-                Color = "#ffaaff",
-                GateId = -1,
-                Id = -1,
-                GateName = "Not Selected"
-            }).ToList();
-            Gates.Sort((x, y) =>  Comparer<int>.Default.Compare(x.GateId, y.GateId));
 
-            //StateHasChanged();
-
-            Seasons = (await _resourceProvider.GetSeasonsResources()).Select(x => new CompositeResource()
-            {
-                Id = x.Name.GetHashCode(),
-                SeasonId = x.Name,
-                SeasonName = x.Name
-            }).Prepend(new CompositeResource()
-            {
-                SeasonId = "Unknown",
-                SeasonName = "Unknown",
-                Id = -1
-            }).ToList();
+            Seasons = (await _resourceProvider.GetSeasonsResources())
+                .Select(x => new CompositeResource
+                {
+                    SeasonId = x.Name,
+                    SeasonName = x.Name
+                }).ToList();
         }
 
         protected override void OnInitialized()

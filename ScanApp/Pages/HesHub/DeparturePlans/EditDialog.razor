@@ -38,21 +38,22 @@
             <MudItem xs="12">
                 <MudField Label="Additional settings" Variant="Variant.Outlined" Class="d-flex">
                     <div class="d-flex">
-                        <MudSelect T="string" Disabled="EditAction is CurrentAction.EditOccurrence" Label="Seasons" Strict="true" Class="ml-0 pr-2" Style="width: 50%"
+                        <MudSelect T="string" Disabled="EditAction is CurrentAction.EditOccurrence" Strict="true" Class="ml-0 pr-2" Style="width: 50%"
                                    MultiSelection="true" SelectedValues="Data?.SeasonsIds?.ToHashSet() ?? new HashSet<string>()"
                                    SelectedValuesChanged="set => Data.SeasonsIds = set?.ToArray() ?? Array.Empty<string>()"
-                                   HelperText="Choose at least one season" OffsetY="true">
+                                   @bind-Value="_seasonValueLabel" Label="@_seasonValueLabel"
+                                   HelperText="Choose at least one season" OffsetY="true" Dense="true">
                             @foreach (var season in _seasons ?? Enumerable.Empty<SeasonResourceModel>())
                             {
-                                <MudSelectItem Value="season.Name"></MudSelectItem>
+                                <MudSelectItem Value="season.Name">@season.Name</MudSelectItem>
                             }
                         </MudSelect>
-                        <MudSelect T="int" Label="Gate" Strict="true" Class="ml-auto px-2" Value="Data.GateId" ValueChanged="val => Data.GateId = val"
+                        <MudSelect T="int" Label="Gate" Strict="true" Class="ml-auto px-2" @bind-Value="Data.GateId"
                                    ToStringFunc="id => _gates?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
-                                   HelperText="Choose single gate" OffsetY="true">
+                                   HelperText="Choose single gate" OffsetY="true" Dense="true" >
                             @foreach (var gate in _gates ?? Enumerable.Empty<GateModel>())
                             {
-                                <MudSelectItem Value="gate.Id"></MudSelectItem>
+                                <MudSelectItem Value="gate.Id">@gate.Name</MudSelectItem>
                             }
                         </MudSelect>
                     </div>
@@ -93,8 +94,9 @@
     private bool _success = true;
     private bool _enableTimezone;
     private Dictionary<string, TimeSpan> _timezones;
-    IEnumerable<SeasonResourceModel> _seasons;
-    IEnumerable<GateModel> _gates;
+    private IEnumerable<SeasonResourceModel> _seasons;
+    private IEnumerable<GateModel> _gates;
+    private string _seasonValueLabel = "Seasons";
 
     private Task<IEnumerable<string>> Search(string value)
     {
