@@ -17,6 +17,7 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
     {
         private DateTime _now;
         private ResourceDataProvider _resourceProvider;
+        private View _currentView = View.Day;
 
         [Inject] private IDialogService DialogService { get; init; }
 

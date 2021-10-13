@@ -3,26 +3,40 @@
 @using ScanApp.Models.HesHub.DeparturePlans;
 @using Syncfusion.Blazor.Data
 
-<SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now" AllowKeyboardInteraction="true">
+<SfSchedule @ref="SchedulerRef" TValue="DeparturePlanGuiModel" ShowTimeIndicator="true" Width="100%" Height="650px" @bind-SelectedDate="_now" @bind-CurrentView="_currentView"
+            AllowKeyboardInteraction="true" EnableAutoRowHeight="true">
     <ScheduleGroup EnableCompactView="false" AllowGroupEdit="true" Resources="@_resources"></ScheduleGroup>
     <ScheduleResources>
-        @*<ScheduleResource TItem="CompositeResource" TValue="int" DataSource="@Gates"
-                          Field="GateId" Title="Gate" TextField="GateName"
-                          IdField="Id" Name="Gates" AllowMultiple="false" ColorField="Color"></ScheduleResource>*@
         <ScheduleResource TItem="CompositeResource" TValue="string[]" DataSource="@Seasons" Field="SeasonsIds" Title="Seasons" Name="Seasons"
                           TextField="SeasonName" IdField="SeasonId" ColorField="Color" AllowMultiple="true"></ScheduleResource>
     </ScheduleResources>
-    <ScheduleEvents TValue="DeparturePlanGuiModel" OnPopupOpen="@(async arg => await OnPopupOpen(arg))" />
-    <ScheduleEventSettings TValue="DeparturePlanGuiModel" AllowEditFollowingEvents="true">
-        <ScheduleViews>
-            <ScheduleView Option="View.Day"></ScheduleView>
-            <ScheduleView Option="View.Week"></ScheduleView>
-            <ScheduleView Option="View.Month"></ScheduleView>
-        </ScheduleViews>
-        <SfDataManager Adaptor="Adaptors.CustomAdaptor">
-            <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
-                <DataAdaptor />
-            </CascadingValue>
-        </SfDataManager>
-    </ScheduleEventSettings>
+    <ScheduleTimeScale Interval="60" SlotCount="6"></ScheduleTimeScale>
+        <ScheduleEvents TValue="DeparturePlanGuiModel" OnPopupOpen="@(async arg => await OnPopupOpen(arg))" />
+        <ScheduleEventSettings TValue="DeparturePlanGuiModel" AllowEditFollowingEvents="true">
+            <ScheduleViews>
+                <ScheduleView Option="View.Day">
+                    <EventTemplate>
+                        @{
+                            var data = context as DeparturePlanGuiModel;
+                            <MudPaper Square="true" Style="background-color: burlywood">
+                                <MudText Typo="Typo.subtitle1" GutterBottom="true">Title: @data.Subject</MudText>
+                                <MudText Typo="Typo.subtitle1" GutterBottom="true">Time: @data.StartTimePortion.Value.ToString(@"hh\:mm") - @data.EndTimePortion.Value.ToString(@"hh\:mm")</MudText>
+                                <MudText Typo="Typo.subtitle1" GutterBottom="true">Description: @data.Subject</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Garage" Title="Gate number:"/><MudText Typo="Typo.subtitle1">@data.GateId</MudText>
+                            </MudPaper>
+                        }
+                    </EventTemplate>
+                </ScheduleView>
+                <ScheduleView Option="View.TimelineDay"></ScheduleView>
+                <ScheduleView Option="View.TimelineWeek"></ScheduleView>
+                <ScheduleView Option="View.TimelineMonth"></ScheduleView>
+                <ScheduleView Option="View.Week"></ScheduleView>
+                <ScheduleView Option="View.Month"></ScheduleView>
+            </ScheduleViews>
+            <SfDataManager Adaptor="Adaptors.CustomAdaptor">
+                <CascadingValue Value="SchedulerRef" Name="SchedulerRef" IsFixed="true">
+                    <DataAdaptor />
+                </CascadingValue>
+            </SfDataManager>
+        </ScheduleEventSettings>
 </SfSchedule>

@@ -96,7 +96,7 @@
     private Dictionary<string, TimeSpan> _timezones;
     private IEnumerable<SeasonResourceModel> _seasons;
     private IEnumerable<GateModel> _gates;
-    private string _seasonValueLabel = "Seasons";
+    private string _seasonValueLabel;
 
     private Task<IEnumerable<string>> Search(string value)
     {
@@ -109,6 +109,7 @@
     {
         _enableTimezone = Data?.EndTimezone is not null || Data?.StartTimezone is not null;
         _timezones = GetKnownTimezones();
+        _seasonValueLabel = Data?.SeasonsIds.Aggregate((s, s1) => $"{s}, {s1}") ?? "Seasons";
 
         base.OnInitialized();
     }
