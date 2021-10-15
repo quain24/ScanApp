@@ -80,7 +80,7 @@ namespace ScanApp.Tests.IntegrationTests.Application.HesHub.DeparturePlans.Depar
             var v = u.FromSyncfusionDateString();
             var ta = u.FromSyncfusionSingleDate();
 
-            var bb = "20210826T084826Z;20210826T084826Z";
+            var bb = "20210826T084826Z,20210826T084826Z";
             var ttat = bb.FromSyncfusionDateString();
             var t = result.Output;
             t = result.Output;
