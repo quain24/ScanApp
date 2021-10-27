@@ -1,7 +1,9 @@
 ﻿@using ScanApp.Models.HesHub.DeparturePlans
 @using TimeZoneConverter
 @using ScanApp.Application.HesHub.DeparturePlans.Queries
-@using ScanApp.Application.HesHub.DeparturePlans.Queries.AllGates
+@using ScanApp.Application.HesHub.DeparturePlans.Queries.GetResourceDataForDepots
+@using ScanApp.Application.HesHub.Depots
+@using GateModel = ScanApp.Application.HesHub.DeparturePlans.Queries.AllGates.GateModel
 @inject IDialogService _dialogService
 
 <MudDialog>
@@ -50,10 +52,18 @@
                         </MudSelect>
                         <MudSelect T="int" Label="Gate" Strict="true" Class="ml-auto px-2" @bind-Value="Data.GateId"
                                    ToStringFunc="id => _gates?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
-                                   HelperText="Choose single gate" OffsetY="true" Dense="true" >
+                                   HelperText="Choose single gate" OffsetY="true" Dense="true">
                             @foreach (var gate in _gates ?? Enumerable.Empty<GateModel>())
                             {
                                 <MudSelectItem Value="gate.Id">@gate.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="int" Label="Depot" Strict="true" Class="ml-auto px-2" @bind-Value="Data.DepotId"
+                                   ToStringFunc="id => _depots?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
+                                   HelperText="Choose single depot" OffsetY="true" Dense="true">
+                            @foreach (var depot in _depots ?? Enumerable.Empty<DepotResourceModel>())
+                            {
+                                <MudSelectItem Value="depot.Id">@depot.Name</MudSelectItem>
                             }
                         </MudSelect>
                     </div>
@@ -96,6 +106,7 @@
     private Dictionary<string, TimeSpan> _timezones;
     private IEnumerable<SeasonResourceModel> _seasons;
     private IEnumerable<GateModel> _gates;
+    private IEnumerable<DepotResourceModel> _depots;
     private string _seasonValueLabel;
 
     private Task<IEnumerable<string>> Search(string value)
@@ -118,6 +129,7 @@
     {
         _seasons = await Resources.GetSeasonsResources();
         _gates = await Resources.GetGates();
+        _depots = await Resources.GetDepotResources();
         await base.OnInitializedAsync();
     }
 
@@ -145,6 +157,9 @@
             Data.EndTimezone = null;
             Data.StartTimezone = null;
         }
+        Data.StartTime = DateTime.SpecifyKind(Data.StartTime, DateTimeKind.Utc);
+        Data.EndTime = DateTime.SpecifyKind(Data.EndTime, DateTimeKind.Utc);
+
         MudDialog.Close(DialogResult.Ok((Data, EditAction), _returnType));
     }
 

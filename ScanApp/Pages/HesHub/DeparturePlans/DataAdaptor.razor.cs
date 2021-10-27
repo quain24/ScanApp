@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ScanApp.Application.HesHub.DeparturePlans.Commands.AddDeparture;
 using TimeZoneConverter;
 
 namespace ScanApp.Pages.HesHub.DeparturePlans
@@ -66,6 +67,8 @@ namespace ScanApp.Pages.HesHub.DeparturePlans
             //        exc.Add(plan.RecurrenceException.FromSyncfusionSingleDate());
             //    master.RecurrenceException = exc?.ToSyncfusionSchedulerDates();
             //}
+
+            await Mediator.Send(new AddDepartureCommand(((DeparturePlanGuiModel)data).ToStandardModel()));
 
             EventData.Add(plan);
 

@@ -28,6 +28,7 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
         public List<DateTime> Exceptions { get; set; }
 
         public int? GateId { get; set; }
+        public int DepotId { get; set; }
         public int? TrailerId { get; set; }
 
         public Version Version { get; set; }
@@ -44,6 +45,7 @@ namespace ScanApp.Application.HesHub.DeparturePlans.Queries.DeparturePlansBetwee
                 Subject = plan.Name,
                 Description = plan.Description,
                 GateId = plan.Gate == null ? null : plan.Gate.Id,
+                DepotId = plan.Depot.Id,
                 TrailerId = plan.TrailerType == null ? null : plan.TrailerType.Id,
                 Seasons = plan.Seasons.Select(s => s.Name).ToList(),
                 RecurrencePattern = plan.RecurrencePattern,

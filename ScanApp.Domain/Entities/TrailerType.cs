@@ -86,5 +86,10 @@ namespace ScanApp.Domain.Entities
         {
             Name = name;
         }
+
+        public TrailerType(int id, string name) : this(name)
+        {
+            Id = id;
+        }
     }
 }

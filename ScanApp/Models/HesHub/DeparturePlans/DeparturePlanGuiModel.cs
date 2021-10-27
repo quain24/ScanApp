@@ -50,7 +50,8 @@ namespace ScanApp.Models.HesHub.DeparturePlans
         public int? RecurrenceID { get; set; }
 
         public int GateId { get; set; }
-        public int TrailerId { get; set; }
+        public int? TrailerId { get; set; }
+        public int DepotId { get; set; }
         public string[] SeasonsIds { get; set; }
 
         public Version Version { get; set; }

@@ -41,8 +41,10 @@ namespace ScanApp.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(x => x.IsException)
-                .HasComputedColumnSql("CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END", stored:true)
-                .UsePropertyAccessMode(PropertyAccessMode.Property);
+                .HasComputedColumnSql(
+                    "CAST(CASE WHEN ([RecurrenceExceptionOfId] IS NULL) OR ([RecurrenceExceptionDate] IS NULL) THEN 0 ELSE 1 END AS BIT)",
+                    stored: true)
+                .ValueGeneratedOnAddOrUpdate();
 
             builder.Property(x => x.RecurrenceExceptions)
                 .HasConversion(new DateTimeListToUtcStringConverter())
