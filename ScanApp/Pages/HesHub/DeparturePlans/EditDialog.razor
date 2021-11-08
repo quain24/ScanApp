@@ -10,7 +10,7 @@
     <DialogContent>
         <MudGrid Spacing="1">
             <MudItem xs="12">
-                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subject" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="Data.Subject" Class="my-2" Label="Subjecte" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
                 <MudTextField @bind-Value="Data.Description" Class="my-2" Label="Description" Lines="5" OnKeyDown="OnKeyDownPress" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12">
@@ -51,8 +51,8 @@
                             }
                         </MudSelect>
                         <MudSelect T="int" Label="Gate" Strict="true" Class="ml-auto px-2" @bind-Value="Data.GateId"
-                                   ToStringFunc="id => _gates?.First(x => x.Id == id).Name ?? string.Empty" Style="width: 50%"
-                                   HelperText="Choose single gate" OffsetY="true" Dense="true">
+                                   ToStringFunc="id => _gates?.FirstOrDefault(x => x.Id == id)?.Name ?? string.Empty" Style="width: 50%"
+                                   HelperText="Choose single gate" OffsetY="true" Dense="true" >
                             @foreach (var gate in _gates ?? Enumerable.Empty<GateModel>())
                             {
                                 <MudSelectItem Value="gate.Id">@gate.Name</MudSelectItem>

@@ -72,7 +72,7 @@ namespace ScanApp.Common.Extensions
             if (date.Length != 16 || Equals(date[15], 'Z') is false || Equals(date[8], 'T') is false)
             {
                 throw new FormatException($"Given {nameof(date)} string or it's part ({date.ToString()}) is not valid Syncfusion date string\r\n" +
-                                          "Valid example: '20210826T084826Z' for single date, '20210826T084826Z;20210826T084826Z' etc. for multiple dates.");
+                                          "Valid example: '20210826T084826Z' for single date, '20210826T084826Z,20210826T084826Z' etc. for multiple dates.");
             }
         }
 
